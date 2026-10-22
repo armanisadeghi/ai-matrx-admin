@@ -144,8 +144,9 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
   an accent the shell's selection tokens (`--shell-pill-*`, `--shell-nav-selected-text`, styles/shell.css) and the
   glass tint (design-system `accent.css`) derive from `--primary`; with none they keep the literal built-in blue.
 - **Reset:** the section (region back to default), "Use organization's layout" (clear person), "Reset to standard"
-  (person with an org layout saves an EMPTY body — `standardPersonBody()`, every region the growing default — so it
-  wins without freezing her out of later additions; else clear). Org reset and the members switch confirm with a toast.
+  (saves an EMPTY body as a new version — `standardPersonBody()` via `resetToStandardPlan`, every region the growing
+  default — so History keeps every earlier version; a person with nothing stored just closes). Org reset and the
+  members switch confirm with a toast.
 - **Add to my menu** saves the person's layout at once. The page's record comes from the current-record primitive
   (`features/shell/current-record/currentRecord.ts`: `EntityModeHeader` / `RecordPageHeader` declare the name, and
   `token`/`id` when the caller passes `record.token`/`record.id`; `<DeclareCurrentRecord token id />` for routes like
@@ -153,7 +154,7 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 - **Lock:** `shell.members_may_customize` off → `personAllowed: false` (amendment in REGISTER.md); the server pick
   reads the knob only when a person layout AND the predicted organization's layout both exist; `ShellLayoutSync`
   follows it on the client. A locked member (her organization HAS a layout) sees one line saying the organization's
-  layout is in use; Save is off with the reason, no live preview, no "Reset to standard".
+  layout is in use; no Save button, no live preview, no "Reset to standard".
 - **What's new** (`WhatsNewSlot`, top of the Sidebar, only for a person with her own custom sidebar): "New: X" — Add
   (into the sidebar; the body moves to today's catalog version once nothing newer is left) / Dismiss
   (`dismissedNew`); "Your organization updated its menu" — Review / Dismiss, keyed in localStorage by the
