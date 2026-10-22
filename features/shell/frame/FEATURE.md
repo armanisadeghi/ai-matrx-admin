@@ -284,6 +284,11 @@ ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
 
+- 2026-10-22: Header fixes. Tap boxes beside each other carry no gap (star/"…", tools and
+  sidebar-restore wrappers). The star shows neutral and disabled ("Favorites loading") until the
+  saved preferences load (`FrameFavorite.known`). The classic derived trail drops a level that
+  repeats the next ("Brands > Brands"), as the frame does. `HrShell` hands its trail to the frame
+  (`useDeclareFrameCrumbs`) and draws no body strip there.
 - 2026-10-22 (Layer 1): page-top templates hand their trail to the frame (title once, real
   crumbs); classic untouched. The star is the pin (`useFramePins`, on `usePinned`).
 
