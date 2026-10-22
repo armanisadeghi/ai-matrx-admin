@@ -34,6 +34,7 @@ import {
 import type { Json } from "@/types/database.types";
 import { isJsonRecord } from "@/features/marketing/types";
 import type { Answer, FocusItem } from "@/features/marketing/smart-add/validate/queue";
+import { logoImageOf } from "@/features/marketing/smart-add/validate/fold";
 
 export const CHOICE_PREFIX = "choice:";
 export const FINDING_PREFIX = "finding:";
@@ -360,9 +361,12 @@ export function categoryRows(rows: readonly { slug: string; name: string }[], kn
 export function findingItem(item: FocusItem): DeckItem {
   const s = item.suggestion?.choice;
   const suggested = s === "ours" || s === "preferred" || s === "alias" || s === "correct" ? "confirm" : s === "not_us" ? "reject" : null;
+  // A logo card is the picture, never its address: one picture per card, in the deck's own media slot.
+  const picture = item.kind === "logo" ? logoImageOf(item) : null;
   return {
     id: FINDING_PREFIX + item.key,
-    text: item.kind === "web" ? (item.title ?? item.value) : item.value,
+    text: item.kind === "logo" ? "" : item.kind === "web" ? (item.title ?? item.value) : item.value,
+    ...(picture ? { media: { src: picture, alt: item.label, shape: "wide" as const } } : {}),
     kicker: item.label,
     ...(item.source ? { tag: item.source } : {}),
     suggested,

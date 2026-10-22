@@ -105,6 +105,7 @@ chrome on the page.
 ## Change log
 - 2026-10-22 — Test seats are per brand (`web.brand_non_person_seat_ids`): a persona is a person only on the brand its own test organization owns.
 - 2026-10-22 — REVIEW3: a stance answer is one per offering and reaches the topical map (subject = `about` or the pending finding); only a person moves a decided value (trigger on decision/placement/decided_by, door flag); test seats never displace a person; a second editor's answer withdraws only their own (`personId`, `created_by` read); audience answers are origin `said`. Proof: rollback cases 22-27; jest `deck.test.ts`.
+- 2026-10-22 — LOGO CARD: a logo finding shows its picture in the deck's media slot (`findingItem`, via the validate page's `logoImageOf`), never the address as text. Proof: jest `deck.test.ts`.
 - 2026-10-22 — Stances first (four swipes, the agent's precise stance as the Suggestion), audience categories with their answer, word tags, taglines and one-liners as picks; the audience door and `shortlist`.
 - 2026-10-22 — Cards no longer repeat their four answers as rows under the text (`choicesOnCard={false}`): the edges are the answers (owner rule: nothing on the screen but the thing being asked about).
 - 2026-10-22 — Created: decide/correct/propose doors, the deck binding, the route, the surface.

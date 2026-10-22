@@ -124,6 +124,15 @@ describe("brand session deck", () => {
     expect(smartAddAnswer("website", "reject")).toBe("not_us");
   });
 
+  it("a logo finding shows the picture, not its address as text", () => {
+    const logo = { key: "L1", kind: "logo", label: "Logo", value: "https://site.com/logo.png", title: null, source: "Website", detail: null, suggestion: null } as unknown as FocusItem;
+    const item = findingItem(logo);
+    expect(item.media).toEqual({ src: "https://site.com/logo.png", alt: "Logo", shape: "wide" });
+    expect(item.text).toBe("");
+    const own = { ...logo, imageUrl: "https://cdn.site.com/m.svg", value: "Logo" } as unknown as FocusItem;
+    expect(findingItem(own).media?.src).toBe("https://cdn.site.com/m.svg");
+  });
+
   it("orders choices by the element's place, then oldest first", () => {
     const els = new Map<string, ElementRow>([
       ["e-tag", tagline],
