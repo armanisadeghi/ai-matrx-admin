@@ -86,7 +86,7 @@ async function fromWord(file: File, fallbackTitle: string, options: ImportOption
     const entry = zip.get(decodeURI(path));
     const name = decodeURI(path).split("/").pop() ?? "image";
     const bytes = entry ? await entry.bytes() : null;
-    const hit = bytes && options.storeFile ? await options.storeFile(new File([new Uint8Array(bytes)], name, { type: MIME[name.split(".").pop()?.toLowerCase() ?? ""] ?? "application/octet-stream" })) : null;
+    const hit = bytes && options.storeFile ? await options.storeFile(new File([bytes], name, { type: MIME[name.split(".").pop()?.toLowerCase() ?? ""] ?? "application/octet-stream" })) : null;
     if (hit) stored.set(path, hit);
     else warnings.push(`The picture ${name} could not be stored.`);
   }
