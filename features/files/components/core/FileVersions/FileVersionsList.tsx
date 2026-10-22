@@ -320,7 +320,7 @@ export function FileVersionsList({ fileId, className }: FileVersionsListProps) {
                   type="button"
                   onClick={() => setConfirmTarget(v.versionNumber)}
                   disabled={restoring !== null}
-                  className="flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium hover:bg-accent disabled:opacity-50 shrink-0"
+                  className="ml-1 flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium hover:bg-accent disabled:opacity-50 shrink-0"
                   title="Restore this version"
                 >
                   {restoring === v.versionNumber ? <Loader2 className="h-3 w-3 animate-spin" /> : <RotateCcw className="h-3 w-3" />}
