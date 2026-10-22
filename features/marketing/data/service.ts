@@ -4437,6 +4437,8 @@ export async function createBrandAsset(
       confirmed_at: new Date().toISOString(),
       confirmed_by: await signedInPersonId(supabase),
       ...(input.metadata ? { metadata: input.metadata } : {}),
+      ...(input.data ? { data: input.data } : {}),
+      ...(input.sortOrder != null ? { sort_order: input.sortOrder } : {}),
     })
     .select(BRAND_ASSET_COLUMNS)
     .single();
