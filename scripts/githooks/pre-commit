@@ -71,6 +71,14 @@ if git diff --cached --name-only -- pnpm-lock.yaml | grep -q .; then
         exit 1
     fi
 fi
+# JOB 4b — @ai-matrx TWINS AT WRITE TIME (Arman 2026-10-21: scream when the code is written, never block the
+# release). The Vercel postinstall and release.sh only REPORT twins now; this is where they are refused.
+if git diff --cached --name-only -- pnpm-lock.yaml | grep -q .; then
+    if ! (cd "$ROOT" && node scripts/check-matrx-packages.mjs --duplicates); then
+        echo "COMMIT REFUSED: the staged pnpm-lock.yaml holds two versions of one @ai-matrx package (above). Run pnpm sync:matrx-packages and stage the lockfile again." >&2
+        exit 1
+    fi
+fi
 # CLOSE IN FLOW (Arman, 2026-10-20): a dialog's × is a flex item of its row, never pinned to a corner
 # with absolute/fixed — the design-system's Dialog / Sheet / CommandDialog draw it. Runs only when a
 # .tsx/.jsx is staged and the installed design-system ships the scanner (~2 s, shrink-only baseline).
