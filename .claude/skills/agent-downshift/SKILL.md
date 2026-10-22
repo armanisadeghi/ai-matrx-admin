@@ -27,6 +27,9 @@ instruction problem. Arman's formula, verbatim: [VISION](/policies/VISION.md#ai-
 **The one-sentence version:** prove the big model wins on the hardest cases, name exactly what the small
 one gets wrong, fix each named failure with one sentence in the instructions (never the model), and
 rerun EVERY case after EVERY edit until the small one matches, then check it on cases you never tuned on.
+Then take the new instructions back to the big model: when it gets even better, what it now does is the
+next sentence for the small one. Loop until the task is so direct that a small model never has to figure
+anything out.
 
 Everything here runs through the AI Dream MCP or the server API. Nothing needs the UI.
 
@@ -77,8 +80,22 @@ this approved answer" fact: the judge compares whole answers and comes back unde
 One launch, one setup per model (big, middle, small), same agent, `repeats` ≥ 2. For each small-model
 miss write one line naming it: "dropped the pricing project", "invented Cascade Electronics",
 "skeleton output". This list is the work.
+**Read how the big model got there, not only what it answered.** Its thinking, and above all the tools,
+lookups and resources it reaches for every time, are what the small model would have to figure out. For
+each one, fill this row before you edit anything:
+
+| Big model's move (tool + arguments, on N of M runs) | Can its input be known before the run? | Hand-over |
+|---|---|---|
+| e.g. `company_lookup(name)` 2× on 9/10 | yes, the name is in the input | **pre-fetch**: the caller runs it and passes the result as a variable |
+
+**Pre-fetch is the default.** When the arguments can be known before the run, the lookup moves out of the
+agent: the host or the job's provision fetches it and passes the result in as a variable, and the small
+model never has to decide to look. A sentence telling the model to call the tool is the fallback, only
+for a move whose arguments come from the model's own reasoning. A tool gap that has not changed an answer
+yet is still a gap: the next case is the one where skipping the lookup invents a fact.
 *Done when:* the big model is clearly better on at least one hard case and every small-model miss has
-a named line. If the small model already matches, stop: there is nothing to fix.
+a named line, and every tool or resource the big model used on most runs is listed. If the small model
+already matches, stop: there is nothing to fix.
 
 ### 5. Fix the instructions, not the model
 
@@ -110,7 +127,17 @@ Launch the held-out cases with two setups, big model on the original agent and s
 copy, `repeats` 2. Read both side by side.
 *Done when:* you can state, per held-out case, "same", or the exact fact the small model missed.
 
-### 8. Settings, then report
+### 8. Climb back up
+
+Run the tuned instructions on the big model next to its original agent (`launch` with two setups: the
+original agent on the big model, the tuned copy with `model_id` = the big model). Better answers are
+expected: the instructions are now direct. Wherever the big model now does better than the small one,
+that difference is the next named miss: back to step 5. When the big model also improves, adopt the
+tuned instructions for both (the owner decides which model runs live).
+*Done when:* a climb-back run shows no fact the big model records that the small one misses, or each
+remaining one is named in the report.
+
+### 9. Settings, then report
 
 Try the small model at one higher thinking effort as an extra setup. In the reference run, medium cost
 2.4× more and did no better, so low stayed. Report to the owner: cost per run for each model, cases
@@ -128,4 +155,4 @@ Never switch the live agent's model yourself (`test-model-selection` rule 3); th
 | Reading your own printout wrong | A size column was read as a count (3 characters for "226") and a working count was reported broken. Print the value, not its metadata. |
 | Raising the thinking effort to paper over vague instructions | Test it as a separate setup, after the instructions are fixed. |
 | Pasting the failing case's words into the rule | That only teaches the test. Use a neutral example (step 5). |
-| A model returns structurally empty answers on every case | That is a platform defect, not an instruction problem. File it and exclude that model until fixed. |
+| A model returns structurally empty answers on every case | A platform defect, not an instruction problem. In the reference run Sonnet 5.5 wrote `evidence: []` and gave up because the stored schema listed `evidence` before the edit it supports (key order is generation order); the platform now keeps the authored order. File it, exclude the model until fixed. |
