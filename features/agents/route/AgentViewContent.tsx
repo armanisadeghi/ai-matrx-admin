@@ -27,6 +27,7 @@ import {
 } from "@/features/agents/redux/builder-tier.thunks";
 import { confirm } from "@ai-matrx/chat/host/ui-slots";
 import { ReadFailure, RecordId } from "@ai-matrx/design-system";
+import { useHostNamesRecord } from "@/features/shell/host-chrome/RecordHostChrome";
 import { selectCategoryById } from "@ai-matrx/chat/agents/redux/agent-shortcut-categories/selectors";
 import { getModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
 import { useAgentModelLabel } from "@ai-matrx/chat/agents/hooks/useAgentModelLabel";
@@ -241,6 +242,7 @@ function MessageCard({ role, content }: { role?: string; content: string }) {
  * renders it after the stat strip and never knows what it is.
  */
 export function AgentViewContent({ agentId, recordSections, embedded = false }: { agentId: string; recordSections?: ReactNode; /** Inside a board tile: no shell-header offset, and the JSON view sizes to the tile, not the window. */ embedded?: boolean }) {
+  const hostNamesAgent = useHostNamesRecord({ token: "agent", id: agentId });
   const dispatch = useAppDispatch();
   const [mounted, setMounted] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("pretty");
@@ -550,9 +552,12 @@ export function AgentViewContent({ agentId, recordSections, embedded = false }: 
           <>
             {/* Hero — name, id (version), description */}
             <div className="space-y-2 pt-1">
-              <h1 className="text-2xl font-bold tracking-tight leading-tight">
-                {agent.name}
-              </h1>
+              {/* A host that names the agent (a board tile) already shows its name. */}
+              {hostNamesAgent ? null : (
+                <h1 className="text-2xl font-bold tracking-tight leading-tight">
+                  {agent.name}
+                </h1>
+              )}
               <div className="inline-flex items-center gap-1.5 type-secondary min-w-0">
                 <RecordId
                   value={liveAgentId}

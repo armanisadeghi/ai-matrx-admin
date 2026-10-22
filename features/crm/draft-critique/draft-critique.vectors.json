@@ -859,6 +859,89 @@
       },
       "corrections": 1,
       "draft_type": "pitch_email"
+    },
+    {
+      "name": "13 half points round half up to 13 -> 5 workshopable (not banker's 0 -> start_over)",
+      "input": {
+        "__kind": "draft_critique",
+        "criteria": [
+          {
+            "id": 1,
+            "score": 0.5,
+            "note": "c1"
+          },
+          {
+            "id": 2,
+            "score": 0.5,
+            "note": "c2"
+          },
+          {
+            "id": 3,
+            "score": 0.5,
+            "note": "c3"
+          },
+          {
+            "id": 4,
+            "score": 0.5,
+            "note": "c4"
+          },
+          {
+            "id": 5,
+            "score": 0.5,
+            "note": "c5"
+          },
+          {
+            "id": 6,
+            "score": 0.5,
+            "note": "c6"
+          },
+          {
+            "id": 7,
+            "score": 0.5,
+            "note": "c7"
+          },
+          {
+            "id": 8,
+            "score": 0.5,
+            "note": "c8"
+          },
+          {
+            "id": 9,
+            "score": 0.5,
+            "note": "c9"
+          },
+          {
+            "id": 10,
+            "score": 0.5,
+            "note": "c10"
+          },
+          {
+            "id": 11,
+            "score": 0.5,
+            "note": "c11"
+          },
+          {
+            "id": 12,
+            "score": 0.5,
+            "note": "c12"
+          },
+          {
+            "id": 13,
+            "score": 0.5,
+            "note": "c13"
+          }
+        ],
+        "points": 0,
+        "score": 0,
+        "verdict": "start_over"
+      },
+      "expect": {
+        "points": 13,
+        "score": 5,
+        "verdict": "workshopable"
+      },
+      "corrections": 16,
+      "draft_type": "pitch_email"
     }
   ]
 }

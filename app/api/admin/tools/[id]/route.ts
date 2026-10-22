@@ -7,6 +7,7 @@ import { parseSemver } from "@/features/admin/applications/version";
 import type { Database } from "@/types/database.types";
 import { extractErrorMessage } from "@/utils/errors";
 import { writeOneRow } from "@/utils/supabase/writeOne";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 const EDITABLE_FIELDS = [
   "description",
@@ -59,7 +60,7 @@ export async function GET(
       .single();
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if (error.code === PG_CODES.pgrstNoRows) {
         return NextResponse.json({ error: "Tool not found" }, { status: 404 });
       }
       console.error("Error fetching tool:", error);
@@ -156,7 +157,7 @@ export async function PUT(
     );
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if (error.code === PG_CODES.pgrstNoRows) {
         return NextResponse.json({ error: "Tool not found" }, { status: 404 });
       }
       console.error("Error updating tool:", error);
@@ -207,7 +208,7 @@ export async function DELETE(
     if (error) {
       // Missing and RLS-hidden rows intentionally share one response so this
       // admin endpoint does not become an existence oracle.
-      if (error.code === "PGRST116") {
+      if (error.code === PG_CODES.pgrstNoRows) {
         return NextResponse.json({ error: "Tool not found" }, { status: 404 });
       }
       console.error("Error deleting tool:", error);

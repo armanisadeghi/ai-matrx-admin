@@ -1,7 +1,6 @@
 "use client";
 
-import { Select } from "@ai-matrx/design-system/controls";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { Select, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { Field, FieldGroup, PdfDemoShell } from "@/features/pdf-demo/components/PdfDemoShell";
 import {

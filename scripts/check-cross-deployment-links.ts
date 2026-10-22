@@ -30,6 +30,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { dirname, join, normalize } from "node:path";
 import { exitAfterDrain } from "./lib/exit-after-drain";
 
 /** Route prefixes owned by a deployment that not every profile compiles. */
@@ -111,6 +112,8 @@ const LINK_TAG = /<([A-Z][A-Za-z0-9_]*)(\s[^>]*?)\/?>/gs;
  */
 const DOOR_ELEMENTS = new Set([
   "AppLink",
+  "NavLink", // components/navigation/NavLink.tsx — AppLink with prefetch off
+  "OutboundLink", // @ai-matrx/kit/outbound-react — a plain <a>, never prefetches
   // Local wrappers that own an anchor and render it through AppLink. Each was
   // read and converted when this guard was written; a wrapper added here that
   // does not go through the door re-opens the class.
@@ -171,6 +174,52 @@ function splitConstants(files: readonly string[]): Map<string, string> {
   return names;
 }
 
+/**
+ * 🚨 THE TREE LIST IS NEVER COMPLETE (2026-10-22 live walk of manage): the
+ * spend-approvals board (features/admin) and the triggers page's
+ * features/scheduling/components/triggers both render on manage, the second
+ * outside every listed tree, and both prefetched www-only paths
+ * (/agents/<id>, /marketing/brands/<id>) into a CORS error per row. A file
+ * renders on a satellite when a satellite route group IMPORTS it, so the
+ * satellite set is the import graph reached from app/(admin) and app/(dev).
+ */
+const SATELLITE_ROOTS = ["app/(admin)/", "app/(dev)/"];
+const IMPORT_SPEC =
+  /(?:import|export)\s[^;]*?from\s*["']([^"']+)["']|import\(\s*["']([^"']+)["']\s*\)/g;
+
+export function satelliteReach(files: readonly string[]): Set<string> {
+  const known = new Set(files);
+  const resolve = (from: string, spec: string): string | null => {
+    let base: string;
+    if (spec.startsWith("@/")) base = spec.slice(2);
+    else if (spec.startsWith(".")) base = normalize(join(dirname(from), spec));
+    else return null;
+    for (const ext of ["", ".tsx", ".ts", "/index.tsx", "/index.ts"])
+      if (known.has(base + ext)) return base + ext;
+    return null;
+  };
+  const start = files.filter((f) => SATELLITE_ROOTS.some((r) => f.startsWith(r)));
+  const seen = new Set(start);
+  const queue = [...start];
+  while (queue.length) {
+    const file = queue.pop() as string;
+    let source: string;
+    try {
+      source = readFileSync(file, "utf8");
+    } catch {
+      continue;
+    }
+    for (const m of source.matchAll(IMPORT_SPEC)) {
+      const next = resolve(file, m[1] ?? m[2]);
+      if (next && !seen.has(next)) {
+        seen.add(next);
+        queue.push(next);
+      }
+    }
+  }
+  return seen;
+}
+
 function sourceFiles(): string[] {
   const out = execFileSync("git", ["ls-files", "*.tsx", "*.ts"], {
     encoding: "utf8",
@@ -189,14 +238,16 @@ export function scanSource(
   file: string,
   source: string,
   constants: ReadonlyMap<string, string> = new Map(),
+  satellite: ReadonlySet<string> = new Set(),
 ): Offence[] {
   const found: Offence[] = [];
   const constantHref = constants.size
     ? new RegExp(`href\\s*=\\s*[{]\\s*(${[...constants.keys()].join("|")})\\s*[}]`)
     : null;
-  const nextLinkImport = SATELLITE_TREES.some((tree) => file.startsWith(tree))
-    ? /^import\s+Link\b[^\n]*from\s+["']next\/link["']/m.exec(source)
-    : null;
+  const nextLinkImport =
+    satellite.has(file) || SATELLITE_TREES.some((tree) => file.startsWith(tree))
+      ? /^import\s+(?!type\b)[A-Za-z_]\w*\b[^\n]*from\s+["']next\/link["']/m.exec(source)
+      : null;
   if (nextLinkImport) {
     found.push({
       file,
@@ -286,6 +337,29 @@ function selfTest(): number {
     'import AppLink from "@/components/navigation/AppLink";\n<AppLink href="/settings">Settings</AppLink>',
     known,
   );
+  // The 2026-10-22 direction: a file OUTSIDE every listed tree that an admin
+  // page imports (the triggers page's features/scheduling component).
+  const reached = new Set(["features/scheduling/components/triggers/TriggersManager.tsx"]);
+  const reachedDefect = scanSource(
+    "features/scheduling/components/triggers/TriggersManager.tsx",
+    'import Link from "next/link";\n<Link href={brandHref(id)}>Brand</Link>',
+    known,
+    reached,
+  );
+  const reachedFixed = scanSource(
+    "features/scheduling/components/triggers/TriggersManager.tsx",
+    'import Link from "@/components/navigation/AppLink";\n<Link href={brandHref(id)}>Brand</Link>',
+    known,
+    reached,
+  );
+  if (reachedDefect.length !== 1)
+    problems.push(
+      `expected 1 offence for a satellite-reached file, detector found ${reachedDefect.length}`,
+    );
+  if (reachedFixed.length !== 0)
+    problems.push(
+      `expected 0 offences for its fix, detector found ${reachedFixed.length}`,
+    );
   if (satelliteDefect.length !== 1)
     problems.push(
       `expected 1 offence for the satellite-side defect, detector found ${satelliteDefect.length}`,
@@ -319,6 +393,7 @@ function main(): number {
   const offences: Offence[] = [];
   const files = sourceFiles();
   const constants = splitConstants(files);
+  const satellite = satelliteReach(files);
   for (const file of files) {
     if (exempt(file)) continue;
     let source: string;
@@ -327,7 +402,7 @@ function main(): number {
     } catch {
       continue;
     }
-    offences.push(...scanSource(file, source, constants));
+    offences.push(...scanSource(file, source, constants, satellite));
   }
 
   if (offences.length === 0) {

@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { AlertTriangle, ArrowRight, Ban, CheckCircle2, Eye, Loader2, Radar } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";

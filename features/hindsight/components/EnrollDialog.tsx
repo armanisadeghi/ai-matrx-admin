@@ -10,7 +10,7 @@
  * Cancel, the X, and Escape close this, and the body scrolls internally so the
  * actions stay reachable on a short screen. (Reported bug, fixed here too.)
  */
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput, Input } from "@ai-matrx/design-system/controls";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
@@ -24,7 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,

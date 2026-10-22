@@ -8,7 +8,7 @@
 // The sidebar keeps its own selection state (it is not a MatrxDataTable).
 
 import { ArrowRightLeft, Copy, Database, Download, House, Share2, Tag, Trash2 } from "lucide-react";
-import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
+import { promptForValues } from "@ai-matrx/chat/ui/valuePromptsOpener";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { getStore } from "@/lib/redux/store-singleton";

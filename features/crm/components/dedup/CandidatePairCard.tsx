@@ -21,7 +21,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { recordToast, toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Button } from "@/components/ui/button";

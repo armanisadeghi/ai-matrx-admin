@@ -10,7 +10,7 @@
 // accuracy, what's due) are the ones the row already carries — there is no
 // second definition of "how well do I know this" anywhere on this page.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   FolderOpen,
   ArrowRight,

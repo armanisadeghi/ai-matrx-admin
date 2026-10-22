@@ -20,7 +20,7 @@
 
 import { FileText, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import CitationChip from "@/components/official/citation-chip/CitationChip";
+import { CitationChip } from "@ai-matrx/design-system/controls";
 import type { SourceCitation, TrustEnvelope } from "../types";
 import { citationIsOpenable, openCitationSource } from "../open-source";
 import { openSourceLabel, plainLocator } from "../plainWords";

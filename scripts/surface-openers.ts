@@ -13,8 +13,8 @@
  * most. Value names shared with other surfaces (`content`, `selection`, …) are
  * left out so they cannot be miscounted.
  *
- * Prints read-only SQL to run through the Supabase MCP (project
- * brsgrqvjdzwihsvnfqkf):
+ * Prints read-only SQL for the live database at https://db.matrxserver.com —
+ * save it to a file and run `pnpm admin-query --file <file>`:
  *
  *   pnpm surface:openers --surface matrx-user/education-classes [--days 14]
  */

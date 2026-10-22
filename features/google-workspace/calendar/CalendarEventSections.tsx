@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@ai-matrx/design-system";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useOpenDetail } from "@ai-matrx/detail/react";
 import { extractErrorMessage } from "@/utils/errors";
 import { presentOrganizationRefusal } from "@ai-matrx/chat/host/org";

@@ -21,7 +21,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Library, Loader2, CircleAlert, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

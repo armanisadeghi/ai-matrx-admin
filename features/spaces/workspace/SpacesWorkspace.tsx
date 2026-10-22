@@ -9,6 +9,7 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
+import { FrameSidebarContent, useFrameSidebarSlot } from "@/features/shell/frame-host/frameSidebarSlot";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 
@@ -32,6 +33,9 @@ export function SpacesFrame({ children }: { children: ReactNode }) {
   const [dragging, setDragging] = useState(false);
   const [peek, setPeek] = useState(false);
   const start = useRef<{ x: number; w: number } | null>(null);
+  // The new app frame: the page tree is the frame's one sidebar column; the frame's width, resize
+  // and hide govern it, so this page draws no column, resizer or peek of its own.
+  const inFrame = useFrameSidebarSlot();
 
   useEffect(() => {
     const saved = Number(window.localStorage.getItem(WIDTH_KEY));
@@ -41,7 +45,7 @@ export function SpacesFrame({ children }: { children: ReactNode }) {
   useSpacesSidebarShortcut(() => {
     setSidebarCollapsed(!sidebarCollapsed);
     setPeek(false);
-  });
+  }, !inFrame);
 
   return (
     <div className="spaces-frame" style={{ "--spaces-sidebar-w": `${width}px` } as React.CSSProperties}>
@@ -56,6 +60,13 @@ export function SpacesFrame({ children }: { children: ReactNode }) {
           <SpacesSidebarContent />
         </DrawerContent>
       </Drawer>
+      {inFrame ? (
+        <FrameSidebarContent>
+          <div className="spaces-frame-sidebar flex min-h-0 flex-1 flex-col">
+            <SpacesSidebarContent />
+          </div>
+        </FrameSidebarContent>
+      ) : (
       <aside
         className="spaces-sidebar"
         data-collapsed={sidebarCollapsed ? "true" : undefined}
@@ -92,7 +103,8 @@ export function SpacesFrame({ children }: { children: ReactNode }) {
           />
         ) : null}
       </aside>
-      {sidebarCollapsed ? <div className="spaces-peek-zone" onMouseEnter={() => setPeek(true)} aria-hidden /> : null}
+      )}
+      {sidebarCollapsed && !inFrame ? <div className="spaces-peek-zone" onMouseEnter={() => setPeek(true)} aria-hidden /> : null}
       <main className="spaces-main">{children}</main>
       <QuickFind />
     </div>

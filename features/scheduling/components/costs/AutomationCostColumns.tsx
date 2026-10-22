@@ -14,7 +14,7 @@ import { notReadyHit } from "@/features/scheduling/service/automationReadiness";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { RunApprovalCell } from "@/features/admin/spend-approvals/RunApprovalCell";
 import { approvalStatusSync } from "@/features/admin/spend-approvals/spendApprovals";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
 import {
@@ -25,7 +25,7 @@ import {
   type SpendFlagHit,
 } from "@/components/cost/SpendFlagStrip";
 import { AGENT_ICON, INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { FirstPlusMore } from "@/components/official/first-plus-more/FirstPlusMore";
 import {
   agentHref,

@@ -42,7 +42,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MatrxDrillChart } from "@ai-matrx/design-system/data-table/drill-chart";
-import { Badge } from "@ai-matrx/design-system/controls";
+import { Badge, InfoHint } from "@ai-matrx/design-system/controls";
 import { RefreshCw } from "lucide-react";
 import { formatCount } from "@ai-matrx/kit/format";
 import {
@@ -64,7 +64,6 @@ import {
 } from "@ai-matrx/design-system/data-table";
 
 import AppLink from "@/components/navigation/AppLink";
-import { InfoHint } from "@/components/official/InfoHint";
 import { Button } from "@/components/ui/button";
 import { selectCanToggleCostUnit, selectCostUnit } from "@/components/cost/costUnit";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -80,7 +79,7 @@ import { useDrillAttributes } from "./useDrillAttributes";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { DrillSiblingFindings } from "./DrillSiblingFindings";
 import { drillAddressMisfit, drillSiblingDimensions, drillSiblingMeasures, drillSiblingQuestion, openDrillSibling, useDrillSiblings } from "./drillSiblings";
-import { DrillRecords } from "./DrillRecords";
+import { DrillRecords, recordsNounOf } from "./DrillRecords";
 import { hidePinnedDistinct, recordsForTrail } from "./drillPinned";
 import { DrillSavedViews, type DrillOpenView } from "./DrillSavedViews";
 import { drillSavedViewSurface, readDrillView } from "./savedViews";
@@ -341,6 +340,8 @@ export function DrillExplorer({
   const declaredRecords = recordsOf(def);
   const records = def && declaredRecords ? recordsForTrail(def, declaredRecords, question) : declaredRecords;
   const stale = useDrillStaleAfter(staleAfterKnobOf(def), seat);
+  // the "See …" chip names what the list holds (executions), not what the count counts (requests)
+  const recordsChipNoun = def && records ? recordsNounOf(def, records, { offered: (siblings ?? []).map((x) => x.token), described: siblingDefs }) : null;
 
   // FRESHNESS: the door's own `as_of` when the answers carry it; the host's count until then.
   const countedThrough = asOf ?? freshness?.countedThrough ?? null;
@@ -587,7 +588,7 @@ export function DrillExplorer({
       {/* ONE toolbar row: the trail, then the window, the Measures, the grouping and the findings. */}
       {/* F9: the controls never shrink — on a phone they wrap to their own line, the trail above them */}
       <div data-drill-explorer-toolbar className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-4 py-1.5">
-        <MatrxDrillTrail dimensions={dimensions} question={question} onQuestionChange={setQuestion} rootLabel={rootLabel} emptyLabel={emptyLabel} measures={measures} answers={answers} focusAttributes={focusAttributes} rowNoun={rowNoun} cross={cross} {...(baseCrumbs.length > 0 ? { base: baseCrumbs } : {})} className="min-w-0 max-sm:basis-full" />
+        <MatrxDrillTrail dimensions={dimensions} question={question} onQuestionChange={setQuestion} rootLabel={rootLabel} emptyLabel={emptyLabel} measures={measures} answers={answers} focusAttributes={focusAttributes} rowNoun={rowNoun} {...(recordsChipNoun ? { recordsNoun: recordsChipNoun } : {})} records={Boolean(records || recordsLink)} cross={cross} {...(baseCrumbs.length > 0 ? { base: baseCrumbs } : {})} className="min-w-0 max-sm:basis-full" />
         <div data-drill-explorer-controls className="ml-auto flex flex-wrap items-center justify-end gap-0 [&>*]:shrink-0">
           <MatrxDrillWindowMenu question={question} onQuestionChange={setQuestion} dimensionLabel="When" />
           <MatrxDrillMeasurePicker measures={pinnedKept ? measures.filter((m) => pinnedKept.has(m.key)) : measures} question={question} onQuestionChange={setQuestion} />

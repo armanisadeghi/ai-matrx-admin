@@ -33,7 +33,7 @@ import {
   setAgentOutputSchema,
 } from "@/features/agents/redux/agent-builder.slice";
 import type { OutputSchema } from "@ai-matrx/chat/agents/types/json-schema";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { SettingsJsonEditor } from "../json/SettingsJsonEditor";
 import {
   validateOutputSchema,

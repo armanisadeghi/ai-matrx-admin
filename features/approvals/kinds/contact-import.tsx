@@ -52,7 +52,7 @@
 
 import { MatrxDetailGrid } from "@ai-matrx/design-system/data-table";
 import type { Json } from "@/types/database.types";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { importMatchKeyWords } from "@/features/connectors/import/field-labels";
 import type { ApprovalKind, ApprovalScope } from "../types";
 import {

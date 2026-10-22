@@ -15,7 +15,7 @@
 // Inside StoreProvider (the favorites cache and the admin gate read Redux).
 
 import type { ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ModelCatalogProvider } from "@ai-matrx/agents/models/react";
 import { getModelCatalog, getModelFavorites } from "@/lib/ai-models/modelCatalog";
 import { useAppSelector } from "@/lib/redux/hooks";

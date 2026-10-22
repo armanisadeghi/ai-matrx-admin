@@ -4,7 +4,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { toast } from "@/lib/toast";
 import { useCallback, useState, type ReactNode } from "react";
-import { ClipboardFallbackDialog } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog";
+import { ClipboardFallbackDialog } from "@ai-matrx/design-system";
 
 interface ShareOptions {
   title: string;

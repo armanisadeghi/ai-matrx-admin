@@ -23,7 +23,7 @@ import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import { createFullScreenEditorCallbackGroup, disposeFullScreenEditorCallbackGroup } from "./callbacks/fullScreenEditor";
 import type { OverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 const OVERLAY_ID = "htmlPreview" as const;
 const opener = createOpener<object>(OVERLAY_ID);

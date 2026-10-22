@@ -38,7 +38,7 @@
  */
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowUpRight, Loader2, Plus, X } from "lucide-react";
 
 import { ProInput } from "@/components/official/ProInput";

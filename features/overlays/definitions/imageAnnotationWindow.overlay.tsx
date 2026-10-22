@@ -14,7 +14,7 @@ import {
 } from "./callbacks/imageAnnotationWindow";
 import type { UntypedOverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 const OVERLAY_ID = "imageAnnotationWindow" as const;
 const opener = createOpener<object>(OVERLAY_ID);

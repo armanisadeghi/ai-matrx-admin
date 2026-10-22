@@ -52,6 +52,7 @@ const contentReady = read({
 const owner = (
   assignments: UseClassAssignmentsReturn,
   content: UseClassContentReturn,
+  classProgress: UseClassProgressOverviewReturn = progress,
 ) =>
   buildClassHubOwnerScope({
     classParam: "agent-test-chemistry",
@@ -59,7 +60,7 @@ const owner = (
     access,
     roster,
     assignments,
-    progress,
+    progress: classProgress,
     content,
   }) as unknown as Record<string, unknown>;
 
@@ -99,6 +100,37 @@ describe("class hub scope — owner", () => {
     expect(scope.load_status).toMatchObject({
       assignments: "failed: not authorized to view this class's assignments",
       study_content: "failed: timeout",
+    });
+  });
+});
+
+describe("class hub scope — owner class_progress", () => {
+  it("emits class_progress exactly when load_status says ready", () => {
+    const ready = owner(assignmentsReady, contentReady);
+    expect(ready.class_progress).toEqual([]);
+    expect(ready.load_status).toMatchObject({ class_progress: "ready" });
+  });
+
+  it("never says ready while the overview is absent", () => {
+    const scope = owner(assignmentsReady, contentReady, {
+      ...progress,
+      overview: null,
+    });
+    expect(scope).not.toHaveProperty("class_progress");
+    expect(
+      (scope.load_status as Record<string, string>).class_progress,
+    ).not.toBe("ready");
+  });
+
+  it("omits class_progress and names the failure on a failed read", () => {
+    const scope = owner(assignmentsReady, contentReady, {
+      ...progress,
+      overview: null,
+      error: "permission denied",
+    });
+    expect(scope).not.toHaveProperty("class_progress");
+    expect(scope.load_status).toMatchObject({
+      class_progress: "failed: permission denied",
     });
   });
 });
@@ -145,5 +177,19 @@ describe("class hub scope — member", () => {
     }) as unknown as Record<string, unknown>;
     expect(scope).not.toHaveProperty("my_assignments");
     expect(scope.load_status).toMatchObject({ my_assignments: "loading" });
+  });
+
+  it("omits my_assignments when the progress read failed (no fake not_started rows)", () => {
+    const scope = buildClassHubMemberScope({
+      classParam: cls.slug!,
+      access,
+      state,
+      roster,
+      assignments: assignmentsReady,
+      myProgress: { ...myProgress, error: "timeout" },
+      content: contentReady,
+    }) as unknown as Record<string, unknown>;
+    expect(scope).not.toHaveProperty("my_assignments");
+    expect(scope.load_status).toMatchObject({ my_assignments: "failed: timeout" });
   });
 });

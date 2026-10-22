@@ -43,7 +43,7 @@ import {
   formatRelativeTime,
 } from "@/features/files/utils/format";
 import { buildFilesAllFolderUrl } from "@/features/files/utils/url-state";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { FileIcon } from "@ai-matrx/media/react";
 import { FileRagBadge } from "@/features/files/components/core/FileBadges/FileRagBadge";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
@@ -54,7 +54,7 @@ import {
 } from "@/features/files/components/core/RowContextMenu/RowContextMenu";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { useFolderActions } from "@/features/files/components/core/FileActions/useFolderActions";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { FolderIconWithMembers } from "./FolderIconWithMembers";
 import { AccessCell } from "./AccessCell";
 import { FileTypeBadge } from "./FileTypeBadge";

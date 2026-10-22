@@ -487,6 +487,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const sandboxesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/sandboxes",
+  inheritsFrom: "matrx-default/architecture",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

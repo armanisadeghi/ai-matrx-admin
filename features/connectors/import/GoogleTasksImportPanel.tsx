@@ -32,11 +32,11 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { toast } from "@/lib/toast";
 import { getUserMessage } from "@ai-matrx/api";
 import { importGoogleTasks, listGoogleTasks } from "./service";

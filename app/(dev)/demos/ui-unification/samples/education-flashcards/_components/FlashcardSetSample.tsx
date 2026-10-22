@@ -27,7 +27,7 @@
 import { recordUnavailableMessage } from "@/lib/records/recordUnavailable";
 import { useEffect, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import {

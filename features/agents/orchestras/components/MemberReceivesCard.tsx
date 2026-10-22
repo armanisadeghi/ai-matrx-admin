@@ -22,12 +22,11 @@ import {
   SelectItem,
   SelectValue,
 } from "@ai-matrx/design-system";
-import { Button, Chip, ChipSet, Input, SelectTrigger, Switch } from "@ai-matrx/design-system/controls";
+import { Button, Chip, ChipSet, Input, SelectTrigger, Switch, InfoHint } from "@ai-matrx/design-system/controls";
 import {
   selectAgentAutoContextDisabled,
   selectAgentContextPolicies,
 } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
-import { InfoHint } from "@/components/official/InfoHint";
 import { toast } from "@/lib/toast-service";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchFullAgent } from "@/features/agents/redux/fetch-full-agent.thunk";

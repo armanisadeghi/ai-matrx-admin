@@ -38,7 +38,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system
 import { doorWindow, drillRowOf, drillWindowKey } from "./useDrillExplorer";
 import { findingQuestion, type DrillFinding } from "./types";
 import { formatCount } from "@ai-matrx/kit/format";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 
 import { findingCount } from "./explorerWords";
 import { useDrillNameBookOr, useDrillNames, type DrillNameBook } from "./drillNames";

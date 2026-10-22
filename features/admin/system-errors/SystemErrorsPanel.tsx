@@ -31,7 +31,7 @@ import type {
   MatrxDataTableQueryState,
   MatrxDataTableToolbar,
 } from "@ai-matrx/design-system/data-table/types";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import type { components } from "@ai-matrx/api/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";

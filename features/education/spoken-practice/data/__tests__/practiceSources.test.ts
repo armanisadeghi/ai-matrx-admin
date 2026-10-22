@@ -1,5 +1,5 @@
 import type { ResolvedSourceSet, SourceSet } from "@ai-matrx/agents/sources";
-import { practiceSourceFromResolved } from "../practiceSources";
+import { practiceLineageSources, practiceSourceFromResolved } from "../practiceSources";
 
 function resolved(items: { type: string; id: string; label: string; text: string }[]): ResolvedSourceSet {
   return {
@@ -44,23 +44,51 @@ describe("practiceSourceFromResolved", () => {
     expect(source).toMatchObject({ kind: "topic", setId: undefined });
   });
 
-  it("over budget, every source keeps a share and the cut is reported", () => {
+  it("never cuts in the browser: a long source arrives whole", () => {
+    const text = "x".repeat(200_000);
     const { source, cut } = practiceSourceFromResolved(
-      resolved([
-        { type: "note", id: "n1", label: "Long", text: "x".repeat(1000) },
-        { type: "note", id: "n2", label: "Short", text: "y".repeat(10) },
-      ]),
+      resolved([{ type: "note", id: "n1", label: "Long", text }]),
       chosen,
       {},
-      100,
     );
-    expect(cut).toBe(true);
-    expect(source?.material).toContain("y".repeat(10));
-    expect(source?.material).toContain("x".repeat(90));
-    expect(source?.material).not.toContain("x".repeat(91));
+    expect(cut).toBe(false);
+    expect(source?.material).toContain(text);
+  });
+
+  it("reports a cut the server made to the size the person chose", () => {
+    const r = resolved([{ type: "note", id: "n1", label: "Long", text: "some words" }]);
+    (r.sources[0] as { truncated: boolean }).truncated = true;
+    expect(practiceSourceFromResolved(r, chosen, {}).cut).toBe(true);
   });
 
   it("nothing readable is no source", () => {
     expect(practiceSourceFromResolved(resolved([{ type: "note", id: "n", label: "E", text: " " }]), chosen, {}).source).toBeNull();
+  });
+});
+
+describe("practiceLineageSources", () => {
+  it("one anchor per distinct readable Source, none for a kind with no registered pair", () => {
+    const anchors = practiceLineageSources(
+      resolved([
+        { type: "fc_set", id: "d1", label: "Cells", text: "Q: a" },
+        { type: "note", id: "n1", label: "N", text: "t" },
+        { type: "note", id: "n1", label: "N again", text: "t" },
+        { type: "pasted_text", id: "x", label: "Pasted", text: "t" },
+        { type: "note", id: "empty", label: "E", text: " " },
+      ]),
+    );
+    expect(anchors.map((a) => [a.ref?.entityType, a.ref?.entityId])).toEqual([
+      ["fc_set", "d1"],
+      ["note", "n1"],
+    ]);
+  });
+
+  it("rides on the session's source", () => {
+    const { source } = practiceSourceFromResolved(
+      resolved([{ type: "fc_set", id: "d1", label: "Cells", text: "Q: a" }]),
+      chosen,
+      {},
+    );
+    expect(source?.lineageSources).toHaveLength(1);
   });
 });

@@ -61,8 +61,9 @@ export function AddWidgetPanel({ onAdd, onClose }: { onAdd: (spec: LaunchpadWidg
                       className="flex h-8 w-full items-center gap-2 rounded px-2 text-left text-sm hover:bg-muted"
                     >
                       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                      <span className="truncate">{spec.label}</span>
-                      <span className="ml-auto truncate text-xs text-muted-foreground">{spec.describe(spec.defaultConfig)}</span>
+                      {/* The name is never cut; its description gives way ("Dashboa…" in audit round 2). */}
+                      <span className="shrink-0">{spec.label}</span>
+                      <span className="ml-auto min-w-0 truncate text-xs text-muted-foreground">{spec.describe(spec.defaultConfig)}</span>
                     </button>
                   </li>
                 );

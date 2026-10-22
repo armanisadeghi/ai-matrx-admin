@@ -20,7 +20,7 @@
  */
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3,
@@ -35,7 +35,7 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";

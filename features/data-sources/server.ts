@@ -118,6 +118,19 @@ export async function getJob(jobId: string, opts: { organizationId: string; sign
   return parseJob(data, jobId);
 }
 
+/** One page of the key values of the rows a run stored (the page narrows the shared table to them). */
+export async function getJobRowKeys(
+  jobId: string,
+  opts: { organizationId: string; offset: number; limit: number; signal?: AbortSignal },
+): Promise<{ keys: string[]; total: number }> {
+  const { data } = await getJson<{ keys?: unknown; total?: unknown }>(
+    `${BASE}/jobs/${encodeURIComponent(jobId)}/row-keys?offset=${opts.offset}&limit=${opts.limit}`,
+    { organizationId: org(opts.organizationId), signal: opts.signal },
+  );
+  const keys = Array.isArray(data?.keys) ? data.keys.filter((k): k is string => typeof k === "string") : [];
+  return { keys, total: typeof data?.total === "number" ? data.total : keys.length };
+}
+
 /** What one refresh changed: new rows, changed fields (before and after), rows no longer returned. */
 export async function getJobChanges(jobId: string, opts: { organizationId: string; signal?: AbortSignal }): Promise<ChangeSet | null> {
   const { data } = await getJson<unknown>(`${BASE}/jobs/${encodeURIComponent(jobId)}/changes`, {

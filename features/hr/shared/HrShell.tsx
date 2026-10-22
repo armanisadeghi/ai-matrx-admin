@@ -47,7 +47,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 
 import { hrHref, hrSectionHref, hrSwitchEmployerHref } from "../routes";

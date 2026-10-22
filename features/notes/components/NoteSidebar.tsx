@@ -1251,8 +1251,10 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
           • Selectors (Group, Sort) — filled chips showing the CURRENT value.
           • Actions (order, Select, Expand) — plain icon buttons.
           Every control carries a proper tooltip. */}
-      {/* At a narrow sidebar the row scrolls sideways instead of overflowing. */}
-      <div className="shrink-0 flex min-h-[47px] items-center gap-1 overflow-x-auto px-2 py-1 border-b border-border/20 [scrollbar-width:none]">
+      {/* At a narrow sidebar the row scrolls sideways instead of overflowing. It is the `list`
+          container the shared org filter queries (`@max-3xl/list`): below 48rem of THIS row it is
+          an icon, so it fits the frame's 244px column and the classic sidebar alike. */}
+      <div className="@container/list shrink-0 flex min-h-[47px] items-center gap-1 overflow-x-auto px-2 py-1 border-b border-border/20 [scrollbar-width:none]">
         {/* Group-by selector. The menu is portaled (Popover): this row scrolls
             sideways (overflow-x-auto), which clipped an absolutely placed menu to
             the row's 47px — no grouping could be chosen. */}

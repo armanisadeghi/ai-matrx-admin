@@ -13,7 +13,7 @@
 // Pure: the reads and the write live in `ArchivedHolderNotice.tsx`.
 
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
-import type { RequestAccessTarget } from "@/features/access-gate/service/requestAccess";
+import type { RequestAccessTarget } from "@ai-matrx/data/access";
 
 export type HolderKind = "agent" | "workflow";
 

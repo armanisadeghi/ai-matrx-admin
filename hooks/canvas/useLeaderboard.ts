@@ -31,7 +31,7 @@ export function useLeaderboard(canvasId: string, limit: number = 10) {
         score: score.score,
         time_taken: score.time_taken,
         created_at: score.created_at ?? "",
-        is_current_user: score.user_id === userId,
+        is_current_user: score.created_by === userId,
       }));
 
       // Get current user's rank if not in top N
@@ -45,7 +45,7 @@ export function useLeaderboard(canvasId: string, limit: number = 10) {
             .select("score")
             .is("deleted_at", null)
             .eq("canvas_id", canvasId)
-            .eq("user_id", userId)
+            .eq("created_by", userId)
             .order("score", { ascending: false })
             .limit(1)
             .single();

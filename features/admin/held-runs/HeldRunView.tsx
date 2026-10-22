@@ -9,7 +9,7 @@
 import { approvalSubjectHref } from "@/features/admin/spend-approvals/spendApprovals";
 import { fetchMandateLabels } from "@/features/admin/spend-alarms/spendAlarms";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Pause, Play, RotateCcw } from "lucide-react";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";

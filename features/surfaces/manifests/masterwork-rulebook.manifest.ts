@@ -409,6 +409,7 @@ const clientTools: SurfaceClientTool[] = [
 
 export const masterworkRulebookManifest: SurfaceManifest = {
   surfaceName: MASTERWORK_RULEBOOK_SURFACE_NAME,
+  inheritsFrom: "matrx-default/masterwork",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

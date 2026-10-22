@@ -34,7 +34,8 @@ import { join, relative } from "node:path";
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-jest.mock("@/components/official/entity-ref/TextWithDoors", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   TextWithDoors: ({ text }: { text: string }) => <span>{text}</span>,
 }));
 

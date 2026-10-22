@@ -15,7 +15,7 @@
  * row draws the same slots in the same order.
  */
 import type { ComponentType } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Banknote,
   CalendarX,

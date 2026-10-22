@@ -78,6 +78,9 @@ if $STRICT; then
         # `pnpm check:parse --fix` repairs the injected-import class;
         # `pnpm check:parse:self-test` proves the guard can still fail.
         "Every TypeScript file parses|pnpm check:parse"
+        # NO CONFLICT MARKERS IN TRACKED SOURCE (4d1b83b210 shipped a conflict-marked AssessmentCreate.tsx). Report-only, loud.
+        "Unresolved git conflict markers in tracked source|pnpm check:conflict-markers-source"
+        "Conflict-markers guard self-test|pnpm check:conflict-markers-source:self-test"
         # BINDER ERRORS parse cannot see (duplicate top-level declaration = the 2026-10-05 toastDoor
         # build break; import of a name its target does not export). LOUD, never blocking: exits 0.
         "Binder errors (duplicate declarations, missing exports)|pnpm check:binder"
@@ -678,6 +681,11 @@ if $STRICT; then
         "No orphan surface rows|pnpm check:surface-orphans"
         "…and the orphan check can still fail|pnpm check:surface-orphans:self-test"
         "…and its archive/revive planner can still fail|npx jest scripts/lib/__tests__/surface-sync-check.test.ts --silent"
+        # EVERY NAV ID IS PERMANENT AND EVERY NEW DESTINATION REACHES WHAT'S NEW (custom
+        # experience, 2026-10-22). A menu node added without a CATALOG_ADDED_IN row never
+        # reaches anyone with a customized sidebar; it went red on main within hours of
+        # shipping (31 ids) because nothing ran it. The failure prints the exact rows to add.
+        "Shell nav ids are permanent and new destinations reach What's new|npx jest features/shell/__tests__/nav-ids.test.ts --silent"
         # Blast radius of the surface VALUE vocabulary: orphan agent bindings /
         # shortcut mappings / write twins, values a sync would delete out from
         # under a consumer, and children shadowing a parent's value. Advisory —
@@ -882,6 +890,10 @@ if $STRICT; then
         # Zero red at introduction (2026-09-09), so there is no backlog to
         # grandfather and it carries no `--advisory`: a finding here is new.
         "Whole jest suite (every suite, not CI's four scopes)|pnpm test"
+        # NOTHING BUILT IS EVER LOST (Arman, 2026-10-20): every page in the app frame's route
+        # groups has a home row in features/shell/frame/route-homes.tsv. Its own named row so a
+        # missing home screams by name instead of hiding inside the whole suite.
+        "Every page has a home in the app frame's product tree|npx jest features/shell/frame/__tests__/every-page-has-a-home.test.ts --silent"
         # THE LIVE REGISTRY vs THE COMMITTED SNAPSHOT. Same class, same day:
         # `check:shareable-registry` existed and nothing invoked it either, so
         # the snapshot drifted 31 rows behind the live
@@ -1258,6 +1270,9 @@ else
         # `pnpm check:parse --fix` repairs the injected-import class;
         # `pnpm check:parse:self-test` proves the guard can still fail.
         "Every TypeScript file parses|pnpm check:parse"
+        # NO CONFLICT MARKERS IN TRACKED SOURCE (4d1b83b210 shipped a conflict-marked AssessmentCreate.tsx). Report-only, loud.
+        "Unresolved git conflict markers in tracked source|pnpm check:conflict-markers-source"
+        "Conflict-markers guard self-test|pnpm check:conflict-markers-source:self-test"
         # BINDER ERRORS parse cannot see (duplicate top-level declaration = the 2026-10-05 toastDoor
         # build break; import of a name its target does not export). LOUD, never blocking: exits 0.
         "Binder errors (duplicate declarations, missing exports)|pnpm check:binder"
@@ -1549,6 +1564,11 @@ else
         # removed). The jest row proves the archive/revive planner can still fail.
         "Surface mirror matches the code (values, roles, write targets, tools)|pnpm exec tsx scripts/sync-surface-manifests-direct.ts --check"
         "…and its archive/revive planner can still fail|npx jest scripts/lib/__tests__/surface-sync-check.test.ts --silent"
+        # EVERY NAV ID IS PERMANENT AND EVERY NEW DESTINATION REACHES WHAT'S NEW (custom
+        # experience, 2026-10-22). A menu node added without a CATALOG_ADDED_IN row never
+        # reaches anyone with a customized sidebar; it went red on main within hours of
+        # shipping (31 ids) because nothing ran it. The failure prints the exact rows to add.
+        "Shell nav ids are permanent and new destinations reach What's new|npx jest features/shell/__tests__/nav-ids.test.ts --silent"
         # Blast radius of the surface VALUE vocabulary: orphan agent bindings /
         # shortcut mappings / write twins, values a sync would delete out from
         # under a consumer, and children shadowing a parent's value. Advisory —
@@ -1723,6 +1743,10 @@ else
         # Zero red at introduction (2026-09-09), so there is no backlog to
         # grandfather and it carries no `--advisory`: a finding here is new.
         "Whole jest suite (every suite, not CI's four scopes)|pnpm test"
+        # NOTHING BUILT IS EVER LOST (Arman, 2026-10-20): every page in the app frame's route
+        # groups has a home row in features/shell/frame/route-homes.tsv. Its own named row so a
+        # missing home screams by name instead of hiding inside the whole suite.
+        "Every page has a home in the app frame's product tree|npx jest features/shell/frame/__tests__/every-page-has-a-home.test.ts --silent"
         # THE LIVE REGISTRY vs THE COMMITTED SNAPSHOT. Same class, same day:
         # `check:shareable-registry` existed and nothing invoked it either, so
         # the snapshot drifted 31 rows behind the live

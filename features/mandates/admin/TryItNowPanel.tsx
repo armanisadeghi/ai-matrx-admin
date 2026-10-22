@@ -6,7 +6,7 @@ import { useMandateAlchemyTabCapture } from "../workspace/MandateAlchemy";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink, FlaskConical, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -25,7 +25,7 @@ import {
   FieldHelp,
   StatusToken,
 } from "@ai-matrx/design-system/controls";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { VariableInputComponent } from "@ai-matrx/chat/agents/components/inputs/input-components/VariableInputComponent";
 import { fetchAgentExecutionMinimal } from "@ai-matrx/chat/agents/redux/agent-definition/thunks";
 import { selectAgentExecutionPayload } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";

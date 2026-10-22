@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { TextInputDialog } from "@ai-matrx/design-system";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { destroyInstance } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.slice";

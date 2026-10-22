@@ -2,7 +2,7 @@
  * Audio Chunk Journal — eager per-chunk upload for cross-device recovery
  * (FOUND_DEFECTS D7).
  *
- * The IndexedDB safety net (`audioSafetyStore`) is per-device: a recording
+ * The IndexedDB safety net (the package safety store) is per-device: a recording
  * captured on a phone whose background full-audio upload never finished used
  * to be recoverable ONLY from that phone. This journal closes the gap by
  * uploading every MediaRecorder chunk to `cld_files` in the background WHILE

@@ -14,14 +14,14 @@
 // Moved from the retired kits installed page (Kits → Template merge, 2026-10-05). It reads only the
 // install's answer (`made`, `show`) and the copied agents' own variable definitions.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, BookOpen, Database, Eye, Play, Table2 } from "lucide-react";
 import { Grid, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { CustomDataBinding } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
 import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import { CustomDataBindingPreview } from "@/features/agents/components/variables-management/custom-data/CustomDataBindingPreview";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { Field, FieldGroup, PdfDemoShell } from "@/features/pdf-demo/components/PdfDemoShell";
 import {
   EMPTY_PDF_SOURCE,
@@ -10,7 +10,6 @@ import {
 import { drainPdfStream, PdfStreamProgress } from "@/features/pdf/api/streamDrain";
 import type { StripRepeatedRegionsResultSchema } from "@/features/pdf-extractor/types";
 import type { PdfRepeatedRegionsProgressData } from "@ai-matrx/agents/generated/stream-events";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 const STAGE_LABELS: Record<PdfRepeatedRegionsProgressData["stage"], string> = {
   detect: "Detecting regions",

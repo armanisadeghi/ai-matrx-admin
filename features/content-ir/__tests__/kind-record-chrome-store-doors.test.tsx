@@ -160,6 +160,24 @@ describe("KindRecordChrome — store records use store doors only", () => {
     expect(Array.from(container.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["Save"]);
   });
 
+  it("CD-AGENT-09: an output that put list items in another table opens only those rows, named by the output", async () => {
+    const CARDS = "c0c22c28-c706-4219-9430-7304773ccbef";
+    const SERIES = "9ef5459f-1f12-42bf-ab4c-0a37771d29d8";
+    service.fetchMessageLandings.mockResolvedValue(
+      outcomes(landing({ contents: [{ tableId: CARDS, label: "Cards (flashcard)", count: 3, filter: { output_chain: SERIES, output_generation: 1 } }] })),
+    );
+    await mount(
+      <KindRecordChrome kind="flashcard_set" durableMessageId={MESSAGE} fingerprint="fp-knee" />,
+    );
+    const door = container.querySelector<HTMLAnchorElement>(`[data-landing-contents="${CARDS}"]`);
+    expect(door).toBeTruthy();
+    expect(door!.textContent).toContain("3 in Cards (flashcard)");
+    const href = new URL(door!.getAttribute("href")!, "https://www.aimatrx.com");
+    expect(href.pathname).toBe(`/data/${CARDS}`);
+    expect(JSON.parse(href.searchParams.get("filter")!)).toEqual({ output_chain: SERIES, output_generation: 1 });
+    expect(href.searchParams.get("from")).toBe("Knee rehab cards");
+  });
+
   it("a fork's copied output is read-only", async () => {
     service.fetchMessageLandings.mockResolvedValue(outcomes(landing({ fromSource: true })));
     await mount(

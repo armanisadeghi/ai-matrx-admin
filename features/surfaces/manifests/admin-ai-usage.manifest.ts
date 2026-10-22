@@ -160,6 +160,7 @@ const values: SurfaceValue[] = [
 
 export const adminAiUsageManifest: SurfaceManifest = {
   surfaceName: ADMIN_AI_USAGE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/ai",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

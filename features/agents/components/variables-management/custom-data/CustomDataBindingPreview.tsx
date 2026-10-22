@@ -19,7 +19,7 @@ import { sharedCustomDataSource, useCustomDataOrganizationId } from "./CustomDat
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 
 /** Quiet time before the preview re-asks the server after an edit. */
 const PREVIEW_DEBOUNCE_MS = 500;

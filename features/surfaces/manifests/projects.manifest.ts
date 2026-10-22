@@ -44,12 +44,6 @@ const groups: SurfaceValueGroup[] = [
       "What lives inside the project: task counts and attached resource counts.",
   },
   {
-    key: "org_context",
-    label: "Organization context",
-    sortOrder: 400,
-    description: "The organization the project belongs to.",
-  },
-  {
     key: "list_context",
     label: "List context",
     sortOrder: 500,
@@ -251,29 +245,8 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "project_activity",
   },
 
-  // ── Organization context ──────────────────────────────────────────────
-  {
-    name: "active_organization_id",
-    label: "Active organization ID",
-    description:
-      "UUID of the organization context the projects are scoped to. Empty when none is selected.",
-    valueType: "string",
-    alwaysAvailable: false,
-    typicalCharCount: 36,
-    sortOrder: 400,
-    group: "org_context",
-  },
-  {
-    name: "active_organization_name",
-    label: "Active organization name",
-    description:
-      "Name of the active organization. Empty when none is selected.",
-    valueType: "string",
-    alwaysAvailable: false,
-    typicalCharCount: 80,
-    sortOrder: 410,
-    group: "org_context",
-  },
+  // ── Organization context: inherited from the Workspace module (matrx-default/workspace,
+  //    surface declarations W1) — the same active organization, declared once. ──
 
   // ── List context ──────────────────────────────────────────────────────
   {
@@ -434,6 +407,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const projectsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/projects",
+  inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

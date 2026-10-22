@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CircleSlash, Power, PowerOff, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";

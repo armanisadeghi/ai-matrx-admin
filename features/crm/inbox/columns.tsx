@@ -14,8 +14,8 @@
 // here prints a name (or an id) the user cannot reach.
 
 import { Building2, CircleCheck, CircleDot, Mail } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import {
   Muted,
   timeCell,

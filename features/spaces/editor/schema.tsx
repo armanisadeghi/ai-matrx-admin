@@ -9,14 +9,14 @@
 import { BlockNoteSchema, createCodeBlockSpec, defaultBlockSpecs, defaultInlineContentSpecs, defaultProps, defaultStyleSpecs } from "@blocknote/core";
 import { createReactBlockSpec } from "@blocknote/react";
 import { ArrowUpRight, FileText } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useRef } from "react";
 
 import { useSpaces } from "../state/SpacesProvider";
 import { SpaceIcon } from "../page/SpaceIcon";
 import { useSeededLink } from "../page/space-links";
 import { IconPicker } from "../page/IconPicker";
-import { notionCodeBlock } from "./code-block";
+import { CODE_LANGUAGES, notionCodeBlock } from "./code-block";
 import { equationInline, mentionInline } from "./inline";
 import { storedBlockSpecs } from "./stored-blocks";
 import { CalloutBlock } from "./callout-block";
@@ -28,35 +28,7 @@ import { AppletBlock } from "./applet-block";
 import { SuggestionStyle } from "./suggest";
 
 /** C10: Notion's code-block language picker (the stored `language` prop rides through convert.ts as is). */
-const CODE_BLOCK = notionCodeBlock(createCodeBlockSpec({
-  defaultLanguage: "text",
-  supportedLanguages: {
-    // "" too: BlockNote's "``` " shortcut asks for the language typed after the fence (none), and a
-    // language the list does not know is refused — the fence then stayed a paragraph of literal "```".
-    text: { name: "Plain text", aliases: ["plaintext", "txt", ""] },
-    bash: { name: "Bash", aliases: ["sh", "shell", "zsh"] },
-    c: { name: "C" },
-    cpp: { name: "C++", aliases: ["c++"] },
-    csharp: { name: "C#", aliases: ["cs"] },
-    css: { name: "CSS" },
-    go: { name: "Go", aliases: ["golang"] },
-    html: { name: "HTML" },
-    java: { name: "Java" },
-    javascript: { name: "JavaScript", aliases: ["js"] },
-    json: { name: "JSON" },
-    kotlin: { name: "Kotlin" },
-    markdown: { name: "Markdown", aliases: ["md"] },
-    mermaid: { name: "Mermaid" },
-    php: { name: "PHP" },
-    python: { name: "Python", aliases: ["py"] },
-    ruby: { name: "Ruby", aliases: ["rb"] },
-    rust: { name: "Rust", aliases: ["rs"] },
-    sql: { name: "SQL" },
-    swift: { name: "Swift" },
-    typescript: { name: "TypeScript", aliases: ["ts"] },
-    yaml: { name: "YAML", aliases: ["yml"] },
-  },
-}));
+const CODE_BLOCK = notionCodeBlock(createCodeBlockSpec({ defaultLanguage: "text", supportedLanguages: CODE_LANGUAGES }), CODE_LANGUAGES);
 
 export function PageRow({ spaceId, linked }: { spaceId: string; linked: boolean }) {
   const { byId, archived, linkTarget, requestLink, ready, open, pageHref, missingPageLabel } = useSpaces();

@@ -42,7 +42,7 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { filterAndSortRows } from "@ai-matrx/design-system/data-table/filter-engine";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { useTableUrlState } from "@ai-matrx/design-system/data-table/url-state";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { ADMIN_USERS_SURFACE_NAME } from "@/features/surfaces/manifests/admin-users.manifest";

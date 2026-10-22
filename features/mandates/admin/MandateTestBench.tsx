@@ -30,7 +30,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ServerNotes } from "@/components/official/ServerNotes";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { ConversationModelSettings } from "@ai-matrx/chat/agents/components/run-controls/ConversationModelSettings";
@@ -104,7 +104,7 @@ import {
   ConfigurationTableRow,
   StatusToken,
 } from "@ai-matrx/design-system/controls";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";

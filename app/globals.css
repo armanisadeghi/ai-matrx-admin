@@ -81,6 +81,8 @@
   --color-brand-secondary: hsl(var(--brand-secondary));
   /* The light chip a raw logo sits on in dark mode (never tints the logo) */
   --color-logo-backing: hsl(var(--logo-backing));
+  /* The /search page surface: white in light mode (Google's), the page background in dark */
+  --color-search-surface: hsl(var(--search-surface));
   --color-brand-secondary-foreground: hsl(var(--brand-secondary-foreground));
 
   /* Sidebar colors */
@@ -821,6 +823,7 @@
     /* Brand secondary - the purple accent. Never `secondary` (that means gray). */
     --brand-secondary: 275 70% 58%;
     --logo-backing: 0 0% 96%;
+    --search-surface: 0 0% 100%;
     --brand-secondary-foreground: 0 0% 100%;
 
     /* Muted - Zinc-200 for subtle backgrounds */
@@ -980,6 +983,7 @@
     /* Brand secondary - purple with sufficient contrast for small white text */
     --brand-secondary: 275 70% 58%;
     --logo-backing: 0 0% 96%;
+    --search-surface: 240 4% 16%;
     --brand-secondary-foreground: 0 0% 100%;
 
     /* Muted - Zinc-750 for subtle backgrounds */

@@ -28,7 +28,7 @@ import {
   opensTheRecord,
   recordTableTarget,
 } from "@/features/item-presentation/registry";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { hasPeek } from "@/features/organizations/peek/kinds-list";
 import { getReferenceResolver } from "./referenceResolvers";
 

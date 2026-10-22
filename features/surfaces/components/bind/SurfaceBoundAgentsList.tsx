@@ -26,7 +26,7 @@ import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-di
 import { useOpenSurfaceAgentBindWindow } from "@/features/overlays/definitions/surfaceAgentBindWindow.overlay";
 import { useOpenAgentSettingsWindow } from "@/features/overlays/definitions/agentSettingsWindow.overlay";
 import { deleteAgentSurfaceBinding } from "@ai-matrx/chat/surfaces/services/bind-agent-to-surface.service";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import type { SurfaceBoundAgentEntry } from "@ai-matrx/chat/surfaces/services/surface-bound-agents.service";

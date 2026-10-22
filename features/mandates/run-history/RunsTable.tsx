@@ -13,7 +13,7 @@
 // line, the full value in its tooltip.
 
 import { useLayoutEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -23,8 +23,8 @@ import type {
 } from "@ai-matrx/design-system/data-table/types";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { NewTabLink } from "@ai-matrx/records-ui/entity-ref";
 import { StatusToken } from "@ai-matrx/design-system/controls";
 import { useServerTable, serverTableInitialState } from "@/features/admin/shared/server-table/useServerTable";
 import { conversationHref } from "@/features/hindsight/subject-doors";

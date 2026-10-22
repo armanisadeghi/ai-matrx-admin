@@ -7,6 +7,7 @@ import {
 import { decorateSandboxRow } from "@/lib/sandbox/decorate-sandbox-row";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { writeOneRow } from "@/utils/supabase/writeOne";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 function outcomeUnknown(operation: "stop" | "delete") {
   return NextResponse.json(
@@ -47,7 +48,7 @@ export async function GET(
       .single();
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if (error.code === PG_CODES.pgrstNoRows) {
         return NextResponse.json(
           { error: "Sandbox not found" },
           { status: 404 },
@@ -117,7 +118,7 @@ export async function PATCH(
     );
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if (error.code === PG_CODES.pgrstNoRows) {
         return NextResponse.json(
           { error: "Sandbox not found" },
           { status: 404 },

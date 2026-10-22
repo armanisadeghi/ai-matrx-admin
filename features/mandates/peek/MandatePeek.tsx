@@ -16,7 +16,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowRight, Braces, Lightbulb, Workflow } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -25,8 +25,8 @@ import { createClient } from "@/utils/supabase/client";
 import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { displayResolutionOrgId, usePageOrgFilter } from "../display-org";
 import { AGENT_ICON, INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { NewTabLink } from "@ai-matrx/records-ui/entity-ref";
 import { usePeekHrefOverride } from "@/features/organizations/peek/peekHrefOverride";
 import { useAgentNames } from "@ai-matrx/chat/surfaces/hooks/useAgentNames";
 import {

@@ -19,7 +19,7 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Button } from "@ai-matrx/design-system/controls";
 import { featureIntelligenceHref } from "../feature-intelligence/hrefs";
 import { registerPageIntelligenceDoor } from "../feature-intelligence/page-intelligence-doors";

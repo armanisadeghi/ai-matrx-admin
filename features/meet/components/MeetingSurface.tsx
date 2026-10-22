@@ -56,7 +56,7 @@ import { useMeetMemberIdentity } from "@/providers/MeetHost";
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { MEET_PLACES } from "@/features/meet/intelligence-places";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { isUuidValue } from "@/components/official/entity-ref/doors";
+import { isUuidValue } from "@ai-matrx/records-ui/entity-doors";
 import { MeetingInviteButton } from "@/features/meet/components/invite/MeetingInviteButton";
 import { PreJoinRsvp } from "@/features/meet/components/manage/PreJoinRsvp";
 import {

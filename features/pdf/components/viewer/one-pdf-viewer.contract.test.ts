@@ -1,37 +1,40 @@
 /**
- * ONE PDF viewer — the source contract every PDF host is held to.
+ * ONE PDF viewer — the source contract every PDF host in the app is held to.
  *
- * Census 2026-10-09 (every place a PDF renders): one engine
- * (`PdfDocumentRenderer`) already drew the pages, but hosts kept growing
- * their own copies around it — a second cld-files wrapper that dropped
- * `withCredentials` (the extractor studio reader), a native <object>/<iframe>
- * viewer with the browser's own chrome (PDF demo results), host controls
- * absolutely positioned over the toolbar row (RAG PdfPane's surface switcher,
- * Analysis Studio's mode banner), and a toolbar that overflowed narrow panes
- * onto the neighbouring column. The fix put the missing knobs in the viewer;
- * this guard keeps hosts on them.
+ * The viewer itself (pages, zoom/fit/rotate, the measured toolbar fold, the
+ * stack toolbar, wheel/touch paging, the annotation layer, the PDF.js worker)
+ * lives in `@ai-matrx/media/viewers/pdf` since 2026-10-22 — one viewer for the
+ * app, the chat package, the extension and the desktop app. Its internal
+ * contracts (suspense={false}, toolbar from the fold plan, continuous layout
+ * draws the shared toolbar, no import-time worker effect) are guarded by the
+ * package's own tests (media src/viewers/pdf/*.test.*). This file keeps the
+ * APP on it:
  *
- *   1. Only the renderer mounts react-pdf's <Document>/<Page>.
- *   2. Only PdfPreview turns a cld file id into PDF.js bytes
+ *   1. No app file mounts react-pdf's <Document>/<Page> — the package does.
+ *   2. No app file drives PDF.js directly (getDocument / GlobalWorkerOptions) —
+ *      off-screen reads go through the package's `rasterizePdfPages` /
+ *      `readPdfPageCount`.
+ *   3. Only PdfPreview turns a cld file id into PDF.js bytes
  *      (`usePdfRemoteSource`) — every other host composes PdfPreview.
- *   3. No host embeds a PDF with the browser's native viewer.
- *   4. The renderer's toolbar is drawn from the measured fold plan and exposes the
- *      host-chrome knobs (toolbar / pageNav / toolbarStart / toolbarEnd),
- *      and PdfPreview passes every one of them through.
+ *   4. No host embeds a PDF with the browser's native viewer.
+ *   5. PdfPreview renders the package viewer and passes every chrome knob through.
+ *   6. No host draws its own zoom control next to a PDF.
  */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const ROOT = join(__dirname, "../../../..");
-const SCAN_DIRS = ["app", "features", "components"];
-const RENDERER = "features/pdf/components/viewer/PdfDocumentRenderer.tsx";
+const SCAN_DIRS = ["app", "features", "components", "lib"];
 const PREVIEW = "features/pdf/components/viewer/PdfPreview.tsx";
-const TOOLBAR_ROW = "features/pdf/components/viewer/toolbar/PdfToolbarRow.tsx";
-const STACK_TOOLBAR = "features/pdf/components/viewer/toolbar/PdfStackToolbar.tsx";
+const PACKAGE = "@ai-matrx/media/viewers/pdf";
 
-/** Rasterizes pages to images for print — not a viewer. */
-const RAW_PDFJS_ALLOWED = new Set(["features/print/document/pdfPages.tsx"]);
+/** Source STRINGS compiled inside the kind sandbox / code runtime, not app modules. */
+const RAW_PDFJS_ALLOWED = new Set([
+  "features/content-ir/studio/playground/demos/invoice-pdf.ts",
+  "features/content-ir/sandbox/build-kind-sandbox.ts",
+  "lib/code-runtime/app-scope.ts",
+]);
 /**
  * Native-embed exceptions, each with its reason. Spaces stores a page as
  * portable HTML blocks that must render outside React too (exported pages);
@@ -55,12 +58,20 @@ const files = SCAN_DIRS.flatMap((d) => walk(join(ROOT, d))).map((f) => ({
 }));
 
 describe("one PDF viewer", () => {
-  it("only PdfDocumentRenderer imports react-pdf's Document/Page", () => {
+  it("no app file imports react-pdf's Document/Page (the package viewer does)", () => {
     const offenders = files
-      .filter((f) => f.path !== RENDERER && !RAW_PDFJS_ALLOWED.has(f.path))
+      .filter((f) => !RAW_PDFJS_ALLOWED.has(f.path))
       .filter((f) =>
         /import\s*\{[^}]*\b(Document|Page)\b[^}]*\}\s*from\s*["']react-pdf["']/.test(f.src),
       )
+      .map((f) => f.path);
+    expect(offenders).toEqual([]);
+  });
+
+  it("no app file drives PDF.js directly (rasterizePdfPages / readPdfPageCount do)", () => {
+    const offenders = files
+      .filter((f) => !RAW_PDFJS_ALLOWED.has(f.path))
+      .filter((f) => /pdfjs\.getDocument\s*\(|GlobalWorkerOptions/.test(f.src))
       .map((f) => f.path);
     expect(offenders).toEqual([]);
   });
@@ -87,20 +98,10 @@ describe("one PDF viewer", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("the renderer's toolbar adapts to its container and takes host chrome", () => {
-    const src = readFileSync(join(ROOT, RENDERER), "utf8");
-    // The row is drawn from the measured fold plan (toolbar/toolbar-plan.ts,
-    // proven by toolbar-plan.test.ts) — never from blind CSS breakpoints.
-    const row = readFileSync(join(ROOT, TOOLBAR_ROW), "utf8");
-    expect(row).toMatch(/planPdfToolbar\(\{\s*width,/);
-    expect(src).toMatch(/<PdfToolbarRow\s+width=\{containerSize\.width\}/);
-    expect(src).not.toMatch(/@\[\d+rem\]\/pdf-viewer/);
-    expect(src).not.toMatch(/\bsm:h-7\b/);
-    expect(row).toContain('aria-label="More view options"');
-    for (const knob of ["toolbar?:", "pageNav?:", "toolbarStart?:", "toolbarEnd?:"]) {
-      expect(src).toContain(knob);
-    }
+  it("PdfPreview renders the package viewer and passes the chrome knobs through", () => {
     const preview = readFileSync(join(ROOT, PREVIEW), "utf8");
+    expect(preview).toContain(`from "${PACKAGE}"`);
+    expect(preview).toMatch(/<PdfDocumentViewer\b/);
     for (const pass of [
       "toolbar={toolbar}",
       "pageNav={pageNav}",
@@ -111,25 +112,10 @@ describe("one PDF viewer", () => {
     }
   });
 
-  it("the continuous layout draws the SAME shared toolbar (page nav + zoom for all pages)", () => {
-    const src = readFileSync(join(ROOT, RENDERER), "utf8");
-    const stack = readFileSync(join(ROOT, STACK_TOOLBAR), "utf8");
-    // The continuous branch mounts the stack toolbar unless the host opted out.
-    const continuous = src.slice(src.indexOf("function ContinuousPages"));
-    expect(continuous).toMatch(/toolbar === "full"[\s\S]{0,80}<PdfStackToolbar/);
-    // ...which is the one row, fed page + zoom for the whole stack.
-    expect(stack).toContain("<PdfToolbarRow");
-    expect(stack).toContain("useScrollPages");
-    expect(stack).toContain("[data-pdf-page]");
-  });
-
   it("no host draws its own zoom control — they dock into the shared toolbar", () => {
-    // A hand-built "Zoom in" / "Zoom out" control next to a PDF is a second toolbar.
-    const ALLOWED = new Set([TOOLBAR_ROW]);
     const offenders = files
-      .filter((f) => !ALLOWED.has(f.path))
       .filter((f) => /aria-label=["']Zoom (in|out)["']/.test(f.src))
-      .filter((f) => /\bPdf(Preview|DocumentRenderer|StackToolbar)\b/.test(f.src))
+      .filter((f) => /\bPdf(Preview|DocumentViewer|StackToolbar)\b/.test(f.src))
       .map((f) => f.path);
     expect(offenders).toEqual([]);
   });

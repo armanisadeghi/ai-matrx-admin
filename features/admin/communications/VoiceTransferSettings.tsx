@@ -2,10 +2,9 @@
 import { VoiceTransferHistory } from "./VoiceTransferHistory";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
 import { readVoiceTransferTarget } from "@/lib/communications/voice/transfer-target";
 import {
   loadVoiceDestinations,

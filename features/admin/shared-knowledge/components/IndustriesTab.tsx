@@ -17,9 +17,9 @@
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
 import { useMemo, useState } from "react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -60,7 +60,6 @@ import type { SharedKnowledgeDirectory } from "../types";
 import { IndustryCuratorsPanel } from "./IndustryCuratorsPanel";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 interface IndustryFormState {
   slug: string;

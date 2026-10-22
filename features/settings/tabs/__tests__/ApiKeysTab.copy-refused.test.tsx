@@ -59,6 +59,11 @@ jest.mock("@/components/official/settings/primitives/SettingsButton", () => ({
 jest.mock("@/features/organizations/hooks", () => ({
   useUserOrganizations: () => ({ organizations: [{ id: "org-1", name: "Clinic" }], loading: false, error: null }),
 }));
+// The chooser draws design-system Popover/Picker parts this file's partial design-system mock does not carry;
+// the copy behavior under test is independent of it (same double as OAuthAppsTab.register.test).
+jest.mock("@/features/organizations/components/OrganizationChooser", () => ({
+  OrganizationChooser: () => <span>Clinic</span>,
+}));
 jest.mock("@/features/settings/personalApiKeysService", () => ({
   PERSONAL_API_BASE_URL: "https://api.example",
   listPersonalApiKeys: jest.fn(async () => []),

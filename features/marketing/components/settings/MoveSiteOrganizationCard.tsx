@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useScopeTree } from "@/features/scopes/hooks/useScopeTree";
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
 import { useAppDispatch } from "@/lib/redux/hooks";

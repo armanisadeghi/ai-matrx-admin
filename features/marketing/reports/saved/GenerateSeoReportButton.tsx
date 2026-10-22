@@ -11,8 +11,7 @@
 
 import Link from "next/link";
 import { FilePlus2 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system/controls";
-import { InfoHint } from "@/components/official/InfoHint";
+import { Button, InfoHint } from "@ai-matrx/design-system/controls";
 import { useGenerateSeoReport } from "./hooks";
 import type { SeoReportDraft } from "./types";
 

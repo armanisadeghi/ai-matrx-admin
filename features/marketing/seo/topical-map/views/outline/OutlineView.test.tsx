@@ -103,7 +103,8 @@ jest.mock("@ai-matrx/context-menu/react", () => ({
   __esModule: true,
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   __esModule: true,
   EntityRef: ({ name }: { name?: string | null }) => <span data-entity-ref>{name}</span>,
 }));
@@ -119,10 +120,6 @@ jest.mock("@/lib/layout/useClippedContentGuard", () => ({
 jest.mock("@/lib/toast", () => ({
   __esModule: true,
   toast: { error: jest.fn(), success: jest.fn() },
-}));
-jest.mock("@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog", () => ({
-  __esModule: true,
-  ClipboardFallbackDialog: () => null,
 }));
 
 function knobs(overrides: Partial<TopicalMapKnobs> = {}): TopicalMapKnobs {

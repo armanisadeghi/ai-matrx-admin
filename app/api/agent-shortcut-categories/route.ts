@@ -12,6 +12,7 @@ import {
 } from "./_lib/categoryRow";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { extractErrorMessage } from "@/utils/errors";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 export async function GET(request: NextRequest) {
   try {
@@ -212,7 +213,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error("Error creating shortcut category:", error);
       const status =
-        error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
+        error.code === PG_CODES.insufficientPrivilege || error.code === PG_CODES.pgrstJwtInvalid ? 403 : 500;
       return NextResponse.json(
         {
           error: "Failed to create shortcut category",

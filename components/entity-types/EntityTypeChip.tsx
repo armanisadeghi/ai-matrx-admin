@@ -17,7 +17,7 @@
 // two places a link is wrong: inside another interactive control (invalid
 // nested anchor) and on the explorer page's own header (a self-link).
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { HelpCircle } from "lucide-react";
 
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";

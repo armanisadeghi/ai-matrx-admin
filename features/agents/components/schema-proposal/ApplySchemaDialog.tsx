@@ -16,7 +16,7 @@
 import React, { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { recordToast, toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 
 import { Button } from "@ai-matrx/design-system";
 import {

@@ -10,7 +10,7 @@
 // the one write path refuses to save it back.
 
 import { Badge } from "@/components/ui/badge";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import type { IncompleteValue } from "@ai-matrx/records/scopes";
 
 /** The tooltip (≤ 140 chars, one sentence): what the person sees and what saving needs. */

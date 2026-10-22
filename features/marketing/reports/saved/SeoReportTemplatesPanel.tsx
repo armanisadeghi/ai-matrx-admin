@@ -12,14 +12,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, LayoutTemplate } from "lucide-react";
-import {
-  Badge,
-  Button,
-  EmptyState,
-  RegionSkeleton,
-  SegmentedControl,
-} from "@ai-matrx/design-system/controls";
-import { InfoHint } from "@/components/official/InfoHint";
+import { Badge, Button, EmptyState, RegionSkeleton, SegmentedControl, InfoHint } from "@ai-matrx/design-system/controls";
 import { knobRefusalSentence } from "@/lib/scoped-config/service";
 import { extractErrorMessage } from "@/utils/errors";
 import { chooseSeoReportTemplate, type TemplateRung } from "./service";

@@ -9,12 +9,12 @@
 // removed. Filter/sort values come from ./fields.ts, the one reader.
 
 import { formatCount } from "@ai-matrx/kit/format";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   DATE_SORT_WORDS,
   Muted,
@@ -67,7 +67,7 @@ import {
 import { useAgentLineageIndex } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";
 import { AdminPoints } from "@/components/cost/AdminCost";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { modelCellOf } from "./spend";
 import { runsTabHref } from "./runs";
 

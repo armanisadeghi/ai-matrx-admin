@@ -21,7 +21,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import type {
   ProofEvaluatedData,

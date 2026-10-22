@@ -3,7 +3,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { CopyCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/lib/redux/hooks";

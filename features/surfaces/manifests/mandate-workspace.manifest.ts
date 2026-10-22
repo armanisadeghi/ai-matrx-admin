@@ -181,6 +181,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const mandateWorkspaceManifest: SurfaceManifest = {
   surfaceName: MANDATE_WORKSPACE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/intelligence",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

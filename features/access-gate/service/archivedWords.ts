@@ -37,3 +37,19 @@ export function archivedExplanation(context: AccessDeniedContext): string {
     ? `Nothing in it was erased. ${holder} can restore it from Trash.`
     : "Nothing in it was erased. Whoever moved it to Trash can restore it.";
 }
+
+/**
+ * THE ARCHIVED ORGANIZATION, SAID HONESTLY (chat-load 2026-10-22). The record is the caller's own (or her
+ * organization's); the organization that holds it is archived, so nothing in it opens until an owner
+ * restores the organization. It is never "someone else's", and there is nobody to ask.
+ */
+export function archivedOrganizationHeadline(context: AccessDeniedContext): string {
+  return `This ${context.entity.label.toLowerCase()}'s organization is archived`;
+}
+
+export function archivedOrganizationExplanation(context: AccessDeniedContext): string {
+  const name = context.organizationArchived?.name;
+  return name
+    ? `${name} is archived, so nothing in it opens until an owner restores it. Nothing was erased.`
+    : "Its organization is archived, so nothing in it opens until an owner restores it. Nothing was erased.";
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import React, {
   useEffect,
@@ -65,7 +65,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { toast, recordToast, dismissRecordToasts } from "@/lib/toast";
 
@@ -74,6 +73,13 @@ import {
   type SurfacesFilterState,
 } from "@/features/surfaces/components/SurfacesFilterBar";
 import { SurfacesTable } from "@/features/surfaces/components/SurfacesTable";
+import {
+  listSurfaceFleetMetric,
+  refreshSurfaceRunSupply,
+  type SurfaceFleetMetric,
+} from "@/features/surfaces/services/surface-fleet-metric";
+import { FLEET_READINESS_RULE } from "@/features/surfaces/utils/fleet-readiness";
+import { FieldHelp } from "@ai-matrx/design-system/controls";
 import { SurfaceDetailPanel } from "@/features/surfaces/components/SurfaceDetailPanel";
 import { SurfaceCandidatesDialog } from "@/features/surfaces/components/SurfaceCandidatesDialog";
 import { ManifestSyncDialog } from "@/features/surfaces/components/ManifestSyncDialog";
@@ -82,7 +88,6 @@ import {
   NewSurfaceDialog,
   type NewSurfaceDraftScope,
 } from "@/features/surfaces/components/NewSurfaceDialog";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 import {
   bulkSetSurfacesActive,
@@ -117,6 +122,9 @@ export function SurfacesContainer() {
     { name: string; description: string | null; is_active: boolean | null }[]
   >([]);
   const [loading, setLoading] = useState(true);
+  // Fleet metric (ui.vw_surface_fleet_metric). undefined = not loaded; its own
+  // failure is a toast, never a blank table — the registry rows still render.
+  const [fleet, setFleet] = useState<Map<string, SurfaceFleetMetric> | undefined>();
   const [error, setError] = useState<string | null>(null);
 
   const [filters, setFilters] =
@@ -167,8 +175,28 @@ export function SurfacesContainer() {
     }
   };
 
+  const loadFleet = async () => {
+    try {
+      setFleet(await listSurfaceFleetMetric());
+    } catch (e) {
+      toast.error(`Surface metrics failed to load: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  };
+
+  /** Paint the last supply snapshot at once, then re-roll it in the background and repaint. */
+  const loadFleetFresh = async () => {
+    await loadFleet();
+    try {
+      await refreshSurfaceRunSupply();
+      await loadFleet();
+    } catch (e) {
+      toast.error(`Supplied values could not be refreshed: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  };
+
   const load = async () => {
     void loadDrift();
+    void loadFleetFresh();
     setLoading(true);
     setError(null);
     try {
@@ -494,6 +522,7 @@ export function SurfacesContainer() {
           text={`${surfaces.length} surfaces · ${totalActive} active · ${manifestedSurfaceNames.size} with a code manifest · ${totalUnbound} with no agents or tools`}
           label="About surface counts"
         />
+        <FieldHelp label="How readiness is earned">{FLEET_READINESS_RULE}</FieldHelp>
         {loading && (
           <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
         )}
@@ -622,6 +651,7 @@ export function SurfacesContainer() {
             peeking={selected !== null && !isMobile}
             totalCount={surfaces.length}
             registryActions={actions}
+            fleet={fleet}
           />
         </div>
 

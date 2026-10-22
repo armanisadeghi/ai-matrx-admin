@@ -18,6 +18,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { GoToSearch, isGoToHotkey } from "../GoToSearch";
 import { buildGoToIndex } from "../goToIndex";
 import { FRAME_ROUTE_HOMES } from "../route-homes.generated";
+import { GO_TO_PAGES } from "../go-to-pages.generated";
 import { PRODUCTS, PRODUCT_FAMILIES } from "../products";
 import { rankMenuSearch } from "../searchEngine";
 import { menuGoToEntries } from "../../frame-host/goToMenuEntries";
@@ -61,6 +62,17 @@ describe("the go-to index", () => {
     expect(FRAME_ROUTE_HOMES.routes.some((r) => r[0].includes("["))).toBe(true);
   });
 
+  it("finds every page with a home, not only the titled ones (\"timesheet\" → Timesheets)", () => {
+    const full = buildGoToIndex(PRODUCTS, PRODUCT_FAMILIES, FRAME_ROUTE_HOMES, [], GO_TO_PAGES);
+    expect(rankMenuSearch(index, "timesheet").some((e) => e.href === "/hr/time/timesheets")).toBe(false);
+    const hit = rankMenuSearch(full, "timesheet").find((e) => e.href === "/hr/time/timesheets");
+    expect(hit).toMatchObject({ productId: "hr", label: "Timesheets" });
+    expect(full.some((e) => e.href.includes("["))).toBe(false);
+    // Every concrete page row is reachable by its own title.
+    const hrefs = new Set(full.map((e) => e.href));
+    expect(GO_TO_PAGES.filter(([pattern]) => !hrefs.has(pattern))).toEqual([]);
+  });
+
   it("host entries merge in", () => {
     const withExtra = buildGoToIndex(PRODUCTS, PRODUCT_FAMILIES, FRAME_ROUTE_HOMES, [
       { id: "x", productId: "chat", label: "Zebra desk", trail: ["Chat"], href: "/zebra" },
@@ -74,7 +86,7 @@ describe("the go-to palette is lazy", () => {
     const dir = join(__dirname, "..");
     for (const file of readdirSync(dir).filter((f) => /\.tsx?$/.test(f))) {
       const src = readFileSync(join(dir, file), "utf8");
-      const staticImport = /^import (?!type)[^;]*from "\.\/(goToIndex|GoToPalette)"/m.test(src);
+      const staticImport = /^import (?!type)[^;]*from "\.\/(goToIndex|GoToPalette|go-to-pages\.generated)"/m.test(src);
       if (file === "GoToPalette.tsx") expect(staticImport).toBe(true); // palette -> index
       else expect({ file, staticImport }).toEqual({ file, staticImport: false });
     }

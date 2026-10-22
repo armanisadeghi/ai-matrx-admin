@@ -19,7 +19,7 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useCallback, useState } from "react";
 import { Activity, MessageSquare, Copy, Check, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { StreamDebugPanel } from "@ai-matrx/chat/agents/components/debug/StreamDebugPanel";
 import { useAppSelector } from "@/lib/redux/hooks";

@@ -22,7 +22,7 @@
 
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowUpRight, SearchCheck } from "lucide-react";
 import { useRef, type ReactNode } from "react";
 

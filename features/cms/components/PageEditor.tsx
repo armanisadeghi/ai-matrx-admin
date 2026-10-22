@@ -1,6 +1,6 @@
 "use client";
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput, InfoHint, Input, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import React, {
   lazy,
   Suspense,
@@ -35,7 +35,6 @@ import {
   type CmsWritingMustFix,
   writingBlockOf,
 } from "@/features/cms/services/cmsService";
-import { InfoHint } from "@/components/official/InfoHint";
 
 import { cmsPageEditorHref } from "@/features/cms/utils/cmsRoutes";
 import { CMS_PAGE_CONTEXT_MENU_PROPS } from "@/features/cms/agent-context/cmsPageContextMenuProps";
@@ -51,7 +50,6 @@ import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { Button } from "@/components/ui/button";
-import { Input, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ProTextarea } from "@/components/official/ProTextarea";

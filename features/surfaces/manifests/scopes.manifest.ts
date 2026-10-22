@@ -264,29 +264,8 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "context_catalog",
   },
 
-  // ── Active context (read-only reflection) ─────────────────────────────
-  {
-    name: "active_organization_id",
-    label: "Active organization ID",
-    description:
-      "READ-ONLY reflection of the organization currently selected in the user's global working context (appContextSlice). Absent when none is selected. This surface never writes it — only Surface A pickers do.",
-    valueType: "string",
-    alwaysAvailable: false,
-    typicalCharCount: 36,
-    sortOrder: 300,
-    group: "active_context",
-  },
-  {
-    name: "active_organization_name",
-    label: "Active organization name",
-    description:
-      "READ-ONLY reflection of the name of the globally-selected organization. Absent when none is selected or the name has not resolved.",
-    valueType: "string",
-    alwaysAvailable: false,
-    typicalCharCount: 40,
-    sortOrder: 310,
-    group: "active_context",
-  },
+  // ── Active context (read-only reflection). The active organization's id and name are
+  //    inherited from the Data module (matrx-default/data, surface declarations W1). ──
   {
     name: "active_scope_ids",
     label: "Active scope IDs",
@@ -407,6 +386,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const scopesManifest: SurfaceManifest = {
   surfaceName: SCOPES_SURFACE_NAME,
+  inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

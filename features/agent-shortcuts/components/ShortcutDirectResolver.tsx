@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";

@@ -69,7 +69,8 @@ jest.mock("@/lib/redux/hooks", () => ({
 // The chat package reads these hooks through its own module (P3): one double covers both.
 jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hooks"));
 
-jest.mock("@/components/official/entity-ref/TextWithDoors", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   TextWithDoors: ({ text }: { text: string }) => <span>{text}</span>,
 }));
 

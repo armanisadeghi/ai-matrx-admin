@@ -1,7 +1,7 @@
 // scripts/frame-crawl/crawl.mjs — the frame crawl: every signed-in app page, measured the same way, every phase.
 //
 //   node scripts/frame-crawl/crawl.mjs [--mode classic|frame] [--only /prefix] [--widths 1440,390]
-//        [--concurrency 4] [--origin URL] [--out NAME] [--discover-only] [--report] [--retry-errors] [--limit N]
+//        [--concurrency 4] [--origin URL] [--shuffle] [--out NAME] [--discover-only] [--report] [--retry-errors] [--limit N]
 //
 // Plan + why: common-docs/projects/app-frame/ROLLOUT-PLAN.md (P0 baseline, "Measuring breakage: the crawl").
 // Target is the LIVE site as admin@admin.com (AI_ADMIN_USERNAME / AI_ADMIN_PASSWORD from .env.local, never printed).
@@ -179,7 +179,7 @@ const MEASURE = () => {
   }
   // ---- frame-mode probes (additive; the classic baseline rows simply lack them) ----
   const norm = (t) => (t ?? "").replace(/\s+/g, " ").trim();
-  const bodyEl = document.querySelector('[data-mf-region="body"]');
+  const bodyEl = document.querySelector('[data-mf-region="body"]') ?? document.querySelector(".shell-main") ?? document.querySelector("main");
   const sideEl = document.querySelector('[data-mf-region="sidebar"]');
   const hdrEl = document.querySelector('header[data-mf-region="header"], [data-mf-region="header"]');
   const frame = {};
@@ -233,10 +233,9 @@ const MEASURE = () => {
     frame.dupTitles = [...seen].filter(([, n]) => n > 1).map(([t, n]) => `${t} x${n}`).slice(0, 4);
   }
   if (sideEl) {
-    const links = [...sideEl.querySelectorAll('[data-mf-region="product-nav"] a, [data-mf-region="product-nav"] button')].filter(vis);
+    const links = [...sideEl.querySelectorAll("a[href]")].filter(vis);
     frame.navLinks = links.length;
-    frame.navLabels = links.slice(0, 12).map((e) => norm(e.textContent).slice(0, 24));
-    frame.navHasSubmenuHeading = !!sideEl.querySelector('[data-mf-region="product-nav"] [role="group"], [data-mf-region="product-nav"] h2, [data-mf-region="product-nav"] h3');
+    frame.navLabels = links.slice(0, 14).map((e) => norm(e.textContent).slice(0, 24));
   }
   return {
     frame,
@@ -544,6 +543,7 @@ if (flag("discover-only")) {
   process.exit(0);
 }
 
+const hash = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 const tasks = [];
 for (const route of routes) {
   const c = concreteRoute(route);
@@ -554,6 +554,7 @@ for (const route of routes) {
   }
 }
 console.log(`[crawl] ${tasks.length} page loads to do (${done.size} already recorded)`);
+if (flag("shuffle")) tasks.sort((a, b) => (hash(a.route) - hash(b.route))); // spread a partial run across every prefix
 const todo = LIMIT ? tasks.slice(0, LIMIT) : tasks;
 let n = 0;
 await pool(todo, async (t, ctxFor) => {

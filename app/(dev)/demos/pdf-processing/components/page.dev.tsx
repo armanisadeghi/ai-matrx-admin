@@ -6,7 +6,7 @@
  * Unit-test bench for THE canonical PDF systems (one implementation per
  * purpose; these are the same components mounted in production):
  *
- *   Preview   → PdfPreview → PdfDocumentRenderer (features/pdf viewer)
+ *   Preview   → PdfPreview → PdfDocumentViewer (features/pdf viewer)
  *   Edit      → PdfEditTab (canvas view/select/draw + Pages, Doc Ops,
  *               Notes, Findings, Redact, Search panels)
  *   Knowledge → DocumentTab (Knowledge index status, pages, chunks, search)
@@ -164,7 +164,7 @@ export default function PdfComponentsBenchPage() {
         <div key={fileId} className="flex flex-col gap-3 pb-8">
           <Section
             title="Preview"
-            hint="PdfPreview → PdfDocumentRenderer — zoom, fit, rotate, range loading, loading state, retry"
+            hint="PdfPreview → PdfDocumentViewer — zoom, fit, rotate, range loading, loading state, retry"
             defaultOpen
             tall
           >

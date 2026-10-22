@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 
 interface Props {
   value: { every_seconds?: number };

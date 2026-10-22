@@ -7,7 +7,7 @@ import { defineConfig } from "@playwright/test";
  * three failure boundaries this gate protects.
  */
 export default defineConfig({
-  testDir: "../../components/official/entity-ref/__tests__/browser",
+  testDir: "../../features/data-tables/records-ui-host/__tests__/entity-ref/browser",
   outputDir: "../../.cache/playwright/entity-ref-controls",
   testMatch: /.*\.spec\.ts$/,
   reporter: [["list"]],

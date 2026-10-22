@@ -74,10 +74,13 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const marketingCompetitorDirectoryManifest: SurfaceManifest = {
   surfaceName: COMPETITOR_DIRECTORY_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   label: "Competitors",
+  situation:
+    "They are on {brand_name|the brand}'s competitor list: {competitor_count|no} competitors with their websites and social accounts, {without_accounts_count|none} with no tracked social account yet. They can add competitors and update them.",
   description: "A brand's competitors with their websites and tracked social accounts.",
   urlPattern: "/marketing/[brandId]/intelligence/competitors",
   briefValues: ["competitors_loaded", "brand_name", "competitor_count", "with_accounts_count"],

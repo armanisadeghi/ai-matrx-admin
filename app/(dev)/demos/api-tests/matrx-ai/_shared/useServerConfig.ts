@@ -9,6 +9,7 @@ import {
   STORAGE_KEY_TOKEN,
   DEFAULT_SERVER_URL,
 } from "./servers";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 
 export type HealthStatus = "idle" | "checking" | "ok" | "error";
 
@@ -124,7 +125,7 @@ export function useServerConfig(): UseServerConfigReturn {
   const authHeaders: Record<string, string> = authToken
     ? {
         Authorization: `Bearer ${authToken}`,
-        ...(organizationId ? { "X-Organization-Id": organizationId } : {}),
+        ...(organizationId ? { [MATRX_HEADERS.organization]: organizationId } : {}),
       }
     : {};
 

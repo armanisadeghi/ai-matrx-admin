@@ -34,7 +34,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldAlert } from "lucide-react";
-import { CalloutBanner } from "@/components/official/CalloutBanner";
+import { CalloutBanner } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/utils/supabase/client";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";

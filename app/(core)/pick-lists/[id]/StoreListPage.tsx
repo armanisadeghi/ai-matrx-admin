@@ -73,8 +73,24 @@ export function StoreListPage({ listId }: { listId: string }) {
       const current = loadRef.current;
       return current.state === "ready" ? flattenPickListItems(current.list).map((i) => i.id) : null;
     },
+    // The owner edits the list; anyone else reads it (the scope's `list_is_owner`). Unknown until read.
+    canEditList: () => {
+      const current = loadRef.current;
+      return current.state === "ready" ? userId != null && current.list.user_id === userId : null;
+    },
     afterWrite: reload,
   });
+
+  // The Table view writes the same choices through the store's table page; coming back to Choices
+  // re-reads them, so the editor, the agent's scope and the archive check never run on the old read.
+  const switchView = (next: PickListPageView) => {
+    if (next === view) return;
+    setView(next);
+    if (next === "choices") {
+      setFocusedItemId(null);
+      void reload();
+    }
+  };
 
   const getScope = () => buildPickListPageScope({ listId, view, load, userId, focusedItemId });
   const getWriteHandlers = () => writeHandlers;
@@ -101,7 +117,7 @@ export function StoreListPage({ listId }: { listId: string }) {
             <SegmentedControl
               value={view}
               aria-label="Pick list view"
-              onValueChange={(v: string) => setView(v === "table" ? "table" : "choices")}
+              onValueChange={(v: string) => switchView(v === "table" ? "table" : "choices")}
               data={[
                 { value: "choices", label: "Choices" },
                 { value: "table", label: "Table" },

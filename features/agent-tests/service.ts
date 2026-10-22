@@ -347,15 +347,22 @@ export async function fetchAgentRuns(
 export async function withBattleWinners(runs: TestRunView[]): Promise<TestRunView[]> {
   const battles = runs.filter((r) => r.pairwiseRounds > 0);
   if (battles.length === 0) return runs;
-  const { data, error } = await createClient()
-    .schema("agent")
-    .from("test_result")
-    .select("*")
-    .in("test_run_id", battles.map((r) => r.id))
-    .eq("door", "pairwise");
-  if (error) throw error;
+  const supabase = createClient();
+  const rows = await readAllRows<ResultRow>(
+    ({ from, to }) =>
+      supabase
+        .schema("agent")
+        .from("test_result")
+        .select("*", { count: "exact" })
+        .in("test_run_id", battles.map((r) => r.id))
+        .eq("door", "pairwise")
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to),
+    { label: "agent.test_result (pairwise)" },
+  );
   const byRun = new Map<string, TestResultView[]>();
-  for (const row of data ?? []) {
+  for (const row of rows) {
     const view = toResultView(row);
     byRun.set(view.testRunId, [...(byRun.get(view.testRunId) ?? []), view]);
   }
@@ -463,7 +470,7 @@ export async function fetchJudgeVerdict(
   const { data, error } = await supabase
     .schema("platform")
     .from("judge_verdict")
-    .select("id, verdict, reasoning, confidence, model")
+    .select("id, verdict, reasoning, confidence, model, agreed, authority_kind")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -474,6 +481,8 @@ export async function fetchJudgeVerdict(
     reasoning: data.reasoning,
     confidence: data.confidence,
     model: data.model,
+    // Only a person's answer is an Agree / Disagree here; a replay or gate stamp is not.
+    agreed: data.authority_kind === "human_feedback" ? data.agreed : null,
   };
 }
 
@@ -568,6 +577,9 @@ export interface BattleSetup {
     agent_version_id?: string;
     variables?: Record<string, unknown>;
     user_input?: string;
+    /** Tool names or ids added / removed for this setup (the request's `user` overrides). */
+    tools_add?: string[];
+    tools_remove?: string[];
   };
   /** The battle column this setup is (`agent.cmp_comparison_entries.id` or the column id). */
   entry_id?: string;

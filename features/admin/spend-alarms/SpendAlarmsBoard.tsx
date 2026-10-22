@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Bell, BellOff, Check, CheckCircle2, ExternalLink, Loader2, Play, RefreshCw, RotateCcw, X } from "lucide-react";

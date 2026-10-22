@@ -7,7 +7,7 @@
  * or workflow run.
  */
 import { useAutomationReadiness } from "@/features/scheduling/service/automationReadiness";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useCallback, useEffect, useState } from "react";
 import { ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { humanizeRelative, humanizeTrigger } from "@/features/scheduling/utils/triggerHumanize";
 import type { TriggerType } from "@/features/scheduling/types";

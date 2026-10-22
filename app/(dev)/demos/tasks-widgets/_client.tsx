@@ -23,7 +23,7 @@ import {
   ListPlus,
 } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { selectAllNotesList } from "@/features/notes/redux/selectors";
 import { selectAllTasksFlat } from "@/features/tasks/redux/selectors";

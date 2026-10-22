@@ -42,6 +42,7 @@ import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 
 export const workingDocumentManifest: SurfaceManifest = {
   surfaceName: "matrx-user/working-document",
+  inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

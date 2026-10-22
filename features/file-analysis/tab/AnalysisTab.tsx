@@ -23,7 +23,7 @@
 
 import { FileKnowledgePanel } from "@/features/rag/components/files/FileKnowledgePanel";
 import { useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   AlertCircle,
   ExternalLink,

@@ -21,7 +21,7 @@
 // Everything agent-specific lives in ../listConfig.tsx; this file is the config
 // plus this page's slots (notice, header buttons, empty action).
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Plus, Network } from "lucide-react";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";

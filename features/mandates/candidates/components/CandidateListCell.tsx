@@ -10,7 +10,7 @@
  * opens the record's Candidates tab.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import type { MandateCandidateCell } from "@/features/mandates/admin-list/rpc";
 import { useLiveCandidateCell } from "../live";
 

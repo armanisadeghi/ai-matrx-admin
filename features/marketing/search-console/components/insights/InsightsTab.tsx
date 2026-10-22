@@ -18,7 +18,7 @@
  * that query, which IS the competing-pages view.
  */
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { useMemo, useState } from "react";
 import { Lightbulb, PanelTop } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";

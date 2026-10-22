@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   FileText,
   Paperclip,
@@ -29,7 +29,7 @@ import {
 import { openFilePicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
 import { folderForTask } from "@/features/files/utils/folder-conventions";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { Button } from "@/components/ui/button";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";

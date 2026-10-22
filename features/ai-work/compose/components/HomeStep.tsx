@@ -16,7 +16,7 @@ import {
   UniversalAssociationPicker,
   attachedKey,
 } from "@ai-matrx/associations/react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import type { SavedRequestHome, WorkHomeToken } from "../savedRequests";
 

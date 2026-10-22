@@ -32,7 +32,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useSearchParams } from "next/navigation";
 import {
   CircleCheck,
@@ -49,7 +49,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { UserIdentity } from "@/components/user/UserIdentity";
 import { SettingRequestActionButtons } from "@/features/access-gate/components/SettingRequestActionButtons";
 import { ResourceActionRequestButtons } from "@/features/access-gate/components/ResourceActionRequestButtons";

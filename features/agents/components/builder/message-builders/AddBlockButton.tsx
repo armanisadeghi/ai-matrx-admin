@@ -35,7 +35,7 @@ import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { MediaVariableInput } from "@ai-matrx/chat/agents/components/inputs/input-components/MediaVariableInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { type AIModelRecord } from "@ai-matrx/chat/agents/redux/model-registry";
 import {
   DECISION_QUESTIONS_KIND,
@@ -75,7 +75,6 @@ import {
 } from "@ai-matrx/agents";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 // ---------------------------------------------------------------------------
 // Types

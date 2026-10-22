@@ -28,4 +28,18 @@ describe("the launcher's area grids", () => {
     expect(browseAndSearch).toContain("APP_TILE_GRID");
     expect(browseAndSearch).toContain("FOLDER_CARD_GRID");
   });
+
+  it("an area tile's name wraps to a second line instead of being cut (round 2: \"Human Re…\")", () => {
+    const name = /className="([^"]*)">\s*\{group\.label\}/.exec(src)?.[1] ?? "";
+    expect(name).toMatch(/line-clamp-2/);
+    expect(name).not.toMatch(/\btruncate\b/);
+  });
+});
+
+describe("the Add a widget panel", () => {
+  it("never cuts a widget's name; its description gives way (round 2: \"Dashboa…\")", () => {
+    const panels = readFileSync(join(__dirname, "../components/LaunchpadPanels.tsx"), "utf8");
+    expect(panels).toMatch(/<span className="shrink-0">\{spec\.label\}<\/span>/);
+    expect(panels).toMatch(/className="ml-auto min-w-0 truncate[^"]*">\{spec\.describe\(spec\.defaultConfig\)\}/);
+  });
 });

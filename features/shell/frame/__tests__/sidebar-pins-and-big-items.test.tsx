@@ -3,13 +3,14 @@
  *   1. Pinned: the person's pins as real links; empty = the space plus a short hint; no `pins`
  *      prop = no section; a plain click goes to the host's handler;
  *   2. Big items: off | top | bottom (default bottom); the current product is highlighted; every
- *      row opens a new tab (a product switch always does).
+ *      row opens a new tab (a product switch always does); they are the person's own first grid
+ *      favorites, in their order (owner, 2026-10-22: never a hardcoded list).
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { AppFrame, type AppFrameProps } from "../AppFrame";
 import { PINNED_EMPTY_HINT } from "../FrameSidebar";
-import { BIG_ITEM_IDS, PRODUCTS, PRODUCT_FAMILIES } from "../products";
+import { BIG_ITEM_COUNT, DEFAULT_GRID_FAVORITES, PRODUCTS, PRODUCT_FAMILIES } from "../products";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 class NoopResizeObserver {
@@ -110,10 +111,17 @@ describe("Big items", () => {
     expect(region()).toBeNull();
   });
 
+  it("big items are the person's own first grid favorites, in their order", () => {
+    mount({ favorites: ["crm", "nope", "chat"] });
+    const hrefs = [...region()!.querySelectorAll<HTMLAnchorElement>("a")].map((a) => a.getAttribute("href"));
+    const href = (id: string) => PRODUCTS.find((p) => p.id === id)!.homeHref;
+    expect(hrefs).toEqual([href("crm"), href("chat")]);
+  });
+
   it("lists the big products, highlights the current one, and every row opens a new tab", () => {
-    mount();
+    mount({ favorites: DEFAULT_GRID_FAVORITES });
     const links = [...region()!.querySelectorAll<HTMLAnchorElement>("a")];
-    expect(links).toHaveLength(BIG_ITEM_IDS.length);
+    expect(links).toHaveLength(BIG_ITEM_COUNT);
     expect(links.every((a) => a.target === "_blank")).toBe(true);
     const current = links.filter((a) => a.getAttribute("aria-current") === "page");
     expect(current).toHaveLength(1);

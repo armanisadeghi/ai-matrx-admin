@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { ChevronRight } from "lucide-react";
 import type { RouteDisplayProps } from "./types";

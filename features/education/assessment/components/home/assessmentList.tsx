@@ -34,7 +34,7 @@ import type {
 import type { ListScopeKind } from "@/lib/list-scope/types";
 import { withStandardLanes } from "@/lib/list-scope/types";
 import { visibilityWords } from "@/lib/record-words";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Play } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import {

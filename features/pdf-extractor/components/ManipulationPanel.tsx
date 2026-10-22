@@ -19,7 +19,7 @@
  * or update extracted text against the new boundaries.
  */
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput, Input, Select } from "@ai-matrx/design-system/controls";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowDownToLine,
@@ -41,7 +41,6 @@ import {
   Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input, Select } from "@ai-matrx/design-system/controls";
 import { usePdfClient as usePdfDemoApi } from "@/features/pdf/api/client";
 import { useDownloadBlob } from "@/features/pdf/hooks/useDownloadBlob";
 import { saveDerivative as saveDerivativeCanonical } from "@/features/pdf/services/saveDerivative";

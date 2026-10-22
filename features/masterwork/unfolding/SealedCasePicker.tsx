@@ -19,7 +19,7 @@
  */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { FileLock2 } from "lucide-react";
 
 import { Label } from "@/components/ui/label";

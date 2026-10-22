@@ -18,7 +18,7 @@
 import { workflowReviewHref } from "@/features/workflow-runtime/review/hrefs";
 import { Archive, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { RichContentPreview } from "@ai-matrx/rich-content/levels/RichContentPreview";
 import {
   Muted,

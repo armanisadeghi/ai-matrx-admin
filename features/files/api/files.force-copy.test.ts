@@ -1,25 +1,16 @@
 import { uploadFileWithProgress } from "./files";
 
-jest.mock("@/lib/python-client", () => ({
-  uploadWithProgress: jest.fn(),
-}));
-
-const mockUploadWithProgress: jest.Mock = jest.requireMock(
-  "@/lib/python-client",
-).uploadWithProgress;
-
 jest.mock("@/lib/api/server-api", () =>
-  require("@/lib/api/test-support/serverApiEnvelopeMock").serverApiEnvelopeMock(),
+  require("@/lib/api/test-support/recordingServerApi").recordingServerApiModule(),
 );
 
-it("sends strict force-new-copy intent and reason in multipart", async () => {
-  mockUploadWithProgress.mockResolvedValue({
-    data: { file_id: "copy-2", file_path: "copy (1).txt" },
-    meta: { requestId: "req-1", status: 200, serverRequestId: null },
-  });
+const api = jest.requireMock("@/lib/api/server-api");
+
+it("sends strict force-new-copy intent and reason in multipart, with progress", async () => {
+  api.respondWith(() => ({ file_id: "copy-2", file_path: "copy (1).txt" }));
   const file = new File(["same bytes"], "copy.txt", { type: "text/plain" });
 
-  await uploadFileWithProgress(
+  const { data } = await uploadFileWithProgress(
     {
       file,
       filePath: "copy (1).txt",
@@ -29,7 +20,11 @@ it("sends strict force-new-copy intent and reason in multipart", async () => {
     jest.fn(),
   );
 
-  const form = mockUploadWithProgress.mock.calls[0]?.[1] as FormData;
+  expect(data.file_id).toBe("copy-2");
+  const call = api.lastServerApiCall();
+  expect(call.path).toBe("/files/upload");
+  expect(typeof call.options.onUploadProgress).toBe("function");
+  const form = call.args.body as FormData;
   expect(form.get("intent")).toBe("force_new_copy");
   expect(form.get("reason")).toBe(
     "User selected Make a copy in the duplicate upload dialog",

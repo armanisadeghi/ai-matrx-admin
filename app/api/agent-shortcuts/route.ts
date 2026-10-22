@@ -7,6 +7,7 @@ import { toGlobalOwnershipWire, toGlobalOwnershipWireList } from "@/lib/organiza
 import { pickWritableShortcutFields } from "./writable-fields";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { extractErrorMessage } from "@/utils/errors";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 /**
  * Keys the CREATE body legitimately carries that are not columns: the scope
@@ -243,7 +244,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error("Error creating agent shortcut:", error);
       const status =
-        error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
+        error.code === PG_CODES.insufficientPrivilege || error.code === PG_CODES.pgrstJwtInvalid ? 403 : 500;
       return NextResponse.json(
         { error: "Failed to create agent shortcut", details: error.message },
         { status },

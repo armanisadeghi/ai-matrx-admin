@@ -36,7 +36,7 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ServerNotes } from "@/components/official/ServerNotes";
 import { toast } from "@/lib/toast";
 import { useAppDispatch } from "@/lib/redux/hooks";

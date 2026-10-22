@@ -17,6 +17,7 @@
  * deep links work and a refresh keeps the right pane open.
  */
 
+import { useHostNamesRecord } from "@/features/shell/host-chrome/RecordHostChrome";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActiveContextLensChip } from "@/features/scopes/components/active-context/ActiveContextLensChip";
@@ -740,6 +741,7 @@ function StoreDetailPanel({
    */
   onStoreUpdated: () => void;
 }) {
+  const hostNamesStore = useHostNamesRecord({ token: "data_store", id: storeId });
   const [editing, setEditing] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -1018,8 +1020,13 @@ function StoreDetailPanel({
 
       <header className="border-b px-4 py-3 space-y-2 shrink-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <Database className="h-4 w-4 text-muted-foreground" />
-          <h1 className="type-title">{s.name}</h1>
+          {/* A host that names this knowledge source (a board tile) already shows its icon and name. */}
+          {hostNamesStore ? null : (
+            <>
+              <Database className="h-4 w-4 text-muted-foreground" />
+              <h1 className="type-title">{s.name}</h1>
+            </>
+          )}
           <span className="type-meta px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground uppercase tracking-wide">
             {s.kind ?? "general"}
           </span>

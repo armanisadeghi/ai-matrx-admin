@@ -102,6 +102,20 @@ const selectShellPreviewBody = (state: RootState) => state.shellLayout?.previewB
 
 const DEFAULT_LANDING = "default";
 
+const ORG_LANDING_PREFIX = "org:";
+
+/** Picker options: an organization's launchpad carries a secondary "Organization" tag so it never reads as a twin. */
+export function landingOptions(entries: readonly { key: string; title: string; owner: string }[]) {
+  return [
+    { value: DEFAULT_LANDING, label: "Dashboard" },
+    ...entries.map((e) =>
+      e.owner === "org"
+        ? { value: `${ORG_LANDING_PREFIX}${e.key}`, label: e.title, description: "Organization" }
+        : { value: e.key, label: e.title },
+    ),
+  ];
+}
+
 /** Where sign-in lands: the platform default, or one of your launchpads (the layout's `landing`). */
 function LandingSection() {
   const store = useShellLayoutStore();
@@ -109,9 +123,12 @@ function LandingSection() {
   if (store.loading) return null;
   const own = store.person ? parseShellLayoutBody(store.person.body).body : null;
   const org = store.organization ? parseShellLayoutBody(store.organization.body).body : null;
-  const current = own?.landing?.kind === "launchpad" ? own.landing.key : DEFAULT_LANDING;
-  const options = [{ value: DEFAULT_LANDING, label: "Dashboard" }, ...launchpads.entries.map((e) => ({ value: e.key, label: e.title }))];
-  const choose = async (key: string) => {
+  const landingKey = own?.landing?.kind === "launchpad" ? own.landing.key : DEFAULT_LANDING;
+  const options = landingOptions(launchpads.entries);
+  // The same key can be the organization's launchpad AND the member's copy: the member's own wins the mark.
+  const current = options.some((o) => o.value === landingKey) ? landingKey : `${ORG_LANDING_PREFIX}${landingKey}`;
+  const choose = async (picked: string) => {
+    const key = picked.startsWith(ORG_LANDING_PREFIX) ? picked.slice(ORG_LANDING_PREFIX.length) : picked;
     const body = (now: typeof own) => {
       const { landing: _old, ...rest } = startingBody(now, org, "person");
       return key === DEFAULT_LANDING ? rest : { ...rest, landing: { kind: "launchpad" as const, key } };

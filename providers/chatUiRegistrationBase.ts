@@ -7,7 +7,7 @@
 // LAZY vs STATIC (2026-10-13, first-load campaign): component slots load through ONE
 // implementation module (chatUiRegistrationBaseImpl.ts) via `lazySlot` below. STATIC on purpose:
 //   · DockedSidePanel — the (core) shell's chat dock draws it on first paint.
-//   · CopyButtons, EntityRef — drawn inside kind trees rendered synchronously (static markup /
+//   · CopyButtons — drawn inside kind trees rendered synchronously (static markup /
 //     SSR) and reached statically elsewhere anyway (modeled saving ~0).
 //   · AnswerValueView → AnswerValueSlot: text draws at once; a structured value loads the kind
 //     stack through the kind front door's existing lazy edge (a static AnswerValueView here put
@@ -22,6 +22,8 @@
 
 import dynamic from "next/dynamic";
 import { registerChatUi } from "@ai-matrx/chat/host/ui-slots";
+// Binds @ai-matrx/records-ui/entity-ref (EntityRef, doors, toastDoor, RecordStamps) to this app, once.
+import "@/features/data-tables/records-ui-host/entityRefHost";
 import { surfaceManifestHost } from "./surfaceManifestHost";
 import {
   lazySlotsFrom,
@@ -36,7 +38,6 @@ import {
 // markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modeled 0.01 MB).
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { AnswerValueSlot } from "@/components/official/structured-value/AnswerValueSlot";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { DockedSidePanel } from "@/components/official/side-panel/DockedSidePanel";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -110,7 +111,6 @@ const asSlot = <T>(impl: T) => impl as unknown as never;
 const lazySlot = lazySlotsFrom(() =>
   import("@/providers/chatUiRegistrationBaseImpl").then((m) => m.baseSlotImpls),
 );
-const InfoHint = lazySlot("InfoHint", SlotLoadingGlyphSmall);
 const ErrorAlchemyMenu = lazySlot("ErrorAlchemyMenu", SlotLoadingGlyph);
 const AdvancedMenu = lazySlot("AdvancedMenu");
 const TableChooser = lazySlot("TableChooser", SlotLoadingControl);
@@ -242,10 +242,8 @@ registerChatUi({
   RecordChangeApprovalCard,
   BackgroundRunCard,
   CopyButtons,
-  InfoHint,
   AnswerValueView: AnswerValueSlot,
   ErrorAlchemyMenu,
-  EntityRef,
   AdvancedMenu,
   DockedSidePanel,
   EditableContextMenu,

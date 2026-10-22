@@ -1,8 +1,10 @@
 /**
- * Parity: the best-address rule runs the SAME fixture the server door runs
- * (aidream `aidream/services/crm/tests/best_contact_point_cases.json`). The
- * inline cases below always run; the shared fixture runs whenever the aidream
- * checkout sits beside this one (the workspace layout), and says so when not.
+ * Parity: the best-address rule runs the SAME cases the server door runs. This
+ * repo carries its own copy (`best-contact-point.cases.json`), so the cases
+ * always run — in CI too. Wherever the aidream checkout sits beside this one,
+ * the copy must be byte-identical to aidream's
+ * `aidream/services/crm/tests/best_contact_point_cases.json` (aidream checks
+ * the same from its side).
  */
 import fs from "fs";
 import path from "path";
@@ -16,27 +18,21 @@ interface SharedCase {
   expected: Record<string, string>;
 }
 
-const SHARED_PATH = path.resolve(
+const LOCAL_PATH = path.resolve(__dirname, "best-contact-point.cases.json");
+const AIDREAM_PATH = path.resolve(
   __dirname,
   "../../../../aidream/aidream/services/crm/tests/best_contact_point_cases.json",
 );
-const shared: { today: string; cases: SharedCase[] } | null = fs.existsSync(
-  SHARED_PATH,
-)
-  ? JSON.parse(fs.readFileSync(SHARED_PATH, "utf8"))
-  : null;
+const shared: { today: string; cases: SharedCase[] } = JSON.parse(
+  fs.readFileSync(LOCAL_PATH, "utf8"),
+);
 
 const toObject = (m: Map<string, string>) => Object.fromEntries(m);
 
-describe("pickBestContactPoints — shared fixture with the server door", () => {
-  if (!shared) {
-    it.skip(`SHARED FIXTURE MISSING at ${SHARED_PATH} — parity not checked`, () => {});
-    // eslint-disable-next-line no-console
-    console.warn(
-      `[parity] best_contact_point_cases.json not found at ${SHARED_PATH}`,
-    );
-    return;
-  }
+describe("pickBestContactPoints — shared cases with the server door", () => {
+  it("has cases to run", () => {
+    expect(shared.cases.length).toBeGreaterThan(0);
+  });
   it.each(shared.cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
     expect(
       toObject(pickBestContactPoints(c.points, c.list_kind, shared.today)),
@@ -50,6 +46,16 @@ describe("pickBestContactPoints — shared fixture with the server door", () => 
         ),
       ),
     ).toEqual(c.expected);
+  });
+});
+
+describe("best-contact-point.cases.json — byte-identical to aidream's", () => {
+  if (!fs.existsSync(AIDREAM_PATH)) {
+    it.skip(`PARITY NOT CHECKED: aidream checkout not beside this one (${AIDREAM_PATH})`, () => {});
+    return;
+  }
+  it("matches aidream byte for byte", () => {
+    expect(fs.readFileSync(LOCAL_PATH)).toEqual(fs.readFileSync(AIDREAM_PATH));
   });
 });
 

@@ -178,6 +178,8 @@ export const marketingBrandAssetsManifest: SurfaceManifest = {
   description:
     "The brand's asset desk — owned library, research imagery, stock sources, and AI image generation. Split out of matrx-user/marketing-site-media on 2026-08-15.",
   label: "Brand Asset Desk",
+  situation:
+    "They are in the brand's asset desk on the {assets_view} view: the brand's own image library, research images, stock sources and AI image generation, with the brand's image standards in your context. They can stage an AI image order.",
   urlPattern: "/marketing/[brandId]/identity/media",
   inheritsFrom: "matrx-user/marketing-brand",
   readiness: "partial",

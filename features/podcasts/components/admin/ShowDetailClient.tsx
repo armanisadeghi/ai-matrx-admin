@@ -29,12 +29,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import NextLink from "next/link";
+import NextLink from "@/components/navigation/AppLink";
 import { ShowForm } from "./PodcastForm";
 import { podcastService } from "../../service";
 import type { PcShow, PcEpisodeWithShow } from "../../types";
 import { InlineMediaRef } from "@ai-matrx/media/react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { PublicPageLink } from "./PublicPageLink";
 import { podcastEpisodeAdminHref, podcastPublicHref } from "../../utils";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1

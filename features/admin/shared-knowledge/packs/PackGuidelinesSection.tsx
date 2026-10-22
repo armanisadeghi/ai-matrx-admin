@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "@/lib/toast";

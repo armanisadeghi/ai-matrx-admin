@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { VoiceTransferReceipt } from "./VoiceTransferReceipt";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { InfoHint } from "@ai-matrx/design-system/controls";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { loadTransferContexts } from "./transfer-context-service";
 import type { TransferContextItem } from "./transfer-context";
 export function VoiceTransferHistory() {

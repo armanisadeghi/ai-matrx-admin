@@ -12,7 +12,7 @@
 // (DueDateLabel / AssignmentStatusBadge / ScorePill) so an assignment looks the
 // same here as inside its class.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowUpRight, ClipboardList } from "lucide-react";
 import {
   AssignmentStatusBadge,

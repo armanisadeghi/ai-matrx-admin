@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

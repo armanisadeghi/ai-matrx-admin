@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { RecordId, Skeleton } from "@ai-matrx/design-system";
-import { useDeclareFrameCrumbs, type FramePageCrumb } from "@/features/shell/frame-host/framePageHeader";
+import { frameCrumbOf, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 
 export interface CrumbOption {
   label: string;
@@ -145,18 +145,6 @@ function CrumbOptions({ crumb }: { crumb: Crumb }) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
-
-/** A template crumb as the frame's crumb data (the classic-only drawing hints stay behind). */
-export function frameCrumbOf(crumb: Crumb): FramePageCrumb {
-  return {
-    label: crumb.label,
-    href: crumb.href,
-    options: crumb.options,
-    optionsLabel: crumb.optionsLabel,
-    optionsAllHref: crumb.optionsAllHref,
-    optionsAllLabel: crumb.optionsAllLabel,
-  };
 }
 
 export function CrumbNode({ crumb, isLast }: { crumb: Crumb; isLast: boolean }) {

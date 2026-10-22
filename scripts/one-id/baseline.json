@@ -1,6 +1,6 @@
 {
   "note": "Shrink-only: hand-built id displays not yet on <RecordId> (the adoption census). Lower a count by moving a surface onto RecordId; never add a key or raise a count (scripts/one-id/check-one-id.mjs).",
   "counts": {
-    "hand-copied-id|aidream:apps/shared/detail/src/react/DetailHeader.tsx": 2
+    "hand-copied-id|aidream:apps/shared/detail/src/react/DetailHeader.tsx": 1
   }
 }

@@ -10,7 +10,7 @@
 // (`study_session.aggregate_score` is never written today, so nothing here
 // trusts it).
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import {
   Trophy,
   Flame,

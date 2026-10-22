@@ -26,7 +26,7 @@ import { TableSaveToMenu } from "@ai-matrx/rich-content/display/tables/TableSave
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useCatalogBoundSelector } from "../shared/useCatalogBoundSelector";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { selectBlindActive } from "../redux/selectors";
 import { selectMountedBattleName } from "../shared/activeBattleColumns";
 import {

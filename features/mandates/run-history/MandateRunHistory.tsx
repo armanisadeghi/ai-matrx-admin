@@ -19,10 +19,10 @@
 // the run, each with its peek and new-tab door; "Open" goes to the canonical
 // viewer of what it produced — the conversation, or the workflow run page.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useEffect, useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,8 +38,8 @@ import type {
   MatrxColumnDef,
   MatrxDataTableQueryState,
 } from "@ai-matrx/design-system/data-table/types";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { NewTabLink } from "@ai-matrx/records-ui/entity-ref";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 import { conversationHref } from "@/features/hindsight/subject-doors";

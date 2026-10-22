@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createPersonalWhatsAppClient, personalWhatsAppDevelopmentTarget, type PersonalAccount, type PersonalGrant } from "./personal-whatsapp-service";

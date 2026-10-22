@@ -2,46 +2,47 @@
 
 // features/education/media/audio/components/AudioStudyNew.tsx
 //
-// The "generate audio study" form. Pick a source (a deck or a free-text topic),
-// a format (overview / debate / panel), cast size, and — for a deck —
-// weak-area adaptivity. Metered via useEntitlement('education.audio_generate')
-// with the limit shown BEFORE the action (TRUST mandate: never a mid-workflow
-// ambush). Delegates the actual create+stream+navigate to useAudioStudyCreate.
+// Create an audio study: Create -> choose sources, style and details -> results,
+// the same page shape as every Education create screen (`EducationCreatePage`).
+// Sources go through the one Source input (a deck via Use existing, a topic via
+// the Topic tile) and the server's resolve; Style is the format (overview /
+// debate / panel), cast size, and — when a deck is picked — weak-area
+// adaptivity. Metered via useEntitlement('education.audio_generate') with the
+// limit shown BEFORE the action (TRUST mandate: never a mid-workflow ambush).
+// Delegates the run row + artifact + stream + navigate to useAudioStudyCreate.
 //
 // React Compiler is on: no manual memo.
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import {
-  ArrowLeft,
-  Headphones,
-  Loader2,
-  MessagesSquare,
-  Radio,
-  Users,
-} from "lucide-react";
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Headphones, MessagesSquare, Radio, Users } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input, Select } from "@ai-matrx/design-system/controls";
+import { Label } from "@/components/ui/label";
+import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { fcService } from "@/features/flashcards/data/fcService";
-import type { FcSetRow } from "@/features/flashcards/data/types";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
-import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   createEducationAudioStudyScope,
   type AudioDeckOption,
 } from "@/features/surfaces/manifests/education-audio-study.manifest";
+import { EducationCreatePage } from "@/features/education/create/EducationCreatePage";
+import { leftOutLine, seedFromParams, useEducationSources } from "@/features/education/create/useEducationSources";
+import { useCreateRun } from "@/features/education/create/useCreateRun";
+import { restoreStudyRunRequest } from "@/features/education/create/createRunRequest";
+import { useDeckChoices } from "@/features/education/create/useDeckChoices";
+import { STUDY_FROM_DECK_KINDS } from "@/features/education/create/studyFromDeck";
+import { useStyleDraft } from "@/features/education/create/useStyleDraft";
 import { useAudioStudyCreate } from "../useAudioStudyCreate";
 import type { EduAudioFormat } from "../../types";
-import { ProTextarea } from "@/components/official/ProTextarea";
 
 const SURFACE_NAME = "matrx-user/education-audio-study";
-
-type SourceKind = "deck" | "topic";
+/** The Source input's key on this page — picks are held and kept under it. */
+export const AUDIO_STUDY_SURFACE_KEY = "education:audio-study:new";
+/** The Style and details answers, kept across a reload like the Sources are. */
+export const AUDIO_STUDY_STYLE_DRAFT_ID = "education:audio-study:new:style";
 
 const FORMATS: {
   id: EduAudioFormat;
@@ -73,8 +74,34 @@ const FORMATS: {
   },
 ];
 
+const PANEL_HOSTS = [3, 4, 5, 6] as const;
+
+function isFormat(v: unknown): v is EduAudioFormat {
+  return FORMATS.some((f) => f.id === v);
+}
+
+interface StyleDraft {
+  format?: EduAudioFormat;
+  hostCount?: number;
+  adaptive?: boolean;
+}
+
+/** Map the stored bag back to the form — refusing (and naming) anything unknown. */
+export function restoreAudioStyle(data: Record<string, unknown>): { values: StyleDraft; rejectedKeys: string[] } {
+  const values: StyleDraft = {};
+  const rejectedKeys: string[] = [];
+  for (const [key, v] of Object.entries(data)) {
+    if (key === "format" && isFormat(v)) values.format = v;
+    else if (key === "hostCount" && typeof v === "number" && Number.isInteger(v) && v >= 1 && v <= 6) values.hostCount = v;
+    else if (key === "adaptive" && typeof v === "boolean") values.adaptive = v;
+    else rejectedKeys.push(key);
+  }
+  return { values, rejectedKeys };
+}
+
+const defaultHostsOf = (format: EduAudioFormat) => FORMATS.find((f) => f.id === format)?.defaultHosts ?? 2;
+
 export function AudioStudyNew() {
-  const router = useRouter();
   const params = useSearchParams();
   const { create, busy } = useAudioStudyCreate();
   const gen = useEntitlementGuard("education.audio_generate");
@@ -82,263 +109,224 @@ export function AudioStudyNew() {
   // blocked from AI generation until a parent approves (never a silent failure).
   const coppa = useAiComplianceGate();
 
-  const [decks, setDecks] = useState<FcSetRow[]>([]);
-  const [sourceKind, setSourceKind] = useState<SourceKind>(
-    params.get("source") === "topic" ? "topic" : "deck",
-  );
-  const [deckId, setDeckId] = useState<string>(params.get("deck") ?? "");
-  const [topic, setTopic] = useState<string>("");
-  const [format, setFormat] = useState<EduAudioFormat>(
-    (params.get("format") as EduAudioFormat) ?? "overview",
-  );
-  const [hostCount, setHostCount] = useState<number>(2);
+  // The learner's decks — only for what an agent is offered, read when it asks.
+  const deckChoices = useDeckChoices();
+  const formatParam = params.get("format");
+  const initialFormat: EduAudioFormat = isFormat(formatParam) ? formatParam : "overview";
+  const [format, setFormatState] = useState<EduAudioFormat>(initialFormat);
+  const [hostCount, setHostCount] = useState<number>(defaultHostsOf(initialFormat));
   const [adaptive, setAdaptive] = useState<boolean>(true);
+  const [reading, setReading] = useState(false);
 
-  useEffect(() => {
-    fcService.listDecks().then((res) => {
-      if (res.data) setDecks(res.data);
-    });
-  }, []);
+  const sources = useEducationSources(AUDIO_STUDY_SURFACE_KEY, {
+    seed: seedFromParams(params),
+    onRelease: () => void start(),
+    lateMark: "Not in this audio",
+  });
 
-  // Keep host count sensible per format when the format changes.
-  useEffect(() => {
-    const f = FORMATS.find((x) => x.id === format);
-    if (f) setHostCount(f.defaultHosts);
-  }, [format]);
+  const styleDraft = useStyleDraft<StyleDraft>(AUDIO_STUDY_STYLE_DRAFT_ID, restoreAudioStyle, (v) => {
+    if (v.format) setFormatState(v.format);
+    if (v.hostCount !== undefined) setHostCount(v.hostCount);
+    if (v.adaptive !== undefined) setAdaptive(v.adaptive);
+  });
 
-  async function handleGenerate() {
-    if (sourceKind === "deck" && !deckId) {
-      toast.error("Pick a deck");
-      return;
-    }
-    if (sourceKind === "topic" && topic.trim().length < 3) {
-      toast.error("Type a topic to make audio about");
-      return;
-    }
-    // School-safe gate FIRST (COPPA): is this account allowed to collect/process
-    // data at all? An unconsented under-13 opens the "a parent must approve"
-    // dialog and never reaches the billing gate or starts a run.
-    if (!(await coppa.ensureAllowed())) return;
-    // Canonical guard: server-truth check BEFORE spending; a cap-hit opens the
-    // respectful contextual paywall (not a toast) and never starts the work.
-    await gen.guard(async () => {
-      const ok = await create({
-        format,
-        sourceKind,
-        deckId: sourceKind === "deck" ? deckId : undefined,
-        topic: sourceKind === "topic" ? topic : undefined,
-        hostCount,
-        adaptive: sourceKind === "deck" && adaptive,
+  // The start lives in this tab until the run row exists: a reload says so and offers the same request.
+  const createRun = useCreateRun(`${AUDIO_STUDY_SURFACE_KEY}:run`, restoreStudyRunRequest(restoreAudioStyle), sources, {
+    onRedo: ({ style }) => {
+      if (style.format) setFormatState(style.format);
+      if (style.hostCount !== undefined) setHostCount(style.hostCount);
+      if (style.adaptive !== undefined) setAdaptive(style.adaptive);
+    },
+  });
+
+  // A new format brings its own sensible cast size.
+  const chooseFormat = (next: EduAudioFormat) => {
+    setFormatState(next);
+    setHostCount(defaultHostsOf(next));
+    styleDraft.patch({ format: next, hostCount: defaultHostsOf(next) });
+  };
+
+  async function run() {
+    setReading(true);
+    try {
+      await createRun.track(sources.runRequest({ format, hostCount, adaptive }), async (ctx) => {
+        let prepared;
+        try {
+          prepared = await sources.prepare();
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "Couldn't read the sources");
+          return;
+        } finally {
+          setReading(false);
+        }
+        const ok = await create({
+          format,
+          material: prepared,
+          hostCount,
+          adaptive: sources.deckCount > 0 && adaptive,
+          beforeSave: ctx.saving,
+        });
+        // Meter only a real generation; a failed/early-returned create burns nothing.
+        if (ok) {
+          await gen.commit({ initiation: "user" });
+          const leftOut = sources.clearUsed();
+          if (leftOut > 0) toast.info(leftOutLine(leftOut, "the audio"));
+          styleDraft.clear();
+        }
       });
-      // Meter only a real generation; a failed/early-returned create burns nothing.
-      if (ok) await gen.commit({ initiation: "user" });
-    });
+    } finally {
+      setReading(false);
+      sources.endRun();
+    }
+  }
+
+  async function start() {
+    // School-safe gate FIRST (COPPA), then the server-truth entitlement check.
+    if (!(await coppa.ensureAllowed())) return;
+    await gen.guard(run);
+  }
+
+  function handleMake() {
+    if (sources.blockedReason || busy || reading || gen.isChecking) return;
+    if (sources.waitingForClean.length > 0) {
+      sources.setHolding(true);
+      return;
+    }
+    void start();
   }
 
   // Read at trigger time, never from stale closure state.
-  const buildScope = () =>
-    createEducationAudioStudyScope({
+  const buildScope = () => {
+    const picked = sources.ready.filter((s) => s.draft.ref?.resource_type === "fc_set");
+    const firstDeck = picked[0]?.draft;
+    const kind = !sources.hasSources ? "topic" : picked.length === sources.ready.length ? "deck" : "sources";
+    void deckChoices.load();
+    const decks = deckChoices.decks;
+    return createEducationAudioStudyScope({
       view: "new",
-      request_source_kind: sourceKind,
-      request_deck_id: deckId || undefined,
-      request_topic: topic || undefined,
+      request_source_kind: kind,
+      request_deck_id: firstDeck?.ref?.resource_id || undefined,
+      request_topic: sources.topic || undefined,
       request_format: format,
       request_host_count: hostCount,
       request_adaptive: adaptive,
       generation_request: {
-        source_kind: sourceKind,
-        deck_id: sourceKind === "deck" ? deckId || null : null,
-        topic: sourceKind === "topic" ? topic || null : null,
+        source_kind: kind,
+        deck_id: firstDeck?.ref?.resource_id ?? null,
+        topic: sources.topic || null,
         format,
         host_count: hostCount,
         adaptive,
       },
-      available_decks: decks.map(
-        (d): AudioDeckOption => ({ id: d.id, name: d.name }),
-      ),
+      available_decks: decks.map((d): AudioDeckOption => ({ id: d.id, name: d.name })),
     });
+  };
 
+  const count = sources.ready.length;
+  const formatLabel = FORMATS.find((f) => f.id === format)?.label ?? "Audio";
   return (
     <SurfaceRuntimeProvider surfaceName={SURFACE_NAME} getScope={buildScope}>
-    <div className="mx-auto w-full max-w-2xl space-y-6 p-4">
-      <div className="flex items-center gap-3">
-        <Button
-          icon={<ArrowLeft />}
-          variant="quiet"
-          onClick={() => router.push("/education/audio-study")}
-          aria-label="Back"
-        />
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">
-            Generate audio study
-          </h1>
-        </div>
-      </div>
-
-      {/* Source */}
-      <section className="space-y-2">
-        <label className="text-sm font-medium text-foreground">Source</label>
-        <div className="flex gap-2">
-          <SegBtn
-            active={sourceKind === "deck"}
-            onClick={() => setSourceKind("deck")}
-          >
-            From a deck
-          </SegBtn>
-          <SegBtn
-            active={sourceKind === "topic"}
-            onClick={() => setSourceKind("topic")}
-          >
-            From a topic
-          </SegBtn>
-        </div>
-        {sourceKind === "deck" ? (
-          <Select
-            aria-label="Deck"
-            className="w-full"
-            value={deckId}
-            onValueChange={setDeckId}
-            options={[
-              { value: "", label: "Select a deck…" },
-              ...decks.map((d) => ({ value: d.id, label: d.name })),
-            ]}
-          />
-        ) : (
-          <ProTextarea
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            placeholder="e.g. The causes of the French Revolution"
-            className="min-h-20 text-base"
-          />
-        )}
-        {sourceKind === "topic" && (
-          <p className="text-[11px] text-muted-foreground">
-            A topic isn&apos;t grounded in your own material — the audio is
-            reasoned from general knowledge and labeled honestly.
-          </p>
-        )}
-      </section>
-
-      {/* Format */}
-      <section className="space-y-2">
-        <label className="text-sm font-medium text-foreground">Format</label>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          {FORMATS.map((f) => {
-            const Icon = f.icon;
-            const active = format === f.id;
-            return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setFormat(f.id)}
-                className={cn(
-                  "flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors",
-                  active
-                    ? "border-primary bg-primary/5"
-                    : "border-border bg-card hover:bg-accent",
-                )}
-              >
-                <Icon
+      <EducationCreatePage
+        title="New audio study"
+        backHref="/education/audio-study"
+        surfaceKey={AUDIO_STUDY_SURFACE_KEY}
+        purpose="your audio study"
+        extraKinds={STUDY_FROM_DECK_KINDS}
+        sources={sources}
+        styleDraft={styleDraft}
+        onStartFresh={() => {
+          setFormatState("overview");
+          setHostCount(defaultHostsOf("overview"));
+          setAdaptive(true);
+        }}
+        make={{
+          label: "Make the audio",
+          busyLabel: "Starting your audio…",
+          icon: <Headphones />,
+          busy: busy || reading,
+          checking: gen.isChecking,
+          onMake: handleMake,
+          summary: sources.hasSources
+            ? `${formatLabel} of ${count} ${count === 1 ? "source" : "sources"}${sources.topic ? `, focused on “${sources.topic}”` : ""}`
+            : `${formatLabel} about “${sources.topic}”`,
+          capability: "education.audio_generate",
+          gates: (
+            <>
+              <coppa.Gate />
+              <gen.Paywall />
+            </>
+          ),
+          operation: "Make an audio study",
+        }}
+        run={{
+          state: createRun,
+          stoppedLabel: "Starting your audio",
+          savingWhat: "your audio study",
+          listLabel: "Your audio studies",
+        }}
+      >
+        <div className="flex flex-col gap-1.5">
+          <Label>Format</Label>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {FORMATS.map((f) => {
+              const Icon = f.icon;
+              const active = format === f.id;
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  disabled={busy || reading}
+                  aria-pressed={active}
+                  onClick={() => chooseFormat(f.id)}
                   className={cn(
-                    "h-4 w-4",
-                    active ? "text-primary" : "text-muted-foreground",
+                    "flex min-h-11 flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors disabled:opacity-50",
+                    active ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-accent",
                   )}
-                />
-                <span className="text-sm font-medium text-foreground">
-                  {f.label}
-                </span>
-                <span className="text-[11px] leading-tight text-muted-foreground">
-                  {f.blurb}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Options */}
-      <section className="space-y-3">
-        {format === "panel" && (
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-foreground">Hosts</span>
-            <div className="flex items-center gap-2">
-              {[3, 4, 5, 6].map((n) => (
-                <SegBtn
-                  key={n}
-                  active={hostCount === n}
-                  onClick={() => setHostCount(n)}
                 >
-                  {String(n)}
-                </SegBtn>
-              ))}
-            </div>
+                  <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
+                  <span className="text-sm font-medium text-foreground">{f.label}</span>
+                  <span className="text-[11px] leading-tight text-muted-foreground">{f.blurb}</span>
+                </button>
+              );
+            })}
           </div>
-        )}
-        {sourceKind === "deck" && (
+        </div>
+
+        {format === "panel" ? (
+          <div className="flex flex-col gap-1.5">
+            <Label>Hosts</Label>
+            <SegmentedControl
+              aria-label="Hosts"
+              value={String(hostCount)}
+              onValueChange={(v) => {
+                setHostCount(Number(v));
+                styleDraft.patch({ hostCount: Number(v) });
+              }}
+              data={PANEL_HOSTS.map((n) => ({ value: String(n), label: String(n) }))}
+            />
+          </div>
+        ) : null}
+
+        {sources.deckCount > 0 ? (
           <label className="flex cursor-pointer items-start gap-2">
             <Checkbox
               checked={adaptive}
-              onCheckedChange={(checked) => setAdaptive(checked === true)}
+              disabled={busy || reading}
+              onCheckedChange={(checked) => {
+                setAdaptive(checked === true);
+                styleDraft.patch({ adaptive: checked === true });
+              }}
               className="mt-0.5"
             />
             <span className="text-sm text-foreground">
               Target my weak areas
               <span className="block text-[11px] text-muted-foreground">
-                Spends extra time on the concepts you&apos;ve been struggling
-                with (from your study history).
+                Spends extra time on the concepts you&apos;ve been struggling with.
               </span>
             </span>
           </label>
-        )}
-      </section>
-
-      <EntitlementMeter
-        capability="education.audio_generate"
-        showAllWindows
-        className="justify-center"
-      />
-
-      <Button
-        icon={busy ? (
-          <Loader2 className="animate-spin" />
-        ) : (
-          <Headphones />
-        )}
-        variant="primary"
-        onClick={handleGenerate}
-        disabled={busy || gen.isChecking}
-        className="w-full"
-      >
-        Generate audio
-      </Button>
-      <gen.Paywall />
-      <coppa.Gate />
-    </div>
+        ) : null}
+      </EducationCreatePage>
     </SurfaceRuntimeProvider>
-  );
-}
-
-function SegBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-md border px-3 py-1.5 text-sm transition-colors",
-        active
-          ? "border-primary bg-primary/10 text-primary-ink"
-          : "border-border bg-card text-muted-foreground hover:bg-accent",
-      )}
-    >
-      {children}
-    </button>
   );
 }

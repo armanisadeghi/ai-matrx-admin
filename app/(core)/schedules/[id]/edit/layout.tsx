@@ -1,4 +1,5 @@
 import { createDynamicRouteMetadata } from "@/utils/route-metadata";
+import { displayId } from "@ai-matrx/design-system/record-id-format";
 
 export async function generateMetadata({
   params,
@@ -6,10 +7,12 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const shortId = id.length > 12 ? `${id.slice(0, 8)}…` : id;
+  // THE id's own shortening (server-safe); the "…" says the tab title is cut.
+  const shown = displayId(id);
+  const tabTitle = shown === id ? id : `${shown}…`;
   return createDynamicRouteMetadata("/schedules", {
     titlePrefix: "Edit",
-    title: shortId,
+    title: tabTitle,
     description: "Edit a scheduled task.",
     letter: "SE",
   });

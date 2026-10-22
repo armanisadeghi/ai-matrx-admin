@@ -61,20 +61,19 @@ import { HistoryActorName } from "./HistoryActorName";
 import { clientLazy } from "@ai-matrx/kit/client-lazy";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { savePresentation } from "./savePresentation";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   isUuidValue,
   resolveEntityDoors,
-  tokenFromColumnName,
-} from "@/components/official/entity-ref/doors";
+  doorTokenFromColumnName as tokenFromColumnName,
+} from "@ai-matrx/records-ui/entity-doors";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";
 import { recordPeekOpenInput } from "./canvas/recordPeek";
-import { useCloseDetailWindow, useOpenDetailWindow } from "@/features/overlays/definitions/detailWindow.overlay";
 import { encodeListQuery } from "@ai-matrx/detail";
 import { resolvedListContextMax } from "./listContextCap";
 import { stashPageSeed } from "./pageSeedHandoff";
@@ -313,8 +312,12 @@ function RefCell({
 
 export function DetailHost({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const openWindow = useOpenDetailWindow();
-  const closeWindow = useCloseDetailWindow();
+  const openWindow = useLazyAppOpener("detailWindow", () =>
+    import("@/features/overlays/definitions/detailWindow.overlay").then((m) => m.createDetailWindowOpener),
+  );
+  const closeWindow = useLazyAppOpener("detailWindow", () =>
+    import("@/features/overlays/definitions/detailWindow.overlay").then((m) => m.createDetailWindowCloser),
+  );
   const canvas = useOptionalCanvas();
   const openGoogleConnect = useLazyAppOpener("googleConnectWindow", () =>
     import("@/features/overlays/definitions/googleConnectWindow.overlay").then((m) => m.createGoogleConnectWindowOpener),

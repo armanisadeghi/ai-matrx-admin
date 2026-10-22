@@ -28,7 +28,7 @@
   Saved writes refuse while an editor is open. `scenario_draft` patches the controlled editor;
   text targets support anchored edits. Operator cadence/cost controls remain read-only to agents.
 - `page_overview` is the bounded XML pack; large arrays stay lookup values. The guide is
-  `features/surfaces/guides/admin-proof-runs.md`. The existing `json` kind is the generic minimum
+  `features/surfaces/guides/proof-runs.md`. The existing `json` kind is the generic minimum
   for command inputs; the precise schemas are runtime Zod validators in `scenarioAgentWrites.ts`,
   not new renderable kinds. No proof execution target is exposed.
 - The provider excludes the live console's native subject conversation and selected receipt

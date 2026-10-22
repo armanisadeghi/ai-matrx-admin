@@ -24,10 +24,9 @@ import {
   X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input, PropertyRow } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { SelectChevron, displayId } from "@ai-matrx/design-system";
-import { Input, PropertyRow } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -562,6 +561,15 @@ export function SurfaceAdminDetailPage({
           )}
 
           <AgentIntroSection
+            surfaceName={surface.name}
+            fields={surface as UiSurfaceRow & SurfaceIntroFields}
+            onSaved={(saved) =>
+              setSurface((prev) => ({ ...prev, ...saved }) as UiSurfaceRow)
+            }
+          />
+
+          <AgentIntroSection
+            field="situation"
             surfaceName={surface.name}
             fields={surface as UiSurfaceRow & SurfaceIntroFields}
             onSaved={(saved) =>

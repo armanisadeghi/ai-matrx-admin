@@ -165,6 +165,8 @@ export interface ComparedItem {
   values: Record<string, ComparedValue>;
   notices: string[];
   error: string | null;
+  /** Only the kind's own source failed (no reviews page) while a facet stands: compared on its facets. */
+  source_error?: string | null;
   needs_choice: boolean;
   candidates: PlaceCandidate[];
   /** Plain words when the rating rests on few reviews ("Only 6 reviews"); null when the sample is fine. */
@@ -442,7 +444,8 @@ function parseItem(v: unknown): ComparedItem {
   for (const [k, val] of Object.entries(obj(o.values))) values[k] = parseValue(val);
   return {
     item_id: str(o.item_id),
-    item_index: num(o.item_index),
+    // absent on results saved before items carried their position: left absent, never guessed as 0
+    item_index: typeof o.item_index === "number" && Number.isFinite(o.item_index) ? o.item_index : undefined,
     name: str(o.name) || "Unnamed",
     rank: num(o.rank),
     source_key: str(o.source_key),
@@ -460,6 +463,7 @@ function parseItem(v: unknown): ComparedItem {
     values,
     notices: strList(o.notices),
     error: strOrNull(o.error),
+    source_error: strOrNull(o.source_error),
     needs_choice: bool(o.needs_choice),
     candidates: list(o.candidates, parseCandidate),
     thin_sample: strOrNull(o.thin_sample),

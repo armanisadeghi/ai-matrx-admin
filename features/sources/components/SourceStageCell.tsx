@@ -6,7 +6,7 @@
  * status read → Retry (moved from the retired Sources page's table).
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

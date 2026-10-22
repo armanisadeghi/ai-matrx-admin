@@ -42,7 +42,7 @@ import {
   shapeInstancePermalink,
   shapeRecordsTableHref,
 } from "@/features/content-ir/studio/constants";
-import { tableHref as customTableHref } from "@/features/records-tool-display/readRecordsAnswer";
+import { tableHref as customTableHref, filteredTableHref } from "@/features/records-tool-display/readRecordsAnswer";
 import { ConfirmationBadge } from "./ConfirmationBadge";
 import { resolveKindRecordDisposition } from "./kind-record-registry";
 import "./record-kinds";
@@ -336,6 +336,21 @@ export function KindRecordChrome({
           )}
           {landing.state === "archived" && <span className="text-muted-foreground">Archived</span>}
           {landing.fromSource && <span className="text-muted-foreground">From the original</span>}
+          {/* WHICH ROWS THIS OUTPUT PUT IN OTHER TABLES (CD-AGENT-09): one door per items table, opening only them. */}
+          {landing.store === "record" &&
+            (landing.contents ?? []).map((c) => (
+              <Link
+                key={c.tableId}
+                href={filteredTableHref(c.tableId, c.filter, landing.title?.trim() || null)}
+                data-landing-contents={c.tableId}
+                className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {c.count} in {c.label}
+                <ExternalLink className="h-3 w-3" aria-hidden />
+              </Link>
+            ))}
           {countLink}
           {!landing.fromSource && (
             <span className="ml-auto flex items-center gap-1">

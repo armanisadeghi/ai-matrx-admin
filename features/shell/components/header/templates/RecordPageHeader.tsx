@@ -19,16 +19,8 @@
 // § Page-top templates. The system page specimen renders THIS component inside
 // <HeaderSpecimen>, never a mock.
 
-import { Fragment } from "react";
-import { ChevronDown, type LucideIcon } from "lucide-react";
-import { Badge, Button, type BadgeTone } from "@ai-matrx/design-system/controls";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { type LucideIcon } from "lucide-react";
+import { Badge, type BadgeTone } from "@ai-matrx/design-system/controls";
 import type { RouteNavItem } from "@/features/shell/components/header/RouteModeNav";
 import {
   EntityModeHeader,
@@ -37,6 +29,10 @@ import {
 } from "@/features/shell/components/header/templates/EntityModeHeader";
 import type { Crumb, CrumbOption } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
+import { RouteModeNav } from "@/features/shell/components/header/RouteModeNav";
+import { DesktopAction } from "@/features/shell/components/header/templates/EntityModeHeader";
+import { RecordActionsMenu, type RecordMenuAction } from "@/components/official/RecordActionsMenu";
+import { HostedRecordBar, useHostChromeFor } from "@/features/shell/host-chrome/RecordHostChrome";
 
 export type { EntityHeaderAction as RecordPageAction } from "@/features/shell/components/header/templates/EntityModeHeader";
 export type { Crumb as RecordPageParent } from "@/features/shell/components/header/templates/CrumbTrailHeader";
@@ -93,34 +89,65 @@ export interface RecordPageHeaderProps {
   menu?: { label?: string; items: RecordPageMenuItem[] };
 }
 
-function RecordActionsMenu({ label, items }: { label: string; items: RecordPageMenuItem[] }) {
+/** A page-header menu item as the one record menu takes it. */
+const menuAction = (item: RecordPageMenuItem): RecordMenuAction => ({
+  id: item.id,
+  label: item.label,
+  icon: item.icon,
+  onPress: item.onPress,
+  destructive: item.destructive,
+  disabled: item.disabled,
+  hint: item.hint,
+  group: item.group,
+});
+
+/**
+ * The record's header inside a HOST (a board tile, a window — `RecordHostChrome`): the host's bar names
+ * the record and offers Open, so this is ONE compact row of what only the record has — its status, its
+ * modes, its actions and its Actions menu. No back, no crumbs, nothing in the shell header (the record
+ * is not the page).
+ */
+function HostedRecordPageHeader({
+  record,
+  status,
+  modes,
+  activeModeHref,
+  onModeSelect,
+  actions,
+  menu,
+}: RecordPageHeaderProps) {
+  const menuItems = menu?.items ?? [];
+  const visible = (actions ?? []).filter((a) => !a.phoneOnly);
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="quiet" iconEnd={<ChevronDown />}>
-          {label}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {items.map((item, i) => {
-          const Icon = item.icon;
-          const newGroup = i > 0 && item.group !== items[i - 1]!.group;
-          return (
-            <Fragment key={item.id}>
-              {newGroup ? <DropdownMenuSeparator /> : null}
-              <DropdownMenuItem disabled={item.disabled} onClick={item.onPress}>
-                <Icon className={item.destructive ? "mr-2 h-4 w-4 text-destructive" : "mr-2 h-4 w-4"} /> {item.label}
-                {item.disabled && item.hint ? <span className="ml-auto pl-4 type-meta">{item.hint}</span> : null}
-              </DropdownMenuItem>
-            </Fragment>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <HostedRecordBar
+      record={record.token && record.id ? { token: record.token, id: record.id } : null}
+      name={record.name ? <span className="truncate text-sm font-medium text-foreground">{record.name}</span> : undefined}
+      actions={
+        visible.length || menuItems.length ? (
+          <>
+            {visible.map((a) => (
+              <DesktopAction key={a.label} action={a} />
+            ))}
+            {/* The one record overflow for a host bar (shared with the meeting and sandbox bars). */}
+            <RecordActionsMenu label={menu?.label ?? "Actions"} actions={menuItems.map(menuAction)} />
+          </>
+        ) : undefined
+      }
+    >
+      {status ? <Badge tone={status.tone ?? "neutral"}>{status.label}</Badge> : null}
+      {modes?.length ? <RouteModeNav items={modes} activeHref={activeModeHref} onNavigate={onModeSelect} maxVariant="menu" /> : null}
+    </HostedRecordBar>
   );
 }
 
-export function RecordPageHeader({
+export function RecordPageHeader(props: RecordPageHeaderProps) {
+  // In a host (board tile, window) the record is not the page: one compact in-body row instead.
+  const ref = props.record.token && props.record.id ? { token: props.record.token, id: props.record.id } : null;
+  const host = useHostChromeFor(ref);
+  return host ? <HostedRecordPageHeader {...props} /> : <PageRecordHeader {...props} />;
+}
+
+function PageRecordHeader({
   backHref,
   parents,
   record,
@@ -162,7 +189,7 @@ export function RecordPageHeader({
       onModeSelect={onModeSelect}
       steps={steps}
       actions={menuItems.length ? [...(actions ?? []), ...phoneMenuActions] : actions}
-      rightEnd={menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} items={menuItems} /> : undefined}
+      rightEnd={menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} triggerLabel={menu?.label ?? "Actions"} actions={menuItems.map(menuAction)} /> : undefined}
     />
   );
 }

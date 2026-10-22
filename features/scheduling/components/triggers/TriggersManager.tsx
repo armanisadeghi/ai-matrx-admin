@@ -14,7 +14,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  */
 import { TRIGGERS_DRILL } from "./triggersDrill";
 import { useAutomationReadiness } from "@/features/scheduling/service/automationReadiness";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, OctagonPause, Pause, Play, RefreshCw, Archive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

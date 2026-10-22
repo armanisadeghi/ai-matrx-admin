@@ -10,7 +10,7 @@
  *                        the server's reason (or nothing) — never a grayed button.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

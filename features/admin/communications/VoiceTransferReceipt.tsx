@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import type { VoiceTransferReceipt as Receipt } from "@/lib/communications/voice/transfer-receipt";
 import { loadTransferReceipt } from "./transfer-receipt-service";

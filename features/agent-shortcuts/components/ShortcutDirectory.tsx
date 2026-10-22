@@ -3,7 +3,7 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState, useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { Copy, ExternalLink, MousePointerClick, X } from "lucide-react";
 import {
@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import { getPlacementTypeMeta } from "../constants";
 import { useShortcutDirectory } from "../hooks/useShortcutDirectory";

@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { JsonTreeViewer } from "@/components/official/json-explorer/JsonTreeViewer";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   fetchWorkItemFacets,
   listWorkItems,

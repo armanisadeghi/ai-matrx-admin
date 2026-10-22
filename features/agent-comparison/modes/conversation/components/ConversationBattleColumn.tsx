@@ -8,7 +8,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { BoundColumn } from "@/features/agent-comparison/shared/BoundColumn";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";

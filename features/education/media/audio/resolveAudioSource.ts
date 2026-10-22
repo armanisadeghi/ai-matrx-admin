@@ -1,19 +1,16 @@
 // features/education/media/audio/resolveAudioSource.ts
 //
-// Resolves an audio-study SOURCE (a deck or a free-text topic) into the three
-// things the generator + artifact page need: the material `content` to narrate,
-// the `TrustEnvelope` (P0 — what the audio is grounded in), and, when adaptive,
-// a `weakAreaNote` targeting the listener's weakest concepts (read from the FSRS
-// study spine — the adaptivity NotebookLM structurally can't do).
+// What audio study still needs beside the one Source input: a typed topic as a source
+// (`resolveTopicAudioSource`, honestly `inferred`) and the "spend extra time on these"
+// note read from the FSRS study spine for adaptive audio (`weakAreaNoteForDecks`). A deck
+// or any picked Source is read on the SERVER through the Source input — never here.
 
 "use client";
 
-import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { fcService } from "@/features/flashcards/data/fcService";
 import { studyService } from "@/features/education/study/service/studyService";
 import type { TrustEnvelope } from "@/features/education/trust/types";
 import type { EduMediaSource } from "../types";
-import { serializeDeck } from "./audioBrief";
 
 export interface ResolvedAudioSource {
   content: string;
@@ -21,11 +18,6 @@ export interface ResolvedAudioSource {
   trust: TrustEnvelope;
   weakAreaNote: string | null;
   truncated: boolean;
-}
-
-export interface ResolveResult {
-  data: ResolvedAudioSource | null;
-  error: string | null;
 }
 
 /** Build the "spend extra time on these" note from the deck's weakest cards. */
@@ -46,63 +38,24 @@ async function computeWeakAreaNote(
   return weakFronts.join("; ");
 }
 
-export async function resolveDeckAudioSource(
-  setId: string,
-  opts: { adaptive: boolean },
-): Promise<ResolveResult> {
-  const res = await fcService.getDeckWithCards(setId);
-  if (res.error || !res.data) {
-    // Zero rows is deleted / denied / stale id — never assert one.
-    return {
-      data: null,
-      error:
-        res.error ??
-        recordUnavailable({
-          entity: "deck",
-          recordId: setId,
-          reason: "unknown",
-          relation: "education.fc_set",
-        }).message,
-    };
-  }
-  const { set, cards } = res.data;
-  if (cards.length === 0) {
-    return { data: null, error: "This deck has no cards yet" };
-  }
-
-  const { markdown, truncated } = serializeDeck(set, cards);
-
-  let weakAreaNote: string | null = null;
-  if (opts.adaptive) {
-    const frontById = new Map(cards.map((c) => [c.id, c.front]));
-    weakAreaNote = await computeWeakAreaNote(
+/**
+ * The "spend extra time on these" note for decks already read through the Source
+ * input (their text came from the server, so no card text is re-serialized here).
+ * Null when the listener has no weak items in them.
+ */
+export async function weakAreaNoteForDecks(deckIds: readonly string[]): Promise<string | null> {
+  const notes: string[] = [];
+  for (const id of deckIds) {
+    const res = await fcService.getDeckWithCards(id);
+    if (res.error || !res.data) continue;
+    const { cards } = res.data;
+    const note = await computeWeakAreaNote(
       cards.map((c) => c.id),
-      frontById,
+      new Map(cards.map((c) => [c.id, c.front])),
     );
+    if (note) notes.push(note);
   }
-
-  const trust: TrustEnvelope = {
-    citations: [
-      {
-        sourceId: setId,
-        sourceKind: "document",
-        title: set.name,
-      },
-    ],
-    confidence: "grounded",
-    groundedIn: set.name,
-  };
-
-  return {
-    data: {
-      content: markdown,
-      source: { kind: "deck", id: setId, title: set.name },
-      trust,
-      weakAreaNote,
-      truncated,
-    },
-    error: null,
-  };
+  return notes.length ? notes.join("; ") : null;
 }
 
 export function resolveTopicAudioSource(topic: string): ResolvedAudioSource {

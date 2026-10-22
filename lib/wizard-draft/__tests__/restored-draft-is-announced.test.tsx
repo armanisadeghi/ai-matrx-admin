@@ -279,7 +279,9 @@ it("every wizard that restores a persisted draft renders the notice", () => {
     "features/masterwork/teach-back/TeachBack.tsx",
     "features/masterwork/intake/NewRulebookFlow.tsx",
     "features/research/components/init/ResearchInitForm.tsx",
-    // Create deck (flashcards) — renders the notice; added to the census 2026-09-30.
+    // THE one Education create shell — renders the notice for every create page (2026-10-22).
+    "features/education/create/EducationCreatePage.tsx",
+    // Create deck (flashcards) — reads only its made-deck marker (exempt); the shell renders the notice.
     "features/flashcards/components/create/CreateDeckPage.tsx",
     // Holders that are NOT wizards (found 2026-10-10): each carries a `wizard-draft-exempt: <reason>`
     // comment and is judged by the exemption rule below instead of the notice.

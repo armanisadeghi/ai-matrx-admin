@@ -18,7 +18,7 @@ import { formatAbsoluteDate, formatCount, formatDurationMinutes } from "@ai-matr
 import { Button } from "@/components/ui/button";
 import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { cn } from "@/lib/utils";

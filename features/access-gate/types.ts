@@ -147,6 +147,11 @@ export interface AccessDeniedContext {
   request: AccessRequestSummary | null;
   /** True only when asking can actually succeed. */
   canRequest: boolean;
+  /**
+   * The organization that holds the record, when it is ARCHIVED: the platform hides every row of an
+   * archived organization (`org_open_gate`), so the caller's own record reads as denied. Null otherwise.
+   */
+  organizationArchived?: { id: string; name: string | null } | null;
 }
 
 /** One recipient of a freshly-filed request, for the DM the client then sends. */

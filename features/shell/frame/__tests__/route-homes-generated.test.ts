@@ -8,13 +8,20 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { linkableRoutes, renderRouteHomes, ROUTE_HOMES_GENERATED_PATH } from "../route-homes.build";
+import {
+  GO_TO_PAGES_GENERATED_PATH,
+  linkableRoutes,
+  renderGoToPages,
+  renderRouteHomes,
+  ROUTE_HOMES_GENERATED_PATH,
+} from "../route-homes.build";
 import { FRAME_ROUTE_HOMES } from "../route-homes.generated";
 import { fillPattern, patternParams, patternScore, resolveRouteHome } from "../routeHomeLookup";
 import { PRODUCTS } from "../products";
 
 it("the generated table matches its sources (run `pnpm frame:route-homes`)", () => {
   expect(fs.readFileSync(ROUTE_HOMES_GENERATED_PATH, "utf8")).toBe(renderRouteHomes());
+  expect(fs.readFileSync(GO_TO_PAGES_GENERATED_PATH, "utf8")).toBe(renderGoToPages());
 });
 
 it("every product has an entry and every sidebar row a real page", () => {

@@ -76,7 +76,8 @@ jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hook
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectUserId: () => "user-1",
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: () => null,
 }));
 

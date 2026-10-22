@@ -36,7 +36,7 @@ import {
   useServerTable,
 } from "@/features/admin/shared/server-table/useServerTable";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import type { RunStatus, Surface } from "@/features/scheduling/types";
 import { SURFACE_VALUES } from "@/features/scheduling/constants/surfaces";
 import { useAdminSchedulingScopeSlice } from "@/features/scheduling/lib/admin-scheduling-scope";

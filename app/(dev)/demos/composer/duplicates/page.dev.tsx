@@ -4,7 +4,7 @@
 // to its file. Dates come from git (created = first commit of the file).
 
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink, FileCode2 } from "lucide-react";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 

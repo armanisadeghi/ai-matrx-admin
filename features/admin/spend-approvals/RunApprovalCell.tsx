@@ -6,7 +6,7 @@
  * "Under $N" (N = the threshold of the subject's organization) when no run crossed it. One fetch per seat.
  */
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { toast } from "@/lib/toast";
 import { ApprovalStatusSelect } from "./ApprovalStatusSelect";
 import {

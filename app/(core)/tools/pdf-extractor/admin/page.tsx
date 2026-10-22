@@ -125,9 +125,9 @@ const PDF_ADMIN_MAP: FeatureAdminMap = {
       tier: "internal",
     },
     {
-      name: "PdfDocumentRenderer",
-      filePath: "features/pdf/components/viewer/PdfDocumentRenderer.tsx",
-      description: "THE PDF viewer. Every surface renders through it.",
+      name: "PdfDocumentViewer",
+      filePath: "aidream/apps/shared/media/src/viewers/pdf/pdf-document-viewer.tsx",
+      description: "THE PDF viewer (@ai-matrx/media/viewers/pdf). Every surface renders through it.",
       status: "Live",
       tier: "internal",
     },
@@ -135,13 +135,13 @@ const PDF_ADMIN_MAP: FeatureAdminMap = {
       name: "PdfPreview",
       filePath: "features/pdf/components/viewer/PdfPreview.tsx",
       description:
-        "App-wide preview wrapper over PdfDocumentRenderer (controlled pageNumber, missing-source panel).",
+        "App-wide cld-file byte source over the package PdfDocumentViewer (auth, retry, missing-source panel).",
       status: "Live",
       tier: "internal",
     },
     {
       name: "Annotation layer",
-      filePath: "features/pdf/components/viewer/annotation-layer/",
+      filePath: "aidream/apps/shared/media/src/viewers/pdf/annotation-layer/",
       description:
         "Region overlays on a rendered page — all 4 rotations verified.",
       status: "Live",
@@ -149,7 +149,7 @@ const PDF_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       name: "PdfSourceUnavailable",
-      filePath: "features/pdf/components/viewer/PdfSourceUnavailable.tsx",
+      filePath: "aidream/apps/shared/media/src/viewers/pdf/PdfSourceUnavailable.tsx",
       description:
         "Missing/deleted-source panel (the 2026-05 AWS-migration failure class) instead of pdfjs's raw fetch error.",
       status: "Live",

@@ -4,7 +4,7 @@
  * Memory Lab — the trial list: every trial (archived behind the filter), and "New trial" (pick a
  * person, name it). Opening a trial goes to its workspace.
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { FlaskConical, Plus } from "lucide-react";
 

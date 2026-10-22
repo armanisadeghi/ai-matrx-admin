@@ -32,6 +32,11 @@ export const FRAME_PAGE_SIDEBAR_ROUTES: readonly { pattern: RegExp; owner: strin
     pattern: /^\/agent-connections(\/|$)/,
     owner: "features/agent-connections/components/AgentConnectionsRouteShell.tsx",
   },
+  { pattern: /^\/spaces(\/|$)/, owner: "features/spaces/workspace/SpacesWorkspace.tsx" },
+  {
+    pattern: /^\/organizations\/[^/]+\/projects\/[^/]+\/settings(\/|$)/,
+    owner: "app/(core)/organizations/[orgId]/projects/[projectId]/settings/OrgProjectSettingsLayoutClient.tsx",
+  },
 ];
 
 /** The declared kind-B entry this route falls under (its owner file), or null. */

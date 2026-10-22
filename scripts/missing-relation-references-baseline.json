@@ -3,7 +3,6 @@
   "functions": [
     "platform._custom_record_grant_guard()",
     "platform._cutover_carry_back(uuid,platform.cutover_seam_press,boolean,uuid,uuid,boolean)",
-    "platform._cutover_copy_resync(uuid,uuid,uuid)",
     "platform._cutover_seam_apply(text,uuid,text,uuid,uuid)",
     "platform.cutover_copy_differences(uuid)",
     "platform.search_item_backfill(text,uuid,integer)",
@@ -12,7 +11,6 @@
     "public.udt_dataset_row_versions_trim_scoped(uuid,boolean)",
     "workbench._moved_older_table_takes_no_writes()",
     "workbench._udt_row_words(uuid,uuid,jsonb,integer)",
-    "workbench.dataset_readable_by(uuid,uuid)",
     "workbench.udt_dataset_archive(uuid,uuid,text)",
     "workbench.udt_dataset_unarchive(uuid)",
     "workbench.udt_structured_list_archive(uuid,uuid,text)",

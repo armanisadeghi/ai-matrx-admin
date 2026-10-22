@@ -1034,7 +1034,6 @@
   "features/pdf-extractor/studio/PdfStudioUploadDrawer.tsx": 1,
   "features/pdf-extractor/studio/StudioDocRenameDialog.tsx": 1,
   "features/pdf/components/PdfPresetPicker.tsx": 1,
-  "features/pdf/components/viewer/PdfDocumentRenderer.tsx": 1,
   "features/personal-staff/components/StaffRoom.tsx": 1,
   "features/podcasts/components/admin/AssetUploader.tsx": 1,
   "features/podcasts/components/admin/EpisodeDetailClient.tsx": 1,

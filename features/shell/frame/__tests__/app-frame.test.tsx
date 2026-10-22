@@ -39,6 +39,7 @@ import {
   readFrameCookie,
 } from "../geometry";
 import { HeaderToolButtons } from "../SheetHeader";
+import { GRID_FAVORITES_MAX, GRID_TILE_TALL_PX, gridLayout } from "../AppGrid";
 import type { CanvasProps, CompanionProps } from "../types";
 import { PRODUCTS, PRODUCT_FAMILIES } from "../products";
 import type { FrameVariant } from "../types";
@@ -565,7 +566,7 @@ describe("the app grid is Google-tight (owner, 2026-10-20 fourth round)", () => 
   it("A: nine favorites in the card, then every other product once, in family order, with no heading rows", async () => {
     const grid = await openGrid();
     const card = grid.querySelector('[aria-label="Your favorites"]')!;
-    expect(card.className).toContain("grid-cols-3");
+    expect(card.className).toContain("grid-cols-5");
     expect(names(card)).toEqual(["Chat", "Memory", "Workspace", "Docs", "Drive", "Data", "CRM", "Intelligence", "Meet"]);
     const list = names(grid.querySelector('[aria-label="All products"]')!);
     const expected = PRODUCT_FAMILIES.flatMap((f) => PRODUCTS.filter((p) => p.family === f.id && !nine.includes(p.id))).map((p) => p.name);
@@ -575,11 +576,23 @@ describe("the app grid is Google-tight (owner, 2026-10-20 fourth round)", () => 
     expect(new Set(all).size).toBe(PRODUCTS.length);
     expect(all).toHaveLength(PRODUCTS.length);
     expect(grid.querySelectorAll(".type-label")).toHaveLength(0);
-    // Tight cells: 80px tall, one-line names.
+    // Tight cells sized for the screen's height (72px tall screens, 60px short), one-line names.
+    const { tile: tilePx } = gridLayout(window.innerHeight, 9, 0);
+    expect(gridLayout(900, 9, 0).tile).toBe(GRID_TILE_TALL_PX);
     for (const tile of grid.querySelectorAll("[data-mf-mark]")) {
-      expect(tile.parentElement!.className).toContain("h-20");
+      expect(tile.parentElement!.style.height).toBe(`${tilePx}px`);
       expect(tile.parentElement!.querySelector(".mf-grid-name")!.className).toContain("truncate");
     }
+  });
+
+  it("never scrolls at common screen heights (owner, 2026-10-22: scrolling the grid is ridiculous)", () => {
+    // Room under the button: the screen less the header row, the search row and a margin.
+    for (const height of [1080, 900, 800, 768, 700, 640]) {
+      const { bodyHeight } = gridLayout(height, GRID_FAVORITES_MAX, PRODUCTS.length - GRID_FAVORITES_MAX);
+      expect({ height, fits: bodyHeight <= height - 44 - 48 - 8 }).toEqual({ height, fits: true });
+    }
+    const css = readFileSync(join(__dirname, "../frame.css"), "utf8");
+    expect(css).toMatch(/\.mf-grid-scroll \{\s*max-height: calc\(var\(--radix-popover-content-available-height/);
   });
 
   // ── the grid's search (owner, 2026-10-21) ──

@@ -187,6 +187,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const connectedSourcesManifest: SurfaceManifest = {
   surfaceName: CONNECTED_SOURCES_SURFACE_NAME,
+  inheritsFrom: "matrx-default/files",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

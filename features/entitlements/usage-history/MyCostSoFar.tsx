@@ -10,7 +10,7 @@
  * to the cent with points beside; everyone else reads points (20,000 points = $1).
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";

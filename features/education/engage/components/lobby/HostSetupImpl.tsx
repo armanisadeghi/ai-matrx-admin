@@ -11,7 +11,7 @@
 
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState, useTransition } from "react";
 import { useRead } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";

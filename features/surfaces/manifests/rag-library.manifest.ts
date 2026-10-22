@@ -599,6 +599,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const ragLibraryManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge-library",
+  inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

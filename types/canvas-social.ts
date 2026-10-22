@@ -122,7 +122,7 @@ export interface CanvasComment {
 export interface CanvasScore {
   id: string;
   canvas_id: string;
-  user_id: string | null;
+  created_by: string | null;
   username: string | null;
   display_name: string | null;
   score: number;
@@ -138,7 +138,7 @@ export interface CanvasScore {
 export interface CanvasView {
   id: string;
   canvas_id: string;
-  user_id: string | null;
+  created_by: string | null;
   viewed_at: string;
   session_id: string | null;
   referrer: string | null;

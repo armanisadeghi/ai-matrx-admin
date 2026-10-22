@@ -543,6 +543,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const schedulesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/schedules",
+  inheritsFrom: "matrx-default/workflows",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

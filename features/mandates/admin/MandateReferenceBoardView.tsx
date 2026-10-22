@@ -24,13 +24,13 @@
 
 import { TapTargetCopyButton } from "@ai-matrx/design-system/tap-target";
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { AlertTriangle, CircleCheck, CircleDot, Loader2, RefreshCw } from "lucide-react";
 
 import { MatrxDataTable, MatrxDetailGrid, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useServerOrganizationId } from "@/lib/api/useServerOrganizationId";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";

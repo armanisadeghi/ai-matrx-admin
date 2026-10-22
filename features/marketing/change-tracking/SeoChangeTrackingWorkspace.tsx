@@ -28,7 +28,7 @@ import type { ContextMenuExtraItem } from "@ai-matrx/context-menu/engine";
 import { DataRowWindow } from "@/components/official/MatrxDataTableHost";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { useDeepLinkParam } from "@/components/official/deep-link/useDeepLinkParam";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

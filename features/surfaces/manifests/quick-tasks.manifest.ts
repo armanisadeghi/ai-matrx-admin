@@ -397,6 +397,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const quickTasksManifest: SurfaceManifest = {
   surfaceName: QUICK_TASKS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

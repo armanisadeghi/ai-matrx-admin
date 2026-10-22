@@ -20,6 +20,7 @@ import { peekSelectedOrganizationId } from "@/lib/api/organization-admission";
 import { requestRaw } from "@/lib/python-client";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { isChunkEvent } from "@ai-matrx/agents/generated/stream-events";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 
 type ServerType = "local" | "production";
 
@@ -116,7 +117,7 @@ export default function DirectChatClient() {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authToken}`,
-            ...(organizationId ? { "X-Organization-Id": organizationId } : {}),
+            ...(organizationId ? { [MATRX_HEADERS.organization]: organizationId } : {}),
           },
           body: JSON.stringify(requestBody),
         },

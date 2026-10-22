@@ -90,7 +90,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export interface FieldProps {

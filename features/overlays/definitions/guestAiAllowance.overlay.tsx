@@ -31,6 +31,9 @@ const opener = appOpener<OpenGuestAiAllowanceOptions>(OVERLAY_ID, {
 
 export const useOpenGuestAiAllowance = opener.useOpen;
 
+/** Plain opener of the store, for boot-graph callers (useLazyAppOpener keeps this module out of first load). */
+export const createGuestAiAllowanceOpener = opener.forStore;
+
 /** Declarative form: opens on mount, closes on unmount. */
 export const GuestAiAllowanceController = opener.Controller;
 

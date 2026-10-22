@@ -14,6 +14,52 @@ import { copyToClipboard } from "@/lib/clipboard/copy";
 
 type CodeSpec = ReturnType<typeof createCodeBlockSpec>;
 
+export type CodeLanguages = Record<string, { name: string; aliases?: string[] }>;
+
+/** The picker's languages. A stored language that is not a key here is resolved by `resolveCodeLanguage`. */
+export const CODE_LANGUAGES: CodeLanguages = {
+  // "" too: BlockNote's "``` " shortcut asks for the language typed after the fence (none), and a
+  // language the list does not know is refused — the fence then stayed a paragraph of literal "```".
+  text: { name: "Plain text", aliases: ["plaintext", "txt", ""] },
+  bash: { name: "Bash", aliases: ["sh", "shell", "zsh"] },
+  c: { name: "C" },
+  cpp: { name: "C++", aliases: ["c++"] },
+  csharp: { name: "C#", aliases: ["cs"] },
+  css: { name: "CSS" },
+  go: { name: "Go", aliases: ["golang"] },
+  html: { name: "HTML" },
+  java: { name: "Java" },
+  javascript: { name: "JavaScript", aliases: ["js", "jsx"] },
+  json: { name: "JSON" },
+  kotlin: { name: "Kotlin" },
+  markdown: { name: "Markdown", aliases: ["md"] },
+  mermaid: { name: "Mermaid" },
+  php: { name: "PHP" },
+  python: { name: "Python", aliases: ["py"] },
+  ruby: { name: "Ruby", aliases: ["rb"] },
+  rust: { name: "Rust", aliases: ["rs"] },
+  sql: { name: "SQL" },
+  swift: { name: "Swift" },
+  typescript: { name: "TypeScript", aliases: ["ts", "tsx"] },
+  yaml: { name: "YAML", aliases: ["yml"] },
+};
+
+/**
+ * The picker key for a stored language. BlockNote's code block THROWS ("Language py is not supported.")
+ * when the stored value is not a key of the list — aliases only count when typed after "```" — so a page
+ * imported or written by an agent with `py`, `ts` or an unlisted language took down every page and
+ * widget that drew it (audit round 2 #1). Alias → its key; anything else → Plain text. The stored value
+ * is left as it is until the person picks a language.
+ */
+export function resolveCodeLanguage(raw: unknown, languages: CodeLanguages = CODE_LANGUAGES): string {
+  const wanted = String(raw ?? "").trim().toLowerCase();
+  if (Object.hasOwn(languages, wanted)) return wanted;
+  const hit = Object.entries(languages).find(
+    ([key, { aliases }]) => key.toLowerCase() === wanted || aliases?.some((a) => a.toLowerCase() === wanted),
+  );
+  return hit ? hit[0] : Object.hasOwn(languages, "text") ? "text" : Object.keys(languages)[0] ?? "text";
+}
+
 export function captionText(raw: unknown): string {
   try {
     const spans = JSON.parse(String(raw || "[]")) as RichSpan[];
@@ -42,13 +88,15 @@ function button(label: string, onClick: () => void): HTMLButtonElement {
   return b;
 }
 
-export function notionCodeBlock(base: CodeSpec): CodeSpec {
+export function notionCodeBlock(base: CodeSpec, languages: CodeLanguages = CODE_LANGUAGES): CodeSpec {
   const config = {
     ...base.config,
     propSchema: { ...base.config.propSchema, wrap: { default: false }, caption: { default: "" } },
   };
   const render: CodeSpec["implementation"]["render"] = function (this: unknown, block, editor) {
-    const view = base.implementation.render.call(this as never, block, editor);
+    const language = resolveCodeLanguage((block.props as Record<string, unknown>).language, languages);
+    const drawn = language === (block.props as Record<string, unknown>).language ? block : ({ ...block, props: { ...block.props, language } } as typeof block);
+    const view = base.implementation.render.call(this as never, drawn, editor);
     const dom = view.dom as HTMLElement;
     const props = block.props as Record<string, unknown>;
     const wrap = props.wrap === true;

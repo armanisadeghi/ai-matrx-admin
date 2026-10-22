@@ -13,7 +13,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { SURFACE_META } from "../../constants/surfaces";
 import { humanLines, scheduleDetailLocation } from "../../lib/copy";
 import type { AgendaTask } from "../../types";

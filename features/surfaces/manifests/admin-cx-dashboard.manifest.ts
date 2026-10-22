@@ -407,6 +407,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const adminCxDashboardManifest: SurfaceManifest = {
   surfaceName: ADMIN_CX_DASHBOARD_SURFACE_NAME,
+  inheritsFrom: "matrx-default/chat",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

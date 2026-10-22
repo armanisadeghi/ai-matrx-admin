@@ -156,6 +156,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const cameraManifest: SurfaceManifest = {
   surfaceName: "matrx-user/camera",
+  inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

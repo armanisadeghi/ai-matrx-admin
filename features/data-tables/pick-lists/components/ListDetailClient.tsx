@@ -5,7 +5,7 @@
 // Table of choices and is edited on its own page, /pick-lists/<id> (the store's table page); a host
 // shows the list and the way there.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 import type { UserListWithItems } from "../types";
 import { listAddress } from "../where-lists-live";

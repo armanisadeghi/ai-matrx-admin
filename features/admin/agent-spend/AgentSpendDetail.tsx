@@ -6,7 +6,7 @@
  * seat="admin": every organization; seat="org": that organization only.
  */
 import { displayId } from "@ai-matrx/design-system";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Badge, Button, SegmentedControl } from "@ai-matrx/design-system/controls";
@@ -14,7 +14,7 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Cost } from "@/components/cost/Cost";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
 import { AdminPoints, AdminUsd, CostFigures, UsdOnly } from "@/components/cost/AdminCost";

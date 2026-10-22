@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { DownloadCloud, History, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { tableShapeChanged } from "@ai-matrx/records/react";

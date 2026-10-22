@@ -6,6 +6,9 @@
 //   start | signin [--as <email>] | goto <url> | chat [agentId] [origin] | url | title | text [selector] [max]
 //   find <text> | click | rclick | hover <locator> | clickxy | rclickxy <x> <y> | type <text> | press <key>
 //   upload <locator> <file...> | eval <js> | shot <path> | console | stop
+// Added 2026-10-22 (cloud only): viewport <width> [height]|desktop (390 = phone) · select <locator> [text] (a mouse-drag
+//   selection inside an element) · rclicksel (right-click the current selection) · net [all] (network responses since
+//   the last call: count, every status>=400/failed request, 5xx count; the proof for X2)
 // Isolation: one box per run name; the box id is kept in <tmp>/matrx-real-test-browsers/<run>/cloud.json.
 // Sign-in: the password goes to the Supabase auth API from this Mac (session-cookies.mjs); only the session
 // cookies reach the box. The box belongs to admin@admin.com in the fenced org "Safety Net Real Tests" and

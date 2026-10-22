@@ -1700,7 +1700,7 @@ export function usePdfExtractor(options: UsePdfExtractorOptions = {}) {
 
   // ── Copy text ──────────────────────────────────────────────────────────────
 
-  const copyText = useCallback(
+  const copyTabContent = useCallback(
     async (tabId?: string) => {
       const targetId = tabId ?? activeTabId;
       if (targetId === "new") return;
@@ -1754,7 +1754,7 @@ export function usePdfExtractor(options: UsePdfExtractorOptions = {}) {
 
     // Actions
     cleanContent,
-    copyText,
+    copyTabContent,
     fetchDocument,
     readDocument,
     /** A signed-in user is known, so a document read can be asked at all. */

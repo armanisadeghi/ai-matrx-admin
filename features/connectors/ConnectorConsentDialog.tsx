@@ -57,7 +57,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

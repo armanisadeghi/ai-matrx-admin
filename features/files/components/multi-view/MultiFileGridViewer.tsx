@@ -25,7 +25,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMediaResolution } from "@ai-matrx/media/core";
 import { MediaThumbnail } from "@ai-matrx/media/react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { pickGridLayout } from "./grid-layout";
 import type { CloudFile } from "@/features/files/types";
 

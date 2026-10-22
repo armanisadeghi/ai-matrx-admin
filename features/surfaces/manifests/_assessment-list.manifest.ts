@@ -254,6 +254,7 @@ export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceMani
 
   return {
     surfaceName: w.surfaceName,
+    inheritsFrom: "matrx-default/education",
     client: "matrx-user",
     executor: MATRX_WEB_APP_EXECUTOR,
     executionMode: "python-stream",

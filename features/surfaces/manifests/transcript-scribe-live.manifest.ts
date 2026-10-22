@@ -365,6 +365,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const transcriptScribeLiveManifest: SurfaceManifest = {
   surfaceName: TRANSCRIPT_SCRIBE_LIVE_SURFACE,
+  inheritsFrom: "matrx-default/audio",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "browser-realtime",

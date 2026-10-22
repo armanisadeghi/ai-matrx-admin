@@ -32,8 +32,10 @@ jest.mock("@/lib/python-client", () => ({
     },
     requestId: "req-1",
   })),
-  resolveBaseUrlForPath: jest.fn(() => "https://api.test"),
 }));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/recordingServerApi").recordingServerApiModule(),
+);
 
 // A setup file already loaded the engine (and its api/files) before this suite's
 // jest.mock could register, so a module mock never reaches tusUploadRaw's binding.
@@ -222,7 +224,7 @@ describe("tusUploadRaw (injected HttpStack)", () => {
         size_bytes: 1024,
         current_version: 1,
       } as never,
-      meta: { requestId: "r", status: 200, serverRequestId: null },
+      meta: { requestId: "r" },
     });
 
     const result = await tusUploadRaw(
@@ -246,7 +248,7 @@ describe("tusUploadRaw (injected HttpStack)", () => {
 
     const post = calls.find((c) => c.method === "POST");
     expect(post).toBeDefined();
-    expect(post!.url).toBe("https://api.test/files/upload/tus");
+    expect(post!.url).toBe("https://files.matrxserver.com/files/upload/tus");
     expect(post!.headers["X-Idempotency-Key"]).toBe("idem-key-1");
     expect(post!.headers.Authorization).toBe("Bearer fresh-token");
     // The resolvable organization from buildHeaders must reach the wire —

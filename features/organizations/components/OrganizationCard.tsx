@@ -13,7 +13,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import type { OrganizationWithRole } from "../types";
 import { cn } from "@/lib/utils";
 import { InlineMediaRef } from "@ai-matrx/media/react";

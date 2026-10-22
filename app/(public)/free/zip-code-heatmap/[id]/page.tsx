@@ -57,7 +57,7 @@ export default function SharedHeatmapPage() {
 
       // This page is PUBLIC, so this read can run as `anon`, which may read only
       // the columns workbench.heatmap_saves declares to it — `*` is refused
-      // (42501) and `user_id` is not in the list at all. Register:
+      // (42501) and `created_by` is not in the list at all. Register:
       // lib/security/public-exposure.ts#ANON_COLUMN_SURFACE (DD-186).
       const { data, error: fetchError } = await supabase
         .schema('workbench').from('heatmap_saves')
@@ -86,7 +86,7 @@ export default function SharedHeatmapPage() {
 
       // Check if user has access. A non-public row can only have been returned
       // to a SIGNED-IN caller in the first place (RLS hands `anon` rows published to the web
-      // only), and `user_id` is readable to `authenticated` alone — so the owner
+      // only), and `created_by` is readable to `authenticated` alone — so the owner
       // check asks for it in its own second read rather than putting a column
       // `anon` cannot select into the request above, which would fail the whole
       // request for every signed-out visitor (DD-186).
@@ -109,10 +109,10 @@ export default function SharedHeatmapPage() {
         }
         const { data: owner } = await supabase
           .schema('workbench').from('heatmap_saves')
-          .select('user_id')
+          .select('created_by')
           .eq('id', heatmapId)
           .maybeSingle();
-        if (!owner || user.id !== owner.user_id) {
+        if (!owner || user.id !== owner.created_by) {
           // access-errors: ok — verified denial: the row was read, it is not published to the web, and the signed-in caller is not its owner
           setError("You don't have access to this heatmap.");
           return;

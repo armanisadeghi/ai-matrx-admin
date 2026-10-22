@@ -26,7 +26,7 @@
 
 import { DEFAULT_HOLDER_RUNG } from "@/features/bindings/default-holder-rung";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   adminMandateOverridesHref,
   adminMandateSupportRecordHref,
@@ -34,8 +34,8 @@ import {
 import { ArrowLeft, Copy, ExternalLink, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SuspenseLoader } from "@ai-matrx/design-system";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 import styles from "@/features/mandates/workspace/MandateWorkspace.module.css";

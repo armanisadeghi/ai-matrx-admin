@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // features/hr/people/shared/HrStatusChip.tsx
 //

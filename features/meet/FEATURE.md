@@ -265,3 +265,8 @@ Board layout both have it; server `aidream/services/meet/collab.py`, `breakouts.
 has an **Activity** tab (`components/record/ActivityLogPanel.tsx`): poll results, every question
 with its answer, and the whiteboard as it was left, read through the package's
 `loadMeetingActivities` (`GET /v1/meet/collab`) — what a reader sees is the server's decision.
+
+## Change log
+
+- 2026-10-22 — One row of chrome (platform component review): the embedded `MeetingDetail` bar no longer prints the meeting name (the host does: the Board tile header, or the admin strip via `onMeeting`) and the details body keeps the title only for screen readers. The bar is sections + state + the main button (Join / Start / Open record) + Invite, and every other action sits in ONE "…" menu, the shared `RecordActionsMenu` (`components/official/`, canonical v3 `ItemMenu`); the page's "…" uses it too. Guard: `components/manage/__tests__/one-row-chrome.contract.test.ts`.
+- 2026-10-22 — The embedded bar is the shared `HostedRecordBar` (`features/shell/host-chrome`): the meeting name drops only when a host naming this meeting holds it — the Board tile, and the admin meeting view (`AdminMeetingDetail` wraps it in `RecordHostChrome host="frame"`); any other embedded host keeps it.

@@ -588,6 +588,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const podcastRunManifest: SurfaceManifest = {
   surfaceName: "matrx-user/podcast-run",
+  inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

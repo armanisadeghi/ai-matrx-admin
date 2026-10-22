@@ -573,7 +573,7 @@ export function useSetupAgents(siteId: string | null) {
     initiation: "user" | "auto",
     mandateKey: AnyMandateKey,
     label: string,
-    variables: Record<string, string>,
+    variables: Record<string, unknown>,
     coerce: (value: unknown) => T,
     timeoutMs?: number,
   ): Promise<T> {
@@ -624,7 +624,9 @@ export function useSetupAgents(siteId: string | null) {
   async function nameFamily(
     initiation: "user" | "auto",
     familyKey: string,
-    variables: Record<string, string>,
+    // `target_count` is a number and `existing_names` a list — the types the
+    // family-naming provision declares (a default map refuses "12" / "a\nb").
+    variables: Record<string, unknown>,
   ): Promise<FamilyNamesResult> {
     if (inFlight.current) throw new Error("An agent run is already in progress");
     inFlight.current = true;

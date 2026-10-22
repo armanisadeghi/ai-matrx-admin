@@ -12,7 +12,7 @@ import {
   type ContentEditorWindowHandle,
 } from "@/features/window-panels/windows/content-editors/useOpenContentEditorWindow";
 import type { OverlayWire } from "./overlay-types";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 export {
   useOpenContentEditorWindow,

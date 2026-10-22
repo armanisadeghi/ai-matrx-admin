@@ -42,7 +42,6 @@ function PartyPicker({ onPick, onCancel }: PickerProps) {
   const [again, setAgain] = useState(0);
   useEffect(() => {
     let alive = true;
-    setRead({ phase: "reading" });
     // The person's records in every organization they belong to (never the active one); typing narrows on the server.
     const timer = setTimeout(() => {
       searchPartiesByName({ orgId: ALL_MY_ORGANIZATIONS, search })
@@ -56,7 +55,11 @@ function PartyPicker({ onPick, onCancel }: PickerProps) {
   }, [search, again]);
   return (
     <div className="flex flex-col gap-3">
-      <Input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search people and companies…" aria-label="Search people and companies" />
+      <Input autoFocus value={search} onChange={(e) => {
+          // A new search shows the reading state from the keystroke, not from inside the effect.
+          setSearch(e.target.value);
+          setRead({ phase: "reading" });
+        }} placeholder="Search people and companies…" aria-label="Search people and companies" />
       <div className="max-h-[min(420px,60dvh)] overflow-y-auto rounded-lg border border-border">
         {read.phase === "reading" ? (
           <div className="space-y-2 p-2" aria-busy="true" aria-label="Loading your people and companies">
@@ -66,7 +69,10 @@ function PartyPicker({ onPick, onCancel }: PickerProps) {
           </div>
         ) : read.phase === "failed" ? (
           <div className="p-2">
-            <ErrorNotice size="compact" title="Your people and companies could not be listed" message={read.why} operation="List CRM records for the board" onRetry={() => setAgain((n) => n + 1)} />
+            <ErrorNotice size="compact" title="Your people and companies could not be listed" message={read.why} operation="List CRM records for the board" onRetry={() => {
+              setRead({ phase: "reading" });
+              setAgain((n) => n + 1);
+            }} />
           </div>
         ) : read.rows.length === 0 ? (
           <div className="px-3 py-6 text-center text-sm text-muted-foreground">

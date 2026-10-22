@@ -9,7 +9,7 @@
 // draft door reads them there — and the dialog says which.
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Check } from "lucide-react";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { Input } from "@ai-matrx/design-system/controls";

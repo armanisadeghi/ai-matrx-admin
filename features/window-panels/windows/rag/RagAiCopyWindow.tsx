@@ -22,7 +22,7 @@ import {
 } from "@/features/rag/components/search/ragAiCopy";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { cn } from "@/lib/utils";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 
 const OVERLAY_ID = "ragAiCopyWindow" as const;
 

@@ -32,9 +32,9 @@ import {
   type SandboxBindingPayload,
 } from "../active-binding";
 import { ensureSandboxOrDecide } from "@ai-matrx/chat/agents/redux/execution-system/thunks/sandbox-gate.thunk";
-import { openSandboxGate } from "@/components/dialogs/sandbox-gate/SandboxGateHost";
+import { openSandboxGate } from "@/components/dialogs/sandbox-gate/sandboxGateOpener";
 
-jest.mock("@/components/dialogs/sandbox-gate/SandboxGateHost", () => ({
+jest.mock("@/components/dialogs/sandbox-gate/sandboxGateOpener", () => ({
   openSandboxGate: jest.fn(),
 }));
 

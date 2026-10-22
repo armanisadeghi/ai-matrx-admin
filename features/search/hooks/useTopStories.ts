@@ -5,7 +5,8 @@
  *
  * The web answer's own news band is the engine's general headlines (a query about electric vehicles
  * came back with stories about Russia), so the All page asks the News vertical for the same words
- * once the web answer is in — one extra engine search, only for a query asking for what is new.
+ * once the web answer is in — one extra engine search, only for a query asking for what is new. It
+ * carries the web search's `followUpToken`, so it spends no second free search (one query = one count).
  */
 
 import { useEffect, useState } from "react";
@@ -22,7 +23,11 @@ function storiesOf(result: Record<string, unknown>): Record<string, unknown>[] {
     : [];
 }
 
-export function useTopStories(query: string, enabled: boolean): Record<string, unknown>[] {
+export function useTopStories(
+  query: string,
+  enabled: boolean,
+  followUpToken: string | null = null,
+): Record<string, unknown>[] {
   const { post } = useBackendApi();
   const [answer, setAnswer] = useState<{ query: string; stories: Record<string, unknown>[] } | null>(null);
   useEffect(() => {
@@ -36,6 +41,7 @@ export function useTopStories(query: string, enabled: boolean): Record<string, u
       count: TOP_STORIES_COUNT,
       options: { vertical: "news" },
       signal: controller.signal,
+      followUpToken,
       onOutcome: (outcome) => {
         stories = storiesOf(outcome.result).map((s) => ({ ...s, __kind: "news_result" }));
       },
@@ -49,6 +55,6 @@ export function useTopStories(query: string, enabled: boolean): Record<string, u
       },
     );
     return () => controller.abort();
-  }, [query, enabled, post]);
+  }, [query, enabled, post, followUpToken]);
   return answer?.query === query ? answer.stories : [];
 }

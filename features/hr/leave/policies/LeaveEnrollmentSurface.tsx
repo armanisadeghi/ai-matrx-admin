@@ -25,7 +25,7 @@
 
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, DateField } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, UserPlus, Users } from "lucide-react";
@@ -34,7 +34,6 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/lib/toast";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

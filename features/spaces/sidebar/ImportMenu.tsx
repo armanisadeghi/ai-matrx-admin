@@ -1,10 +1,10 @@
 "use client";
 
-// features/spaces/sidebar/ImportMenu.tsx — Notion's sidebar "Import" (K2): Markdown, HTML or CSV files
+// features/spaces/sidebar/ImportMenu.tsx — Notion's sidebar "Import" (K2): Markdown, HTML, Word or CSV files
 // become new pages (one per file; top-level from the sidebar, sub-pages from a page's ••• Import); the last opens.
 
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
-import { Archive, Code2, FileDown, FileInput, FileText, Link2, Table } from "lucide-react";
+import { Archive, Code2, FileDown, FileInput, FileText, FileType, Link2, Table } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 
 import { toast } from "@/lib/toast";
@@ -12,11 +12,13 @@ import { toast } from "@/lib/toast";
 import { useMoveIn } from "../ai/MoveIn";
 import { IMPORT_ACCEPT, readImport, type ImportKind } from "../io/import";
 import { useOptionalNotionImportDoor } from "../io/NotionImport";
+import { uploadSpaceImage } from "../page/media";
 import { useSpaces } from "../state/SpacesProvider";
 
 const KINDS: Array<{ kind: ImportKind; label: string; icon: ReactNode }> = [
   { kind: "markdown", label: "Text & Markdown", icon: <FileText size={16} /> },
   { kind: "html", label: "HTML", icon: <Code2 size={16} /> },
+  { kind: "word", label: "Word", icon: <FileType size={16} /> },
   { kind: "csv", label: "CSV", icon: <Table size={16} /> },
 ];
 
@@ -28,8 +30,8 @@ export interface ImportChoice {
 }
 
 /**
- * THE Import choices (K2), shared by the sidebar's Import and the page's ••• Import (A7): Markdown, HTML or
- * CSV files become new pages — top-level from the sidebar, sub-pages of `parentId` from a page — plus the
+ * THE Import choices (K2), shared by the sidebar's Import and the page's ••• Import (A7): Markdown, HTML, Word
+ * or CSV files become new pages — top-level from the sidebar, sub-pages of `parentId` from a page — plus the
  * Notion doors. Render `inputs` once beside the trigger.
  */
 export function useSpacesImport(parentId: string | null) {
@@ -56,11 +58,11 @@ export function useSpacesImport(parentId: string | null) {
     for (const [i, file] of files.entries()) {
       setBusy(`${i + 1}/${files.length}`);
       try {
-        const page = await readImport(file, kindRef.current);
+        const page = await readImport(file, kindRef.current, { storeFile: uploadSpaceImage });
         const doc = await store.create({ parentId, title: page.title, blocks: page.blocks });
         last = doc.id;
         made += 1;
-        if (page.warnings.length) toast.warning(`${file.name}: ${page.warnings.length} part${page.warnings.length === 1 ? "" : "s"} imported as text`);
+        if (page.warnings.length) toast.warning(`${file.name}: ${page.warnings.length} part${page.warnings.length === 1 ? "" : "s"} not imported as is`);
       } catch (err) {
         toast.error(err instanceof Error ? err.message : `${file.name} could not be imported.`);
       }

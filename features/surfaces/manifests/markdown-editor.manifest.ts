@@ -240,6 +240,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const markdownEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/markdown-editor",
+  inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

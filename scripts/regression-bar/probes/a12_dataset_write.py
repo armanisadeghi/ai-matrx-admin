@@ -155,6 +155,20 @@ def rows_with(jwt: str, table: str, marker: str) -> tuple[int, int]:
     return s, text.count(marker)
 
 
+def omitted_result(jwt: str, frame: dict) -> object:
+    """The full result of a slim tool_completed frame, read from chat.tool_call by id."""
+    tid = frame.get("tool_call_id")
+    if not tid:
+        return None
+    s, rows = http("GET", f"{DB_URL}/rest/v1/tool_call?id=eq.{tid}&select=output", None,
+                   {"apikey": ANON, "authorization": f"Bearer {jwt}", "accept-profile": "chat"})
+    out = rows[0].get("output") if s == 200 and isinstance(rows, list) and rows else None
+    try:
+        return json.loads(out) if isinstance(out, str) else out
+    except ValueError:
+        return out
+
+
 def run_agent(jwt: str, message: str) -> tuple[bool, str]:
     """The real agent run: POST /ai/agents/{id} on the server (the route a person's chat run takes),
     as the seat, in Cedar Ridge; the NDJSON stream is read to its end."""
@@ -183,8 +197,10 @@ def run_agent(jwt: str, message: str) -> tuple[bool, str]:
     summary = f"HTTP {status}; {len(events)} events; dataset tool events {len(tool_events)}; errors {len(errors)}; " + (json.dumps(errors[-1])[:300] if errors else "") + f" text: {text[:200]}"
     log.append(redact(f"POST {{server}}/ai/agents/{AGENT} -> {summary}"))
     # The tool's own answer: applied, or held for a person (approval_id) — the store's agent-change rule.
-    results_ = [e["data"]["data"].get("result") for e in events if e.get("event") == "tool_event" and isinstance(e.get("data"), dict)
-                and e["data"].get("event") == "tool_completed" and e["data"].get("tool_name") == "dataset"]
+    frames = [e["data"].get("data") or {} for e in events if e.get("event") == "tool_event" and isinstance(e.get("data"), dict)
+              and e["data"].get("event") == "tool_completed" and e["data"].get("tool_name") == "dataset"]
+    # Lazy tool calls: a big result rides off the stream (result_omitted); read it by its chat.tool_call id.
+    results_ = [omitted_result(jwt, f) if f.get("result_omitted") else f.get("result") for f in frames]
     RUN["tool_results"] = [r for r in results_ if isinstance(r, dict)]
     RUN["tool_errors"] = [{"message": e["data"].get("message"), "arguments": None} for e in events if e.get("event") == "tool_event"
                           and isinstance(e.get("data"), dict) and e["data"].get("event") == "tool_error" and e["data"].get("tool_name") == "dataset"]

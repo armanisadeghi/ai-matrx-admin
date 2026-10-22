@@ -29,7 +29,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { CrumbNode, frameCrumbOf, type Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+import { CrumbNode, type Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import {
   RouteModeNav,
   type RouteNavItem,
@@ -56,7 +56,7 @@ import { cn } from "@/lib/utils";
 import { StageSteps, type StageStep } from "@ai-matrx/design-system/controls";
 import { resolveActiveRouteMode } from "@/features/shell/components/header/route-mode-match";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import { frameCrumbOf, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 
 const EXTERNAL_HREF_RE = /^(https?:|mailto:|tel:)/;
 
@@ -100,6 +100,13 @@ export interface EntityHeaderAction {
    * not lose it and the desktop does not show it twice.
    */
   phoneOnly?: boolean;
+  /**
+   * In a HOST's one-row bar (a Board tile — `HostedRecordBar`): `bar` = a labelled button on the row,
+   * anything else = the bar's "…" menu. Chosen by the action list, never by matching the label text.
+   */
+  placement?: "bar" | "menu";
+  /** In a host bar's labelled button: `danger` draws it as the danger button (Stop, End…). */
+  barTone?: "danger";
 }
 
 export interface EntityModeHeaderProps {
@@ -153,7 +160,8 @@ export interface EntityModeHeaderProps {
   rightEnd?: React.ReactNode;
 }
 
-function DesktopAction({ action }: { action: EntityHeaderAction }) {
+/** One declarative action as the header draws it on desktop (also the host-chrome bar's action). */
+export function DesktopAction({ action }: { action: EntityHeaderAction }) {
   const Icon = action.icon;
   const shared = {
     icon: <Icon className="h-4 w-4" />,

@@ -323,6 +323,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationFastfireManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-fastfire",
+  inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

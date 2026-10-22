@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { KeyRound, LogOut, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
 import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { readAccountAccess, requestEmailChange, signOutOtherSessions, type AccountAccessState } from "./accountAccess";

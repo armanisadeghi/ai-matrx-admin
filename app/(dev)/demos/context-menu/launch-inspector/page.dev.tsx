@@ -66,7 +66,7 @@ import {
   selectAccumulatedText,
 } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import type { ResultDisplayMode } from "@ai-matrx/chat/agents/utils/run-ui-utils";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

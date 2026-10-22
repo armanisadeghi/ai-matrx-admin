@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useTransition } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { Globe, Lock, Users, Loader2, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";

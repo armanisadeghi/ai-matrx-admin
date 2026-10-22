@@ -18,7 +18,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";

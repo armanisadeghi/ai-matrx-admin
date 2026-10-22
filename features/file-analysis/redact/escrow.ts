@@ -96,7 +96,6 @@ export async function escrowSessionKey(
     .insert({
       session_id: record.session_id,
       file_id: record.file_id,
-      owner_id: user.id,
       organization_id: organizationId,
       wrapped_key: bytesToBase64(wrapped),
       wrap_alg: wrappingKey.wrap_alg,

@@ -15,6 +15,7 @@ import { BrandCreatePanel } from "@/features/marketing/components/brands/BrandCr
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import type { MarketingBrand } from "@/features/marketing/types";
 import { emitCreateBrandEvent } from "./callbacks";
+import { expectNavigation } from "@ai-matrx/summon/boot-kit";
 
 const OVERLAY_ID = "createBrandWindow";
 
@@ -65,6 +66,7 @@ export default function CreateBrandWindow({ onClose, instanceId, callbackGroupId
           variant="quiet"
           icon={<ExternalLink />}
           onClick={() => {
+            expectNavigation(marketingRoutes.brandsNew()); // a window closes around this push: the overlay layer writes no address behind it
             router.push(marketingRoutes.brandsNew());
             onClose();
           }}

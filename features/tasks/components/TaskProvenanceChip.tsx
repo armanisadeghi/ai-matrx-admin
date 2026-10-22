@@ -25,7 +25,7 @@
  */
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ClipboardCheck, Cog, Link as LinkIcon } from "lucide-react";
 import { Chip } from "@ai-matrx/design-system/controls";
 import { provenanceDoorFor } from "../provenance-door";

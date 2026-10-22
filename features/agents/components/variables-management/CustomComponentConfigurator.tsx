@@ -45,7 +45,7 @@ import { PickListBindingEditor } from "./PickListBindingEditor";
 import { hasRandomOptionSource } from "@ai-matrx/chat/agents/utils/auto-assignment";
 import { normalizeFileResourceId } from "@/features/files/api/resource-family";
 import { ResourceFamilyPolicyEditor } from "@ai-matrx/chat/agents/components/inputs/resources/ResourceFamilyPolicyEditor";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 
 interface CustomComponentConfiguratorProps {
   /** Current custom component config (undefined = bare textarea). */

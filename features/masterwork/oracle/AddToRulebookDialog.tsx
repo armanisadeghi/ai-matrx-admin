@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { BookOpen, ExternalLink, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import {
   firstBlockingReason,
   GatedActionButton,
-} from "@/components/official/GatedActionButton";
+} from "@ai-matrx/design-system/controls";
 import { kindTextToMarkdown } from "@/features/content-ir/surfaces/kind-text-to-markdown";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";

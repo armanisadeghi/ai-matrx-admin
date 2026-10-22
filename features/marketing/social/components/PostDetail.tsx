@@ -23,7 +23,7 @@ import { formatCount } from "@ai-matrx/kit/format";
 import { ProviderChip } from "./ProviderFallbackNotice";
 import type { SocialProviderTrace } from "../types";
 import { CommentsLoader } from "./CommentsLoader";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {

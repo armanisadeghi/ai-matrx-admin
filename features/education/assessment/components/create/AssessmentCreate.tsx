@@ -1,8 +1,8 @@
 // features/education/assessment/components/create/AssessmentCreate.tsx
 //
 // The generate-a-<quiz|practice test> surface. One component, kind-parameterized.
-// Create → choose sources, style and details → results, the same page shape as
-// flashcards (`CreateDeckPage`):
+// Create → choose sources, style and details → results, on THE one Education
+// create shell (`EducationCreatePage` + `useEducationSources` + `useCreateRun`):
 //   • Sources: THE one Source input (`SourceInput`, Use existing + Add new, the
 //     review above the knob), picks kept across a reload under its surfaceKey.
 //     Its Topic tile alone runs the topic generator (no citations); any picked
@@ -19,13 +19,11 @@
 
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
-import { useEffect, useEffectEvent, useRef, useState, useTransition } from "react";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
+import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { recordToast, toast } from "@/lib/toast";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -37,14 +35,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
 import { FLASHCARD_SOURCE_DELIVERIES } from "@/features/flashcards/data/generateDeckFromSources";
-import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
-import { useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
 import { createSourceRef } from "@ai-matrx/agents/sources";
 import type { SourceDraft } from "@ai-matrx/agents/sources/runtime";
-import { useWizardDraft } from "@/lib/wizard-draft/useWizardDraft";
-import { WizardDraftRestored } from "@/lib/wizard-draft/WizardDraftRestored";
+import { cardRunRequest, restoreCardRunRequest } from "@/features/flashcards/data/cardRunRequest";
+import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
+import { EducationCreatePage } from "@/features/education/create/EducationCreatePage";
+import { leftOutLine, seedFromParams, useEducationSources } from "@/features/education/create/useEducationSources";
+import { useStyleDraft } from "@/features/education/create/useStyleDraft";
+import { useCreateRun } from "@/features/education/create/useCreateRun";
+import { STUDY_FROM_DECK_KINDS } from "@/features/education/create/studyFromDeck";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import { createEducationAssessmentScope } from "@/features/surfaces/manifests/education-assessment.manifest";
@@ -70,7 +70,6 @@ import type {
 } from "../../data/types";
 import { KIND_CONFIG, type KindConfig } from "../kindConfig";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 
 const FIELD = "text-base"; // 16px+ prevents iOS zoom-on-focus
@@ -137,10 +136,14 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
   const seedDepth: Depth = isDepth(seedDepthRaw) ? seedDepthRaw : "applied";
 
   const surfaceKey = assessmentCreateSurfaceKey(config.base);
-  const set = useSourceSet(surfaceKey);
-  const styleDraft = useWizardDraft<AssessmentStyleDraft>(`${surfaceKey}:style`, {
-    restore: restoreAssessmentStyle,
+  const sources = useEducationSources(surfaceKey, {
+    // Exam hub, deck and document links: a topic, a deck (`?deck=&name=`), a document.
+    seed: { ...seedFromParams(searchParams), topic: seedTopic || null },
+    onRelease: () => void start(),
+    topicMinChars: 1,
+    lateMark: `Not in this ${config.noun}`,
   });
+  const set = sources.set;
   const defaultTime = config.timed ? 20 : 0;
   const [count, setCount] = useState(config.defaultCount);
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
@@ -149,28 +152,20 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
   const [examType, setExamType] = useState(seedExamType);
   const [timeLimitMin, setTimeLimitMin] = useState(defaultTime);
   const [userRequest, setUserRequest] = useState("");
-  const keep = (fields: AssessmentStyleDraft) => styleDraft.patch({ ...fields });
-
   // Never lose input: the style answers come back after a reload, said out
   // loud (the Sources and topic are kept by the Source input itself). A link's
   // own exam type / depth still win over a kept answer.
-  const applyStyleDraft = useEffectEvent(() =>
-    styleDraft.applyOnce((v) => {
-      if (v.count !== undefined) setCount(Math.min(config.countMax, v.count));
-      if (v.difficulty) setDifficulty(v.difficulty);
-      if (v.depth && !isDepth(seedDepthRaw)) setDepth(v.depth);
-      if (v.questionTypes) setTypes(new Set(v.questionTypes));
-      if (v.examType !== undefined && !seedExamType) setExamType(v.examType);
-      if (v.timeLimitMinutes !== undefined && config.timed) setTimeLimitMin(v.timeLimitMinutes);
-      if (v.userRequest !== undefined) setUserRequest(v.userRequest);
-    }),
-  );
-  const styleDraftStatus = styleDraft.status;
-  useEffect(() => {
-    if (styleDraftStatus === "found") applyStyleDraft();
-  }, [styleDraftStatus]);
+  const styleDraft = useStyleDraft<AssessmentStyleDraft>(`${surfaceKey}:style`, restoreAssessmentStyle, (v) => {
+    if (v.count !== undefined) setCount(Math.min(config.countMax, v.count));
+    if (v.difficulty) setDifficulty(v.difficulty);
+    if (v.depth && !isDepth(seedDepthRaw)) setDepth(v.depth);
+    if (v.questionTypes) setTypes(new Set(v.questionTypes));
+    if (v.examType !== undefined && !seedExamType) setExamType(v.examType);
+    if (v.timeLimitMinutes !== undefined && config.timed) setTimeLimitMin(v.timeLimitMinutes);
+    if (v.userRequest !== undefined) setUserRequest(v.userRequest);
+  });
+  const keep = (fields: AssessmentStyleDraft) => styleDraft.patch({ ...fields });
   const startFresh = () => {
-    styleDraft.discard();
     setCount(config.defaultCount);
     setDifficulty("Medium");
     setDepth(seedDepth);
@@ -179,31 +174,18 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
     setTimeLimitMin(defaultTime);
     setUserRequest("");
   };
-
-  // ── Seeds from the link: an exam hub's topic, a deck or document opened elsewhere ──
-  const seeded = useRef(false);
-  const seed = useEffectEvent(() => {
-    if (seeded.current || set.restoring) return;
-    seeded.current = true;
-    if (seedTopic && !set.topic.trim()) set.setTopic(seedTopic);
-    const deckId = searchParams.get("deck");
-    if (deckId && !set.hasRef("fc_set", deckId))
-      set.addReady(deckSourceDraft({ id: deckId, name: searchParams.get("name") ?? "The deck you opened" }));
-    const docId = searchParams.get("document") ?? searchParams.get("source");
-    if (docId && !set.hasRef("processed_document", docId))
-      set.addReady({
-        kind: "your_sources",
-        label: searchParams.get("name") ?? "The document you opened",
-        ref: createSourceRef("processed_document", docId),
-        processedDocumentId: docId,
-      });
+  // The run is orchestrated in this tab (read, fan out, save): a reload mid-run
+  // stops it. Its request is kept so the page says so and offers the same
+  // request again — and a reload after the save began never repeats it.
+  const createRun = useCreateRun(`${surfaceKey}:run`, restoreCardRunRequest, sources, {
+    onRedo: (req) => {
+      const n = Math.min(config.countMax, req.count);
+      setCount(n);
+      keep({ count: n });
+    },
   });
-  useEffect(() => {
-    seed();
-  }, [set.restoring]);
 
   const busy = isGenerating || isNavigating;
-  const Icon = config.icon;
 
   const toggleType = (t: QuestionType) => {
     const next = new Set(types);
@@ -213,51 +195,61 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
     keep({ questionTypes: Array.from(next) });
   };
 
-  const ready = set.sources.filter((s) => s.status === "ready" && s.draft.ref);
-  const landing = set.sources.filter((s) => s.status === "pending" || s.status === "resolving");
-  const topic = set.topic.trim();
-  const hasSources = ready.length > 0;
+  const { ready, topic, hasSources } = sources;
   const firstDeck = ready.find((s) => s.draft.ref?.resource_type === "fc_set");
   const firstOther = ready.find((s) => s.draft.ref?.resource_type !== "fc_set");
-  const blockedReason = landing.length
-    ? `Wait until ${landing.length === 1 ? "your new source has" : `${landing.length} new sources have`} finished adding.`
-    : !hasSources && !topic
-      ? "Add a source or a topic."
-      : null;
 
-  const canGenerate = !busy && !blockedReason;
+  // THE one generation path (COPPA gate → plan check → generator → save → usage).
+  const start = async () => {
+    try {
+      const outcome = await createRun.track(
+        cardRunRequest(count, set.toSourceSet(), sourceNamesOf(set.sources), topic),
+        (ctx) => {
+          if (hasSources) sources.begin();
+          return generation.run({
+            source: hasSources
+              ? { mode: "sources", sources: set.toSourceSet(), topic, resolve: set.resolve }
+              : { mode: "topic", topic },
+            count,
+            difficulty,
+            depth,
+            questionTypes: Array.from(types),
+            examType,
+            userRequest,
+            timeLimitMinutes: timeLimitMin,
+            tabRun: { saving: ctx.saving, attach: ctx.attach },
+          });
+        },
+      );
+      // A blocked run already showed its own dialog (COPPA / paywall) or toast.
+      if (outcome.status === "failed") {
+        toast.error(outcome.error);
+        return;
+      }
+      if (outcome.status !== "created") return;
+      const { assessment, questionCount } = outcome;
+      recordToast.success(
+        { type: "assessment", id: assessment.id, title: assessment.title },
+        `Created "${assessment.title}" with ${questionCount} question${questionCount === 1 ? "" : "s"}`,
+      );
+      if (outcome.gapNote) toast.info(outcome.gapNote);
+      // Made and saved: only the Sources it used leave the draft.
+      const leftOut = sources.clearUsed();
+      if (leftOut > 0) toast.info(leftOutLine(leftOut, `the ${config.noun}`));
+      styleDraft.clear();
+      startNavigation(() => router.push(`${base}/${assessment.id}`));
+    } finally {
+      sources.endRun();
+    }
+  };
 
-  const handleGenerate = async () => {
-    if (!canGenerate) return;
-    const outcome = await generation.run({
-      source: hasSources
-        ? { mode: "sources", sources: set.toSourceSet(), topic, resolve: set.resolve }
-        : { mode: "topic", topic },
-      count,
-      difficulty,
-      depth,
-      questionTypes: Array.from(types),
-      examType,
-      userRequest,
-      timeLimitMinutes: timeLimitMin,
-    });
-    // A blocked run already showed its own dialog (COPPA / paywall) or toast.
-    if (outcome.status === "failed") {
-      toast.error(outcome.error);
+  const handleGenerate = () => {
+    if (sources.blockedReason || busy || generation.isChecking) return;
+    if (sources.waitingForClean.length > 0) {
+      sources.setHolding(true);
       return;
     }
-    if (outcome.status !== "created") return;
-    const { assessment, questionCount } = outcome;
-    recordToast.success(
-      { type: "assessment", id: assessment.id, title: assessment.title },
-      `Created "${assessment.title}" with ${questionCount} question${questionCount === 1 ? "" : "s"}`,
-    );
-    if (outcome.gapNote) toast.info(outcome.gapNote);
-    // Made and saved: the draft is done.
-    for (const s of set.sources) set.remove(s.id);
-    set.setTopic("");
-    styleDraft.clear();
-    startNavigation(() => router.push(`${base}/${assessment.id}`));
+    void start();
   };
 
   // Live surface scope for the Agents chrome (matrx-user/education-assessment,
@@ -379,6 +371,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
     },
   });
 
+  const n = Math.min(config.countMax, Math.max(1, count || 1));
   return (
     <SurfaceRuntimeProvider
       surfaceName="matrx-user/education-assessment"
@@ -386,72 +379,65 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
       getScope={getScope}
       getWriteHandlers={getSurfaceWriteHandlers}
     >
-    <div className="min-h-full w-full bg-textured">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <Button
-            icon={<ArrowLeft />}
-            variant="quiet"
-            className="shrink-0"
-            onClick={() => !busy && startNavigation(() => router.push(base))}
-            disabled={busy}
-            aria-label={`Back to ${config.pluralLabel}`}
-          />
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
-            <Icon className="h-6 w-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5"><h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
-              New {config.label.toLowerCase()}
-              <IntelligenceIndicator
-                feature="education"
-                mandateKeys={[ASSESSMENT_MANDATES.generateQuiz, ASSESSMENT_MANDATES.generateQuizFromSource]}
-              />
-            </h1><InfoHint text="Graded questions from your sources, a deck, or just a topic." label="About this page" /></div>
-          </div>
-        </div>
-
-        {isGenerating ? (
-          <div className="mt-6 flex flex-col gap-3">
-            <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-6 text-center">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <div>
+      <EducationCreatePage
+        title={`New ${config.label.toLowerCase()}`}
+        backHref={base}
+        surfaceKey={surfaceKey}
+        purpose={`your ${config.noun}`}
+        deliveries={FLASHCARD_SOURCE_DELIVERIES}
+        extraKinds={STUDY_FROM_DECK_KINDS}
+        sources={sources}
+        styleDraft={styleDraft}
+        onStartFresh={startFresh}
+        make={{
+          title: `Make the ${config.noun}`,
+          label: "Generate",
+          busyLabel: `Generating your ${config.noun}…`,
+          icon: <AGENT_ICON />,
+          busy,
+          checking: generation.isChecking,
+          running: (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-4 w-4 animate-spin" />
                 <p className="text-sm font-medium text-foreground">
-                  Generating your {config.noun}…
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {generation.progress && generation.progress.total > 1
-                    ? `Part ${Math.min(generation.progress.done + 1, generation.progress.total)} of ${generation.progress.total}`
-                    : `${Math.min(config.countMax, Math.max(1, count || 1))} questions at ${depth} depth`}
+                  {isNavigating
+                    ? `Opening your ${config.noun}…`
+                    : generation.progress && generation.progress.total > 1
+                      ? `Generating your ${config.noun} · part ${Math.min(generation.progress.done + 1, generation.progress.total)} of ${generation.progress.total}`
+                      : `Generating ${n} ${n === 1 ? "question" : "questions"} at ${depth} depth…`}
                 </p>
               </div>
-            </div>
-            {/* The generator's stream renders live — never a bare spinner. */}
-            <LiveRunDisplay
-              conversationId={conversationId}
-              label={`Writing your ${config.noun}`}
-              pending
-              bodyClassName="max-h-80 overflow-y-auto px-2.5 py-2 text-sm"
-            />
-          </div>
-        ) : (
-          <div className="mt-6 flex flex-col gap-5 rounded-xl border border-border bg-card p-4 sm:p-6">
-            {/* Sources — the one Source input (its Topic tile included) */}
-            <SourceInput
-              surfaceKey={surfaceKey}
-              title="Sources"
-              purpose={`your ${config.noun}`}
-              deliveries={FLASHCARD_SOURCE_DELIVERIES}
-            />
-            {styleDraft.didRestore ? (
-              <WizardDraftRestored
-                what="your style and details"
-                onDismiss={styleDraft.acknowledge}
-                onStartFresh={startFresh}
+              {/* The generator's stream renders live — never a bare spinner. */}
+              <LiveRunDisplay
+                conversationId={conversationId}
+                label={`Writing your ${config.noun}`}
+                pending
+                bodyClassName="max-h-80 overflow-y-auto px-2.5 py-2 text-sm"
               />
-            ) : null}
-
+            </div>
+          ),
+          onMake: handleGenerate,
+          summary: hasSources
+            ? `${n} ${n === 1 ? "question" : "questions"} from ${ready.length} ${ready.length === 1 ? "source" : "sources"}${topic ? `, focused on “${topic}”` : ""}`
+            : `${n} ${n === 1 ? "question" : "questions"} about “${topic}”`,
+          capability: config.capability,
+          mandates: {
+            feature: "education",
+            keys: [ASSESSMENT_MANDATES.generateQuiz, ASSESSMENT_MANDATES.generateQuizFromSource],
+          },
+          gates: <generation.Gates />,
+          operation: `Make a ${config.noun}`,
+        }}
+        run={{
+          state: createRun,
+          stoppedLabel: createRun.stopped
+            ? `Making ${createRun.stopped.request.count} ${createRun.stopped.request.count === 1 ? "question" : "questions"}`
+            : "",
+          savingWhat: `your ${config.noun}`,
+          listLabel: `Your ${config.pluralLabel.toLowerCase()}`,
+        }}
+      >
             {/* Count + difficulty */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
@@ -595,36 +581,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
               />
             </div>
 
-            {/* Metering (visible BEFORE the action — TRUST §6), canonical primitive */}
-            <EntitlementMeter capability={config.capability} showAllWindows />
-
-            <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
-              {blockedReason ? (
-                <span role="status" className="mr-auto text-xs text-muted-foreground">
-                  {blockedReason}
-                </span>
-              ) : null}
-              <Button
-                variant="quiet"
-                onClick={() => startNavigation(() => router.push(base))}
-                disabled={busy}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => void handleGenerate()}
-                disabled={!canGenerate || generation.isChecking}
-              >
-                <AGENT_ICON className="mr-1.5 h-4 w-4" />
-                Generate
-              </Button>
-            </div>
-          </div>
-        )}
-        <generation.Gates />
-      </div>
-    </div>
+      </EducationCreatePage>
     </SurfaceRuntimeProvider>
   );
 }

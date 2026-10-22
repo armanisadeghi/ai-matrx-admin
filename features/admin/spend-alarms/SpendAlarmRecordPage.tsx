@@ -6,7 +6,7 @@
 
 import { formatCount } from "@ai-matrx/kit/format";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";

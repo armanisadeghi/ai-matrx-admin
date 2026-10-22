@@ -15,9 +15,8 @@ import { cn } from "@/lib/utils";
 import {
   CrumbNode,
   CrumbTrailHeader,
-  frameCrumbOf,
 } from "@/features/shell/components/header/templates/CrumbTrailHeader";
-import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import { frameCrumbOf, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 import { useDerivedTrail, type UseDerivedTrailOptions } from "./useDerivedTrail";
 
 export interface DerivedBreadcrumbProps extends UseDerivedTrailOptions {

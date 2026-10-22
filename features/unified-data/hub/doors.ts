@@ -826,6 +826,38 @@ export async function dataHome(
   };
 }
 
+/** The data home's FIRST read (`custom.data_home_first`, L53b): the newest tables only, and how many she may open. */
+export interface DataHomeFirstAnswer {
+  tables: DataHomeTableRow[];
+  changed_by: Array<ChangedByRow & { organization_id: string }>;
+  /** Every table she may open (the platform tables left out unless asked), of which `tables` is the newest. */
+  total: number;
+}
+
+/**
+ * THE BOUNDED FIRST READ (defect 84): `custom.data_home` answers every row of every organization (1.16 MB and
+ * 8.8 s cold for a person in 55 organizations, past the request's 8 s limit). This asks for the newest
+ * `limit` tables only (same rows as `custom.data_home`'s `tables`, same walls); the page draws them at once and
+ * reads the whole home (`dataHome`) after first paint.
+ */
+export async function dataHomeFirst(
+  dataSource: RecordsDataSource,
+  organizationId: string | null = null,
+  options: PlatformTablesOption & { limit?: number } = {},
+): Promise<DoorAnswer<DataHomeFirstAnswer>> {
+  const answered = await call<DataHomeFirstAnswer | null>(dataSource, "data_home_first", {
+    ...(organizationId ? { p_organization_id: organizationId } : {}),
+    ...(options.includePlatformTables ? { p_include_platform_tables: true } : {}),
+    ...(options.limit ? { p_limit: options.limit } : {}),
+  });
+  if (!answered.ok) return answered;
+  const data = answered.data && !Array.isArray(answered.data) ? answered.data : null;
+  return {
+    ok: true,
+    data: { tables: data?.tables ?? [], changed_by: data?.changed_by ?? [], total: data?.total ?? 0 },
+  };
+}
+
 /**
  * Where a server search matched a row (`custom.data_home(p_search)`, DATA-HOME-3B): its title, its
  * description, one of its Fields (label or key), or a whole id pasted in.

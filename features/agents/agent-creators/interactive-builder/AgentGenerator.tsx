@@ -61,7 +61,7 @@ const GENERATOR_SHORTCUT = getSystemShortcut("agent-generator-01");
 const TOAST_POSITION = "top-center" as const;
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import {
   Hammer,
   Check,
@@ -77,7 +77,6 @@ import { AgentStreamingResponse } from "./AgentJsonDisplay";
 import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import { ExamplesField, emptyExamples } from "@/features/agents/factory/components/ExamplesField";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { InfoHint } from "@/components/official/InfoHint";
 import { asClause } from "@ai-matrx/kit/text";
 
 // =============================================================================

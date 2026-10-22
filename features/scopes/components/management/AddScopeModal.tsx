@@ -15,7 +15,7 @@ import {
   type PanelPresentation,
 } from "@/components/matrx/resizable/MatrxDynamicPanelHost";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +28,6 @@ import { createScopeType } from "@/features/scopes/redux/thunks/scopeTreeMutatio
 import { createContextItem } from "@/features/scopes/redux/thunks/contextItemMutations";
 import { toFieldKey } from "@ai-matrx/records/scopes";
 import { pluralize } from "@/features/scopes/utils/pluralize";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 type ContextItemDraft = { id: string; label: string };
 

@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { useAppDispatch, useDispatchThunk } from "@/lib/redux/hooks";
 import { hierarchyService } from "../service/hierarchyService";
 import type {

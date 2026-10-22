@@ -224,6 +224,8 @@ export const marketingBrandKnowledgeManifest: SurfaceManifest = {
   description:
     "The brand Knowledge room — the Business Discovery Ladder for one website: what the AI concluded at each rung and what is left to run.",
   label: "Brand Knowledge",
+  situation:
+    "They are in the brand's Knowledge room for this website: a ladder of discovery steps from business model and ideal customer to offerings, their worth and guidelines. Next step to run: {discovery_next_step|none left}; running now: {discovery_running_step|nothing}. They can accept or reject its {discovery_proposal_counts.total|no} waiting proposals.",
   urlPattern: "/marketing/[brandId]/identity/knowledge",
   inheritsFrom: "matrx-user/marketing-site",
   readiness: "partial",

@@ -33,7 +33,7 @@ import { DraftIndicator } from "./DraftIndicator";
 import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 import { useToastManager } from "@/hooks/useToastManager";
 import { ListScopeSwitcher } from "@/components/official/ListScopeSwitcher";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 
 interface TranscriptsSidebarProps {
   onCreateTranscript?: () => void;

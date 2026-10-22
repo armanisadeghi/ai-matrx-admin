@@ -64,7 +64,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { usePathname } from "next/navigation";
 import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
@@ -188,6 +188,9 @@ const clusterSurface = (pathname: string | null, wide: boolean): string => {
 
 /** Breathing room an in-flow center keeps from the title and the actions. */
 export const CENTER_INFLOW_GUTTER = 16;
+
+/** The breathing room from the flanks a centered control keeps (useCenterControlFit's). */
+const CENTER_FLANK_GUTTER_PX = 32;
 
 export function centerSlotWidth(
   total: number,
@@ -445,15 +448,42 @@ export default function RouteHeader({
       // to an empty center (2026-10-03: /war-room/<id> beside the canvas drew
       // "Acme…" at 42px beside a blank 56px gap).
       const navMin = root.querySelector<HTMLElement>("[data-route-nav-min]")?.scrollWidth ?? 0;
-      setLeftMax(titleMaxWidth(root.clientWidth, rightWidth, navMin, floor));
+      // 🚨 THE CENTER CONTROL NEVER MOVES WITH THE TITLE (2026-10-21, chat-switch-stability).
+      // A long title used to push the center switch out of the true center (in flow, or
+      // its compact face), so every chat switch between a short and a long title moved
+      // the switch sideways. The title now yields first: it stops where the control's
+      // widest face, at the true center, begins — down to its floor; below that the
+      // old rule (smallest trigger) applies.
+      const navFull = Math.max(
+        0,
+        ...Array.from(
+          root.querySelectorAll<HTMLElement>("[data-route-header-center] [inert] > *"),
+        ).map((el) => el.scrollWidth),
+      );
+      const centeredCap =
+        navFull > 0
+          ? Math.floor((root.clientWidth - navFull) / 2 - CENTER_FLANK_GUTTER_PX / 2)
+          : null;
+      const inflowCap = titleMaxWidth(root.clientWidth, rightWidth, navMin, floor);
+      setLeftMax(
+        centeredCap != null && centeredCap >= floor && rightWidth <= centeredCap
+          ? Math.min(centeredCap, inflowCap ?? centeredCap)
+          : inflowCap,
+      );
     };
 
     measure();
+    // 🚨 A REMEASURE COMMITS BEFORE THE FRAME PAINTS (2026-10-21, chat-switch-stability).
+    // Observer and frame callbacks run between layout and paint, but a plain setState
+    // there renders in a later task — so a new title painted one frame with the OLD
+    // centering pad and the center switch jumped sideways on every chat switch.
+    // `flushSync` lands the new geometry in the same frame as the content.
+    const measureNow = () => flushSync(measure);
     // PageHeader mounts through a portal. Its first layout pass can happen
     // before the injection slot has its final width, so measure once more on
     // the next frame instead of leaving the center unmeasured.
-    const frame = requestAnimationFrame(measure);
-    const ro = new ResizeObserver(measure);
+    const frame = requestAnimationFrame(measureNow);
+    const ro = new ResizeObserver(measureNow);
     ro.observe(root);
     if (root.parentElement) ro.observe(root.parentElement);
     if (leftRef.current) ro.observe(leftRef.current);
@@ -480,10 +510,13 @@ export default function RouteHeader({
       navMinEl = next;
       if (navMinEl) {
         ro.observe(navMinEl);
-        measure();
+        if (watching) measureNow();
+        else measure();
       }
     };
+    let watching = false;
     watchNav();
+    watching = true;
     const centerEl = root.querySelector<HTMLElement>("[data-route-header-center]");
     const mo = new MutationObserver(watchNav);
     if (centerEl) mo.observe(centerEl, { childList: true, subtree: true });

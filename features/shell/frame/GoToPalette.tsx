@@ -22,6 +22,7 @@ import { ProductMark } from "./ProductMark";
 import { buildGoToIndex, MENU_GO_TO_PRODUCT_ID } from "./goToIndex";
 import type { GoToEntry } from "./goToIndex";
 import { FRAME_ROUTE_HOMES } from "./route-homes.generated";
+import { GO_TO_PAGES } from "./go-to-pages.generated";
 import { highlightMenuMatch, rankMenuSearch } from "./searchEngine";
 import type { FrameProduct, ProductFamily } from "./types";
 
@@ -65,7 +66,7 @@ export default function GoToPalette({ open, onOpenChange, products, families, on
   // Cmd/Ctrl held on Enter or click: open in a new tab.
   const newTab = useRef(false);
 
-  const [index] = useState(() => buildGoToIndex(products, families, FRAME_ROUTE_HOMES, extraEntries));
+  const [index] = useState(() => buildGoToIndex(products, families, FRAME_ROUTE_HOMES, extraEntries, GO_TO_PAGES));
   const productById = new Map(products.map((p) => [p.id, p]));
   const trimmed = query.trim();
   const hits = trimmed ? rankMenuSearch(index, trimmed) : [];

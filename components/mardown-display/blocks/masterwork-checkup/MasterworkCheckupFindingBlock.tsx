@@ -42,7 +42,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  */
 
 import { useCallback, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   CircleSlash,
   FileText,

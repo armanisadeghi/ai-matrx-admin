@@ -27,6 +27,7 @@
 // yields title width to keep it on screen.
 
 import { useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { flushSync } from "react-dom";
 import {
   CENTER_INFLOW_GUTTER,
   centerSlotWidth,
@@ -96,7 +97,10 @@ export function useCenterControlFit(
     };
 
     compute();
-    const ro = new ResizeObserver(compute);
+    // Observer callbacks commit in the same frame (see RouteHeader's measureNow): a
+    // plain setState here painted one frame of the old fit on every title change.
+    const computeNow = () => flushSync(compute);
+    const ro = new ResizeObserver(computeNow);
     ro.observe(cell);
     for (const r of candidates) if (r.current) ro.observe(r.current);
     if (routeHeader) ro.observe(routeHeader);
@@ -105,7 +109,7 @@ export function useCenterControlFit(
     if (center) ro.observe(center);
     // RouteHeader writes its geometry as inline styles after this effect runs;
     // follow those writes directly (ResizeObservers wait for a rendered frame).
-    const mo = new MutationObserver(compute);
+    const mo = new MutationObserver(computeNow);
     if (routeHeader) mo.observe(routeHeader, { attributes: true, attributeFilter: ["style"] });
     const inset = cell.closest<HTMLElement>("[data-route-header-inset]");
     if (inset) mo.observe(inset, { attributes: true, attributeFilter: ["style"] });

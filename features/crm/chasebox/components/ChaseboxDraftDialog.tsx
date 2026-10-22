@@ -37,8 +37,8 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

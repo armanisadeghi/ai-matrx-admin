@@ -11,7 +11,7 @@ import {
   MatrxDataTable,
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 import type {

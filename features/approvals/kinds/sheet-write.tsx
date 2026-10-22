@@ -31,7 +31,7 @@
  */
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { MatrxDetailGrid, type DetailGridColumn } from "@ai-matrx/design-system/data-table";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

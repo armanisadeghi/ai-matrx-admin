@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Calendar, Paperclip, User, ExternalLink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TASK_LABEL_OPTIONS } from "@/features/tasks/services/taskService";

@@ -12,6 +12,7 @@ import {
 } from "@reduxjs/toolkit";
 import type { CatalogVoice } from "@/features/audio/service/engines";
 import type { TableViewSnapshot } from "@ai-matrx/design-system/data-table";
+import isEqual from "lodash/isEqual";
 import { definePolicy } from "@/lib/sync/policies/define";
 import { PREFERENCES_ROW_COLUMNS, savePreferencePatch } from "./preferencePatch";
 import {
@@ -1851,7 +1852,7 @@ const PREFERENCE_EDIT_BY_TYPE = new Map<string, PreferenceEditName>(
 function replayPendingEdits(state: Draft<UserPreferencesState>): number {
   const pending = state._meta.pendingEdits;
   const held = isDraft(pending) ? current(pending) : pending;
-  state._meta.pendingEdits = [];
+  if (held.length > 0) state._meta.pendingEdits = [];
   for (const edit of held) {
     const reduce: EditReducer = preferenceEditReducers[edit.reducer];
     reduce(state, {
@@ -1899,22 +1900,22 @@ const userPreferencesSlice = createSlice({
       for (const key of PREFERENCE_MODULE_KEYS) {
         const incoming = loaded[key];
         if (!incoming) continue;
+        // A rehydrate whose content equals what the slice holds must change NOTHING: Immer keeps a
+        // reference only for a key that is never assigned, so write only the keys whose value differs
+        // (deep) — otherwise every subscriber of every module re-renders on the first click.
+        const target = state[key] as unknown as Record<string, unknown>;
+        const nextModule: Record<string, unknown> = { ...(incoming as object) };
         if (key === "aiModels") {
           const models = incoming as UserPreferences["aiModels"];
-          state.aiModels = {
-            ...state.aiModels,
-            ...models,
-            favoriteModels: mergeFavoriteModelIds(
-              models.favoriteModels,
-              state.aiModels.favoriteModels,
-            ),
-          };
-          continue;
+          nextModule.favoriteModels = mergeFavoriteModelIds(
+            models.favoriteModels,
+            state.aiModels.favoriteModels,
+          );
         }
-        (state as unknown as Record<string, unknown>)[key] = {
-          ...(state[key] as object),
-          ...(incoming as object),
-        };
+        for (const field of Object.keys(nextModule)) {
+          const had = isDraft(target[field]) ? current(target[field]) : target[field];
+          if (!isEqual(had, nextModule[field])) target[field] = nextModule[field];
+        }
       }
 
       // Snapshot the loaded state so `resetToLoadedPreferences` still works —
@@ -1924,9 +1925,11 @@ const userPreferencesSlice = createSlice({
       // replayed in place (`state.favorites.items = …`) rewrote the snapshot
       // too and that edit then read as "unchanged" and was never saved.
       const { _meta, ...currentPreferences } = current(state);
-      state._meta.loadedPreferences = {
-        ...currentPreferences,
-      } as UserPreferences;
+      if (!isEqual(current(state._meta).loadedPreferences, currentPreferences)) {
+        state._meta.loadedPreferences = {
+          ...currentPreferences,
+        } as UserPreferences;
+      }
       // Engine-managed persistence = never "unsaved" from the user's POV.
       state._meta.hasUnsavedChanges = false;
       // The person's saved record is what the slice now holds.

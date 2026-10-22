@@ -10,7 +10,10 @@ import { createRoot, type Root } from "react-dom/client";
 
 jest.mock("next/link", () => ({ __esModule: true, default: (p: { children: unknown }) => p.children }));
 jest.mock("@ai-matrx/design-system/controls", () => ({ StatusToken: () => null, PropertyRow: () => null }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({ EntityRef: () => null }));
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
+  EntityRef: () => null,
+}));
 jest.mock("@/components/cost/useCostDisplay", () => ({ useCostDisplay: () => ({ unit: "points", rate: 1 }) }));
 jest.mock("@/features/hindsight/subject-doors", () => ({ conversationHref: () => "/c" }));
 jest.mock("@/features/mandates/run-history/format", () => ({

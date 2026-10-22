@@ -303,13 +303,30 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
     setPhase("build");
   }
 
+  /** Back to the lineup from a result where nothing could be compared: the same names, or the same names
+   *  as local businesses (a small company often has a map listing and no reviews page). */
+  function retry(kindNext: string) {
+    const names = (result?.items ?? []).map((i) => i.name).filter(Boolean);
+    abort.current?.abort();
+    ownRun.current = null;
+    setRunInAddress(null);
+    setResult(null);
+    setDiscovered(null);
+    if (kindNext !== kindKey || !rows.some((r) => r.state === "found")) {
+      setKindKey(kindNext);
+      setRows(startRows());
+      setText(names.join(" vs "));
+    }
+    setPhase("build");
+  }
+
   /** "Is this them?" for the run on screen: the price first, then the owner's answer rebuilds the result in place. */
   function facetConfirm(runId: string): FacetConfirm {
     return {
       runId,
-      price: (item, facet) => getConfirmPrice(runId, item.item_index ?? 0, facet, { organizationId }),
+      price: (item, facet) => getConfirmPrice(runId, item, facet, { organizationId }),
       answer: async (item, facet, answer) => {
-        const state = await answerConfirm(runId, item.item_index ?? 0, facet, answer, { organizationId });
+        const state = await answerConfirm(runId, item, facet, answer, { organizationId });
         if (state.result) setResult(state.result);
       },
     };
@@ -326,6 +343,12 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
           onPick={pick}
           onConfirm={confirmRunId && canConfirm ? facetConfirm(confirmRunId) : undefined}
           actions={<><ShareButton /><Button variant="outline" icon={<RotateCcw className="h-4 w-4" />} onClick={startOver}>New comparison</Button></>}
+          wayOut={<>
+            {result.kind !== "local_business" && live.some((k) => k.key === "local_business") ? (
+              <Button variant="primary" icon={<Store className="h-4 w-4" />} onClick={() => retry("local_business")}>Try as local businesses</Button>
+            ) : null}
+            <Button variant="outline" onClick={() => retry(result.kind)}>Edit names</Button>
+          </>}
         />
         {savedRunId ? (
           <div className="pt-4">

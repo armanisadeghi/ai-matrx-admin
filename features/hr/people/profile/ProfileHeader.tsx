@@ -53,7 +53,7 @@ import {
   hrStructureFocusHref,
   type HrOrgRef,
 } from "../../routes";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import type { HrProfileHeader as HrProfileHeaderData } from "../../types";
 import { HrCountDoor, HrPersonDoor, HrStructureDoor } from "../doors/HrPersonDoor";
 import { HrStatusChip, formatFullDate } from "../shared/HrStatusChip";

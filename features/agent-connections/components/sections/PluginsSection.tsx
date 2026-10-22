@@ -19,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import AssociateTaskButton from "@/features/tasks/widgets/AssociateTaskButton";

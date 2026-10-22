@@ -154,6 +154,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const marketingCompetitorsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/marketing-competitors",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
@@ -161,6 +162,8 @@ export const marketingCompetitorsManifest: SurfaceManifest = {
     "",
   readiness: "verified",
   label: "Competitor Opportunity Autopsy",
+  situation:
+    "They are on the competitor autopsy for {site.domain|no website chosen yet}: which competitors win, why, and the opportunities that close the gap. They can choose the competitors and depth of the next autopsy and run it, classify or track competitors, and change an opportunity's status.",
   urlPattern: "/marketing/[brandId]/intelligence/competitors/run",
   intro: `<surface_intro>
 You are on the competitor opportunity autopsy workspace. The selected site belongs to the brand; competitors are only rivals supported by provider overlap or explicitly supplied by the user. Read latest_autopsy for the causal verdict and evidence limitations, competitors for stable threat assessments, and opportunities for the concrete work queue.

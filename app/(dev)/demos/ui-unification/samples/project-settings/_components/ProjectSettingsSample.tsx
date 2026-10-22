@@ -15,7 +15,7 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useSearchParams } from "next/navigation";
 import { Archive, Copy, Database, ExternalLink, FolderKanban, Mail, Trash2, UserPlus, Users } from "lucide-react";
 import { formatRelativeTime } from "@ai-matrx/kit/format";

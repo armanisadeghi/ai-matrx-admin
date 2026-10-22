@@ -20,6 +20,10 @@ if [ -x "$LOCAL_HOOK" ]; then
     "$LOCAL_HOOK" "$@" || exit $?
 fi
 
+# NO CONFLICT MARKERS (2026-10-22, v0.4.3443 failed on a committed `<<<<<<< HEAD`): a staged file
+# holding a git conflict marker line is refused (~0.1 s, reads the index). Self-test: --self-test.
+sh "$HOOK_DIR/no-conflict-markers.sh" || exit 1
+
 # RELEASE PATH NEVER BLOCKED, AT WRITE TIME (adversarial review 2026-10-22): a staged git hook, ship.sh,
 # scripts/release.sh or scripts/sync-main.py is checked by the release-path guard's static part (~0.1 s,
 # read from the index; only the lines this commit adds are judged for a new non-zero exit). Commit time

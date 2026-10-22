@@ -553,6 +553,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const scraperManifest: SurfaceManifest = {
   surfaceName: "matrx-user/scraper",
+  inheritsFrom: "matrx-default/web",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

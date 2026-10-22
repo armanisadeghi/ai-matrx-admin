@@ -17,7 +17,7 @@
  * to `RagHitView` and pass `href` (deep-link) + `onOpen` (window).
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useId, useState } from "react";
 import {
   BookMarked,

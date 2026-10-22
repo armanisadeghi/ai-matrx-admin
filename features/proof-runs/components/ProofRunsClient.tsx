@@ -38,7 +38,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { extractErrorMessage } from "@/utils/errors";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import {

@@ -360,10 +360,26 @@ function whatsNewFor(body: ShellLayoutBody, isAdmin: boolean): ShellCatalogEntry
   collectRefs(body.sidebar ?? defaultSidebarTree(), placed);
   collectRefs(body.dock ?? defaultDockTree(), placed);
   for (const button of body.header ?? defaultHeaderButtons()) if (button.kind === "nav") placed.add(button.ref);
-  return buildShellCatalog({ isAdmin }).filter(
+  const catalog = buildShellCatalog({ isAdmin });
+  const offered = catalog.filter(
     (entry) =>
       (entry.addedIn ?? 1) > body.basedOnCatalogVersion && !dismissed.has(entry.id) && !placed.has(entry.id),
   );
+  // A new menu arrives as ONE offer: an entry under an entry that is itself offered rides in with it (Add
+  // places the parent with its children). The Memory menu would otherwise be 24 rows of "New:" (2026-10-22).
+  const offeredIds = new Set(offered.map((e) => e.id));
+  const parentOf = new Map(catalog.map((e) => [e.id, e.parentId]));
+  const addedInById = new Map(catalog.map((e) => [e.id, e.addedIn ?? 1]));
+  // Dismissing (or adding) a NEW menu covers its whole subtree: its children never surface afterwards.
+  const coveredAncestor = (p: string): boolean =>
+    offeredIds.has(p) ||
+    dismissed.has(p) ||
+    (placed.has(p) && (addedInById.get(p) ?? 1) > body.basedOnCatalogVersion);
+  const underOffered = (id: string): boolean => {
+    for (let p = parentOf.get(id) ?? null; p !== null; p = parentOf.get(p) ?? null) if (coveredAncestor(p)) return true;
+    return false;
+  };
+  return offered.filter((entry) => !underOffered(entry.id));
 }
 
 function defaultHeader(): ResolvedHeaderButton[] {

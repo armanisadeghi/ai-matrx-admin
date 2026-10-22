@@ -14,7 +14,7 @@
  * Rendered only behind the lazy overlay boundary (`OverlayWorldHost`).
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ActionInbox, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppSelector } from "@/lib/redux/hooks";

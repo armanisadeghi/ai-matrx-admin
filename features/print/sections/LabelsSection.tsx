@@ -20,10 +20,9 @@ import {
 import { LabelSheetPreview } from "@ai-matrx/print/react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
-import { Select } from "@ai-matrx/design-system/controls";
+import { Select, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, announcePrintOutcome, byteLength, controlClass } from "@/features/print/components/shared";
 import { SAMPLE_FORMAT_ROWS } from "./sample-data";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 const EC_LEVELS: QrEcLevel[] = ["L", "M", "Q"];
 

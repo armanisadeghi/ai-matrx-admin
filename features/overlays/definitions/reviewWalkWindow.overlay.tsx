@@ -21,7 +21,7 @@ import {
 } from "@/features/review-walk/openReviewWalk";
 import type { OverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 const opener = createOpener<object>(REVIEW_WALK_OVERLAY_ID);
 

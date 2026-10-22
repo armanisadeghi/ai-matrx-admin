@@ -104,7 +104,7 @@ export function DataHomeList({ dataSource, sharedOnlyHere = false }: DataHomeLis
   );
   // THE CORPUS (rows in hand) and the server search beside it — dataHomeCorpus.ts.
   const corpus = useMemo(
-    () => createDataHomeCorpus(client, dataSource, { includePlatformTables: showPlatformTables }),
+    () => createDataHomeCorpus(client, dataSource, { includePlatformTables: showPlatformTables, progressive: true }),
     // `corpusVersion`: a row's menu renamed, moved or archived a table, so the corpus is read again.
     [client, dataSource, showPlatformTables, corpusVersion, restoredVersion],
   );
@@ -115,9 +115,18 @@ export function DataHomeList({ dataSource, sharedOnlyHere = false }: DataHomeLis
   );
   // A server answer for the box's current text re-asks the list (its rows join beneath the instant hits).
   const [serverVersion, setServerVersion] = useState(0);
-  useEffect(() => corpus.onAnswer(() => setServerVersion((v) => v + 1)), [corpus]);
-  // The rows in hand by id, for Recent (the corpus's one held read; never a second door call).
+  // The whole home landing after the newest rows (corpus `progressive`) takes the same road: the list re-asks, Recent re-reads.
   const [rowsById, setRowsById] = useState<ReadonlyMap<string, DataHomeRow>>(() => new Map());
+  useEffect(
+    () =>
+      corpus.onAnswer(() => {
+        setServerVersion((v) => v + 1);
+        const rows = corpus.loaded();
+        if (rows) setRowsById(new Map(rows.map((row) => [row.id, row])));
+      }),
+    [corpus],
+  );
+  // The rows in hand by id, for Recent (the corpus's one held read; never a second door call).
   useEffect(() => {
     let live = true;
     corpus
@@ -324,8 +333,13 @@ export function DataHomeList({ dataSource, sharedOnlyHere = false }: DataHomeLis
         notice={(list) => (
           <>
             {!list.query.search ? <DataHomeRecent rows={recent} expected={rowsById.size === 0 && marks.recent.length > 0} onOpened={(row) => marks.opened(row.id)} /> : null}
-            {corpus.meta.refusals.length > 0 || corpus.meta.capped || corpus.meta.searchTrouble ? (
+            {corpus.meta.refusals.length > 0 || corpus.meta.capped || corpus.meta.partial || corpus.meta.searchTrouble ? (
             <div role="status" className="flex flex-col gap-1 text-xs text-muted-foreground" data-data-home-notice="">
+              {corpus.meta.partial ? (
+                <span data-data-home-partial="">
+                  Newest {formatCount(corpus.meta.partial.shown)} of {formatCount(corpus.meta.partial.total)} tables, loading the rest.
+                </span>
+              ) : null}
               {corpus.meta.capped ? <span>Showing the newest {formatCount(DATA_HOME_ROW_CAP)}.</span> : null}
               {corpus.meta.searchTrouble ? (
                 <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400">

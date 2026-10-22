@@ -308,6 +308,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 export const adminSyncFleetManifest: SurfaceManifest = {
   surfaceName: ADMIN_SYNC_FLEET_SURFACE_NAME,
+  inheritsFrom: "matrx-default/apps",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
@@ -318,7 +319,7 @@ export const adminSyncFleetManifest: SurfaceManifest = {
   readiness: "partial",
   readinessNote:
     "Complete live scope and canonical menu authored; browser behavior, helper isolation and independent certification remain to be verified.",
-  guide: "features/surfaces/guides/admin-sync-fleet.md",
+  guide: "features/surfaces/guides/sync-fleet.md",
   intro: `<surface_intro>Start with page_overview: loaded fleet health and current searches. This page has no create, edit or delete mapping action; mapping rows and derived health evidence are read-only. Use the four segment search targets for view changes only. Never use generic context or data tools to bypass this page's read-only records. Path-free organization-authorized folder sync health. Mapping rows and overlapping quota, stopped, degraded and silent-device segments describe the loaded fleet, with each table view exposed separately. Local folders and private storage ledgers are not loaded here.</surface_intro>`,
   groups,
   writeTargets,

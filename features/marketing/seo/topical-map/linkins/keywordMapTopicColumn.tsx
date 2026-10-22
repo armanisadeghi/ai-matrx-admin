@@ -16,7 +16,7 @@
  * column never renders a control that would 42501 on click.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Network } from "lucide-react";
 
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table";

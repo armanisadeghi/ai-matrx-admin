@@ -27,7 +27,7 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   Select,
   SelectContent,

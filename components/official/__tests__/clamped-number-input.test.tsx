@@ -6,7 +6,7 @@
 
 import React, { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { ClampedNumberInput, clampDraft, shownDraft } from "../ClampedNumberInput";
+import { ClampedNumberInput, clampDraft, shownDraft } from "@ai-matrx/design-system/controls";
 import { makeMoreCardsLabel } from "@/features/flashcards/components/create/cardProgressLine";
 
 (

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { EngagementPicker } from "@/features/scopes/components/active-context/engagement/EngagementPicker";
 import { BindingTargetPicker } from "@/features/scopes/components/active-context/binding-target/BindingTargetPicker";

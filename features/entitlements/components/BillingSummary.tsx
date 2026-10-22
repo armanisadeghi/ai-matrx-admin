@@ -16,10 +16,9 @@ import { usePlanCatalog } from "../catalog/usePlanCatalog";
 
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, RegionSkeleton, Select } from "@ai-matrx/design-system/controls";
 import { ScheduledPlanChange } from "./ScheduledPlanChange";
 import { useOpenFeedbackWindow } from "@/features/overlays/definitions/feedbackDialog.overlay";
-import { RegionSkeleton, Select } from "@ai-matrx/design-system/controls";
 
 interface InvoiceRecovery {
   id: string | null;

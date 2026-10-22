@@ -54,7 +54,7 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input, DateField, TimeField } from "@ai-matrx/design-system/controls";
+import { Input, DateField, TimeField, InfoHint } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -80,7 +80,6 @@ import { useHrSettingsStructure } from "../hooks/useHrSettingsStructure";
 import { HrSettingsShell } from "../HrSettingsShell";
 import type { HrEarningCode, HrHolidayCalendar, HrPayGroup } from "../types";
 import { formatPreviewDay, previewPeriods, WORKWEEK_DAYS } from "./period-preview";
-import { InfoHint } from "@/components/official/InfoHint";
 import { upsertHrPayGroup } from "./pay-group-write";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

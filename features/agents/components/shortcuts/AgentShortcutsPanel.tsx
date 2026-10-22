@@ -16,7 +16,7 @@
 
 import type { ComponentProps } from "react";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   ArrowRight,
   Globe,
@@ -36,7 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { IconResolver } from "@ai-matrx/icons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { LinkAgentToShortcutModal } from "@/features/agent-shortcuts/components/LinkAgentToShortcutModal";
 import type { AgentScope } from "@/features/agent-shortcuts/constants";

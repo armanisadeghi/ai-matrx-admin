@@ -187,16 +187,16 @@ jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hook
 
 // The record door pulls the entity registry and the peek host — neither is
 // under test here. The label is what a person reads; that is what we assert.
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ name, href }: { name?: string; href?: string }) => (
     <a data-testid="entity-ref" href={href}>
       {name}
     </a>
   ),
-}));
-jest.mock("@/components/official/entity-ref/TextWithDoors", () => ({
   TextWithDoors: ({ text }: { text?: string | null }) => <>{text}</>,
 }));
+
 jest.mock("@/components/navigation/AppLink", () => {
   const Link = ({ href, children, ...rest }: { href: string; children?: React.ReactNode }) => (
     <a href={typeof href === "string" ? href : String(href)} {...rest}>

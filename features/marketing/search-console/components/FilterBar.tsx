@@ -24,7 +24,7 @@
  */
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, X } from "lucide-react";
 import {

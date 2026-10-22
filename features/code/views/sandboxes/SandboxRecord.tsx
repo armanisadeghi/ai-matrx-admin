@@ -1,5 +1,6 @@
 "use client";
 
+import { HostedRecordBar } from "@/features/shell/host-chrome/RecordHostChrome";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
@@ -34,6 +35,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
+import { RecordActionsMenu } from "@/components/official/RecordActionsMenu";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 // The delete and force-stop confirmations are AlertDialogs: they block the page on purpose
 // (policy ai-reachable-everywhere; the ordinary Dialog is a non-blocking window on desktop).
@@ -411,7 +413,7 @@ export function SandboxRecord({
   if (loading) {
     return (
       <SandboxFrame embedded={embedded}>
-        <SandboxHeader embedded={embedded} label="Loading…" />
+        <SandboxHeader embedded={embedded} recordId={id} label="Loading…" />
         <div className={embedded ? "min-h-0 flex-1 overflow-y-auto bg-textured px-4 pt-3 pb-8" : "h-full overflow-y-auto bg-textured px-4 pt-[calc(var(--shell-header-h)+1rem)] pb-8"}>
           <div className="max-w-6xl mx-auto space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -443,7 +445,7 @@ export function SandboxRecord({
   if (!instance) {
     return (
       <SandboxFrame embedded={embedded}>
-        <SandboxHeader embedded={embedded} label="Sandbox" />
+        <SandboxHeader embedded={embedded} recordId={id} label="Sandbox" />
         <div className={embedded ? "min-h-0 flex-1 overflow-hidden bg-textured" : "h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]"}>
           <AccessGate
             token="sandbox_instance"
@@ -478,6 +480,8 @@ export function SandboxRecord({
           {
             label: lifecycleBusy === "stop" ? "Stopping…" : "Stop",
             icon: Square,
+            placement: "bar" as const,
+            barTone: "danger" as const,
             // Stopping ends everything running inside; ask first and say so.
             onPress: () =>
               void (async () => {
@@ -627,6 +631,7 @@ export function SandboxRecord({
       <SandboxHeader
         embedded={embedded}
         label={displayName}
+        recordId={id}
         actions={detailActions}
         right={
           <div className="flex items-center gap-2">
@@ -1117,21 +1122,6 @@ export function SandboxRecord({
         </div>
       </div>
 
-      <footer className="shrink-0 border-t border-border bg-card px-4 py-2">
-        <div className="flex items-center justify-between gap-4 max-w-6xl mx-auto text-xs text-muted-foreground">
-          <span className="truncate font-medium">{displayName}</span>
-          <div className="flex items-center gap-3 shrink-0">
-            <Badge variant={statusVariant}>{statusLabel}</Badge>
-            {!remaining.isExpired && (
-              <span className="font-mono">
-                {isActive ? "Ends in " : ""}
-                {remaining.text}
-              </span>
-            )}
-          </div>
-        </div>
-      </footer>
-
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1179,29 +1169,41 @@ function SandboxFrame({ embedded, children }: { embedded: boolean; children: Rea
   return embedded ? <div className="flex h-full min-h-0 flex-col">{children}</div> : <>{children}</>;
 }
 
-/** The page's header (back, name, status, actions) — or, in a tile, the same actions in a bar. */
+/**
+ * The page's header (back, name, status, actions) — or, in a tile, ONE bar:
+ * state, the everyday button (Stop) and every other action in ONE "…" menu.
+ * A host that names the sandbox (a Board tile — the shared host chrome) drops the name from the bar.
+ */
 function SandboxHeader({
   embedded,
   label,
+  recordId,
   actions,
   right,
 }: {
   embedded: boolean;
   label: string;
+  /** The sandbox row id: the host chrome drops the name when its host holds this sandbox. */
+  recordId: string;
   actions?: EntityHeaderAction[];
   right?: ReactNode;
 }) {
   if (!embedded) return <EntityModeHeader backHref="/sandbox" entityLabel={label} actions={actions} right={right} />;
+  const all = actions ?? [];
+  const visible = all.filter((a) => a.placement === "bar");
+  const overflow = all.filter((a) => !visible.includes(a));
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-card px-3 py-2" data-sandbox-bar>
-      <span className="min-w-0 truncate text-sm font-medium text-foreground">{label}</span>
-      {right}
-      <div className="ml-auto flex flex-wrap items-center gap-2">
-        {(actions ?? []).map((a) => (
+    <HostedRecordBar
+      record={{ token: "sandbox_instance", id: recordId }}
+      className="gap-2 bg-card px-3 py-2"
+      name={<span className="min-w-0 truncate text-sm font-medium text-foreground">{label}</span>}
+      actions={
+        <>
+        {visible.map((a) => (
           <Button
             key={a.label}
             type="button"
-            variant={a.destructive ? "danger" : a.primary ? "primary" : "outline"}
+            variant={a.barTone === "danger" ? "danger" : "outline"}
             icon={<a.icon />}
             onClick={a.onPress}
             disabled={a.disabled}
@@ -1209,7 +1211,19 @@ function SandboxHeader({
             {a.label}
           </Button>
         ))}
-      </div>
-    </div>
+        <RecordActionsMenu
+          actions={overflow.map((a) => ({
+            label: a.label,
+            icon: a.icon,
+            onPress: a.onPress,
+            destructive: a.destructive,
+            disabled: a.disabled,
+          }))}
+        />
+        </>
+      }
+    >
+      <span className="contents" data-sandbox-bar="">{right}</span>
+    </HostedRecordBar>
   );
 }

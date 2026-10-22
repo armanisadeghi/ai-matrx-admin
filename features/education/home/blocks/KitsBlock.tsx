@@ -16,7 +16,7 @@
 // material, arriving where it makes sense — not a grid of features they
 // haven't unlocked.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowRight, Package } from "lucide-react";
 import { Chip, ChipSet } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime } from "@ai-matrx/kit/format";

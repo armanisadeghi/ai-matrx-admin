@@ -120,6 +120,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const aiWorkManifest: SurfaceManifest = {
   surfaceName: AI_WORK_SURFACE_NAME,
+  inheritsFrom: "matrx-default/chat",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SearchInput } from '@/components/official/SearchInput';
+import { SearchInput } from "@ai-matrx/design-system/controls";
 import { SortOrder, ImageOrientation, PremiumFilter } from '@/hooks/images/useUnsplashGallery';
 import { 
   Select,

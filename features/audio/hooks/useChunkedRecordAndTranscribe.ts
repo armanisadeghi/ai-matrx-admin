@@ -10,7 +10,7 @@
  *   - Each chunk is ~160 KB (webm/opus 16 kHz) — well under Vercel's 4.5 MB limit.
  *   - Results accumulate in order into `liveTranscript`, re-rendering on every
  *     chunk so the UI shows text as the user speaks.
- *   - All audio chunks + text are persisted to IndexedDB via audioSafetyStore.
+ *   - All audio chunks + text are persisted to IndexedDB via the package safety store (`getSharedAudioSafetyStore`).
  *   - Failed chunks are tracked; on stop, if any failed, the full audio blob is
  *     uploaded to cld_files via the universal file handler and transcribed via
  *     the URL-based fallback (Groq fetches the cld_files signed URL).
@@ -25,7 +25,10 @@ import { TranscriptionOptions, TranscriptionResult } from "../types";
 import { AUDIO_CONSTANTS, AUDIO_API_ROUTES } from "../constants";
 import { AUDIO_LIMIT_KNOBS, resolveAudioLimit } from "../limits";
 import { getErrorSolution } from "../utils/microphone-diagnostics";
-import { audioSafetyStore } from "../services/audioSafetyStore";
+import {
+  createSafetyRecord,
+  getSharedAudioSafetyStore,
+} from "@ai-matrx/browser-audio/core";
 import {
   uploadAndTranscribeFull,
   logClientError,
@@ -82,7 +85,7 @@ export interface ChunkCompleteInfo {
   /**
    * Crash-safe IndexedDB entry id for the in-flight recording cycle. Stable
    * for the whole start→stop cycle; lets a subscriber reassemble the cycle's
-   * audio later via `audioSafetyStore.getAudioBlob(safetyId)`.
+   * audio later via `getSharedAudioSafetyStore().get(safetyId)` + `safetyRecordAudio`.
    */
   safetyId: string;
   text: string;
@@ -328,7 +331,7 @@ export function useChunkedRecordAndTranscribe({
   const persistText = useCallback(async (text: string) => {
     if (safetyIdRef.current) {
       try {
-        await audioSafetyStore.saveText(safetyIdRef.current, text);
+        await getSharedAudioSafetyStore().saveTranscript(safetyIdRef.current, text);
       } catch {}
     }
   }, []);
@@ -387,10 +390,11 @@ export function useChunkedRecordAndTranscribe({
     if (safetyIdRef.current) {
       try {
         if (decision.safetyStatus === "complete") {
-          await audioSafetyStore.markComplete(safetyIdRef.current);
+          await getSharedAudioSafetyStore().setStatus(safetyIdRef.current, "complete");
         } else {
-          await audioSafetyStore.markFailed(
+          await getSharedAudioSafetyStore().setStatus(
             safetyIdRef.current,
+            "failed",
             decision.result.error ?? "Transcription failed",
           );
         }
@@ -533,7 +537,7 @@ export function useChunkedRecordAndTranscribe({
       allChunkBlobsRef.current.push(blob);
       if (safetyIdRef.current) {
         try {
-          await audioSafetyStore.saveChunk(safetyIdRef.current, blob);
+          await getSharedAudioSafetyStore().appendChunk(safetyIdRef.current, blob);
         } catch {}
       }
 
@@ -669,7 +673,7 @@ export function useChunkedRecordAndTranscribe({
 
         if (safetyIdRef.current) {
           try {
-            await audioSafetyStore.addFailedChunk(safetyIdRef.current, idx);
+            await getSharedAudioSafetyStore().markFailedChunk(safetyIdRef.current, idx);
           } catch {}
         }
 
@@ -837,10 +841,12 @@ export function useChunkedRecordAndTranscribe({
       safetyIdRef.current = safetyId;
 
       try {
-        await audioSafetyStore.createEntry(
-          safetyId,
-          sessionId,
-          mimeTypeRef.current,
+        await getSharedAudioSafetyStore().create(
+          createSafetyRecord({
+            id: safetyId,
+            mimeType: mimeTypeRef.current,
+            origin: { surface: "chunked-record-and-transcribe", entityId: sessionId },
+          }),
         );
       } catch (err) {
         console.warn(
@@ -909,7 +915,7 @@ export function useChunkedRecordAndTranscribe({
     pausedDurationRef.current = 0;
 
     if (safetyIdRef.current) {
-      audioSafetyStore
+      getSharedAudioSafetyStore()
         .setStatus(safetyIdRef.current, "transcribing")
         .catch(() => {});
     }

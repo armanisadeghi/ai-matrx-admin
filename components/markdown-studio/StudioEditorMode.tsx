@@ -10,7 +10,7 @@
 // "Archive copy" soft-deletes it when the check is done.
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Archive, CopyPlus, ExternalLink, Loader2 } from "lucide-react";
 import RichEditor from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import type { AnnotationRecord } from "@/features/rich-document/annotations/record-of-source";

@@ -5,7 +5,7 @@
 // Nothing is hidden behind "click through to find out".
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Activity,
   Clock,

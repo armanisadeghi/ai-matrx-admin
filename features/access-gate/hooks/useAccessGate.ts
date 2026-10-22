@@ -15,7 +15,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { fetchAccessDeniedContext } from "@/features/access-gate/service/accessDeniedContext";
-import { classifyDataError } from "@/features/access-gate/classifyDataError";
+import { classifyDataError } from "@ai-matrx/data/access";
 import type { AccessDeniedContext } from "@/features/access-gate/types";
 import {
   resolveRecordUnavailableCapture,

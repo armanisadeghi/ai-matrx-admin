@@ -1,4 +1,4 @@
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Label } from "@ai-matrx/design-system";
 import { Switch } from "@ai-matrx/chat/ui/switch";
 import {

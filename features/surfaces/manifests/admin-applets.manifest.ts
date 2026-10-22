@@ -759,6 +759,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminAppletsManifest: SurfaceManifest = {
   surfaceName: ADMIN_APPLETS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/applets",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

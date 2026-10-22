@@ -23,7 +23,7 @@
 
 import React from "react";
 import { Building2, Loader2, Tag } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { scopeShortHref } from "@/features/scopes/lib/scopeRoutes";
 import { scopesService } from "@/features/scopes/service/scopesService";
 import type {

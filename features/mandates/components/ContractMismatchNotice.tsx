@@ -13,7 +13,7 @@
  */
 
 import { AlertTriangle } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Button } from "@/components/ui/button";
 import { ComingSoonBadge } from "@/components/coming-soon/ComingSoonBadge";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";

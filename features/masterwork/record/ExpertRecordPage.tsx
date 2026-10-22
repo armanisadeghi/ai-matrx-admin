@@ -27,7 +27,7 @@
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   ExternalLink,
   FileText,
@@ -42,7 +42,7 @@ import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@ai-matrx/design-system";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { InlineMediaRef } from "@ai-matrx/media/react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { cn } from "@/lib/utils";
 import {
   serverRefusal,

@@ -19,7 +19,7 @@
 // the payload is a snapshot ("observed_at"), the row is the current verdict,
 // priority and pitch angle, and every id becomes a real door.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import Link from "next/link";

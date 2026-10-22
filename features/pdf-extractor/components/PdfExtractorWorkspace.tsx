@@ -285,7 +285,7 @@ export function PdfExtractorFloatingWorkspace({
             onClick={handleSaveToNotes}
           />
           {activeTab.document.content && (
-            <CopyFooterButton onCopy={() => extractor.copyText(activeTab.id)} />
+            <CopyFooterButton onCopy={() => extractor.copyTabContent(activeTab.id)} />
           )}
         </div>
       </>

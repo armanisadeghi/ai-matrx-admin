@@ -12,7 +12,7 @@
  * verdict, a classification IN text, and the mandate should say which.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import type { MandateRow } from "./mandate-health";

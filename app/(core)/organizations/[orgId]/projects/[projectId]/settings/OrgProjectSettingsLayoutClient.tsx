@@ -15,6 +15,7 @@ import type { Project } from "@/features/projects/types";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { ProjectSidebar } from "@/features/projects/components/ProjectSidebar";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
+import { FrameSidebarContent, useFrameSidebarSlot } from "@/features/shell/frame-host/frameSidebarSlot";
 
 export function OrgProjectSettingsLayoutClient({
   children,
@@ -26,6 +27,8 @@ export function OrgProjectSettingsLayoutClient({
   const projectId = params.projectId as string;
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // The new app frame: the projects list is the frame's one sidebar column (no column of our own).
+  const inFrame = useFrameSidebarSlot();
 
   const [resolvedOrgId, setResolvedOrgId] = React.useState<string | null>(null);
   const [orgSlug, setOrgSlug] = React.useState<string>("");
@@ -111,7 +114,13 @@ export function OrgProjectSettingsLayoutClient({
       )}
       <div className="h-full w-full bg-textured overflow-hidden flex flex-col">
       <div className="flex flex-1 overflow-hidden">
-        {resolvedOrgId && (
+        {resolvedOrgId && inFrame ? (
+          <FrameSidebarContent>
+            <div className="w-full px-3 pb-3">
+              <ProjectSidebar organizationId={resolvedOrgId} orgSlug={orgParam} />
+            </div>
+          </FrameSidebarContent>
+        ) : resolvedOrgId ? (
           <aside className="hidden md:flex w-52 flex-shrink-0 border-r border-border bg-card overflow-y-auto">
             <div className="p-3 w-full">
               <ProjectSidebar
@@ -120,7 +129,7 @@ export function OrgProjectSettingsLayoutClient({
               />
             </div>
           </aside>
-        )}
+        ) : null}
         <main className="flex-1 overflow-y-auto">
           {layoutReadError != null && (
             <ReadFailure

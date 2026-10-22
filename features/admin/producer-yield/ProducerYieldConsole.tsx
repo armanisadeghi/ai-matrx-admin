@@ -27,7 +27,7 @@
  * server page. It is a table and some cards.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import React, { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import AppLink from "@/components/navigation/AppLink";

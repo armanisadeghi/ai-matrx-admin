@@ -132,6 +132,19 @@ describe("the notes layout mounts the workspace only on workspace routes", () =>
     expect(source).toMatch(/import\("\.\/NotesView"\)/);
   });
 
+  // 2026-10-22 live walk: /notes/history mounted the workspace with note id
+  // "history", which threw "A Notes identity source requires a UUID note"
+  // into the error boundary and fired a 400 read. A segment that is not a
+  // note id is not a note: the page (and its not-found) renders instead.
+  it("renders the page, never the workspace, when /notes/<segment> is not a note id", () => {
+    for (const path of ["/notes/history", "/notes/all", "/notes/history/diff"]) {
+      mockPathname = path;
+      const html = renderToStaticMarkup(<NotesRouteBody><p>not found</p></NotesRouteBody>);
+      expect(html).not.toContain("notes-workspace");
+      expect(html).toContain("not found");
+    }
+  });
+
   it("still renders the workspace on /notes and /notes/<id>", () => {
     for (const path of ["/notes", `/notes/${NOTE_A}`]) {
       mockPathname = path;

@@ -35,6 +35,7 @@ import { announceLineage } from "@/features/education/convert/announceLineage";
 import { emptyRunMessage } from "@/features/education/convert/segmentedGenerate";
 import { newBatchId } from "@/features/education/convert/steering";
 import type { ConvertProgress } from "@/features/education/convert/types";
+import { nameFromSources } from "@/features/education/onboard/kitTitle";
 import { assessmentService } from "./assessmentService";
 import { ASSESSMENT_MANDATES } from "./mandates";
 import { generateQuestionsFromSources } from "./generateQuestionsFromSources";
@@ -59,6 +60,11 @@ export interface GenerationRequest {
   userRequest: string;
   /** Practice tests only; 0 = untimed. */
   timeLimitMinutes: number;
+  /**
+   * The page's tab-bound run (`useTabBoundRun`): `saving` is awaited right
+   * before the quiz is saved, `attach` gets each conversation as it exists.
+   */
+  tabRun?: { saving: () => Promise<void>; attach: (conversationId: string) => void };
 }
 
 export type GenerationOutcome =
@@ -133,6 +139,7 @@ export function useAssessmentGeneration(config: KindConfig) {
           exam_type: examType,
           user_request: userRequest,
         }, "user");
+        await req.tabRun?.saving();
         const created = await assessmentService.createWithItems(
           {
             assessmentKind: config.kind,
@@ -171,8 +178,13 @@ export function useAssessmentGeneration(config: KindConfig) {
       );
       const readable = resolved.sources.filter((s) => s.text.trim().length > 0);
       const only = readable.length === 1 ? readable[0] : null;
+      // Several Sources are titled by THE kit namer (an equal share of every one) — never "<first> and more".
       const title =
-        only?.label ?? (focusTopic || (readable.length ? `${readable[0].label} and more` : config.label));
+        only?.label ??
+        (focusTopic ||
+          (readable.length
+            ? await nameFromSources(readable, { dispatch, store, orgId }, readable[0].label)
+            : config.label));
       const made = await generateQuestionsFromSources({
         resolved,
         count: safeCount,
@@ -192,8 +204,10 @@ export function useAssessmentGeneration(config: KindConfig) {
           dispatch,
           store,
           orgId,
-          onConversationCreated: (conversationId) =>
-            setSourceRun((r) => ({ ...r, conversationId: r.conversationId ?? conversationId })),
+          onConversationCreated: (conversationId) => {
+            req.tabRun?.attach(conversationId);
+            setSourceRun((r) => ({ ...r, conversationId: r.conversationId ?? conversationId }));
+          },
           onProgress: (progress: ConvertProgress) => setSourceRun((r) => ({ ...r, progress })),
         },
       });
@@ -207,6 +221,7 @@ export function useAssessmentGeneration(config: KindConfig) {
           ),
         };
       const finalTitle = made.singlePass ? made.agentTitle || title : title;
+      await req.tabRun?.saving();
       const created = await assessmentService.createWithItems(
         {
           assessmentKind: config.kind,

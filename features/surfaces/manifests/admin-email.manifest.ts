@@ -249,6 +249,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminEmailManifest: SurfaceManifest = {
   surfaceName: ADMIN_EMAIL_SURFACE_NAME,
+  inheritsFrom: "matrx-default/communications",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

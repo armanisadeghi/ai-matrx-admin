@@ -15,7 +15,7 @@ import {
   useSpring,
   useTransform,
 } from "motion/react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 export interface BalancedFloatingDockProps {
   items: { label: string; icon: React.ReactNode; href: string }[];

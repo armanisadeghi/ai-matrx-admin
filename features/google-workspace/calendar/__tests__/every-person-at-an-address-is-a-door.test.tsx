@@ -130,7 +130,8 @@ jest.mock("@ai-matrx/detail/react", () => ({
   ...jest.requireActual("@ai-matrx/detail/react"),
   useOpenDetail: () => async () => "window",
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ id, name }: { id: string; name?: string | null }) => (
     <span data-entity-ref={id}>{name}</span>
   ),

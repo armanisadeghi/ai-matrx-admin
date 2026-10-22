@@ -8,7 +8,7 @@ import type { MessengerSource } from "@ai-matrx/chat/messenger/contract";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { usePersonalWhatsAppUpdates } from "./usePersonalWhatsAppUpdates";
 import { PersonalWhatsAppComposer } from "./PersonalWhatsAppComposer";
 import { NativeWhatsAppAttachment } from "./NativeWhatsAppAttachment";

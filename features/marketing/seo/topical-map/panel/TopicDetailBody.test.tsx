@@ -141,7 +141,8 @@ jest.mock("@ai-matrx/context-menu/react", () => ({
   __esModule: true,
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   __esModule: true,
   EntityRef: ({ name, token }: { name?: string | null; token: string }) => (
     <span data-entity-ref={token}>{name}</span>
@@ -201,10 +202,6 @@ jest.mock("@/lib/layout/useClippedContentGuard", () => ({
 jest.mock("@/lib/toast", () => ({
   __esModule: true,
   toast: { error: jest.fn(), success: jest.fn(), info: jest.fn() },
-}));
-jest.mock("@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog", () => ({
-  __esModule: true,
-  ClipboardFallbackDialog: () => null,
 }));
 jest.mock("@ai-matrx/design-system", () => ({
   ...jest.requireActual("@ai-matrx/design-system"),

@@ -12,7 +12,7 @@
 
 import { GoogleG } from "@/components/icons/google-brand";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Archive, ExternalLink, FolderOpen, Lock, Plug, TriangleAlert } from "lucide-react";
 
 import { Button } from "@ai-matrx/design-system";

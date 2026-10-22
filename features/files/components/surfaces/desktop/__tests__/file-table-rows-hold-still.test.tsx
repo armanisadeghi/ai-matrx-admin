@@ -48,12 +48,14 @@ jest.mock("@dnd-kit/core", () => ({
   useDraggable: () => ({ attributes: {}, listeners: {}, setNodeRef: () => undefined, isDragging: false }),
   useDroppable: () => ({ isOver: false, setNodeRef: () => undefined }),
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ label, onOpen }: { label?: string; onOpen?: () => void }) => (
     <button type="button" onClick={onOpen}>{label}</button>
   ),
+  EntityDoorControls: () => null,
 }));
-jest.mock("@/components/official/entity-ref/EntityDoorControls", () => ({ EntityDoorControls: () => null }));
+
 jest.mock("@ai-matrx/media/react", () => ({ FileIcon: () => null }));
 jest.mock("@/features/files/components/core/FileBadges/FileRagBadge", () => ({ FileRagBadge: () => null }));
 jest.mock("@/features/files/components/core/FileContextMenu/FileContextMenu", () => ({

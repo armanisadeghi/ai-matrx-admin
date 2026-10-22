@@ -20,7 +20,7 @@
 // Ruling QD-L2-1; cost if wrong is one RPC plus a listConfig — the columns and
 // row actions move across unchanged.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState } from "react";
 import { Archive, ArchiveRestore, MessagesSquare } from "lucide-react";
 import {

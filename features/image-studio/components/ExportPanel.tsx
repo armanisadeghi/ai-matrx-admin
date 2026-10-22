@@ -2,7 +2,7 @@
 
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import React, { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   CheckCircle2,
   CloudUpload,

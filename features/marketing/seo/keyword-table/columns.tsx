@@ -19,7 +19,7 @@
  * browser never fetched is exactly the quiet lie this system exists to stop.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { cn } from "@/styles/themes/utils";

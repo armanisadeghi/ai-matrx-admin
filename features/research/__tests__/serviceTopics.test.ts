@@ -37,6 +37,10 @@ function makeBuilder(result: MockResult, calls: Call[]) {
     calls.push({ method: "single", args: [] });
     return Promise.resolve(result);
   });
+  builder.maybeSingle = jest.fn(() => {
+    calls.push({ method: "maybeSingle", args: [] });
+    return Promise.resolve(result);
+  });
   // Awaitable builder for list reads.
   builder.then = (
     resolve: (r: MockResult) => unknown,
@@ -80,6 +84,9 @@ jest.mock("@/features/scopes/service/associationsService", () => ({
 
 import {
   createTopic,
+  getSource,
+  getTemplate,
+  getTopic,
   getTopicsForProjects,
   getTopicProjectLinks,
   setTopicProject,
@@ -301,5 +308,23 @@ describe("association-backed project filtering", () => {
     expect(mockSetTargets).toHaveBeenLastCalledWith(
       expect.objectContaining({ targetIds: [] }),
     );
+  });
+});
+
+// 2026-10-22 live walk: a member opening a topic they cannot read logged a 406
+// per read — `.single()` on 0 rows is PostgREST's PGRST116 / HTTP 406. A
+// by-id read that answers "none" is `.maybeSingle()`: 200 with null.
+describe("by-id reads that may find nothing never use .single()", () => {
+  it.each([
+    ["getTopic", () => getTopic(TOPIC_ID)],
+    ["getSource", () => getSource(TOPIC_ID)],
+    ["getTemplate", () => getTemplate(TOPIC_ID)],
+  ])("%s answers null through maybeSingle", async (_name, read) => {
+    supabaseState.calls = [];
+    supabaseState.result = { data: null, error: null };
+    await expect(read()).resolves.toBeNull();
+    const methods = supabaseState.calls.map((c) => c.method);
+    expect(methods).toContain("maybeSingle");
+    expect(methods).not.toContain("single");
   });
 });

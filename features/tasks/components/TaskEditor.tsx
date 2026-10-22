@@ -10,6 +10,8 @@
 // every existing consumer is byte-identical; the floating Tasks window reuses
 // the SAME controller + body but presents its own slot-based chrome.
 
+import { HostTitle, useHostNamesRecord } from "@/features/shell/host-chrome/RecordHostChrome";
+import { SizedTitleInput } from "@/features/shell/host-chrome/SizedTitleInput";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import {
@@ -138,6 +140,8 @@ function TaskEditorInner({
   routeHeader?: ReactNode;
 }) {
   const controller = useTaskEditorController(taskId);
+  const hostRecord = { token: "task", id: taskId };
+  const hostNamesTask = useHostNamesRecord(hostRecord);
   const {
     task,
     effective,
@@ -184,7 +188,32 @@ function TaskEditorInner({
         }
       >
         {/* Title row — tiles get a thinner icon-only strip; full editor keeps labels. */}
-        {embedded ? (
+        {embedded && hostNamesTask ? (
+          // A host that names the task (a board tile): the title field moves into its header; the row keeps
+          // only the copy doors (complete and delete are on the bottom bar).
+          <>
+            <HostTitle record={hostRecord}>
+              <SizedTitleInput
+                value={effective.title}
+                onChange={(e) => patch("title", e.target.value)}
+                placeholder="Untitled task"
+                aria-label="Task title"
+                className={cn(completed && "text-muted-foreground line-through")}
+              />
+            </HostTitle>
+            <div className="flex h-7 shrink-0 items-center justify-end gap-1 border-b border-border bg-card px-2">
+              <TaskEditorCopyButtons location="Board — task tile" size="icon" />
+              <ReferenceCopyButton
+                referenceType="task"
+                id={taskId}
+                label={effective.title}
+                toastLabel={effective.title || "Task"}
+                size="sm"
+                className="h-6 w-6"
+              />
+            </div>
+          </>
+        ) : embedded ? (
           <div
             className={cn(
               "flex h-7 shrink-0 items-center gap-1 border-b border-border bg-card",

@@ -15,15 +15,15 @@
 //
 //   data               → nothing to type: the brand's own sites (optionally ONE
 //                        site); the server reads crawl, keywords and plan.
-//   documents          → an EDITABLE BOX (`document_text`) the person corrects
-//                        before anything runs — pasted, or pulled from one of
-//                        their Notes through the podcast studio's note resolver.
+//   documents          → the ONE Source input (upload, paste, web page, notes,
+//                        files…) read on the SERVER; its text lands in an
+//                        EDITABLE BOX (`document_text`) the person corrects
+//                        before anything runs.
 //   prompt             → the person's own description (`prompt`).
-//   web_search         → a web page, scraped and cleaned into the same editable
+//   web_search         → a web page added through the one Source input (the
+//                        server scrapes and cleans it) into the same editable
 //                        box (`web_search_text`), the address kept as
-//                        `web_search_query`. The client scraper exposes URL
-//                        scraping only (no search call), so the tile takes a
-//                        page address and says so — never a query it cannot run.
+//                        `web_search_query`.
 //   existing_research  → a finished research topic (`research_topic_id`).
 //   new_research       → nothing: the server commissions the research and
 //                        answers `research_started` (R8 — no hidden continuation).
@@ -77,10 +77,10 @@ export const START_MAP_SOURCES = [
     kind: "documents",
     label: "From documents",
     helper:
-      "Paste a service menu, a brochure or a note. You edit the text before the author reads it.",
+      "Add a service menu, a brochure or a note. You edit the text before the author reads it.",
     icon: FileText,
     control: "resolve",
-    placeholder: "Paste the document text here, or pick one of your notes above…",
+    placeholder: "The text of your documents appears here once they are added…",
     launchLabel: "Build the map",
   },
   {
@@ -97,10 +97,10 @@ export const START_MAP_SOURCES = [
     kind: "web_search",
     label: "From a web page",
     helper:
-      "A page address — the company's services page, a competitor's — scraped and cleaned into text you can edit.",
+      "A web page — the company's services page, a competitor's — cleaned into text you can edit.",
     icon: Globe,
     control: "resolve",
-    placeholder: "The cleaned page text appears here once the address is fetched…",
+    placeholder: "The cleaned page text appears here once the page is added…",
     launchLabel: "Build the map",
   },
   {

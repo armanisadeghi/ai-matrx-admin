@@ -27,7 +27,7 @@
  * bulk-preview, not in this dialog.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 

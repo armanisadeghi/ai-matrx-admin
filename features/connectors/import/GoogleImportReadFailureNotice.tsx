@@ -14,7 +14,7 @@
  * the two would drift into two ideas of what a failed Google read looks like.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { CircleAlert, RefreshCw, UserCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

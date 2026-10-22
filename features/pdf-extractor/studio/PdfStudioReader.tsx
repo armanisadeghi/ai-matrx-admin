@@ -824,7 +824,7 @@ function CropOverlay({
 // Replaces the PDF viewer with a draggable tile grid (one numbered tile per page).
 // V1 shows page numbers only — no thumbnail rendering. This keeps the component
 // light while giving users the core drag-to-reorder affordance. Actual thumbnails
-// can be added in V2 by rendering each page via PdfDocumentRenderer at small size.
+// can be added in V2 by rendering each page via PdfDocumentViewer at small size.
 
 function PageReorderView({
   doc,

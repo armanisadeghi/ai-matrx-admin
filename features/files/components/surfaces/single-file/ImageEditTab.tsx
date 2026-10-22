@@ -39,7 +39,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { toast } from "@/lib/toast";
 import { ExternalLink, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -31,7 +31,7 @@
 // speakers (only when customized), post_prep_option, show_id,
 // prep_user_message, first_show_info_text, truncate_audio_for_testing.
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createPodcastStudioScope } from "@/features/surfaces/manifests/podcast-studio.manifest";
 import {
@@ -82,6 +82,7 @@ import {
 } from "../featureImageStyles";
 import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
 import { sourceSurfaceKey, useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
+import { useResolvedSourceText } from "@/features/resource-manager/source-input/useResolvedSourceText";
 import { ALL_SOURCE_KIND_IDS } from "@/features/resource-manager/source-input/sourceKinds";
 import { useAppStore } from "@/lib/redux/hooks";
 import { TopicIdeaHelper } from "./TopicIdeaHelper";
@@ -263,12 +264,12 @@ export function GeneratorForm({
   const [targetAudience, setTargetAudience] = useState("");
 
   // A reload brings the picked Sources back — open their tile so they are seen.
-  const restoredSourcesShown = useRef(false);
-  useEffect(() => {
-    if (restoredSourcesShown.current || sourceSet.restoring) return;
-    restoredSourcesShown.current = true;
+  // Adjusted while rendering (React's pattern for state derived from a change), not in an effect.
+  const [restoredSourcesShown, setRestoredSourcesShown] = useState(false);
+  if (!restoredSourcesShown && !sourceSet.restoring) {
+    setRestoredSourcesShown(true);
     if (sourceSet.sources.length > 0 && !text.trim()) setSourceKind("sources");
-  }, [sourceSet.restoring, sourceSet.sources.length, text]);
+  }
 
   const activeSource = GENERATOR_SOURCE_OPTIONS.find((o) => o.kind === sourceKind);
   if (!activeSource) {
@@ -281,7 +282,9 @@ export function GeneratorForm({
     (s) => s.status === "pending" || s.status === "resolving",
   );
   /** True while a new Source is still landing — blocks Generate. */
-  const resolverBusy = usesSources && landingSources.length > 0;
+  // The editable preview of the text the Sources give (read on the server).
+  const sourcePreview = useResolvedSourceText(sourceSet, { enabled: usesSources });
+  const resolverBusy = usesSources && (landingSources.length > 0 || sourcePreview.loading);
   const sourceReadiness = usesSources
     ? landingSources.length > 0
       ? // Each card shows its own progress; waiting is not an error.
@@ -292,7 +295,10 @@ export function GeneratorForm({
         ? { ready: false, message: "Add more material — these sources are too short." }
         : { ready: true, message: null }
     : getPodcastSourceReadiness(activeSource.inputDataType, text);
-  const hasSourceInput = usesSources ? readySources.length > 0 : text.trim().length > 0;
+  // Typed words and picked Sources combine: either one is enough to start.
+  const hasSourceInput = usesSources
+    ? readySources.length > 0 || text.trim().length > 0
+    : text.trim().length > 0;
 
   const canGenerate =
     !busy &&
@@ -330,9 +336,23 @@ export function GeneratorForm({
     });
     if (cast) body.speakers = cast;
     if (usesSources) {
-      // Pointers only — the server reads each Source (a cloud PDF as its clean
-      // text) through resolve_source_set and links it to the episode.
-      body.source_set = sourceSet.toSourceSet();
+      const own = text.trim();
+      if (readySources.length > 0) {
+        // Pointers — the server reads each Source (a cloud PDF as its clean
+        // text) through resolve_source_set and links it to the episode.
+        body.source_set = sourceSet.toSourceSet();
+        const edited = sourcePreview.edited ? sourcePreview.text.trim() : "";
+        if (edited) {
+          // The person corrected the preview: their text is what is read, the
+          // server still links each Source but does not add its own text again.
+          body.input_data = own ? `${own}\n\n${edited}` : edited;
+          body.source_text_supplied = true;
+        } else if (own) {
+          body.input_data = own;
+        }
+      } else {
+        body.input_data = own;
+      }
     } else {
       body.input_data = text.trim();
     }
@@ -625,14 +645,73 @@ export function GeneratorForm({
               className="text-base"
             />
           ) : usesSources ? (
-            <SourceInput
-              surfaceKey={PODCAST_SOURCES_SURFACE}
-              title="Sources"
-              purpose="your episode"
-              required
-              kinds={PODCAST_SOURCE_KINDS}
-              deliveries={PODCAST_SOURCE_DELIVERIES}
-            />
+            <div className="space-y-3">
+              <SourceInput
+                surfaceKey={PODCAST_SOURCES_SURFACE}
+                title="Sources"
+                purpose="your episode"
+                kinds={PODCAST_SOURCE_KINDS}
+                deliveries={PODCAST_SOURCE_DELIVERIES}
+              />
+              <div className="space-y-1.5">
+                <Label className="text-sm text-muted-foreground">Your words</Label>
+                <ProTextarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="An angle, a topic or notes of your own"
+                  rows={3}
+                  dir={isRtl ? "rtl" : undefined}
+                  autoGrow
+                  minHeight={84}
+                  maxHeight={240}
+                  className="text-base"
+                />
+              </div>
+              {readySources.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Label className="text-sm text-muted-foreground">Text from your sources</Label>
+                    {sourcePreview.loading && (
+                      <span className="text-xs text-muted-foreground">Reading…</span>
+                    )}
+                    {sourcePreview.truncated && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        Cut to its chosen size
+                      </span>
+                    )}
+                    {sourcePreview.edited && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        Edited
+                      </span>
+                    )}
+                  </div>
+                  {sourcePreview.error ? (
+                    <p role="alert" className="flex items-center gap-2 text-sm text-destructive">
+                      {sourcePreview.error}
+                      <ErrorAlchemyMenu error={sourcePreview.error} className="ml-auto" />
+                    </p>
+                  ) : (
+                    <ProTextarea
+                      aria-label="Text from your sources"
+                      value={sourcePreview.text}
+                      onChange={(e) => sourcePreview.setText(e.target.value)}
+                      rows={8}
+                      dir={isRtl ? "rtl" : undefined}
+                      autoGrow
+                      minHeight={168}
+                      maxHeight={420}
+                      enableTextStats
+                      className="text-base"
+                    />
+                  )}
+                  {sourcePreview.droppedNotes.map((note) => (
+                    <p key={note} className="text-xs text-muted-foreground">
+                      {note}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
           ) : null}
           {hasSourceInput &&
             sourceReadiness.message &&

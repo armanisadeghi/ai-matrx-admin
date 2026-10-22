@@ -26,7 +26,9 @@ import { defineCanvasKind, type AnyCanvasKind } from "@ai-matrx/canvas/react";
 import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";
 import { openDockFor } from "../record-annotations-store";
 
-export const COMMENT_THREAD_KIND = "comment-thread";
+import { COMMENT_THREAD_KIND } from "@ai-matrx/chat/host/canvas-tabs";
+
+export { COMMENT_THREAD_KIND };
 
 export type CommentThreadData = {
   /** Entity-type token of the commented record (`message`, `note`, `task`, …). */

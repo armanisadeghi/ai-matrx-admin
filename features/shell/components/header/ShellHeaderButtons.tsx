@@ -15,15 +15,17 @@ import { TapTargetButtonTransparent } from "@ai-matrx/design-system/tap-target";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import ShellIcon from "../ShellIcon";
 import { useRunNavTile } from "../../navigation/navPanelActions";
-import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import type { HeaderControlId } from "@/features/shell/shell-layout/contract";
 import type { ResolvedHeaderButton } from "@/features/shell/shell-layout/resolve";
 import { useResolvedShellLayout } from "@/features/shell/shell-layout/useResolvedShellLayout";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 /** One custom header button (a destination, a tile or a mandate). Shared with the phone fold. */
 export function useRunHeaderButton(): (button: Exclude<ResolvedHeaderButton, { kind: "control" }>) => void {
   const runTile = useRunNavTile();
-  const openMandate = useOpenMandateWindow();
+  const openMandate = useLazyAppOpener("mandateWindow", () =>
+    import("@/features/overlays/definitions/mandateWindow.overlay").then((m) => m.createMandateWindowOpener),
+  );
   return (button) => {
     if (button.kind === "mandate") {
       // The stored key is a declared mandate key chosen in the editor; the window refuses an unknown one by name.

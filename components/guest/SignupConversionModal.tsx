@@ -11,7 +11,7 @@
  * as the return destination (utils/auth/FEATURE.md via `useLoginHref`).
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { UserPlus } from "lucide-react";
 import {
   Dialog,

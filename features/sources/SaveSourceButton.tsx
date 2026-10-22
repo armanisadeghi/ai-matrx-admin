@@ -11,7 +11,7 @@
  */
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Bookmark, CheckCircle2, ExternalLink } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import {

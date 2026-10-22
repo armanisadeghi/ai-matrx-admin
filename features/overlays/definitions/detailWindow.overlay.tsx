@@ -18,7 +18,8 @@ import type { DetailInstanceData } from "@ai-matrx/detail";
 import { openDetailSingleton } from "@/features/window-panels/detail/openDetailSingleton";
 import type { OverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
+import type { AppDispatch } from "@/lib/redux/store";
 
 const OVERLAY_ID = "detailWindow" as const;
 const opener = createOpener<object>(OVERLAY_ID);
@@ -49,6 +50,21 @@ export function useOpenDetailWindow() {
     [dispatch],
   );
   return open;
+}
+
+/** The opener as a plain function of the store, for the boot-graph DetailHost (useLazyAppOpener). */
+export function createDetailWindowOpener(store: { dispatch: AppDispatch }) {
+  return (opts: OpenDetailWindowOptions, announce = true): DetailWindowHandle => {
+    dispatchThunk(store.dispatch, openDetailSingleton({ data: opts, announce }));
+    return { close: () => store.dispatch(opener.close()) };
+  };
+}
+
+/** Close the singleton, as a plain function of the store (DetailHost's lazy `close` port). */
+export function createDetailWindowCloser(store: { dispatch: AppDispatch }) {
+  return (): void => {
+    store.dispatch(opener.close());
+  };
 }
 
 /** Close the singleton from anywhere (the host's `close` port). */

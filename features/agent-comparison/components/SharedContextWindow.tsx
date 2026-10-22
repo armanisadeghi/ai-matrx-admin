@@ -18,7 +18,7 @@
  * AgentConversationColumn → CreatorRunPanel → Context tab.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useMemo, useState } from "react";
 import { Plus, Trash2, Building2, Briefcase, ClipboardList, Layers } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

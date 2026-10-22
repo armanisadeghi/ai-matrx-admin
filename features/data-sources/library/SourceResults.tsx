@@ -21,7 +21,8 @@ import { FetchProgress } from "../FetchProgress";
 import { RefusalView } from "../RefusalView";
 import type { DataFetchResult } from "../contract";
 import type { RunState } from "../runs";
-import { isOpenStatus, runHasNoRowsYet, runRowFilter, runStatusLabel, useDataFetchJob, type FetchJobRow } from "./runHistory";
+import { isOpenStatus, runRowFilter, runScope, runStatusLabel, useDataFetchJob, useResumeStalledRun, useRunRowKeys, type FetchJobRow } from "./runHistory";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // The grid is heavy: it loads when there are results to draw, never with the library.
 const LocatedTableViewer = dynamic(() => import("@/features/data-tables/components/LocatedTableViewer"), {
@@ -29,14 +30,34 @@ const LocatedTableViewer = dynamic(() => import("@/features/data-tables/componen
   loading: () => <RegionSkeleton shape="rows" count={8} aria-label="Loading results" />,
 });
 
-/** The table, inline, at a height that shows a screenful of rows and keeps the page scrolling. */
+/** Said, in one line, when the grid cannot be narrowed to the run (nothing may differ silently). */
+export const ALL_ROWS_NOTICE = "Showing all saved rows: this run predates per-run results.";
+
+/**
+ * The table, inline, at a height that shows a screenful of rows and keeps the page scrolling.
+ * Every run of a source writes one shared table, so the grid is narrowed to the keys the server
+ * recorded for THIS run (read for the run on view only). A run whose keys cannot be told says so, in
+ * a line above the grid, with the door to the full table. Either way the grid here is read-only: a
+ * record added in a narrowed view would belong to no run and vanish at once, so records are added
+ * in the full table ("Open as table").
+ */
 export function InlineResultsTable({ tableId, job }: { tableId: string; job?: FetchJobRow | null }) {
-  // Every run of a source writes one shared table: the run's own row keys narrow the grid to its rows.
-  const filter = runRowFilter(job);
-  if (runHasNoRowsYet(job)) return <RowsComing />;
+  const keysQuery = useRunRowKeys(job);
+  const keys = keysQuery.data ?? null;
+  const scope = runScope(job, keys);
+  if (scope === "coming" || (Boolean(job?.id) && keysQuery.isLoading)) return <RowsComing />;
+  const filter = runRowFilter(job, keys);
   return (
-    <div className="flex h-[min(78dvh,760px)] min-h-[420px] flex-col" data-inline-results={tableId} data-run-rows={filter ? "this-run" : "all"}>
-      <LocatedTableViewer tableId={tableId} filter={filter} rowPeek />
+    <div className="flex flex-col gap-2" data-run-scope={scope}>
+      {scope === "all-rows" ? (
+        <div className="flex flex-wrap items-center gap-2" data-all-rows-notice="">
+          <p className="min-w-0 flex-1 text-xs text-warning">{ALL_ROWS_NOTICE}</p>
+          <OpenAsTable tableId={tableId} />
+        </div>
+      ) : null}
+      <div className="flex h-[min(78dvh,760px)] min-h-[420px] flex-col" data-inline-results={tableId} data-run-rows={filter ? "this-run" : "all"}>
+        <LocatedTableViewer tableId={tableId} filter={filter} rowPeek readOnly />
+      </div>
     </div>
   );
 }
@@ -46,7 +67,7 @@ function OpenAsTable({ tableId }: { tableId: string }) {
     <Button
       variant="quiet"
       icon={<Table2 className="h-4 w-4" />}
-      onClick={() => window.open(`/data/${encodeURIComponent(tableId)}`, "_blank", "noopener")}
+      onClick={() => openOutbound(`/data/${encodeURIComponent(tableId)}`, "_blank", "noopener")}
       data-open-table=""
     >
       Open as table
@@ -113,6 +134,7 @@ export function LiveRunResults({
 }) {
   const liveJobId = run.status === "running" ? (run.progress?.jobId ?? null) : null;
   const liveJob = useDataFetchJob(liveJobId);
+  useResumeStalledRun(liveJob.data);
   if (run.status === "failed") {
     return (
       <div className="flex py-6">
@@ -161,6 +183,7 @@ function DoneRunResults({ result: done }: { result: DataFetchResult }) {
 /** An earlier run, reopened from its row (a past run, or the address after a reload). */
 export function SavedRunResults({ jobId }: { jobId: string }) {
   const job = useDataFetchJob(jobId);
+  useResumeStalledRun(job.data);
   if (job.isLoading) return <RowsComing />;
   const row: FetchJobRow | null = job.data ?? null;
   if (!row) {

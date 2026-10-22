@@ -205,6 +205,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const voicePadManifest: SurfaceManifest = {
   surfaceName: "matrx-user/voice-pad",
+  inheritsFrom: "matrx-default/audio",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

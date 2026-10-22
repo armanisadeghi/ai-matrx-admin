@@ -28,7 +28,7 @@
 import { useCallback, useEffect, useEffectEvent, useState, type ComponentType } from "react";
 import { Check, Loader2, Plus } from "lucide-react";
 import { Badge } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, MiddleTruncate } from "@ai-matrx/design-system/controls";
 import { useKindCounts } from "@/features/scopes/hooks/useKindCounts";
 import { useKindItems } from "@/features/scopes/hooks/useKindItems";
 import { fetchKindItemsPage, type KindItem, type KindScope } from "@/features/scopes/service/kindInventory";
@@ -52,7 +52,6 @@ import {
   withExtraKinds,
   type SourceInputEntry,
 } from "@/features/resource-manager/source-input/sourceInputKinds";
-import { MiddleTruncate } from "@/components/official/MiddleTruncate";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { describeFailure } from "@/lib/failure/transport";
 import { ReadGate, type ReadStatus } from "@ai-matrx/design-system";

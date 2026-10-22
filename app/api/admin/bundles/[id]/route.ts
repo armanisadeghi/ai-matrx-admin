@@ -10,6 +10,7 @@ import { requireAdmin } from "@/utils/auth/adminUtils";
 import type { TablesUpdate } from "@/types/database.types";
 import { extractErrorMessage } from "@/utils/errors";
 import { writeOneRow } from "@/utils/supabase/writeOne";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 function authErrorResponse(error: unknown): NextResponse | null {
   const message = error instanceof Error ? error.message : "";
@@ -66,7 +67,7 @@ export async function PATCH(
     );
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if (error.code === PG_CODES.pgrstNoRows) {
         return NextResponse.json(
           { error: "Bundle not found" },
           { status: 404 },

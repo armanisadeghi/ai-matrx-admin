@@ -5,13 +5,13 @@
  * Own table (not the Costs tab's) because the run link is seat-aware: an org
  * admin gets the org-scoped run page, never the owner-only workflow-run page.
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import {

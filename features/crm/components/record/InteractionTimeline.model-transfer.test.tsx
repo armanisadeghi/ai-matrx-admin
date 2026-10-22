@@ -54,7 +54,8 @@ jest.mock("@/components/official/ProInput", () => ({
 jest.mock("@/components/official/ProTextarea", () => ({
   ProTextarea: () => null,
 }));
-jest.mock("@/components/official/CollapsibleText", () => ({
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"),
   CollapsibleText: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),

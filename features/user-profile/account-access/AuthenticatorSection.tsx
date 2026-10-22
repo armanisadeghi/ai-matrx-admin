@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { createClient } from "@/utils/supabase/client";
 import { authenticatorError, enrollAuthenticator, generateRecoveryCodes, readAuthenticators, removeAuthenticator, verifyAuthenticator, verifyRecoveryCode, type AuthenticatorSetup, type AuthenticatorState } from "./mfa";

@@ -314,6 +314,7 @@ export const IMAGES_SURFACE_NAME = "matrx-user/images";
 
 export const imagesManifest: SurfaceManifest = {
   surfaceName: IMAGES_SURFACE_NAME,
+  inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

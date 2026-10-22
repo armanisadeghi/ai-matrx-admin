@@ -9,7 +9,7 @@
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ListPlus, Loader2, SquareCheck } from "lucide-react";
 import {
   absenceSentence,

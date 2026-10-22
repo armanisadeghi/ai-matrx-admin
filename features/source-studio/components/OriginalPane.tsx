@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink, FileText, Globe, Mic } from "lucide-react";
 import { useMediaResolution } from "@ai-matrx/media/core";
 import { PdfCldFileViewer } from "@/features/pdf-extractor/studio/PdfStudioReader";

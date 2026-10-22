@@ -22,6 +22,8 @@ declare global {
       open(id: string, data?: Record<string, unknown>): string;
       close(id: string): void;
       isOpen(id: string, instanceId: string): boolean;
+      /** Ask an awaitable overlay exactly as its opener does (requestOverlay); resolves with its answer. */
+      request(id: string, request: unknown, cancel?: unknown): Promise<unknown>;
     };
   }
 }
@@ -42,6 +44,8 @@ export function OverlayServices() {
       close: (id) => void store.dispatch(closeAllInstancesOfOverlay({ overlayId: id as OverlayId })),
       // a closed singleton keeps its entry with isOpen false: presence is not "open"
       isOpen: (id, instanceId) => selectIsOverlayOpen(store.getState() as StateWithOverlays, id as OverlayId, instanceId),
+      request: (id, request, cancel = null) =>
+        import("@/features/overlays/requestOverlay").then((m) => m.requestOverlay(id, request, { cancel })),
     };
     return () => {
       delete window.__overlaysTest;

@@ -4,10 +4,10 @@
 // output block shared by both sides of the Runs tab.
 
 import { useEffect, useRef } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowUpRight } from "lucide-react";
 import { StatusToken, PropertyRow } from "@ai-matrx/design-system/controls";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { conversationHref } from "@/features/hindsight/subject-doors";
 import { absoluteWhen, costWords, durationWords } from "@/features/mandates/run-history/format";

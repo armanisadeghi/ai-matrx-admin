@@ -32,7 +32,7 @@ export function ConfirmFacetLine({ item, facet, confirm }: { item: ComparedItem;
   const [busy, setBusy] = useState<"yes" | "no" | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const price = useQuery({
-    queryKey: ["comparison", "confirm-price", confirm?.runId, item.item_index, facet.key],
+    queryKey: ["comparison", "confirm-price", confirm?.runId, item.item_id, item.item_index, facet.key],
     queryFn: () => (confirm as FacetConfirm).price(item, facet.key),
     enabled: Boolean(confirm),
     staleTime: 60_000,

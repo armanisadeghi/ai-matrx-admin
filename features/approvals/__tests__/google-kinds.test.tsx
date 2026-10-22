@@ -121,7 +121,8 @@ jest.mock(
   }),
   { virtual: true },
 );
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ token, id, name }: { token: string; id: string; name?: string }) => (
     <a data-testid="entity-ref" data-token={token} data-id={id}>
       {name ?? id}

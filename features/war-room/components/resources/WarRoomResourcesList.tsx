@@ -20,7 +20,7 @@ import {
   Unlink,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { RecordId, Skeleton } from "@ai-matrx/design-system";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {

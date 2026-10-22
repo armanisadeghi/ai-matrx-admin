@@ -713,14 +713,14 @@ const matrxLintPlugin = {
         schema: [],
         messages: {
           banned:
-            'Bare id rendered as text — a dead end with extra steps. Render <EntityRef token="<entity>" id={…} name={…} /> from @/components/official/entity-ref/EntityRef (Open + new tab + peek, resolved from the registries), or use the table\'s cellKind: "uuid". Missing route? Add an hrefFor to the token in features/scopes/registry/entityRegistry.ts. See common-docs/policies/no-dead-ends.md and `pnpm check:dead-ends`.',
+            'Bare id rendered as text — a dead end with extra steps. Render <EntityRef token="<entity>" id={…} name={…} /> from @ai-matrx/records-ui/entity-ref (Open + new tab + peek, resolved from the registries), or use the table\'s cellKind: "uuid". Missing route? Add an hrefFor to the token in features/scopes/registry/entityRegistry.ts. See common-docs/policies/no-dead-ends.md and `pnpm check:dead-ends`.',
         },
       },
       create(context) {
         // Hosts: the door primitive itself renders the id fallback, and
         // the uuid cell IS the sanctioned way to show one.
         const ALLOWED = [
-          "/components/official/entity-ref/",
+          "/records-ui-host/entityRefHost",
           "/components/official/matrx-data-table/",
           "/__tests__/",
         ];

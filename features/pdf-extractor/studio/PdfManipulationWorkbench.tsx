@@ -12,7 +12,7 @@
  * full extractor studio chrome (sidebar, text panes, pipeline toolbar).
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";

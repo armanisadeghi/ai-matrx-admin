@@ -7,7 +7,7 @@
 
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ShieldAlert, Clock } from "lucide-react";
 import {
   Dialog,

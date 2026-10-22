@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import type { Database } from "@/types/database.types";
 import type { ListScopeKind } from "@/lib/list-scope/types";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 
 /** One row, exactly as crm_chasebox_items returns it. */
 export type ChaseboxRow =

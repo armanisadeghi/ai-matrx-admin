@@ -2,59 +2,68 @@
 
 // features/education/media/mindmap/components/MindMapNew.tsx
 //
-// Generate a mind map from a deck or a topic. Runs the diagram_spec agent
-// (useGenerateMindMap — a single synchronous round-trip, unlike audio's
-// streamed pipeline), persists the resulting envelope to study_media, and opens
-// the map. Metered via useEntitlement('education.mindmap_generate') with the
+// Create a mind map: Create -> choose sources, style and details -> results,
+// the same page shape as every Education create screen (`EducationCreatePage`).
+// Sources go through the one Source input (a deck via Use existing, a topic via
+// the Topic tile) and the server's resolve; the diagram_spec agent
+// (useGenerateMindMap — one round-trip) maps the text; the envelope is persisted
+// to study_media with a citation per Source and a lineage edge to each, and the
+// map opens. Metered via useEntitlement('education.mindmap_generate') with the
 // limit shown BEFORE the action.
 //
 // React Compiler is on: no manual memo.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Loader2, Network } from "lucide-react";
+import { Network } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { Button } from "@/components/ui/button";
-import { Input, Select } from "@ai-matrx/design-system/controls";
-import { cn } from "@/lib/utils";
+import { Input } from "@ai-matrx/design-system/controls";
+import { Label } from "@/components/ui/label";
 import { fcService } from "@/features/flashcards/data/fcService";
-import type { FcSetRow } from "@/features/flashcards/data/types";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
-import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createEducationMindMapsScope } from "@/features/surfaces/manifests/education-mind-maps.manifest";
-import {
-  resolveDeckAudioSource,
-  resolveTopicAudioSource,
-} from "../../audio/resolveAudioSource";
+import { EducationCreatePage } from "@/features/education/create/EducationCreatePage";
+import { leftOutLine, seedFromParams, useEducationSources, TOPIC_MIN_CHARS } from "@/features/education/create/useEducationSources";
+import { useCreateRun } from "@/features/education/create/useCreateRun";
+import { restoreStudyRunRequest } from "@/features/education/create/createRunRequest";
+import { useDeckChoices } from "@/features/education/create/useDeckChoices";
+import { STUDY_FROM_DECK_KINDS } from "@/features/education/create/studyFromDeck";
+import { useStyleDraft } from "@/features/education/create/useStyleDraft";
+import { generationSourceWrite } from "@/features/education/create/generationSourceWrite";
+import { linkMadeFrom, madeFromConfig } from "@/features/education/create/madeFrom";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { studyMediaService } from "../../service";
-import {
-  MEDIA_GENERATOR_SOURCE_KINDS,
-  isMediaGeneratorSourceKind,
-  type MediaGeneratorSourceKind,
-} from "../../types";
 import { useGenerateMindMap } from "../useGenerateMindMap";
 import { linkDiagramToCards, type LinkableCard } from "../linkCards";
+import { citeDiagramNodes } from "../nodeCitations";
 import { withUniqueEdgeIds } from "../mindMapWrites";
-import { ProTextarea } from "@/components/official/ProTextarea";
-import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { EDU_MEDIA_MANDATES } from "../mandates";
 
-// Presentation only — the VALUE vocabulary lives in features/education/media/
-// types.ts and is imported above, so this picker cannot drift from what the
-// surface's write target advertises or what its handler accepts. The Record is
-// keyed by the union, so adding a source mode fails to compile until it is
-// given UI copy here.
-const SOURCE_KIND_LABELS: Record<MediaGeneratorSourceKind, string> = {
-  deck: "From a deck",
-  topic: "From a topic",
-};
-
-/** Bounds the write handlers enforce (the form's own inputs are unbounded text). */
-const TOPIC_MIN = 3;
+/** Bounds the write handlers enforce (the form's own input is unbounded text). */
 const TOPIC_MAX = 500;
 const FOCUS_MAX = 300;
+
+/** The Source input's key on this page — picks are held and kept under it. */
+export const MIND_MAP_SURFACE_KEY = "education:mind-maps:new";
+/** The Style and details answers, kept across a reload like the Sources are. */
+export const MIND_MAP_STYLE_DRAFT_ID = "education:mind-maps:new:style";
+
+interface StyleDraft {
+  focus?: string;
+}
+
+/** Map the stored bag back to the form — refusing (and naming) anything unknown. */
+export function restoreMindMapStyle(data: Record<string, unknown>): { values: StyleDraft; rejectedKeys: string[] } {
+  const values: StyleDraft = {};
+  const rejectedKeys: string[] = [];
+  for (const [key, v] of Object.entries(data)) {
+    if (key === "focus" && typeof v === "string") values.focus = v.slice(0, FOCUS_MAX);
+    else rejectedKeys.push(key);
+  }
+  return { values, rejectedKeys };
+}
 
 export function MindMapNew() {
   const router = useRouter();
@@ -65,242 +74,195 @@ export function MindMapNew() {
   // blocked from AI generation until a parent approves (never a silent failure).
   const coppa = useAiComplianceGate();
 
-  const [decks, setDecks] = useState<FcSetRow[]>([]);
-  const [sourceKind, setSourceKind] = useState<MediaGeneratorSourceKind>(
-    params.get("source") === "topic" ? "topic" : "deck",
-  );
-  const [deckId, setDeckId] = useState(params.get("deck") ?? "");
-  const [topic, setTopic] = useState("");
+  // The learner's decks — only for what an agent is offered, read when it asks.
+  const deckChoices = useDeckChoices();
   const [focus, setFocus] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fcService.listDecks().then((res) => {
-      if (res.data) setDecks(res.data);
+  const sources = useEducationSources(MIND_MAP_SURFACE_KEY, {
+    seed: seedFromParams(params),
+    onRelease: () => void start(),
+    lateMark: "Not in this map",
+  });
+  // The run lives in this tab: a reload mid-run says so and offers the same request.
+  const createRun = useCreateRun(`${MIND_MAP_SURFACE_KEY}:run`, restoreStudyRunRequest(restoreMindMapStyle), sources, {
+    onRedo: (req) => setFocus(req.style.focus ?? ""),
+  });
+
+  const styleDraft = useStyleDraft<StyleDraft>(MIND_MAP_STYLE_DRAFT_ID, restoreMindMapStyle, (v) => {
+    if (v.focus !== undefined) setFocus(v.focus);
+  });
+
+  async function run() {
+    setRunError(null);
+    setBusy(true);
+    try {
+      await createRun.track(sources.runRequest({ focus }), (ctx) => makeMap(ctx.saving));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Couldn't generate the mind map";
+      setRunError(message);
+      toast.error(message);
+    } finally {
+      sources.endRun();
+      setBusy(false);
+    }
+  }
+
+  async function makeMap(saving: () => Promise<void>) {
+    const prepared = await sources.prepare();
+    if (prepared.notes.length) toast.info(prepared.notes.join(" "));
+
+    // For a deck source, load the cards so generated nodes can be linked back to
+    // the exact card they summarize (clickable node → source card / Ask tutor).
+    const deckCards: LinkableCard[] = [];
+    for (const deckId of prepared.deckIds) {
+      const withCards = await fcService.getDeckWithCards(deckId);
+      for (const c of withCards.data?.cards ?? []) deckCards.push({ id: c.id, front: c.front, back: c.back });
+    }
+
+    const spec = await generate(
+      {
+        source_content: prepared.content,
+        title: prepared.title,
+        focus: sources.focusLine(focus),
+      },
+      "user",
+    );
+    // Resolve nodes → source cards where we can (DoD item 3). Unmatched nodes
+    // stay unlinked; a click still offers "ask the tutor about this idea".
+    const { spec: linkedSpec, linkedCount } = linkDiagramToCards(spec, deckCards);
+    // Each node cites the passage it came from (its page / place), so a click opens that, not the whole Source.
+    const { spec: citedSpec, citedCount } = citeDiagramNodes(linkedSpec, prepared.chunks);
+    const title = spec.title || prepared.title;
+    // Past this point the save may land even if this page never hears back.
+    await saving();
+    const media = await studyMediaService.create({
+      mediaKind: "mind_map",
+      title,
+      source: prepared.source,
+      config: {
+        diagramKind: "diagram_spec",
+        hint: focus.trim() || undefined,
+        linkedCards: linkedCount,
+        citedNodes: citedCount,
+        ...madeFromConfig(prepared),
+      },
+      trust: prepared.trust,
+      irEnvelope: withUniqueEdgeIds(citedSpec),
+      diagramKind: "diagram_spec",
+      status: "ready",
     });
-  }, []);
+    if (media.error || !media.data) {
+      const message = media.error ?? "Couldn't save the mind map";
+      setRunError(message);
+      toast.error(message);
+      return;
+    }
+    const href = `/education/mind-maps/${media.data.id}`;
+    await linkMadeFrom(
+      prepared,
+      { resourceType: "study_media", artifactId: media.data.id, targetKind: "mind_map", title, href },
+      await ensureOrgId(undefined),
+    );
+    // Metered action SUCCEEDED — record real usage so the meter decrements
+    // (honest even while enforced:false). Failed branches return first, so a
+    // failed generation never burns quota.
+    await gen.commit({ initiation: "user" });
+    const leftOut = sources.clearUsed();
+    if (leftOut > 0) toast.info(leftOutLine(leftOut, "the map"));
+    styleDraft.clear();
+    router.push(href);
+  }
 
-  async function handleGenerate() {
-    if (sourceKind === "deck" && !deckId) {
-      toast.error("Pick a deck");
-      return;
-    }
-    if (sourceKind === "topic" && topic.trim().length < 3) {
-      toast.error("Type a topic to map");
-      return;
-    }
-    // School-safe gate FIRST (COPPA): is this account allowed to collect/process
-    // data at all? An unconsented under-13 opens the "a parent must approve"
-    // dialog and never reaches the billing gate or starts a run.
+  async function start() {
+    // School-safe gate FIRST (COPPA): an unconsented under-13 opens the "a parent
+    // must approve" dialog and never reaches the billing gate or starts a run.
     if (!(await coppa.ensureAllowed())) return;
     // Canonical guard: awaits the server-truth check BEFORE spending; on a
     // cap-hit it opens the respectful contextual paywall (not a toast) and never
     // starts the work (DoD #2 — no mid-generation ambush).
-    await gen.guard(async () => {
-      const resolved =
-        sourceKind === "deck"
-          ? (await resolveDeckAudioSource(deckId, { adaptive: false })).data
-          : resolveTopicAudioSource(topic);
-      if (!resolved) {
-        toast.error("Couldn't load that source — pick a deck with cards, or type a topic.");
-        return;
-      }
-
-      // For a deck source, load the cards so generated nodes can be linked back to
-      // the exact card they summarize (clickable node → source card / Ask tutor).
-      let deckCards: LinkableCard[] = [];
-      if (sourceKind === "deck") {
-        const withCards = await fcService.getDeckWithCards(deckId);
-        deckCards = (withCards.data?.cards ?? []).map((c) => ({
-          id: c.id,
-          front: c.front,
-          back: c.back,
-        }));
-      }
-
-      try {
-        const spec = await generate({
-          source_content: resolved.content,
-          title: resolved.source.title,
-          focus: focus.trim(),
-        }, "user");
-        // Resolve nodes → source cards where we can (DoD item 3). Unmatched nodes
-        // stay unlinked; a click still offers "ask the tutor about this idea".
-        const { spec: linkedSpec, linkedCount } = linkDiagramToCards(spec, deckCards);
-        const title = spec.title || resolved.source.title;
-        const media = await studyMediaService.create({
-          mediaKind: "mind_map",
-          title,
-          source: resolved.source,
-          config: {
-            diagramKind: "diagram_spec",
-            hint: focus.trim() || undefined,
-            linkedCards: linkedCount,
-          },
-          trust: resolved.trust,
-          irEnvelope: withUniqueEdgeIds(linkedSpec),
-          diagramKind: "diagram_spec",
-          status: "ready",
-        });
-        if (media.error || !media.data) {
-          toast.error(media.error ?? "Couldn't save the mind map");
-          return;
-        }
-        // Metered action SUCCEEDED — record real usage so the meter decrements
-        // (honest even while enforced:false). Failed branches return first, so a
-        // failed generation never burns quota.
-        await gen.commit({ initiation: "user" });
-        router.push(`/education/mind-maps/${media.data.id}`);
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Couldn't generate the mind map");
-      }
-    });
+    await gen.guard(run);
   }
 
-  const selectedDeck = decks.find((d) => d.id === deckId) ?? null;
+  function handleMake() {
+    if (sources.blockedReason || busy || isGenerating || gen.isChecking) return;
+    if (sources.waitingForClean.length > 0) {
+      sources.setHolding(true);
+      return;
+    }
+    void start();
+  }
 
   // Live surface scope for the Agents chrome (matrx-user/education-mind-maps,
   // create view). A plain synchronous function over the live render values —
   // the Surface Context window polls this every 400ms, so it must never fetch.
-  const getScope = () =>
-    createEducationMindMapsScope({
+  const getScope = () => {
+    const pickedDecks = sources.ready.filter((s) => s.draft.ref?.resource_type === "fc_set");
+    const firstDeck = pickedDecks[0]?.draft;
+    const kind = !sources.hasSources
+      ? "topic"
+      : pickedDecks.length === sources.ready.length
+        ? "deck"
+        : "sources";
+    void deckChoices.load();
+    const decks = deckChoices.decks;
+    return createEducationMindMapsScope({
       view: "create",
-      source_kind: sourceKind,
-      ...(topic.trim() ? { topic: topic.trim() } : {}),
+      source_kind: kind,
+      ...(sources.topic ? { topic: sources.topic } : {}),
       ...(focus.trim() ? { focus: focus.trim() } : {}),
-      ...(selectedDeck
-        ? { selected_deck: { id: selectedDeck.id, name: selectedDeck.name } }
+      ...(firstDeck?.ref
+        ? { selected_deck: { id: firstDeck.ref.resource_id, name: firstDeck.label } }
         : {}),
       available_decks: decks.map((d) => ({ id: d.id, name: d.name })),
       deck_count: decks.length,
       source_selection: {
-        source_kind: sourceKind,
-        topic: sourceKind === "topic" ? (topic.trim() || null) : null,
-        deck_id: sourceKind === "deck" ? (deckId || null) : null,
-        deck_name: sourceKind === "deck" ? (selectedDeck?.name ?? null) : null,
+        source_kind: kind,
+        topic: sources.topic || null,
+        deck_id: firstDeck?.ref?.resource_id ?? null,
+        deck_name: firstDeck?.label ?? null,
       },
-      is_generating: isGenerating,
+      is_generating: isGenerating || busy,
     });
+  };
 
   // Write half of the mind-map surface (manifest `writeTargets`). Both targets
   // are draft-mode: they stage through the SAME setters the learner's own
-  // typing uses, so the value shows up in the form and the learner still
-  // presses Generate — which is where the COPPA gate, the entitlement guard and
-  // the canonical studyMediaService path run. Nothing here spends quota or
-  // writes a row. Handlers validate FIRST and THROW on a bad shape (the
-  // writeback seam turns a throw into a safe error envelope the agent reads);
-  // no setter fires until every check has passed. Fresh closures per call
-  // (getWriteHandlers contract). The list and detail mounts of this same
-  // surface register NO handlers — see the manifest's writeTargets docblock.
+  // typing and picking use, so the value shows up in the form and the learner
+  // still presses Make — which is where the COPPA gate, the entitlement guard
+  // and the canonical studyMediaService path run. Nothing here spends quota or
+  // writes a row. Fresh closures per call (getWriteHandlers contract). The list
+  // and detail mounts of this same surface register NO handlers.
   const getSurfaceWriteHandlers = () => ({
-    generation_source: (value: unknown) => {
-      if (isGenerating)
-        throw new Error(
-          "generation_source refused — a mind map is being generated right now. Wait for the run to finish before changing the source.",
-        );
-      if (typeof value !== "object" || value === null || Array.isArray(value))
-        throw new Error(
-          'generation_source expects an OBJECT like { source_kind?: "deck" | "topic", topic?: string, deck_id?: string }.',
-        );
-      const patch = value as Record<string, unknown>;
-      const allowed = ["source_kind", "topic", "deck_id"];
-      const unknownKeys = Object.keys(patch).filter(
-        (k) => !allowed.includes(k),
-      );
-      if (unknownKeys.length > 0)
-        throw new Error(
-          `generation_source rejected — unsupported field(s): ${unknownKeys.join(", ")}. It accepts only ${allowed.join(", ")}. The focus angle has its own target, generation_focus.`,
-        );
-
-      const hasKind = patch.source_kind !== undefined;
-      const hasTopic = patch.topic !== undefined;
-      const hasDeck = patch.deck_id !== undefined;
-      if (!hasKind && !hasTopic && !hasDeck)
-        throw new Error(
-          `generation_source needs at least one of ${allowed.join(", ")}.`,
-        );
-      // topic and deck_id are the two ALTERNATIVE sources — only one can be
-      // what the map is built from, so a value naming both is contradictory
-      // rather than something to silently pick a winner from.
-      if (hasTopic && hasDeck)
-        throw new Error(
-          "generation_source rejected — topic and deck_id are alternative sources; send one, not both.",
-        );
-
-      let nextKind: MediaGeneratorSourceKind | null = null;
-      if (hasKind) {
-        if (
-          typeof patch.source_kind !== "string" ||
-          !isMediaGeneratorSourceKind(patch.source_kind)
-        )
-          throw new Error(
-            `generation_source.source_kind expects exactly one of: ${MEDIA_GENERATOR_SOURCE_KINDS.join(", ")}.`,
-          );
-        nextKind = patch.source_kind;
-      }
-
-      let nextTopic: string | null = null;
-      if (hasTopic) {
-        if (typeof patch.topic !== "string")
-          throw new Error("generation_source.topic expects a string.");
-        const trimmed = patch.topic.trim();
-        if (trimmed.length < TOPIC_MIN || trimmed.length > TOPIC_MAX)
-          throw new Error(
-            `generation_source.topic expects ${TOPIC_MIN}-${TOPIC_MAX} characters after trimming (got ${trimmed.length}).`,
-          );
-        if (nextKind === "deck")
-          throw new Error(
-            'generation_source rejected — a topic cannot be the source while source_kind is "deck". Send the topic on its own (it switches to topic mode), or send deck_id instead.',
-          );
-        nextTopic = trimmed;
-        nextKind = "topic";
-      }
-
-      let nextDeckId: string | null = null;
-      if (hasDeck) {
-        if (typeof patch.deck_id !== "string" || !patch.deck_id.trim())
-          throw new Error(
-            "generation_source.deck_id expects a non-empty deck id string from available_decks.",
-          );
-        if (nextKind === "topic")
-          throw new Error(
-            'generation_source rejected — a deck cannot be the source while source_kind is "topic". Send deck_id on its own (it switches to deck mode), or send topic instead.',
-          );
-        if (decks.length === 0)
-          throw new Error(
-            "generation_source.deck_id rejected — the learner has no flashcard decks to generate from, so only topic mode can work here.",
-          );
-        const match = decks.find((d) => d.id === patch.deck_id);
-        if (!match)
-          throw new Error(
-            `generation_source.deck_id ${JSON.stringify(patch.deck_id)} is not one of the learner's decks. Read available_decks and use an \`id\` from it.`,
-          );
-        nextDeckId = match.id;
-        nextKind = "deck";
-      }
-
-      // Every check passed — now stage, through the same setters the learner's
-      // own clicks and typing use.
-      if (nextTopic !== null) setTopic(nextTopic);
-      if (nextDeckId !== null) setDeckId(nextDeckId);
-      if (nextKind !== null) setSourceKind(nextKind);
-    },
+    generation_source: async (value: unknown) =>
+      generationSourceWrite({
+      what: "a mind map",
+      isBusy: isGenerating || busy,
+      decks: await deckChoices.load(),
+      topicMin: TOPIC_MIN_CHARS,
+      topicMax: TOPIC_MAX,
+      setTopic: sources.set.setTopic,
+      pickDeck: (deck) => {
+        if (!sources.set.hasRef("fc_set", deck.id))
+          sources.intake.addExisting({ token: "fc_set", id: deck.id, title: deck.name });
+      },
+      })(value),
     generation_focus: (value: unknown) => {
-      if (isGenerating)
+      if (isGenerating || busy)
         throw new Error(
           "generation_focus refused — a mind map is being generated right now. Wait for the run to finish before changing the focus.",
         );
       if (typeof value !== "string")
-        throw new Error(
-          "generation_focus expects a plain string (the empty string clears the focus).",
-        );
+        throw new Error("generation_focus expects a plain string (the empty string clears the focus).");
       if (value.length > FOCUS_MAX)
-        throw new Error(
-          `generation_focus expects at most ${FOCUS_MAX} characters (got ${value.length}).`,
-        );
+        throw new Error(`generation_focus expects at most ${FOCUS_MAX} characters (got ${value.length}).`);
       setFocus(value.trim());
+      styleDraft.patch({ focus: value.trim() });
     },
   });
 
+  const count = sources.ready.length;
   return (
     <SurfaceRuntimeProvider
       surfaceName="matrx-user/education-mind-maps"
@@ -308,103 +270,60 @@ export function MindMapNew() {
       getScope={getScope}
       getWriteHandlers={getSurfaceWriteHandlers}
     >
-    <div className="mx-auto w-full max-w-2xl space-y-6 p-4">
-      <div className="flex items-center gap-3">
-        <Button icon={<ArrowLeft />} variant="quiet" onClick={() => router.push("/education/mind-maps")} aria-label="Back" />
-        <div>
-          <h1 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            Generate a mind map
-            <IntelligenceIndicator feature="education" mandateKeys={[EDU_MEDIA_MANDATES.mindMap]} />
-          </h1>
-        </div>
-      </div>
-
-      <section className="space-y-2">
-        <label className="text-sm font-medium text-foreground">Source</label>
-        <div className="flex gap-2">
-          {MEDIA_GENERATOR_SOURCE_KINDS.map((kind) => (
-            <SegBtn
-              key={kind}
-              active={sourceKind === kind}
-              onClick={() => setSourceKind(kind)}
-            >
-              {SOURCE_KIND_LABELS[kind]}
-            </SegBtn>
-          ))}
-        </div>
-        {sourceKind === "deck" ? (
-          <Select
-            value={deckId}
-            onValueChange={setDeckId}
-            aria-label="Deck"
-            className="w-full"
-            options={[
-              { value: "", label: "Select a deck…" },
-              ...decks.map((d) => ({ value: d.id, label: d.name })),
-            ]}
-          />
-        ) : (
-          <ProTextarea
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            placeholder="e.g. The water cycle"
-            className="min-h-20 text-base"
-          />
-        )}
-      </section>
-
-      <section className="space-y-2">
-        <label className="text-sm font-medium text-foreground">
-          Focus <span className="font-normal text-muted-foreground">(optional)</span>
-        </label>
-        <Input
-          value={focus}
-          onChange={(e) => setFocus(e.target.value)}
-          placeholder="Center the map on a specific angle…"
-        />
-      </section>
-
-      <EntitlementMeter
-        capability="education.mindmap_generate"
-        showAllWindows
-        className="justify-center"
-      />
-
-      <Button
-        icon={isGenerating ? <Loader2 className="animate-spin" /> : <Network />}
-        variant="primary"
-        onClick={handleGenerate}
-        disabled={isGenerating || gen.isChecking}
-        className="w-full"
+      <EducationCreatePage
+        title="New mind map"
+        backHref="/education/mind-maps"
+        surfaceKey={MIND_MAP_SURFACE_KEY}
+        purpose="your mind map"
+        extraKinds={STUDY_FROM_DECK_KINDS}
+        sources={sources}
+        styleDraft={styleDraft}
+        onStartFresh={() => setFocus("")}
+        make={{
+          label: "Make the mind map",
+          busyLabel: "Mapping your material…",
+          icon: <Network />,
+          busy: busy || isGenerating,
+          checking: gen.isChecking,
+          onMake: handleMake,
+          summary: sources.hasSources
+            ? `A map of ${count} ${count === 1 ? "source" : "sources"}${sources.topic ? `, focused on “${sources.topic}”` : ""}`
+            : `A map about “${sources.topic}”`,
+          error: runError,
+          capability: "education.mindmap_generate",
+          mandates: { feature: "education", keys: [EDU_MEDIA_MANDATES.mindMap] },
+          gates: (
+            <>
+              <coppa.Gate />
+              <gen.Paywall />
+            </>
+          ),
+          operation: "Make a mind map",
+        }}
+        run={{
+          state: createRun,
+          stoppedLabel: "Making your mind map",
+          savingWhat: "your mind map",
+          listLabel: "Your mind maps",
+        }}
       >
-        {isGenerating ? "Mapping your material…" : "Generate mind map"}
-      </Button>
-      <gen.Paywall />
-      <coppa.Gate />
-    </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="mm-focus">
+            Focus <span className="text-muted-foreground">(optional)</span>
+          </Label>
+          <Input
+            id="mm-focus"
+            value={focus}
+            maxLength={FOCUS_MAX}
+            onChange={(e) => {
+              setFocus(e.target.value);
+              styleDraft.patch({ focus: e.target.value });
+            }}
+            placeholder="Center the map on a specific angle…"
+            disabled={busy || isGenerating}
+          />
+        </div>
+      </EducationCreatePage>
     </SurfaceRuntimeProvider>
-  );
-}
-
-function SegBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-md border px-3 py-1.5 text-sm transition-colors",
-        active ? "border-primary bg-primary/10 text-primary-ink" : "border-border bg-card text-muted-foreground hover:bg-accent",
-      )}
-    >
-      {children}
-    </button>
   );
 }

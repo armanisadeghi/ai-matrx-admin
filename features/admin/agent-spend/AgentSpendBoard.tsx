@@ -8,7 +8,7 @@
  */
 import { notReadyHit, useAutomationReadiness } from "@/features/scheduling/service/automationReadiness";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Badge, Button, SegmentedControl } from "@ai-matrx/design-system/controls";
@@ -19,7 +19,7 @@ import { FirstPlusMore } from "@/components/official/first-plus-more/FirstPlusMo
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { RunApprovalCell } from "@/features/admin/spend-approvals/RunApprovalCell";
 import { approvalStatusSync } from "@/features/admin/spend-approvals/spendApprovals";

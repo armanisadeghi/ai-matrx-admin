@@ -19,7 +19,7 @@
  * mutation the dialog's own buttons run.
  */
 import { useEffect, useRef, useState } from "react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   Building2,
   Check,
@@ -839,7 +839,7 @@ export function EntityManager({
                 <>
                   <CopyButtons
                     size="xs"
-                    label="People & companies"
+                    label="Contacts"
                     human={() =>
                       partyRows
                         .map((party) =>
@@ -1100,7 +1100,7 @@ export function EntityManager({
                       toast.success("Created and linked to this site."),
                     onError: (error) =>
                       toast.error(
-                        `Created, but linking to the site failed: ${extractErrorMessage(error)} — link it from the People & companies list.`,
+                        `Created, but linking to the site failed: ${extractErrorMessage(error)} — link it from the Contacts list.`,
                       ),
                   });
                 }}

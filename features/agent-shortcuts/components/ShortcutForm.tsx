@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -93,7 +93,6 @@ import type {
 } from "../types";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { extractErrorMessage } from "@ai-matrx/api/net";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import { useBuiltinAgents } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";
 import { ensureAgentCatalog } from "@ai-matrx/chat/agents/identity/agent-identity";
 

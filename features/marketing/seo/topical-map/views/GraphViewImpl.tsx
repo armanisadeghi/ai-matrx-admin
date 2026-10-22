@@ -51,7 +51,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import "./graph/topical-map-graph.css";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useBrand } from "@/features/marketing/data/hooks";
 

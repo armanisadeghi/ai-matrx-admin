@@ -31,7 +31,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { recordToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 

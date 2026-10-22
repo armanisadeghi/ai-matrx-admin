@@ -8,7 +8,9 @@
  "not_in_manifest": [
   "PB-04/PB-06 second organization admin's Workspace itself (only its fixture rows are listed)",
   "test@test.com seat (a person, not a fixture)",
-  "UI-QUICK 2026-10-19: spare column 'Dock lane' e55d5573-9a7e-4586-8492-3237b7065df5 on table e49d64a9-... (custom field, no row read); table 'Compass accessorial fees' 80b4297d-... and file move-4471.md are PB-06 fixtures already listed; Q-20 pages not built"
+  "UI-QUICK 2026-10-19: spare column 'Dock lane' 8fbcbed8-4dcc-4fda-9144-22e7fed9af4a (current; the 2026-10-19 field e55d5573-9a7e-4586-8492-3237b7065df5 was removed) on table e49d64a9-... (custom field, no row read); table 'Compass accessorial fees' 80b4297d-... and file move-4471.md are PB-06 fixtures already listed; Q-20 pages not built",
+  "UI-QUICK 2026-10-22: Dock lane (Q-23 spare column, text) was changed to Choice while finding the live path and could not be changed back; the field was removed and recreated as a Text column of the same name (new field id 8fbcbed8-4dcc-4fda-9144-22e7fed9af4a, key dock_lane_2, type text, no choice list, options_table_id empty; read back 2026-10-22 through custom.applicable_fields); reset recipe after Q-23: column menu > Column settings > Remove this field, then + (Actions header) > name Dock lane, Text > Create column",
+  "UI-QUICK 2026-10-22: shortcut f0bdf085-7cf3-47db-bfb1-394ce843a9b0 (Q-06, Q-24) relabelled 'Compass Hub lookup (inline)' because admin's other organization holds a second shortcut labelled 'Hub lookup'; read back after reload"
  ],
  "playbooks": {
   "PB-01": [
@@ -1364,8 +1366,8 @@
    "kind": "agent",
    "id": "8fc565a1-ecdf-43a0-a84a-860ac4e2987e",
    "name": "Compass Binding Desk",
-   "live_version": 1,
-   "live_version_id": "c275c11b-f1f0-40fa-a4b7-f6d908ea4623",
+   "live_version": 3,
+   "live_version_id": "dcdab61b-f3b1-47e4-8195-eb98808b29bb",
    "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
    "settings_sha256": "b12986939e8114d263bee94ba162d2f03a7c41eaae3e03b3022f869253e14ec8",
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
@@ -1374,7 +1376,9 @@
    "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
    "auto_context_disabled": false,
    "tools": [],
-   "reasoning_effort": "low"
+   "reasoning_effort": "low",
+   "version_may_advance": true,
+   "note": "2026-10-22: Q-13 left it v2 bound; restored through History > Promote v1 (v3, content hashes equal v1's, variable fee_row unbound, read back). Q-13 adds a version per run; reset recipe = agent builder > History > pick v1 > Promote v1; every content hash must still match"
   },
   "files_desk": {
    "kind": "agent",
@@ -1491,7 +1495,7 @@
     "organization_id"
    ],
    "sha256": "43179fa3b7dd3d88723d61b9c266aa6a4931d9e5850944ea3e75f0aeab52c321",
-   "version": 1
+   "version": 2
   },
   "conv_ledger_share": {
    "kind": "row",
@@ -1643,6 +1647,7 @@
     "display_mode",
     "auto_run",
     "show_pre_execution_gate",
+    "bypass_gate_seconds",
     "keyboard_shortcut",
     "agent_id",
     "agent_version_id",
@@ -1652,7 +1657,7 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "d9983255e259f5bf25ede56760b1390cd322133ec675c4df1285717fa14be304",
+   "sha256": "38659976051d483a3169c8a4d9850fec2c33e5bad6da37de4856f35fbb74b1c4",
    "version": 1
   },
   "shortcut_hub_replace": {
@@ -1667,6 +1672,7 @@
     "display_mode",
     "auto_run",
     "show_pre_execution_gate",
+    "bypass_gate_seconds",
     "keyboard_shortcut",
     "agent_id",
     "agent_version_id",
@@ -1676,7 +1682,7 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "0fff2f1e0a2fba03160398569d64cce9c099e4421b9ffd77992eb8e53f6e6d90",
+   "sha256": "139263e72b5dcfe89ff54e86d93e0d53dc3cbc7cb4b80a066455375ec0bb7984",
    "version": 1
   },
   "shortcut_hub_manual": {
@@ -1691,6 +1697,7 @@
     "display_mode",
     "auto_run",
     "show_pre_execution_gate",
+    "bypass_gate_seconds",
     "keyboard_shortcut",
     "agent_id",
     "agent_version_id",
@@ -1700,7 +1707,7 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "a42de93760fd5df2c75b54a403ca80d9422f41bc8bf7141ad54bf0a9731dec7c",
+   "sha256": "6373c2fe597bdc252950063c8545e9f6bdbb9eb5dbed7c25dc0dd84160320c74",
    "version": 1
   },
   "skill_dispatch_ref": {
@@ -1740,5 +1747,13 @@
    "version": 1
   }
  },
- "rebaseline_2026-10-18": "files, workbench.notes and platform.knob_override rows compare by content only (ignore_version); a file's content checksum is its sha256 of bytes; current_version dropped from file fields"
+ "rebaseline_2026-10-18": "files, workbench.notes and platform.knob_override rows compare by content only (ignore_version); a file's content checksum is its sha256 of bytes; current_version dropped from file fields",
+ "seats": {
+  "test@test.com": {
+   "user_id": "4060701e-706a-4c76-b3ca-0bbc69fa5a14",
+   "organization": "226be635-194d-42dd-87c8-7a9562f70939",
+   "role": "member",
+   "note": "2026-10-22: invited from Settings > Invitations and accepted on the seat's own machine; Q-01 and Q-22 run as this seat (admin's personal Test Reply binding outranks the Board Helper and stays). The seat opens board 47a4cc41 (read back). With the organization switched to Safety Net Real Tests the seat's sidebar chat still showed Test Reply before any send: the grader's X4 read of the conversation's initial_agent_id decides"
+  }
+ }
 }

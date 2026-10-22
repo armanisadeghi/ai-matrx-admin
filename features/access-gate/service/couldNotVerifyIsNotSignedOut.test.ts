@@ -20,7 +20,7 @@ jest.mock("@ai-matrx/auth", () => ({ ...jest.requireActual("@ai-matrx/auth"), ..
 jest.mock("@/lib/organizations/fetchWithOrganization", () => ({ fetchWithOrganization: jest.fn() }));
 
 import { fetchAccessDeniedContext } from "./accessDeniedContext";
-import { decideServerReadRecheck } from "./serverReadRecheck";
+import { decideServerReadRecheck } from "@ai-matrx/data/access";
 
 const ID = "b6865b1b-fc56-4f58-af87-52b00ece6faa";
 

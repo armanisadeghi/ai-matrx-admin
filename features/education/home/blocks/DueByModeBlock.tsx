@@ -11,7 +11,7 @@
 // graded work alongside cards, and a learner who only ever sees flashcard
 // counts learns that the other modes don't count.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { CalendarClock, Flame } from "lucide-react";
 import { modeReviewHref, modeWeakHref } from "../../study/dashboard/nextActions";
 import type { EducationSnapshot } from "../types";

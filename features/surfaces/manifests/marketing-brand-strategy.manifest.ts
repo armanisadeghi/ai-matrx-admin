@@ -201,6 +201,8 @@ export const marketingBrandStrategyManifest: SurfaceManifest = {
   description:
     "The brand strategy room — the brief, established facts, service lines, open questions, and the owner's corrections.",
   label: "Brand Strategy",
+  situation:
+    "They are in the brand's Strategy room: the brief, the facts the AI established, service lines and open questions (version {strategy_version_no|none yet}, {strategy_status|no strategy yet}). They can write corrections, which outrank everything the AI concluded.",
   urlPattern: "/marketing/[brandId]/identity/strategy",
   inheritsFrom: "matrx-user/marketing-brand",
   readiness: "partial",

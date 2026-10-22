@@ -90,6 +90,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const imageViewerManifest: SurfaceManifest = {
   surfaceName: IMAGE_VIEWER_SURFACE_NAME,
+  inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -9,7 +9,7 @@
 // last-run status | category | updated | kebab. Whole-row click runs it; the
 // name is a real anchor so cmd-click and middle-click work.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Archive, MoreVertical, Star } from "lucide-react";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";

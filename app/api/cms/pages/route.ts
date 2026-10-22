@@ -53,6 +53,7 @@ import {
 } from "../_lib/researchLineage";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { writeOneRow } from "@/utils/supabase/writeOne";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 /**
  * Summary columns for list view (no HTML content blobs). `content_stats` is a
@@ -202,7 +203,7 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           console.error("[cms/pages] get error:", error);
-          const missing = error.code === "PGRST116";
+          const missing = error.code === PG_CODES.pgrstNoRows;
           return NextResponse.json(
             {
               error: missing

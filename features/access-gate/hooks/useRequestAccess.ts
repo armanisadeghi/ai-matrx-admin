@@ -28,7 +28,7 @@ import {
   resolveRequestOwner,
   type RequestAccessTarget,
   type RequestContext,
-} from "@/features/access-gate/service/requestAccess";
+} from "@ai-matrx/data/access";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 export interface RequestAccessResult {

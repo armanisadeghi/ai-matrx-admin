@@ -90,18 +90,33 @@ export function openBlockMenu(editor: SpacesEditor, blockId: string): boolean {
   const outer = document.querySelector<HTMLElement>(`.spaces-editor .bn-block-outer[data-id="${CSS.escape(blockId)}"]`);
   const content = outer?.querySelector<HTMLElement>(":scope > .bn-block > .bn-block-content");
   if (!view || !content) return false;
-  const r = content.getBoundingClientRect();
-  view.dom.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, clientX: r.left + 8, clientY: r.top + Math.min(r.height / 2, 12) }));
-  let tries = 0;
-  const click = () => {
-    const handle = document.querySelector<HTMLElement>(".bn-side-menu [draggable=true]");
-    if (handle) {
-      handle.click();
-      return;
-    }
-    if (++tries < 10) window.requestAnimationFrame(click);
-    else console.error("[spaces] the block menu handle never appeared for", blockId);
-  };
-  window.requestAnimationFrame(click);
+  // BlockNote hides the side menu on every keydown while the editor has focus, AFTER this key's handlers ran
+  // (its document listener is registered later). Hovering now would be undone by the same Cmd+/ press, and the
+  // handle clicked would be one already leaving. So the hover waits for the key to finish, and the click waits
+  // for a handle a person could see.
+  window.setTimeout(() => {
+    const r = content.getBoundingClientRect();
+    view.dom.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, clientX: r.left + 8, clientY: r.top + Math.min(r.height / 2, 12) }));
+    let tries = 0;
+    const click = () => {
+      const handle = visibleHandle();
+      if (handle) {
+        handle.click();
+        return;
+      }
+      if (++tries < 30) window.requestAnimationFrame(click);
+      else console.error("[spaces] the block menu handle never appeared for", blockId);
+    };
+    window.requestAnimationFrame(click);
+  }, 0);
   return true;
+}
+
+/** The ⋮⋮ handle of the side menu now showing (a hidden or leaving one does not count). */
+function visibleHandle(): HTMLElement | null {
+  for (const el of document.querySelectorAll<HTMLElement>(".bn-side-menu [draggable=true]")) {
+    const check = (el as HTMLElement & { checkVisibility?: () => boolean }).checkVisibility;
+    if (el.isConnected && el.getClientRects().length > 0 && (typeof check !== "function" || check.call(el))) return el;
+  }
+  return null;
 }

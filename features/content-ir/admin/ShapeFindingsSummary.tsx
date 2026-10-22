@@ -24,7 +24,7 @@
 
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   CircleAlert,
   CircleCheck,

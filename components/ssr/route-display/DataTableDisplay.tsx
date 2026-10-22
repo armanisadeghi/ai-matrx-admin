@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { ArrowRight } from "lucide-react";
 import type { RouteDisplayProps } from "./types";

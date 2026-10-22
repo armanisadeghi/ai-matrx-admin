@@ -54,8 +54,8 @@ import {
   DETACHED_EVENT_SENTENCE,
   UNAVAILABLE_EVENT_SENTENCE,
 } from "@/features/google-workspace/calendar/record";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import {
   entityTokenForItemType,
   getItemConfig,

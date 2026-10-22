@@ -18,7 +18,7 @@
 
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useRecordActors } from "@/components/official/record-stamps/useRecordActors";
 import { resolveUserName } from "@/components/user/UserIdentity";
 import type { DetailRow } from "@ai-matrx/detail";

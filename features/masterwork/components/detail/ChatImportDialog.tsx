@@ -6,10 +6,7 @@ import Link from "next/link";
 import { ExternalLink, FileUp, X } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import {
-  firstBlockingReason,
-  GatedActionButton,
-} from "@/components/official/GatedActionButton";
+import { firstBlockingReason, GatedActionButton, Input } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AgentCredit } from "../AgentCredit";
 import {
@@ -20,7 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { LoadingSpinner } from "@ai-matrx/design-system";

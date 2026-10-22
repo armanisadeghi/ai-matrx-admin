@@ -14,7 +14,7 @@
  * `kind-registry-routes.ts` for why a snapshot-only row deliberately does not.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Activity,
   Check,

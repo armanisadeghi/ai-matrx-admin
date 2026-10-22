@@ -29,7 +29,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ClipboardFallbackDialog } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog";
+import { ClipboardFallbackDialog } from "@ai-matrx/design-system";
 import {
   ScoredChecklist,
   type ScoredChecklistRow,

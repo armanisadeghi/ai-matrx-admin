@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, DateField, Input } from "@ai-matrx/design-system/controls";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // features/hr/people/new/HrNewEmployee.tsx — ROUTE 12, SPEC-EMPLOYEES §4.1
 //
@@ -52,7 +52,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,

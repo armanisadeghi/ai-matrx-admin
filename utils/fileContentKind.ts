@@ -1,25 +1,33 @@
-// Client-safe file type detection (no Node / server-only).
+// Client-safe file type detection (no Node / server-only), read from THE file-type registry
+// (@ai-matrx/media/files) — never a local extension table.
 
+import { getFileTypeDetails } from '@ai-matrx/media/files';
 import type { FileContentResult } from '@/utils/fileSystemTypes';
 
 export type { FileContentResult };
 
-export const FILE_TYPE_PATTERNS = {
-  json: /\.json$/i,
-  text: /\.(txt|log|md|csv|yml|yaml|env|js|jsx|ts|tsx|css|scss|html|xml)$/i,
-  markdown: /\.(md|markdown)$/i,
-  image: /\.(jpg|jpeg|png|gif|svg|webp)$/i,
-  binary: /\.(pdf|doc|docx|xls|xlsx|zip|rar)$/i,
-};
-
+/** How a local file is read: parsed JSON, markdown text, other text, an image, or opaque bytes. */
 export const getFileType = (filename: string): string => {
   const ext = filename.split('.').pop()?.toLowerCase() || '';
+  const details = getFileTypeDetails(filename);
 
-  if (FILE_TYPE_PATTERNS.json.test(filename)) return 'json';
-  if (FILE_TYPE_PATTERNS.markdown.test(filename)) return 'markdown';
-  if (FILE_TYPE_PATTERNS.text.test(filename)) return 'text';
-  if (FILE_TYPE_PATTERNS.image.test(filename)) return 'image';
-  if (FILE_TYPE_PATTERNS.binary.test(filename)) return 'binary';
-
-  return ext || 'unknown';
+  if (details.subCategory === 'JSON') return 'json';
+  switch (details.previewKind) {
+    case 'markdown':
+      return 'markdown';
+    case 'image':
+    case 'svg':
+      return 'image';
+    case 'text':
+    case 'code':
+    case 'data':
+    case 'html':
+      return 'text';
+    case 'pdf':
+    case 'office':
+    case 'spreadsheet':
+      return 'binary';
+    default:
+      return details.category === 'ARCHIVE' ? 'binary' : ext || 'unknown';
+  }
 };

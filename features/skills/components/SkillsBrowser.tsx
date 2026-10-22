@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, ControlRow, SearchField, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 
 import { useSkills } from "../hooks/useSkills";
 import { useSkillCategories } from "../hooks/useSkillCategories";

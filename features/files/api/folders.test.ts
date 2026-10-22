@@ -1,43 +1,38 @@
 import { ensureFolderPath } from "./folders";
-import { postJson } from "@/lib/python-client";
 
-jest.mock("@/lib/python-client", () => ({
-  getJson: jest.fn(),
-  patchJson: jest.fn(),
-  postJson: jest.fn(),
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/recordingServerApi").recordingServerApiModule(),
+);
 
-const mockedPostJson = postJson as jest.MockedFunction<typeof postJson>;
+const api = jest.requireMock("@/lib/api/server-api");
 
 describe("ensureFolderPath", () => {
-  beforeEach(() => mockedPostJson.mockReset());
+  beforeEach(() => {
+    api.resetServerApiCalls();
+    api.respondWith(() => ({ id: "leaf-folder" }));
+  });
 
   it("normalizes the path and delegates the whole chain to one request", async () => {
-    mockedPostJson.mockResolvedValue({
-      data: { id: "leaf-folder" },
-      meta: { requestId: "request-1", status: 200, serverRequestId: null },
-    });
-
     await ensureFolderPath(" /Images// Generated / Chat/ ", "personal", {
       requestId: "request-1",
     });
 
-    expect(mockedPostJson).toHaveBeenCalledTimes(1);
-    expect(mockedPostJson).toHaveBeenCalledWith(
-      "/folders",
-      {
-        folder_path: "Images/Generated/Chat",
-        visibility: "personal",
-        metadata: null,
-      },
-      { requestId: "request-1" },
-    );
+    expect(api.serverApiCalls).toHaveLength(1);
+    const call = api.lastServerApiCall();
+    expect(call.method).toBe("POST");
+    expect(call.path).toBe("/folders");
+    expect(call.args.body).toEqual({
+      folder_path: "Images/Generated/Chat",
+      visibility: "personal",
+      metadata: null,
+    });
+    expect(call.options).toMatchObject({ requestId: "request-1" });
   });
 
   it("rejects an empty logical path without making a request", async () => {
     await expect(ensureFolderPath(" /// ")).rejects.toThrow(
       "folderPath cannot be empty.",
     );
-    expect(mockedPostJson).not.toHaveBeenCalled();
+    expect(api.serverApiCalls).toHaveLength(0);
   });
 });

@@ -13,11 +13,10 @@
 // Every action carries a reason. A next-action list without reasons is a to-do
 // list, and a to-do list is the thing students already have and already ignore.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowRight, ChevronRight, Coffee, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Button as ControlButton, Chip, ControlRow, RowGroup, SettingRow } from "@ai-matrx/design-system/controls";
-import { InfoHint } from "@/components/official/InfoHint";
+import { Button as ControlButton, Chip, ControlRow, RowGroup, SettingRow, InfoHint } from "@ai-matrx/design-system/controls";
 import { MandateDoorLink } from "@/features/mandates/components/MandateDoorLink";
 import { InstallStudyAppButton } from "../../components/InstallStudyAppButton";
 import type { EducationSnapshot, NextAction } from "../types";

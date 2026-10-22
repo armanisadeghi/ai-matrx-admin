@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { Flame, Tags } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { SearchInput } from "@/components/official/SearchInput";
+import { SearchInput } from "@ai-matrx/design-system/controls";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { cn } from "@/lib/utils";
 import { topicLabel } from "../../utils/topicLabel";

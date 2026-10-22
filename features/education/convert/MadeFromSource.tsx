@@ -22,7 +22,7 @@
 // `GeneratedFromChips`; do not grow a third lineage renderer.
 
 import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { FileText, CornerUpLeft, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { kitHref, readKit } from "@/features/education/kits/kitService";

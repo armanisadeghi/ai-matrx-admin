@@ -11,7 +11,7 @@
 // the honest refusal the page already draws stands.
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 import { Button } from "@ai-matrx/design-system";
 

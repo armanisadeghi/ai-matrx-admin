@@ -26,7 +26,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   BellOff,
   ChevronDown,

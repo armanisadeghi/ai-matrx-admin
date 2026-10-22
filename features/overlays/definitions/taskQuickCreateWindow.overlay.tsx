@@ -19,7 +19,7 @@ import type {
 } from "@/features/tasks/widgets/quick-create/TaskQuickCreateCore";
 import type { OverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 const OVERLAY_ID = "taskQuickCreateWindow" as const;
 const opener = createOpener<object>(OVERLAY_ID);

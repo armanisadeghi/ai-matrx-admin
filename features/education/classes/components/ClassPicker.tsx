@@ -13,7 +13,7 @@
 
 import { useEffect, useRef } from "react";
 import { GraduationCap } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { EntityScopeTagger } from "@/features/scopes/components/entity-context/EntityScopeTagger";
 import { useScopeTree } from "@/features/scopes/hooks/useScopeTree";
 import type { EntityType } from "@/features/scopes/types";

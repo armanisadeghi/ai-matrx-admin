@@ -11,7 +11,7 @@ import {
   type MultiFileSmartCodeEditorWindowHandle,
 } from "@/features/window-panels/windows/multi-file-smart-code-editor/useOpenMultiFileSmartCodeEditorWindow";
 import type { OverlayWire } from "./overlay-types";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 export {
   useOpenMultiFileSmartCodeEditorWindow,

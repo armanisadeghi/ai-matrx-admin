@@ -124,6 +124,7 @@ const values: SurfaceValue[] = [
 
 export const crmInboxManifest: SurfaceManifest = {
   surfaceName: CRM_INBOX_SURFACE_NAME,
+  inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

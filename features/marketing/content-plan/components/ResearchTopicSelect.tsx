@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 
 import { CreatablePicker } from "@/components/ui/creatable-picker";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { useAllTopics } from "@/features/research/hooks/useResearchState";
 import { createTopic } from "@/features/research/service";
 import { recordToast, toast } from "@/lib/toast";

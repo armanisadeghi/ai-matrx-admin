@@ -953,6 +953,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const crmRecordManifest: SurfaceManifest = {
   surfaceName: CRM_RECORD_SURFACE_NAME,
+  inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

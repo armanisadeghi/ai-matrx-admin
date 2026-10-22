@@ -18,8 +18,9 @@
 // `?at=<original start>` names the occurrence the person came from, so Edit and
 // Cancel can ask "this occurrence or the whole series".
 
+import { HostedRecordBar } from "@/features/shell/host-chrome/RecordHostChrome";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useState, useTransition } from "react";
@@ -38,7 +39,6 @@ import {
   FileText,
   Link2,
   ListChecks,
-  MoreHorizontal,
   Pencil,
   Repeat,
   RotateCcw,
@@ -62,12 +62,7 @@ import {
   type EntityHeaderAction,
 } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { RecordActionsMenu } from "@/components/official/RecordActionsMenu";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -347,6 +342,7 @@ export function MeetingDetail({
       primaryActions.push({
         label: "Invite",
         icon: UserPlus,
+        placement: "bar",
         onPress: () => void run("invite", meeting),
       });
     if (canManage && !ended)
@@ -384,6 +380,7 @@ export function MeetingDetail({
     moreActions.push({
       label: focus ? "Cancel…" : "Cancel meeting",
       icon: XCircle,
+      barTone: "danger",
       onPress: () => void run("cancel", meeting, focus, invitees),
     });
   if (!meeting.deletedAt && canManage)
@@ -396,6 +393,7 @@ export function MeetingDetail({
     primaryActions.push({
       label: "Restore",
       icon: ArchiveRestore,
+      placement: "bar",
       onPress: () => void run("restore", meeting),
       showLabel: true,
     });
@@ -410,6 +408,7 @@ export function MeetingDetail({
           : "Join",
       icon: Video,
       primary: true,
+      placement: "bar",
       onPress: () => (onJoin ? onJoin(meeting) : void run("join", meeting)),
     });
   }
@@ -418,30 +417,14 @@ export function MeetingDetail({
     : primaryActions;
   const moreMenu =
     !isMobile && moreActions.length > 0 ? (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            icon={<MoreHorizontal aria-hidden="true" />}
-            variant="quiet"
-            aria-label="More actions"
-          />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          {moreActions.map((a) => (
-            <DropdownMenuItem
-              key={a.label}
-              onSelect={() => a.onPress?.()}
-              className={
-                a.icon === XCircle
-                  ? "text-destructive focus:text-destructive"
-                  : undefined
-              }
-            >
-              <a.icon className="h-4 w-4" aria-hidden="true" /> {a.label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <RecordActionsMenu
+        actions={moreActions.map((a) => ({
+          label: a.label,
+          icon: a.icon,
+          onPress: a.onPress,
+          destructive: a.barTone === "danger",
+        }))}
+      />
     ) : null;
 
   return (
@@ -617,15 +600,42 @@ function EmbeddedMeetingBar({
   onSection: (key: Section) => void;
   actions: EntityHeaderAction[];
 }) {
+  // ONE row: sections, the state, the everyday buttons (the main action and
+  // Invite / Restore), then every other action in ONE "…" menu. A host that
+  // names the meeting (a Board tile — the shared host chrome) drops the name;
+  // any other host keeps it on the row.
+  const visible = actions.filter((a) => a.placement === "bar");
+  const overflow = actions.filter((a) => !visible.includes(a));
   return (
-    <div className="shrink-0 space-y-1.5 border-b border-border bg-card/60 px-3 py-2">
-      <div className="flex min-w-0 items-center gap-2">
-        <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-          {meeting.title}
-        </p>
-        <StatusPill meeting={meeting} live={live} />
-      </div>
-      <div className="flex flex-wrap items-center gap-1">
+    <HostedRecordBar
+      record={{ token: "meet_meeting", id: meeting.id }}
+      className="gap-1 px-3 py-2"
+      name={<p className="min-w-0 truncate text-sm font-medium text-foreground">{meeting.title}</p>}
+      actions={
+        <>
+          {visible.map((a) => (
+            <Button
+              key={a.label}
+              type="button"
+              variant={a.primary ? "primary" : "outline"}
+              onClick={() => a.onPress?.()}
+            >
+              <a.icon className="h-3.5 w-3.5" aria-hidden="true" />
+              {a.label}
+            </Button>
+          ))}
+          <RecordActionsMenu
+            actions={overflow.map((a) => ({
+              label: a.label,
+              icon: a.icon,
+              onPress: a.onPress,
+              destructive: a.barTone === "danger",
+            }))}
+          />
+        </>
+      }
+    >
+      <span className="contents" data-meeting-bar="">
         {sections.map((s) => (
           <Button
             key={s.key}
@@ -638,20 +648,9 @@ function EmbeddedMeetingBar({
             {s.name}
           </Button>
         ))}
-        <span className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
-        {actions.map((a) => (
-          <Button
-            key={a.label}
-            type="button"
-            variant={a.primary ? "primary" : "outline"}
-            onClick={() => a.onPress?.()}
-          >
-            <a.icon className="h-3.5 w-3.5" aria-hidden="true" />
-            {a.label}
-          </Button>
-        ))}
-      </div>
-    </div>
+        <StatusPill meeting={meeting} live={live} />
+      </span>
+    </HostedRecordBar>
   );
 }
 
@@ -783,7 +782,8 @@ function DetailsSection({
           Nobody can join it.
         </div>
       ) : null}
-      <h1 className="text-xl font-semibold">{meeting.title}</h1>
+      {/* The host names the meeting (shell header, or the Board tile's header). */}
+      <h1 className="sr-only">{meeting.title}</h1>
       <Field icon={CalendarClock}>
         {start ? (
           <>

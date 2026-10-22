@@ -462,12 +462,15 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const keywordResearchWindowManifest: SurfaceManifest = {
   surfaceName: KEYWORD_RESEARCH_WINDOW_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description:
     "",
   label: "Keyword Research",
+  situation:
+    "They have the floating Keyword Research window open for {selected_site.name|no website chosen yet}, above whatever page is underneath. {keywords_total} library keywords are shown; the research run is {run_status} (last keyword: {run_primary_keyword|none}). They can pick a website, filter and stage a keyword; only they can start a paid run.",
   overlayId: "keywordResearchWindow",
   readiness: "partial",
   readinessNote:

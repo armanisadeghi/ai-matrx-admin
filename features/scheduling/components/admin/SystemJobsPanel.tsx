@@ -24,12 +24,12 @@
 
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input } from "@ai-matrx/design-system/controls";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { usePageCapture } from "@/components/agent-copy/page-capture/usePageCapture";
 import { adminPageCapture } from "@/components/agent-copy/page-capture/pageCapture";
 import { PageCaptureButton } from "@/components/agent-copy/page-capture/PageCaptureButton";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, Loader2, Pencil, Play, Power } from "lucide-react";
 import cronstrue from "cronstrue";
@@ -50,7 +50,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,

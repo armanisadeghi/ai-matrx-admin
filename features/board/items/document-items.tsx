@@ -16,6 +16,7 @@
  * ./document-items.logic.ts.
  */
 
+import { HostedRecordBar } from "@/features/shell/host-chrome/RecordHostChrome";
 import { useEffect } from "react";
 import { FileText } from "lucide-react";
 import { DocumentRecord } from "@/features/documents/components/DocumentRecord";
@@ -56,12 +57,8 @@ function DocumentRecordBody({ id, title, onSource }: ItemBodyProps & { id: strin
           const next = titleToAdopt(title, doc.document_name);
           if (next) onSource(documentSource(id), next);
         }}
-        renderHeader={({ title: field, actions }) => (
-          <div className="flex min-h-10 shrink-0 items-center gap-2 border-b border-border bg-card/60 px-2 py-1">
-            <div className="flex min-w-0 flex-1 items-center gap-1">{field}</div>
-            {actions ? <div className="flex shrink-0 items-center">{actions}</div> : null}
-          </div>
-        )}
+        // The tile header names the document: its rename field moves there, the row keeps its actions.
+        renderHeader={({ title: field, actions }) => <HostedRecordBar record={{ token: "udt_document", id }} titleField={field} actions={actions ?? undefined} />}
       />
     </div>
   );

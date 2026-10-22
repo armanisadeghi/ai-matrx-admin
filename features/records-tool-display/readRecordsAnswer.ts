@@ -226,3 +226,14 @@ export function writeSentence(answer: Extract<RecordsAnswer, { kind: "write" }>,
 export function tableHref(tableId: string, recordId?: string | null): string {
   return recordId ? `/data/${tableId}?record=${encodeURIComponent(recordId)}` : `/data/${tableId}`;
 }
+
+/**
+ * The table page opened on only the rows a question holds, saying where the person came from (`?filter=` +
+ * `?from=`, read by the table page's address). An agent output's list items use it: `{ output_chain,
+ * output_generation }` opens exactly the rows that one output put in its items table (CD-AGENT-09).
+ */
+export function filteredTableHref(tableId: string, filter: Record<string, string | number>, from?: string | null): string {
+  const params = new URLSearchParams({ filter: JSON.stringify(filter) });
+  if (from && from.trim()) params.set("from", from.trim());
+  return `/data/${tableId}?${params.toString()}`;
+}

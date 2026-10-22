@@ -1,12 +1,11 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Select } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState } from "react";
 import { Binary, Check, Clipboard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select } from "@ai-matrx/design-system/controls";
 import { RagHubHeader } from "@/features/rag/components/shell/RagHubHeader";
 import {
   createGoogleEmbeddings,

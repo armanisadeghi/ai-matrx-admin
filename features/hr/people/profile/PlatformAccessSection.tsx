@@ -28,8 +28,7 @@ import { useState } from "react";
 import { Copy, KeyRound, Mail, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
-import { InfoHint } from "@/components/official/InfoHint";
+import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 

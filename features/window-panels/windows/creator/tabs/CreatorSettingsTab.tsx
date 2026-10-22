@@ -2,7 +2,7 @@
 
 import { RotateCcw } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectIsCreatorMode,

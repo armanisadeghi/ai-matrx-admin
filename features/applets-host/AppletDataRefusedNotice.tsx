@@ -8,7 +8,7 @@
 // sign-in that returns to this page; a signed-in person is told plainly. Never a grant — whether the data is
 // shared is the owner's choice, made in Manage → Sharing.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Lock } from "lucide-react";
 

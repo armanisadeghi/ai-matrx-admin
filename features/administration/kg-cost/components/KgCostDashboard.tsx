@@ -59,7 +59,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { AppLink } from "@/components/navigation/AppLink";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   getKgCostSummary,
   searchOrgCosts,

@@ -296,10 +296,20 @@ describe("a declared page sidebar never flashes the route rows first", () => {
   const rowsBody = () => sidebar().querySelector(".mf-noscrollbar.px-2");
 
   it("the declared list resolves the kind-B routes and nothing else", () => {
-    for (const path of ["/notes", "/notes/abc", "/files/all", "/messages", "/agent-connections/x"]) {
+    for (const path of [
+      "/notes",
+      "/notes/abc",
+      "/files/all",
+      "/messages",
+      "/agent-connections/x",
+      "/spaces",
+      "/spaces/s1",
+      "/organizations/acme/projects/p1/settings",
+      "/organizations/acme/projects/p1/settings/members",
+    ]) {
       expect(routeSuppliesPageSidebar(path)).toBe(true);
     }
-    for (const path of ["/chat/new", "/notesbook", "/marketing/brands"]) {
+    for (const path of ["/chat/new", "/notesbook", "/marketing/brands", "/organizations/acme/projects/p1"]) {
       expect(routeSuppliesPageSidebar(path)).toBe(false);
     }
   });

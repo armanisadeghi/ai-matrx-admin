@@ -181,6 +181,8 @@ export const marketingSitemapsManifest: SurfaceManifest = {
     "Discovered sitemap documents and page membership evidence for one site.",
   readiness: "verified",
   label: "Marketing Sitemaps",
+  situation:
+    "They are on the website's sitemaps: {sitemap_pages_total|no} pages appear in a sitemap and {sitemap_never_crawled|none} of those were never crawled; last synced {sitemaps_last_synced_at|never}. The open sitemap is {open_sitemap.url|none, they are on the list}. The page is read-only.",
   urlPattern: "/marketing/[brandId]/websites/[siteId]/sitemaps",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>

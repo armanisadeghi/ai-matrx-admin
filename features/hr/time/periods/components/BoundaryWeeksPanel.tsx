@@ -20,7 +20,7 @@
  */
 
 import { RecordId } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { CalendarRange } from "lucide-react";
 
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";

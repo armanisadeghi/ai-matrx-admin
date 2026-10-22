@@ -5,7 +5,7 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 237,
+    "repo-only": 238,
     "live-db": 70
   },
   "rows": {
@@ -2217,6 +2217,13 @@
       "label": "Whole jest suite (every suite, not CI's four scopes)",
       "class": "repo-only",
       "cmd": "pnpm test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "every-page-has-a-home-in-the-app-frame-s-product-tree": {
+      "label": "Every page has a home in the app frame's product tree",
+      "class": "repo-only",
+      "cmd": "npx jest features/shell/frame/__tests__/every-page-has-a-home.test.ts --silent",
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },

@@ -111,6 +111,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const filePreviewManifest: SurfaceManifest = {
   surfaceName: FILE_PREVIEW_SURFACE_NAME,
+  inheritsFrom: "matrx-default/files",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

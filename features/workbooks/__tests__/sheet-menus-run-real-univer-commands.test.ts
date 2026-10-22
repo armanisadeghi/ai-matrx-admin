@@ -31,7 +31,7 @@ import { setComingSoonAnnouncer } from "@ai-matrx/kit/coming-soon";
 setComingSoonAnnouncer(async () => {});
 
 // "Custom number format" asks in our own dialog; the test answers it.
-jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({
+jest.mock("@ai-matrx/chat/ui/valuePromptsOpener", () => ({
   promptForValues: async () => ({ pattern: "0.0%", emoji: "\u{1F600}" }),
 }));
 

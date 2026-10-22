@@ -97,7 +97,18 @@ export function buildClassHubOwnerScope(input: {
     assignments.assignments.map((a) => [`${a.token}:${a.resourceId}`, a.title]),
   );
   const assignmentsReady = !assignments.loading && !assignments.error;
-  const progressReady = !progress.loading && !progress.error && progress.overview;
+  // class_progress is emitted only from a non-null overview, so its load state
+  // is derived from the same condition: a settled read with no overview (not
+  // read at all) is reported as such, never as "ready" with the list missing.
+  const progressState = loadState({
+    loading: progress.loading,
+    error:
+      progress.error ??
+      (!progress.loading && !progress.overview
+        ? "class progress was not read"
+        : null),
+  });
+  const progressReady = progressState === "ready";
 
   return createEducationClassScope({
     view: "owner",
@@ -106,7 +117,7 @@ export function buildClassHubOwnerScope(input: {
     load_status: {
       roster: loadState(roster),
       assignments: loadState(assignments),
-      class_progress: loadState(progress),
+      class_progress: progressState,
       study_content: loadState(content),
     },
     class_id: cls.id,
@@ -177,7 +188,10 @@ export function buildClassHubMemberScope(input: {
     myProgress &&
     !assignments.loading &&
     !assignments.error &&
-    !myProgress.loading;
+    !myProgress.loading &&
+    // useMyClassProgress leaves progress=[] on a failed read; emitting the list
+    // then would mark every row "not_started" while load_status says failed.
+    !myProgress.error;
   const progressByKey = new Map(
     (myProgress?.progress ?? []).map((p) => [`${p.token}:${p.resourceId}`, p]),
   );

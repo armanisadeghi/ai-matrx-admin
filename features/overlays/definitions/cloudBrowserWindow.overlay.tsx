@@ -12,7 +12,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { CLOUD_BROWSER_OVERLAY_ID } from "@/features/cloud-browser/constants";
 import type { OverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 const OVERLAY_ID = CLOUD_BROWSER_OVERLAY_ID;
 const opener = createOpener<object>(OVERLAY_ID);

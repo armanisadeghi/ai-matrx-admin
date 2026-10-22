@@ -19,7 +19,7 @@ import { emptyRunMessage } from "@/features/education/convert/segmentedGenerate"
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Button } from "@/components/ui/button";
 import { Chip, ChipSet } from "@ai-matrx/design-system/controls";
@@ -67,6 +67,7 @@ import type { AssessmentItemRow, AssessmentRow, QuestionType } from "../data/typ
 import { kindConfigFor } from "./kindConfig";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { STUDY_FROM_DECK_KINDS } from "@/features/education/create/studyFromDeck";
 /** The top-up never offers "Just a topic": the questions come from material. */
 const TOPUP_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
 
@@ -416,6 +417,7 @@ function AddMoreQuestionsDialog({
         title="Sources"
         purpose="the new questions"
         kinds={TOPUP_KINDS}
+        extraKinds={STUDY_FROM_DECK_KINDS}
         required
         deliveries={FLASHCARD_SOURCE_DELIVERIES}
         attachTo={{ entityType: "assessment", entityId: assessment.id, label: assessment.title }}

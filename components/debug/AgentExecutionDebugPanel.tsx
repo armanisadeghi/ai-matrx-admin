@@ -22,7 +22,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";

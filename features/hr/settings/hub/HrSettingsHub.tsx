@@ -36,7 +36,7 @@ import { KnobRow, knobValueText } from "../components/KnobPanel";
 import { useHrKnobs } from "../hooks/useHrKnobs";
 import { HR_SETTINGS_TABS } from "../settings-tabs";
 import type { HrPresentedKnob } from "../types";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { HrSettingsShell } from "../HrSettingsShell";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

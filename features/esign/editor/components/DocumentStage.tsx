@@ -16,7 +16,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { cn } from "@/lib/utils";
 
-import { useStackZoom } from "@/features/pdf/components/viewer/toolbar/stack-hooks";
+import { useStackZoom } from "@ai-matrx/media/viewers";
 import type { DraftField, DraftRecipient, EnvelopeDraftV1 } from "../../contract/draft";
 import type { FieldKindV2 } from "../../contract/fieldModel";
 import { PAPER, recipientColor } from "../../contract/paper";
@@ -25,7 +25,7 @@ import type { DetectCandidate } from "../api/types";
 
 // The shared PDF toolbar row loads with the viewer, never with the page; the placeholder holds its height.
 const PdfStackToolbar = dynamic(
-  () => import("@/features/pdf/components/viewer/toolbar/PdfStackToolbar").then((m) => m.PdfStackToolbar),
+  () => import("@ai-matrx/media/viewers/pdf").then((m) => m.PdfStackToolbar),
   { ssr: false, loading: () => <div className="h-10 shrink-0 border-b border-border/60" aria-hidden /> },
 );
 

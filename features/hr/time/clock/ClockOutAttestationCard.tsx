@@ -42,7 +42,7 @@ import {
 } from "./clockStateView";
 import type { AttestationResponse, ClockState } from "@/features/hr/time/api/types";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 
 export interface ClockOutAttestationCardProps {
   state: ClockState;

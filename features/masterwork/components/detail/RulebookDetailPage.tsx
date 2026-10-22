@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { recordToast, toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";

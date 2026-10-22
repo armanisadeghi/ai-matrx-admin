@@ -48,7 +48,7 @@ import {
 } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { ItemMenu } from "@ai-matrx/design-system/item";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { EntityScopeTabs } from "@/lib/entity-list/components/EntityScopeTabs";
