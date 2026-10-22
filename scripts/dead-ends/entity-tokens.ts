@@ -122,7 +122,7 @@ const AMBIGUOUS_NOUN_RULINGS: Record<string, { token: string; reason: string }> 
     token: "task",
     reason:
       "A workspace task. A `sch_task` is always spoken of as a 'scheduled task' " +
-      "and `components/official/entity-ref/doors.ts` resolves that phrase the " +
+      "and `@ai-matrx/records-ui/entity-doors` resolves that phrase the " +
       "same way.",
   },
 };

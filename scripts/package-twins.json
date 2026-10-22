@@ -16,8 +16,7 @@
   "vendored": [],
   "contentLane": { "mode": "app-vs-packages", "packagesRoot": "../aidream/apps/shared", "exclude": [] },
   "contentCensus": [
-    { "pair": "features/access-gate/cant-remove/CantRemoveDialogHostBody.tsx|sharing/src/access/react/CantRemoveDialogHostBody.tsx", "reason": "Near-copy of the sharing package file; the app copy now asks through summon (requestOverlay), the package copy still on kit/opener (2026-10-21). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/cant-remove/cantRemoveOpener.ts|sharing/src/access/react/cantRemoveOpener.ts", "reason": "Near-copy of the sharing package file; the app copy now asks through summon (requestOverlay), the package copy still on kit/opener (2026-10-21). DEBT: collapse the app file into an import of the package and delete this line." },
+    { "pair": "features/access-gate/cant-remove/CantRemoveDialogHostBody.tsx|sharing/src/access/react/cantRemoveDialog.render.tsx", "reason": "88% copy of the package overlay render, kept on purpose for now: the package render shows the package's GovernedActionDialog, which reads configureAccessUi (login href, current user, toast), and the web has not configured that environment yet because its own access-gate screens still stand. Owned by the access-gate screen move (PACKAGES - Org & Scope), which takes everything under features/access-gate; DEBT: when the screens move, the overlay render re-exports @ai-matrx/sharing/access/react/cantRemoveDialog.render and this app file and line go together." },
     { "pair": "features/access-gate/components/AccessDenied.tsx|sharing/src/access/react/AccessDenied.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
     { "pair": "features/access-gate/components/AccessGate.tsx|sharing/src/access/react/AccessGate.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
     { "pair": "features/access-gate/components/AccessRequestsSurface.tsx|sharing/src/access/react/AccessRequestsSurface.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
@@ -2716,10 +2715,6 @@
         {
           "file": "app/(dev)/demos/diff-gallery/page.dev.tsx",
           "reason": "IS a Badge, on a bespoke semantic tone union (canonical/legacy/heavy mapped to emerald/amber/sky) that @ai-matrx/design-system's Badge ships no variant for. Not collapsible in this session: it needs a package tone variant first, then a visual pass on the gallery."
-        },
-        {
-          "file": "components/official/settings/SettingsNavigationRow.tsx",
-          "reason": "IS the Badge primitive, wearing a SettingsBadge domain prop instead of children. Not collapsible in this session: it renders on the live settings navigation and the swap needs a visual check and a build."
         },
         {
           "file": "features/flashcards/fast-fire/voice-test/SingleCardVoiceTest.tsx",

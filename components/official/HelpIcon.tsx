@@ -1,4 +1,4 @@
-// New usages: a label's one-sentence definition belongs in `components/official/InfoHint.tsx` (reachable by mouse, keyboard and touch); this icon opens on mouse hover only.
+// New usages: a label's one-sentence definition belongs in `InfoHint` from `@ai-matrx/design-system/controls` (reachable by mouse, keyboard and touch); this icon opens on mouse hover only.
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState, useLayoutEffect, useRef } from 'react';

@@ -214,7 +214,7 @@ export interface EntityOverlay {
  * spelled here instead of imported because `DetailHost` is a `"use client"`
  * module with the whole window-manager, overlay and supabase graph behind it,
  * and this registry is imported by server components and by the deliberately
- * component-free door resolver (`components/official/entity-ref/doors.ts`) —
+ * component-free door resolver (`@ai-matrx/records-ui/entity-doors`) —
  * importing it would drag that graph into every door (THE FRAGMENTATION LAW).
  * The two spellings are held together by a test, not by hope:
  * `entityRegistry.test.ts` reads `DetailHost`'s own template and fails when the

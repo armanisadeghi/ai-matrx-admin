@@ -22,10 +22,8 @@
 
 import dynamic from "next/dynamic";
 import { registerChatUi } from "@ai-matrx/chat/host/ui-slots";
-// Binds @ai-matrx/records-ui/entity-ref (EntityRef, doors, toastDoor, RecordStamps) to this app, once.
-import "@/features/data-tables/records-ui-host/entityRefHost";
-// Binds @ai-matrx/design-system/settings (links, error menu, deep-link anchor, navigate, copy notice) to this app, once.
-import "@/features/settings/doors/settingsHost";
+// The entity-ref host and the settings host are bound at the root (app/Providers.tsx mounts
+// <EntityRefHost /> and <SettingsHost />), not here: this file is one profile's registration, not every route's.
 import { surfaceManifestHost } from "./surfaceManifestHost";
 import {
   lazySlotsFrom,
