@@ -2,7 +2,10 @@
  * Products & services — reads and writes (PRODUCTS.md § 4–§ 6, aidream `services/brand_offerings`).
  *
  * Reads, direct to Supabase:
- * - `web.brand_offering` (status active): the kept offerings — always on the list as confirmed, whoever wrote them.
+ * - `web.brand_offering` (status active): the kept offerings — always on the list. One is CONFIRMED only when a
+ *   person validated it (`web.person_validated_offering_ids`, the ONE rule aidream `person_validated_offerings`
+ *   reads too: a person-confirmed finding names it, a person-confirmed fact minted it, or a person inserted it — a
+ *   test/agent seat is never a person). Every other kept offering shows "not confirmed" with Yes / No.
  * - `web.discovered_item` (category `offering`): one row per (item, url) the run staged; `value.key` is the item,
  *   `context` holds the candidate, its verbatim quotes with source family, the computed certainty and the group
  *   the grouping step filed it under.
@@ -10,7 +13,8 @@
  *   claims and reader checks.
  * - `workflow.run` of the `smart_add_brand_offerings` system run for this brand: the run to watch.
  *
- * Writes: Yes → `web.brand_offering` (+ every row of the item `confirmed`, `resolved_offering_id`);
+ * Writes: Yes → `web.brand_offering` (+ every row of the item `confirmed`, `resolved_offering_id`; a kept offering
+ * with no finding gets one person-reviewed finding naming it, so the Yes is on record);
  * No → `web.brand_exclusion` (name match, never returns) + rows `dismissed`. Every answer names the person
  * (`reviewed_at` + `reviewed_by` = the signed-in person; a cleared answer clears both): the person-only readers
  * (aidream `person_validated_offerings`) and the DB triggers (`web._stance_follows_kept_offering`,
@@ -120,11 +124,17 @@ const CERTAINTY_RANK: Record<Certainty, number> = { confirmed: 3, likely: 2, pos
 
 /**
  * The screen's one list: the run's staged findings (`web.discovered_item`) merged with the brand's kept
- * offerings (`web.brand_offering`). A kept offering is always shown as confirmed — the facts step and the
- * promotion write offerings straight to `brand_offering`, so a screen reading only the staged rows showed
- * "Found 0" beside kept, confirmed products (Creativity Warehouse, 2026-10-16).
+ * offerings (`web.brand_offering`). A kept offering is always ON the list — the facts step and the promotion write
+ * offerings straight to `brand_offering`, so a screen reading only the staged rows showed "Found 0" beside kept
+ * products (Creativity Warehouse, 2026-10-16) — but it is CONFIRMED only when its id is in `personValidated`
+ * (`web.person_validated_offering_ids`). A code-minted offering, or a row a job or a test seat marked confirmed, is
+ * "not confirmed" and keeps its Yes / No (REVIEW2: 63 code-made offerings could be answered No but never Yes).
  */
-export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOfferingRow[]): OfferingItem[] {
+export function buildOfferingItems(
+  rows: DiscoveredOfferingRow[],
+  kept: KeptOfferingRow[],
+  personValidated: ReadonlySet<string> = new Set(),
+): OfferingItem[] {
   const byKey = new Map<string, OfferingItem>();
   for (const row of rows) {
     const key = str(obj(row.value).key);
@@ -161,8 +171,8 @@ export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOffe
     item.rowIds.push(row.id);
     item.families = [...new Set([...item.families, ...quotes.filter((q) => !q.addressOnly).map((q) => q.family)])];
     item.group = item.group ?? str(ctx.group);
-    if (row.status === "confirmed") item.status = "confirmed";
-    else if (row.status === "dismissed" && item.status !== "confirmed") item.status = "dismissed";
+    // A row's own `confirmed` is not the brand's word: only a person-validated offering is (below).
+    if (row.status === "dismissed") item.status = "dismissed";
     item.offeringId = item.offeringId ?? row.resolved_offering_id ?? null;
     item.byReader = item.byReader || quotes.some((q) => q.source.startsWith("reader_"));
     const c = (str(ctx.certainty) as Certainty) ?? "possible";
@@ -180,10 +190,12 @@ export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOffe
   for (const o of kept) {
     const linked = byOfferingId.get(o.id) ?? byMatch.get(offeringMatchKey(o.name));
     const meta = obj(o.metadata);
+    const byPerson = personValidated.has(o.id);
     if (linked) {
-      linked.status = "confirmed";
+      // Active and person-validated: confirmed. Active but nobody's word: open again, whatever a row says.
+      linked.status = byPerson ? "confirmed" : "pending";
       linked.offeringId = linked.offeringId ?? o.id;
-      linked.certainty = "confirmed";
+      if (byPerson) linked.certainty = "confirmed";
       linked.review = reviewOf(meta);
       continue;
     }
@@ -197,7 +209,7 @@ export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOffe
       priceText: o.price_note,
       group: str(meta.group),
       sourceGroups: [],
-      certainty: "confirmed",
+      certainty: byPerson ? "confirmed" : "likely",
       families: [family],
       quotes: (urls.length ? urls : [null]).map((url) => ({
         source: str(meta.found_by) ?? "brand_offering",
@@ -207,7 +219,7 @@ export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOffe
         addressOnly: false,
       })),
       rowIds: [],
-      status: "confirmed",
+      status: byPerson ? "confirmed" : "pending",
       offeringId: o.id,
       byReader: false,
       review: reviewOf(meta),
@@ -218,8 +230,15 @@ export function buildOfferingItems(rows: DiscoveredOfferingRow[], kept: KeptOffe
   return items.sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** The brand's active offerings a PERSON validated — the one rule, in the database (aidream reads the same function). */
+export async function fetchPersonValidatedOfferingIds(brandId: string): Promise<Set<string>> {
+  const { data, error } = await supabase.schema("web").rpc("person_validated_offering_ids", { p_brand_id: brandId });
+  if (error) throw new Error(`Which products and services are confirmed could not be read: ${error.message}`);
+  return new Set((data ?? []).map(String));
+}
+
 export async function fetchOfferingItems(brandId: string): Promise<OfferingItem[]> {
-  const [found, kept] = await Promise.all([
+  const [found, kept, validated] = await Promise.all([
     supabase
       .schema("web")
       .from("discovered_item")
@@ -236,10 +255,11 @@ export async function fetchOfferingItems(brandId: string): Promise<OfferingItem[
       .eq("status", "active")
       .is("deleted_at", null)
       .limit(5000),
+    fetchPersonValidatedOfferingIds(brandId),
   ]);
   if (found.error) throw new Error(`Products and services could not be read: ${found.error.message}`);
   if (kept.error) throw new Error(`Kept products and services could not be read: ${kept.error.message}`);
-  return buildOfferingItems(found.data ?? [], kept.data ?? []);
+  return buildOfferingItems(found.data ?? [], kept.data ?? [], validated);
 }
 
 export async function fetchOfferingsVerdict(brandId: string): Promise<OfferingsVerdict> {
@@ -345,7 +365,28 @@ export async function keepOffering(brand: { id: string; organizationId: string }
     if (error) throw new Error(`Could not keep "${item.name}": ${error.message}`);
     offeringId = data.id;
   }
-  if (!item.rowIds.length) return offeringId;
+  const reviewedBy = await signedInPersonId(supabase);
+  if (!item.rowIds.length) {
+    // A kept offering with no finding: the person's Yes is recorded as one reviewed finding naming it — the same
+    // record every other Yes leaves, which `web.person_validated_offering_ids` and the stance trigger read.
+    const ins = await supabase
+      .schema("web")
+      .from("discovered_item")
+      .insert({
+        organization_id: brand.organizationId,
+        brand_id: brand.id,
+        source: "brand_offerings.person_answer",
+        category: "offering",
+        value: { key: offeringMatchKey(item.name) } as unknown as Json,
+        context: { candidate: { key: offeringMatchKey(item.name), name: item.name, kind: item.kind } } as unknown as Json,
+        status: "confirmed",
+        resolved_offering_id: offeringId,
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: reviewedBy,
+      });
+    if (ins.error) throw new Error(`Could not mark "${item.name}" kept: ${ins.error.message}`);
+    return offeringId;
+  }
   const upd = await supabase
     .schema("web")
     .from("discovered_item")
@@ -353,7 +394,7 @@ export async function keepOffering(brand: { id: string; organizationId: string }
       status: "confirmed",
       resolved_offering_id: offeringId,
       reviewed_at: new Date().toISOString(),
-      reviewed_by: await signedInPersonId(supabase),
+      reviewed_by: reviewedBy,
     })
     .in("id", item.rowIds);
   if (upd.error) throw new Error(`Could not mark "${item.name}" kept: ${upd.error.message}`);
