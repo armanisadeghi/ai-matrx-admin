@@ -17,6 +17,7 @@ import { useCurrentRecord } from "@/features/shell/current-record/currentRecord"
 import type { Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { deriveTrail, type TrailRecord } from "./derive-trail";
 import { routeSiblings } from "./route-siblings";
+import { recordSiblingsLoader } from "./record-siblings";
 
 const NAV = [...primaryNavItems, ...adminNavItems];
 
@@ -62,6 +63,8 @@ export function useDerivedTrail(options: UseDerivedTrailOptions = {}): Crumb[] {
         ...merged[declaredHref],
         token: current.token,
         label: merged[declaredHref]?.label ?? current.label ?? resolvedTitle,
+        // A record crumb opens every other record of its type (record-siblings.ts).
+        loadOptions: merged[declaredHref]?.loadOptions ?? recordSiblingsLoader(current.token, current.id, pathname),
       };
     }
     // A page that only knows the record's name names the LAST level (the record itself).

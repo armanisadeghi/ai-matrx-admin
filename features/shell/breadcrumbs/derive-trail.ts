@@ -39,6 +39,8 @@ export interface TrailRecord {
   token?: string | null;
   /** Sibling records for the dropdown (the Scopes pattern). */
   options?: CrumbOption[];
+  /** Sibling records fetched when the door first opens (record-siblings.ts, per entity type). */
+  loadOptions?: () => Promise<CrumbOption[]>;
   optionsLabel?: string;
   optionsAllHref?: string;
   optionsAllLabel?: string;
@@ -161,6 +163,9 @@ export function deriveTrail(input: DeriveTrailInput): Crumb[] {
     let loadOptions: Crumb["loadOptions"];
     if (record?.options) {
       options = record.options;
+    } else if (record?.loadOptions) {
+      loadOptions = record.loadOptions;
+      optionsLabel = optionsLabel ?? parentLabel;
     } else if (moduleRow) {
       options = nav
         .filter(isDestination)
