@@ -82,6 +82,9 @@ export interface UseOrgAutoRagPreferenceResult {
 
 const DEFAULT_BUDGET_USD = 5.0;
 
+/** Stable empty map, so "nothing known for this organization" is not a new object each render. */
+const EMPTY_KNOWN: Record<string, boolean> = {};
+
 export function useOrgAutoRagPreference(
   organizationId: string | null,
 ): UseOrgAutoRagPreferenceResult {
@@ -96,22 +99,38 @@ export function useOrgAutoRagPreference(
   // register default made a switch just turned OFF render ON for a frame. The
   // last value actually known — from the snapshot, or from the door's own
   // `effective_value`, which is authoritative and immediate — covers the gap.
-  const [lastKnown, setLastKnown] = useState<Record<string, boolean>>({});
+  // 🚨 AND IT IS KEYED TO THE ORGANIZATION IT WAS LEARNED FOR. A snapshot answers
+  // for ONE organization; this pane can be pointed at another. Holding the value
+  // unkeyed showed the previous organization's setting — enabled, not loading —
+  // until the new read landed. A value from another organization is not a value
+  // we know about this one.
+  const [lastKnown, setLastKnown] = useState<{
+    organizationId: string | null;
+    values: Record<string, boolean>;
+  }>({ organizationId: null, values: {} });
+  const forThisOrg =
+    lastKnown.organizationId === organizationId ? lastKnown.values : EMPTY_KNOWN;
+  const remember = useCallback(
+    (key: string, value: boolean) => {
+      setLastKnown((prev) =>
+        prev.organizationId === organizationId
+          ? { organizationId, values: { ...prev.values, [key]: value } }
+          : { organizationId, values: { [key]: value } },
+      );
+    },
+    [organizationId],
+  );
   useEffect(() => {
-    if (typeof resolvedEnabled === "boolean") {
-      setLastKnown((prev) => ({ ...prev, [AUTO_RAG_KEY]: resolvedEnabled }));
-    }
-  }, [resolvedEnabled]);
+    if (typeof resolvedEnabled === "boolean") remember(AUTO_RAG_KEY, resolvedEnabled);
+  }, [resolvedEnabled, remember]);
   useEffect(() => {
-    if (typeof resolvedSweeps === "boolean") {
-      setLastKnown((prev) => ({ ...prev, [SUGGESTION_SWEEPS_KEY]: resolvedSweeps }));
-    }
-  }, [resolvedSweeps]);
+    if (typeof resolvedSweeps === "boolean") remember(SUGGESTION_SWEEPS_KEY, resolvedSweeps);
+  }, [resolvedSweeps, remember]);
 
   const knownEnabled =
-    typeof resolvedEnabled === "boolean" ? resolvedEnabled : lastKnown[AUTO_RAG_KEY];
+    typeof resolvedEnabled === "boolean" ? resolvedEnabled : forThisOrg[AUTO_RAG_KEY];
   const knownSweeps =
-    typeof resolvedSweeps === "boolean" ? resolvedSweeps : lastKnown[SUGGESTION_SWEEPS_KEY];
+    typeof resolvedSweeps === "boolean" ? resolvedSweeps : forThisOrg[SUGGESTION_SWEEPS_KEY];
   const enabled = asKnobBoolean(knownEnabled, AUTO_RAG_DEFAULT);
   const suggestionSweeps = asKnobBoolean(knownSweeps, SUGGESTION_SWEEPS_DEFAULT);
   const [budgetUsd, setBudgetState] = useState<number>(DEFAULT_BUDGET_USD);
@@ -230,10 +249,7 @@ export function useOrgAutoRagPreference(
           setError(sentence);
           throw new Error(sentence);
         }
-        setLastKnown((prev) => ({
-          ...prev,
-          [key]: asKnobBoolean(result.effective_value, next),
-        }));
+        remember(key, asKnobBoolean(result.effective_value, next));
         setError(null);
       } catch (err) {
         if (!refused) {
@@ -249,7 +265,7 @@ export function useOrgAutoRagPreference(
         setPendingField(null);
       }
     },
-    [organizationId],
+    [organizationId, remember],
   );
 
   const setEnabled = useCallback(

@@ -61,7 +61,9 @@ import { useAutoRagPreference } from "@/features/kg-suggestions/hooks/useAutoRag
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-function mount<T>(useHook: () => T): { current: () => T; unmount: () => void } {
+function mount<T>(
+  useHook: () => T,
+): { current: () => T; rerender: () => void; unmount: () => void } {
   let latest!: T;
   function Probe() {
     latest = useHook();
@@ -70,12 +72,20 @@ function mount<T>(useHook: () => T): { current: () => T; unmount: () => void } {
   const el = document.createElement("div");
   const root = createRoot(el);
   act(() => root.render(<Probe />));
-  return { current: () => latest, unmount: () => act(() => root.unmount()) };
+  return {
+    current: () => latest,
+    // What a Redux organization switch causes: the SAME mounted hook renders
+    // again and reads a different organization.
+    rerender: () => act(() => root.render(<Probe />)),
+    unmount: () => act(() => root.unmount()),
+  };
 }
 const flush = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
 const RAW = /permission denied for|organization_preferences|user_preferences|42501/;
 const AUTO_RAG = "knowledge.auto_rag_enabled";
+/** What the hook falls back to when it knows nothing — the register's own default. */
+const AUTO_RAG_REGISTER_DEFAULT = true;
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -224,6 +234,26 @@ describe("the person's auto knowledge-graph switch", () => {
     await flush();
     expect(h.current().error).not.toMatch(/organization has turned this off/i);
     expect(h.current().error).toMatch(/could not turn on auto knowledge-graph/i);
+    h.unmount();
+  });
+
+  it("never shows another organization's value after a switch", async () => {
+    // A snapshot answers for ONE (organization, person) pair. Holding the last
+    // known value unkeyed meant switching organization showed the PREVIOUS
+    // tenant's setting — enabled, not loading — until the new read landed, and
+    // kept showing it if that read failed. Cross-tenant, on screen.
+    resolved = { ...resolved, [AUTO_RAG]: false };
+    const h = mount(() => useAutoRagPreference());
+    await flush();
+    expect(h.current().enabled).toBe(false); // org-1 has it off
+
+    orgIdForTest = "org-2";
+    resolved = {}; // org-2's snapshot has not answered yet
+    h.rerender();
+    await flush();
+    // org-1's `false` must NOT be presented as org-2's answer.
+    expect(h.current().loading).toBe(true);
+    expect(h.current().enabled).toBe(AUTO_RAG_REGISTER_DEFAULT);
     h.unmount();
   });
 

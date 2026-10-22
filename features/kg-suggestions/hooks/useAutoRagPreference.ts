@@ -75,13 +75,25 @@ export function useAutoRagPreference(): UseAutoRagPreferenceResult {
   // had just overruled the person's. The last value actually known (from the
   // snapshot, or from the door's own `effective_value`, which is authoritative
   // and immediate) covers that gap instead.
-  const [lastKnown, setLastKnown] = useState<boolean | null>(null);
+  // 🚨 AND IT IS KEYED TO THE ADDRESS IT WAS LEARNED AT. A snapshot answers for
+  // ONE (organization, person) pair; switching organization makes the old answer
+  // somebody else's. Holding it unkeyed meant the switch showed the previous
+  // tenant's setting — enabled, not loading — until the new read landed, and
+  // kept showing it if that read failed. A value from another address is not a
+  // value we know.
+  const address = `${organizationId ?? ""}|${userId ?? ""}`;
+  const [lastKnown, setLastKnown] = useState<{ address: string; value: boolean } | null>(null);
   useEffect(() => {
-    if (typeof resolved === "boolean") setLastKnown(resolved);
-  }, [resolved]);
+    if (typeof resolved === "boolean") setLastKnown({ address, value: resolved });
+  }, [resolved, address]);
 
   const canChange = Boolean(userId) && Boolean(organizationId);
-  const known = typeof resolved === "boolean" ? resolved : lastKnown;
+  const known =
+    typeof resolved === "boolean"
+      ? resolved
+      : lastKnown?.address === address
+        ? lastKnown.value
+        : null;
   const enabled = known ?? AUTO_RAG_DEFAULT;
   const loading = canChange && known === null;
 
@@ -126,7 +138,7 @@ export function useAutoRagPreference(): UseAutoRagPreferenceResult {
         // mind), the door answers ok — and the effective value is still OFF. Say
         // so, rather than let the switch claim a state the platform will not honour.
         const effective = asKnobBoolean(result.effective_value, next);
-        setLastKnown(effective);
+        setLastKnown({ address, value: effective });
         setError(
           effective === next
             ? null
@@ -147,7 +159,7 @@ export function useAutoRagPreference(): UseAutoRagPreferenceResult {
         setSaving(false);
       }
     },
-    [userId, organizationId],
+    [userId, organizationId, address],
   );
 
   return { enabled, loading, saving, canChange, error, setEnabled };
