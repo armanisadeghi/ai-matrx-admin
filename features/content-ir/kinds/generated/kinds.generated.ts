@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1716 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1719 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "2ead353dc84c";
+export const KIND_REGISTRY_FINGERPRINT = "b007e529e149";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -3846,6 +3846,25 @@ export interface EditError {
    */
   __kind?: string;
   message: string;
+}
+
+/**
+ * * From kind `education_card`.
+ */
+export interface EducationCardDetailLayer {
+  kind: string;
+  text: string;
+  __kind?: string;
+  generation_status: string;
+}
+
+/**
+ * * From kind `education_card`.
+ */
+export interface EducationCardPair {
+  left: string;
+  right: string;
+  __kind?: string;
 }
 
 /**
@@ -29709,6 +29728,68 @@ export interface EducationActivePlan {
   generated_by?: string | null;
   daily_minutes?: number | null;
   daily_item_cap?: number | null;
+}
+
+/**
+ * One card of the open set or deck, as the set, study and editor screens send it.
+ *  *
+ *  * Kind `education_card` (registry v1).
+ */
+export interface EducationCard {
+  id: string;
+  back: string | null;
+  front: string;
+  /**
+   * Matching cards only.
+   */
+  pairs: EducationCardPair[] | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_card";
+  /**
+   * The editor sends the row version.
+   */
+  version?: number | null;
+  position: number;
+  card_kind: string;
+  /**
+   * The set and study screens send the card's detail layers.
+   */
+  detail_layers?: EducationCardDetailLayer[] | null;
+}
+
+/**
+ * How well the learner knows one card (only cards with review history are sent).
+ *  *
+ *  * Kind `education_card_mastery` (registry v1).
+ */
+export interface EducationCardMastery {
+  tier: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_card_mastery";
+  lapses: number;
+  card_id: string;
+  attempts: number;
+  recall_pct: number | null;
+}
+
+/**
+ * One citation behind the material on a summary or mind map screen.
+ *  *
+ *  * Kind `education_citation_summary` (registry v1).
+ */
+export interface EducationCitationSummary {
+  title: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_citation_summary";
+  excerpt: string | null;
+  sourceId: string;
+  sourceKind: string;
 }
 
 /**
@@ -67516,6 +67597,9 @@ export type GeneratedKindSlug =
   | "education.voice_tutor.offer"
   | "education_accuracy_trend"
   | "education_active_plan"
+  | "education_card"
+  | "education_card_mastery"
+  | "education_citation_summary"
   | "education_deck_choice"
   | "education_gain_pair"
   | "education_generation_request"
@@ -69235,6 +69319,9 @@ export interface KindPayloadBySlug {
   "education.voice_tutor.offer": EducationVoiceTutorOffer;
   "education_accuracy_trend": EducationAccuracyTrend;
   "education_active_plan": EducationActivePlan;
+  "education_card": EducationCard;
+  "education_card_mastery": EducationCardMastery;
+  "education_citation_summary": EducationCitationSummary;
   "education_deck_choice": EducationDeckChoice;
   "education_gain_pair": EducationGainPair;
   "education_generation_request": EducationGenerationRequest;
@@ -70958,6 +71045,9 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "education.voice_tutor.offer",
   "education_accuracy_trend",
   "education_active_plan",
+  "education_card",
+  "education_card_mastery",
+  "education_citation_summary",
   "education_deck_choice",
   "education_gain_pair",
   "education_generation_request",
