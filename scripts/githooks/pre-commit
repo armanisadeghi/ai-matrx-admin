@@ -20,6 +20,20 @@ if [ -x "$LOCAL_HOOK" ]; then
     "$LOCAL_HOOK" "$@" || exit $?
 fi
 
+# RELEASE PATH NEVER BLOCKED, AT WRITE TIME (adversarial review 2026-10-22): a staged git hook, ship.sh,
+# scripts/release.sh or scripts/sync-main.py is checked by the release-path guard's static part (~0.1 s,
+# read from the index; only the lines this commit adds are judged for a new non-zero exit). Commit time
+# only — never on the release path (the guard is a no-op under MATRX_RELEASE_PATH=1).
+RP_GUARD="$HOME/code/matrx-ship/scripts/test_release_path_never_blocked.py"
+rp_files=$(git diff --cached --name-only --diff-filter=AMR | grep -E '^(scripts/githooks/[^/]+|ship\.sh|scripts/release\.sh|scripts/sync-main\.py)$')
+if [ -n "$rp_files" ] && [ "${MATRX_RELEASE_PATH:-0}" != "1" ] && [ -f "$RP_GUARD" ] && command -v python3 >/dev/null 2>&1; then
+    # shellcheck disable=SC2086
+    python3 "$RP_GUARD" --static --staged --repo "$ROOT" $rp_files || {
+        echo "COMMIT REFUSED: this change can block the release path (above). Scream and go on, never stop a release." >&2
+        exit 1
+    }
+fi
+
 # SHARED-INDEX WARNING (lane GIT-OWN-COMMIT, 2026-09-23): a commit built from the shared index carries
 # every lane's staged paths; this prints them (a warning, not a refusal yet). The safe way is the helper.
 [ -x "$ROOT/scripts/git/commit-own-paths.sh" ] && command -v zsh >/dev/null 2>&1 && "$ROOT/scripts/git/commit-own-paths.sh" --warn-shared-index
