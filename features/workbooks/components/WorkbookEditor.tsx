@@ -1418,6 +1418,7 @@ export default function WorkbookEditor({
     // (useUniverDarkModeSync); we do NOT pin a colorScheme here — that fought
     // Univer's portals and broke dark mode.
     <EditorDocumentHeader
+      record={{ token: "workbook", id: workbookId }}
       embedded={embedded}
       backHref={chrome.backHref}
       backLabel="Back to workbooks"

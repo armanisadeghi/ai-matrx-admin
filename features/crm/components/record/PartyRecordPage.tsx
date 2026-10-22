@@ -13,7 +13,7 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { toast } from "@/lib/toast";
@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { contactPointBlockReason } from "../../reachability";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { EmbeddedRecordHeader } from "./EmbeddedRecordHeader";
+import { HostedRecordBar, type HostedRecordRef } from "@/features/shell/host-chrome/RecordHostChrome";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
 import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
@@ -396,7 +396,9 @@ export function PartyRecordPage({ partyId, initialHeading, embedded = false, onN
     },
   });
 
-  const PageHeader = embedded ? EmbeddedRecordHeader : RouteHeader;
+  // Not the page (a board tile): the record's row in the body — the host names it, so only the actions stay.
+  const PageHeader = embedded ? EmbeddedPartyHeader : RouteHeader;
+  const hostRecord = { token: "party", id: partyId };
 
   return (
     <SurfaceRuntimeProvider
@@ -551,6 +553,7 @@ export function PartyRecordPage({ partyId, initialHeading, embedded = false, onN
             </span>
           ) : undefined
         }
+        {...(embedded ? { record: hostRecord } : {})}
       />
 
       <div
@@ -817,3 +820,7 @@ export function PartyRecordPage({ partyId, initialHeading, embedded = false, onN
   );
 }
 
+/** The record's header row when the record is not the page: `RouteHeader`'s `left` (its name) and `right` (its actions) on the shared host bar. */
+function EmbeddedPartyHeader({ left, right, record }: { left?: ReactNode; right?: ReactNode; record?: HostedRecordRef }) {
+  return <HostedRecordBar record={record} name={left} actions={right} className="mb-2 px-1" />;
+}

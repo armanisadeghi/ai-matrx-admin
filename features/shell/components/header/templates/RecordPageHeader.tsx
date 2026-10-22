@@ -37,6 +37,9 @@ import {
 } from "@/features/shell/components/header/templates/EntityModeHeader";
 import type { Crumb, CrumbOption } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
+import { RouteModeNav } from "@/features/shell/components/header/RouteModeNav";
+import { DesktopAction } from "@/features/shell/components/header/templates/EntityModeHeader";
+import { HostedRecordBar, useHostChromeFor } from "@/features/shell/host-chrome/RecordHostChrome";
 
 export type { EntityHeaderAction as RecordPageAction } from "@/features/shell/components/header/templates/EntityModeHeader";
 export type { Crumb as RecordPageParent } from "@/features/shell/components/header/templates/CrumbTrailHeader";
@@ -120,7 +123,52 @@ function RecordActionsMenu({ label, items }: { label: string; items: RecordPageM
   );
 }
 
-export function RecordPageHeader({
+/**
+ * The record's header inside a HOST (a board tile, a window — `RecordHostChrome`): the host's bar names
+ * the record and offers Open, so this is ONE compact row of what only the record has — its status, its
+ * modes, its actions and its Actions menu. No back, no crumbs, nothing in the shell header (the record
+ * is not the page).
+ */
+function HostedRecordPageHeader({
+  record,
+  status,
+  modes,
+  activeModeHref,
+  onModeSelect,
+  actions,
+  menu,
+}: RecordPageHeaderProps) {
+  const menuItems = menu?.items ?? [];
+  const visible = (actions ?? []).filter((a) => !a.phoneOnly);
+  return (
+    <HostedRecordBar
+      record={record.token && record.id ? { token: record.token, id: record.id } : null}
+      name={record.name ? <span className="truncate text-sm font-medium text-foreground">{record.name}</span> : undefined}
+      actions={
+        visible.length || menuItems.length ? (
+          <>
+            {visible.map((a) => (
+              <DesktopAction key={a.label} action={a} />
+            ))}
+            {menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} items={menuItems} /> : null}
+          </>
+        ) : undefined
+      }
+    >
+      {status ? <Badge tone={status.tone ?? "neutral"}>{status.label}</Badge> : null}
+      {modes?.length ? <RouteModeNav items={modes} activeHref={activeModeHref} onNavigate={onModeSelect} maxVariant="menu" /> : null}
+    </HostedRecordBar>
+  );
+}
+
+export function RecordPageHeader(props: RecordPageHeaderProps) {
+  // In a host (board tile, window) the record is not the page: one compact in-body row instead.
+  const ref = props.record.token && props.record.id ? { token: props.record.token, id: props.record.id } : null;
+  const host = useHostChromeFor(ref);
+  return host ? <HostedRecordPageHeader {...props} /> : <PageRecordHeader {...props} />;
+}
+
+function PageRecordHeader({
   backHref,
   parents,
   record,

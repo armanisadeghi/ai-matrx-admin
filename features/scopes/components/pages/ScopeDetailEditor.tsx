@@ -1,5 +1,6 @@
 "use client";
 
+import { useHostNamesRecord } from "@/features/shell/host-chrome/RecordHostChrome";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
@@ -59,13 +60,6 @@ interface ScopeDetailEditorProps {
   scopeParam: string;
   /** Owner/admin: may add type-level fields and delete this scope. */
   canManage: boolean;
-  /**
-   * How much page chrome the host already provides. `page` (default) is the full scope page:
-   * the h1 hero, "Open full page". `tile` is a compact host (a Board tile) whose own header names
-   * the scope and offers Open: the h1 and the context-items "Open full page" link are dropped
-   * and rename stays one quiet button on the type/count line. Driven by the host.
-   */
-  density?: "page" | "tile";
 }
 
 export function ScopeDetailEditor({
@@ -74,9 +68,11 @@ export function ScopeDetailEditor({
   typeParam,
   scopeParam,
   canManage,
-  density = "page",
 }: ScopeDetailEditorProps) {
-  const inTile = density === "tile";
+  // THE HOST CHROME: a host that names this scope and offers Open (a Board tile) — the h1 hero and the
+  // context-items "Open full page" link drop out, and rename stays one quiet button on the type/count line.
+  // A Board tile holds the scope by id (`scopeParam` is its uuid there).
+  const inTile = useHostNamesRecord({ token: "scope", id: scopeParam });
   const dispatch = useAppDispatch();
   // Both route segments resolve by UUID or kebab slug.
   const scopeType = useAppSelector((s) =>

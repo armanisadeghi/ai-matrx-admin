@@ -1329,6 +1329,7 @@ function BoardItemTile({
         sleeps={type?.sleeps ?? false}
         opensOnClick={type?.opensOnClick?.(source) ?? false}
         titleSlot={type?.TitleField ? <type.TitleField tileId={id} source={source} title={title} /> : undefined}
+        hostRecord={type?.comments?.(source) ?? null}
         actions={
           <>
             {type?.HeaderAction && <type.HeaderAction tileId={id} source={source} width={tile.rect.w} onSource={onSource} />}
