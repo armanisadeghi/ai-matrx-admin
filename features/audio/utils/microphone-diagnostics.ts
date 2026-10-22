@@ -8,6 +8,7 @@ import {
   acquireMicStream,
   isAudioSessionCaptureRefusal,
   releaseMicStream,
+  listMediaDevices,
 } from '@ai-matrx/browser-audio/core';
 
 export interface DiagnosticResult {
@@ -109,8 +110,8 @@ export async function runMicrophoneDiagnostics(): Promise<DiagnosticResult> {
 
   // Enumerate devices
   try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    result.availableDevices = devices.filter(device => device.kind === 'audioinput');
+    const list = await listMediaDevices();
+    result.availableDevices = list.audioInputs as MediaDeviceInfo[];
     
     if (result.availableDevices.length === 0) {
       result.issues.push({
