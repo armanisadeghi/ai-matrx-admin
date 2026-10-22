@@ -44,31 +44,34 @@ export function LatestAiModels() {
             <AnimatePresence>
                 {active && typeof active === "object" ? (
                     <div className="fixed inset-0  grid place-items-center z-[100]">
-                        <motion.button
-                            key={`button-${active.title}-${id}`}
-                            layout
-                            initial={{
-                                opacity: 0,
-                            }}
-                            animate={{
-                                opacity: 1,
-                            }}
-                            exit={{
-                                opacity: 0,
-                                transition: {
-                                    duration: 0.05,
-                                },
-                            }}
-                            className="flex absolute top-2 right-2 lg:hidden items-center justify-center bg-white rounded-full h-6 w-6"
-                            onClick={() => setActive(null)}
-                        >
-                            <CloseIcon />
-                        </motion.button>
                         <motion.div
                             layoutId={`card-${active.title}-${id}`}
                             ref={ref}
                             className="w-full max-w-[500px]  h-full md:h-fit md:max-h-[90%]  flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden"
                         >
+                        <div className="flex shrink-0 justify-end p-2 lg:hidden">
+                            <motion.button
+                                key={`button-${active.title}-${id}`}
+                                layout
+                                initial={{
+                                    opacity: 0,
+                                }}
+                                animate={{
+                                    opacity: 1,
+                                }}
+                                exit={{
+                                    opacity: 0,
+                                    transition: {
+                                        duration: 0.05,
+                                    },
+                                }}
+                                className="flex items-center justify-center bg-white rounded-full h-6 w-6"
+                                aria-label="Close"
+                                onClick={() => setActive(null)}
+                            >
+                                <CloseIcon />
+                            </motion.button>
+                        </div>
                             <motion.div layoutId={`image-${active.title}-${id}`}>
                                 <img
                                     width={200}
