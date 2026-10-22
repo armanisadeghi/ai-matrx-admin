@@ -311,6 +311,12 @@ export interface MentionCandidate {
   avatarUrl: string | null;
 }
 
+/** One row per person: the door can list a person once per way they reach the record (owner and a share). */
+export function onePerPerson(rows: MentionCandidate[]): MentionCandidate[] {
+  const seen = new Set<string>();
+  return rows.filter((r) => (seen.has(r.userId) ? false : (seen.add(r.userId), true)));
+}
+
 export async function mentionCandidates(
   source: AnnotationSource,
   search: string,
@@ -321,10 +327,10 @@ export async function mentionCandidates(
     "finding people to mention",
   );
   if (!Array.isArray(data)) return [];
-  return data
+  return onePerPerson(data
     .filter((r): r is { user_id: string; display_name: string | null; email: string | null; avatar_url: string | null } =>
       !!r && typeof r === "object" && typeof (r as { user_id?: unknown }).user_id === "string")
-    .map((r) => ({ userId: r.user_id, name: r.display_name || r.email || "Someone", email: r.email, avatarUrl: r.avatar_url }));
+    .map((r) => ({ userId: r.user_id, name: r.display_name || r.email || "Someone", email: r.email, avatarUrl: r.avatar_url })));
 }
 
 export interface MentionNoticeResult {

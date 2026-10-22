@@ -68,7 +68,7 @@ describe("a Sheets seat without edit access", () => {
 
 it("Sheets uses the same words as Docs and locks every seat without edit access", () => {
   const hook = readFileSync(join(__dirname, "../components/useSheetSeatLock.ts"), "utf8");
-  expect(hook).toContain("seatRefusal(mayComment)");
+  expect(hook).toContain('seatRefusal(mayComment, "spreadsheet")');
   expect(hook).toContain("if (!univer || !ready || editable)");
   const editor = readFileSync(join(__dirname, "../components/WorkbookEditor.tsx"), "utf8");
   expect(editor).toContain("useSheetSeatLock({ univer: univerInstance");

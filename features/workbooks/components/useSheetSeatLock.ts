@@ -20,7 +20,7 @@ export function useSheetSeatLock({ univer, workbookId, ready, editable }: { univ
     const injector = (univer as unknown as { __getInjector?: () => { get<T>(t: unknown): T } }).__getInjector?.();
     const unitId = injector?.get<{ getCurrentUnitForType(t: unknown): { getUnitId(): string } | null }>(IUniverInstanceService).getCurrentUnitForType(UniverInstanceType.UNIVER_SHEET)?.getUnitId();
     if (!injector || !unitId) return undefined;
-    const refusal = seatRefusal(mayComment);
+    const refusal = seatRefusal(mayComment, "spreadsheet");
     return lockWorkbookSeat(injector, unitId, () => toast.info(refusal, { id: "sheet-seat-locked" }));
   }, [univer, ready, editable, mayComment]);
 }
