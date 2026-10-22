@@ -32,6 +32,11 @@ export interface DataHomeCorpus {
     names: Map<string, string>;
     refusals: Array<{ listing: string; message: string }>;
     capped: boolean;
+    /**
+     * The first read answered the newest tables only and the whole home is still being read
+     * (`progressive`); null once the rest has landed. The page says so — never a silent partial list.
+     */
+    partial: { shown: number; total: number } | null;
     /** The server search's own refusal, in the store's words (the instant hits still answer). */
     searchTrouble: string | null;
   };
@@ -54,6 +59,14 @@ export function createDataHomeCorpus(
   deps: {
     dataHome?: typeof doors.dataHome;
     dataHomeSearch?: typeof doors.dataHomeSearch;
+    /**
+     * THE BOUNDED FIRST READ (defect 84): with `progressive`, `load` resolves on the newest tables
+     * (`custom.data_home_first`, ~0.8 s and under 5% of the bytes) and reads the whole home after, swapping the
+     * rows in and telling `onAnswer` listeners. Only the data home's own list turns it on; every other
+     * caller reads the whole home before it answers, as always.
+     */
+    progressive?: boolean;
+    dataHomeFirst?: typeof doors.dataHomeFirst;
     dataHomeCustomFields?: typeof doors.dataHomeCustomFields;
     debounceMs?: number;
     /**
@@ -66,6 +79,7 @@ export function createDataHomeCorpus(
 ): DataHomeCorpus {
   const dataHome = deps.dataHome ?? doors.dataHome;
   const dataHomeSearch = deps.dataHomeSearch ?? doors.dataHomeSearch;
+  const dataHomeFirst = deps.dataHomeFirst ?? doors.dataHomeFirst;
   const dataHomeCustomFields = deps.dataHomeCustomFields ?? doors.dataHomeCustomFields;
   const debounceMs = deps.debounceMs ?? SERVER_SEARCH_DEBOUNCE_MS;
   const meta: DataHomeCorpus["meta"] = {
@@ -74,17 +88,15 @@ export function createDataHomeCorpus(
     names: new Map(),
     refusals: [],
     capped: false,
+    partial: null,
     searchTrouble: null,
   };
   let held: Promise<DataHomeRow[]> | null = null;
   let inHand: DataHomeRow[] | undefined;
 
-  const read = async (): Promise<DataHomeRow[]> => {
-    const answered = await dataHome(dataSource, null, { includePlatformTables: deps.includePlatformTables === true });
-    if (!answered.ok) {
-      throw new Error(`Could not read tables. ${doors.doorFailureLine(answered.error)}`, { cause: answered.error });
-    }
-    const built = await buildDataHomeRows({ client, dataSource, answer: answered.data }, HUB_CAPABILITIES, readOrgPublicUrls);
+  /** Rows of one answer of the door, built, kept or left out by the one rule, and bounded. */
+  const assemble = async (answer: doors.DataHomeAnswer, withCustomFields: boolean): Promise<DataHomeRow[]> => {
+    const built = await buildDataHomeRows({ client, dataSource, answer }, HUB_CAPABILITIES, readOrgPublicUrls);
     meta.refusals = built.refusals.map((r) => ({ listing: r.listing, message: doors.doorFailureLine(r.error) }));
     // THE ONE RULE (`isKeptTable`, folded onto each row as `platformOwned`): the door answers a
     // choice column's Lists whether or not platform tables were asked for, so the home leaves them out here.
@@ -94,9 +106,11 @@ export function createDataHomeCorpus(
     let rows = built.rows.filter((row) => kindIsListed(row.kind, showPlatform) && (showPlatform || !row.platformOwned));
     // CUSTOM FIELDS ON STANDARD TABLES are rows too (one door, every organization). A refusal is
     // named in the notice, never an empty stand-in.
-    const customFields = await dataHomeCustomFields(dataSource, null);
-    if (customFields.ok) rows = [...rows, ...customFields.data.map(customFieldsRow)];
-    else meta.refusals.push({ listing: "Custom fields", message: doors.doorFailureLine(customFields.error) });
+    if (withCustomFields) {
+      const customFields = await dataHomeCustomFields(dataSource, null);
+      if (customFields.ok) rows = [...rows, ...customFields.data.map(customFieldsRow)];
+      else meta.refusals.push({ listing: "Custom fields", message: doors.doorFailureLine(customFields.error) });
+    }
     // THE STATED BOUND: past it the newest rows are kept and the page says so.
     meta.capped = rows.length > DATA_HOME_ROW_CAP;
     if (meta.capped) {
@@ -111,8 +125,40 @@ export function createDataHomeCorpus(
     return rows;
   };
 
-  const answers = new Map<string, ServerMatches>();
+  const readWhole = async (): Promise<DataHomeRow[]> => {
+    const answered = await dataHome(dataSource, null, { includePlatformTables: deps.includePlatformTables === true });
+    if (!answered.ok) {
+      throw new Error(`Could not read tables. ${doors.doorFailureLine(answered.error)}`, { cause: answered.error });
+    }
+    return assemble(answered.data, true);
+  };
+
   const listeners = new Set<() => void>();
+
+  const read = async (): Promise<DataHomeRow[]> => {
+    if (!deps.progressive) return readWhole();
+    const first = await dataHomeFirst(dataSource, null, { includePlatformTables: deps.includePlatformTables === true });
+    // The first read is an optimisation: when it does not answer, the whole read below is the answer (or the failure).
+    // (An empty first answer has nothing to draw early either: the whole read is the answer.)
+    if (!first.ok || first.data.tables.length === 0) return readWhole();
+    const rows = await assemble({ tables: first.data.tables, items: [], changed_by: first.data.changed_by }, false);
+    meta.partial = { shown: rows.length, total: first.data.total };
+    // THE REST, after first paint. A failure is named in the notice (the newest rows stay); success swaps the rows in.
+    void readWhole().then(
+      () => {
+        meta.partial = null;
+        listeners.forEach((l) => l());
+      },
+      (error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        meta.refusals = [...meta.refusals, { listing: "The rest of the home", message }];
+        listeners.forEach((l) => l());
+      },
+    );
+    return rows;
+  };
+
+  const answers = new Map<string, ServerMatches>();
   let latest: string | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
   const inFlight = new Set<string>();
