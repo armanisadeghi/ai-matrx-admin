@@ -357,9 +357,13 @@ export function EntityModeHeader({
     else router.push(a.href);
   };
   const frameTakesMenu = inFrame && isPhone && hasSheet;
-  const frameMenu: FrameAction[] | null = frameTakesMenu
+  // "…" HOLDS EVERY ACTION OF ITS LEVEL (Arman, 2026-10-22): in the frame the page's ONE action list
+  // (`actions`) is also the frame's "…" items — on desktop beside the buttons it draws, on a phone
+  // with the other modes, where this header draws no "…" of its own. One list, two renderings.
+  const frameMenu: FrameAction[] | null =
+    inFrame && (actions?.length || frameTakesMenu)
     ? [
-        ...(modes ?? [])
+        ...(frameTakesMenu ? (modes ?? []) : [])
           .filter((m) => m.href !== activeMode?.href)
           .map((m) => ({
             id: `mode:${m.href}`,
@@ -368,7 +372,6 @@ export function EntityModeHeader({
             onSelect: () => (onModeSelect ? onModeSelect(m.href) : router.push(m.href)),
           })),
         ...(actions ?? [])
-          .filter((a) => !a.pinnedOnPhone)
           .map((a) => ({
             id: `action:${a.label}`,
             label: a.label,

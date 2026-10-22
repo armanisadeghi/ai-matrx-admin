@@ -214,12 +214,16 @@ describe("pages add their own \"…\" items in the frame (adversarial review, 20
 
   it("desktop: the record's Actions menu becomes the frame's \"…\" items; no second menu on the line", () => {
     mount(<ActionsHarness><WithMenu /></ActionsHarness>);
-    expect(menuLabels()).toEqual(["Archive", "Delete"]);
+    // "…" HOLDS EVERY ACTION OF ITS LEVEL (2026-10-22): the line's button (Rename) is in "…" too —
+    // ONE action list, two renderings. Before: ["Archive", "Delete"] (Rename only on the line).
+    expect([...menuLabels()].sort()).toEqual(["Archive", "Delete", "Rename"]);
+    expect(el.querySelector('[data-testid="page-header"]')?.textContent ?? "").not.toContain("Actions");
     expect(el.querySelector('[data-testid="frame-menu"] [data-destructive]')?.textContent).toBe("Delete");
     const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
     expect(slot.textContent).not.toContain("Actions");
     // A press runs the page's own handler.
-    act(() => (el.querySelector('[data-testid="frame-menu"] button') as HTMLButtonElement).click());
+    const archiveButton = [...el.querySelectorAll<HTMLButtonElement>('[data-testid="frame-menu"] button')].find((b) => b.textContent === "Archive")!;
+    act(() => archiveButton.click());
     expect(archive).toHaveBeenCalledTimes(1);
   });
 
