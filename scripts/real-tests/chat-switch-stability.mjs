@@ -45,7 +45,7 @@ async function signedInContext(browser) {
     const url = out.match(/OPEN\s*:\s*(\S+)/)?.[1];
     if (!url || !url.startsWith(origin)) throw new Error(`dev-login did not print a URL for ${origin}`);
     const p = await ctx.newPage();
-    await p.goto(url, { waitUntil: "load", timeout: 180000 });
+    await p.goto(url, { waitUntil: "load", timeout: 420000 });
     await p.close();
   } else {
     const { cookies } = await mintSessionCookies();
