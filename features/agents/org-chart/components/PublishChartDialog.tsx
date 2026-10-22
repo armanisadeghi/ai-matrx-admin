@@ -24,7 +24,10 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserFullName, selectUserName } from "@/lib/redux/selectors/userSelectors";
+import { selectOrganizationName } from "@/lib/redux/slices/appContextSlice";
 import { toast } from "@/lib/toast";
+import { openFromNotice } from "@/lib/notice-open/openFromNotice";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 import type { AgentOrgNodeData } from "../buildAgentOrgForest";
 import type { OrgPosition } from "../positionsService";
@@ -71,6 +74,8 @@ export function PublishChartDialog({
   const agents = useAgentsById();
   const fullName = useAppSelector(selectUserFullName);
   const shortName = useAppSelector(selectUserName);
+  // A publication is filed in the active organization (publishService), so its name is the one the blurb may use.
+  const organizationName = useAppSelector(selectOrganizationName);
   const blurbJob = useHeadlessAgentJson();
   useDeclaredSurfaceMandates(BLURB_DISCLOSURE);
   const { copyText } = useClipboard({ notify: copyNotify });
@@ -145,6 +150,7 @@ export function PublishChartDialog({
         variables: {
           chart_outline: snapshotOutline(snapshot),
           ...(title.trim() ? { chart_title: title.trim() } : {}),
+          ...(organizationName?.trim() ? { organization_name: organizationName.trim() } : {}),
         },
       });
       if (s.title && (!title.trim() || title === defaultTitle)) {
@@ -172,7 +178,8 @@ export function PublishChartDialog({
       setExisting(saved);
       setSlug(saved.slug);
       toast.success(existing ? "Page updated" : "Published", {
-        action: { label: "Open", onClick: () => window.open(publicationPath(saved.slug), "_blank", "noopener") },
+        // A notice never moves the page: the published page opens in a new tab through the one door.
+        action: { label: "Open", onClick: () => openFromNotice(publicationPath(saved.slug)) },
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not publish.");
@@ -288,9 +295,13 @@ export function PublishChartDialog({
                   title="Copy link"
                   onClick={() => void copyText(address, "Link copied.", "Couldn't copy — your browser blocked the clipboard.")}
                 />
-                <Button variant="quiet" icon={<ExternalLink />} aria-label="Open the page" title="Open the page" asChild>
-                  <a href={publicationPath(existing.slug)} target="_blank" rel="noopener noreferrer" />
-                </Button>
+                <Button
+                  variant="quiet"
+                  icon={<ExternalLink />}
+                  aria-label="Open the page"
+                  title="Open the page"
+                  onClick={() => openOutbound(publicationPath(existing.slug), "_blank")}
+                />
               </>
             ) : (
               <span className="type-secondary text-muted-foreground">{existing ? "Not on the web right now" : "Not published yet"}</span>

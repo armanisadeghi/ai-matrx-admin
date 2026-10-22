@@ -99,7 +99,7 @@ describe("buildPublishSnapshot", () => {
 
   it("writes the outline the blurb job reads", () => {
     expect(snapshotOutline(snap)).toBe(
-      ["Team member — person — Northwind Clinic", "  Booking Assistant — agent — Scheduler", "  Patient Intake — position"].join("\n"),
+      ["(unnamed person) — person — Northwind Clinic", "  Booking Assistant — agent — Scheduler", "  Patient Intake — position"].join("\n"),
     );
   });
 });

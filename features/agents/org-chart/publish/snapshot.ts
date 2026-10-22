@@ -124,7 +124,10 @@ export function countBoxes(snapshot: OrgChartSnapshot): number {
 export function snapshotOutline(snapshot: OrgChartSnapshot): string {
   const lines: string[] = [];
   const walk = (b: PublicOrgBox, depth: number) => {
-    const parts = [b.label, b.box_type, b.sublabel].filter(Boolean);
+    // A box with no name of its own carries a stand-in label on the page; the writer is told it
+    // is unnamed, so it never treats "Team member" as somebody's name.
+    const name = b.label === FALLBACK_LABEL[b.box_type] ? `(unnamed ${b.box_type})` : b.label;
+    const parts = [name, b.box_type, b.sublabel].filter(Boolean);
     lines.push(`${"  ".repeat(depth)}${parts.join(" — ")}`);
     b.children.forEach((c) => walk(c, depth + 1));
   };
