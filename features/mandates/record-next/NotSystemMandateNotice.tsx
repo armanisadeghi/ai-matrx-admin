@@ -6,7 +6,7 @@
  * the primary action and the way back to the system list beside it.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";

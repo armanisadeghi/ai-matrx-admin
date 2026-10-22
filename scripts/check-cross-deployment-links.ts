@@ -264,9 +264,15 @@ export function scanSource(
     });
   }
 
+  // A local name bound to the door (`import Link from ".../AppLink"`) is the door.
+  const doorAliases = new Set(
+    [...source.matchAll(/^import\s+([A-Za-z_]\w*)\s+from\s+["']@\/components\/navigation\/(?:AppLink|NavLink)["']/gm)].map(
+      (m) => m[1],
+    ),
+  );
   for (const tag of source.matchAll(LINK_TAG)) {
     const element = tag[1];
-    if (DOOR_ELEMENTS.has(element)) continue;
+    if (DOOR_ELEMENTS.has(element) || doorAliases.has(element)) continue;
     const href =
       SPLIT_HREF.exec(tag[2]) ?? (constantHref ? constantHref.exec(tag[2]) : null);
     if (!href) continue;

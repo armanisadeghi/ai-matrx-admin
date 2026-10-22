@@ -39,7 +39,7 @@ import {
   tierFor,
   type SurfaceWithStats,
 } from "@ai-matrx/chat/surfaces/services/surfaces.service";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { surfaceAdminHref } from "@ai-matrx/chat/surfaces/utils/surface-hierarchy";
 import type { SurfaceFleetMetric } from "@/features/surfaces/services/surface-fleet-metric";
 import {

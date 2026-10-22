@@ -6,7 +6,7 @@
  * decisions a human can make: Apply (or Accept) and Reject.
  */
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useMutation } from "@tanstack/react-query";
 import {
   AppWindow,
