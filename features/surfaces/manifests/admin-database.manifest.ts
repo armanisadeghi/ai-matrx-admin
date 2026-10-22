@@ -393,6 +393,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminDatabaseManifest: SurfaceManifest = {
+  situation:
+    "They are in the Database admin, on its {console_section} view (the tool hub or the SQL workbench). The SQL in the editor and the last run's results or error are in your context; last run: {query_row_count|no} rows in {query_execution_ms|an unknown number of} ms. You can put SQL in the editor; only they run it.",
   surfaceName: ADMIN_DATABASE_SURFACE_NAME,
   inheritsFrom: "matrx-default/architecture",
   client: "matrx-admin",

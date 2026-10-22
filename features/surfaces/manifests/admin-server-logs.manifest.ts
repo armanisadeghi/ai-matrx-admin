@@ -330,6 +330,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminServerLogsManifest: SurfaceManifest = {
+  situation:
+    "They are in the Server Logs viewer for {selected_app} ({selected_app_environment}), showing {visible_log_line_count} of {fetched_log_line_count} fetched lines after filters, last fetched {logs_fetched_at|not yet}. The visible lines are in your context. They can change the app, line count, refresh rate, filters and layout.",
   surfaceName: ADMIN_SERVER_LOGS_SURFACE_NAME,
   inheritsFrom: "matrx-default/architecture",
   client: "matrx-admin",

@@ -249,6 +249,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminSandboxManifest: SurfaceManifest = {
+  situation:
+    "They are on the Accessible Sandboxes admin page, listing code sandboxes platform-wide: {accessible_sandbox_active_count} active, {accessible_sandbox_failed_count} failed, {accessible_sandbox_total_count} in all, from {accessible_sandbox_unique_user_count} people; status filter {accessible_sandbox_status_filter}. They can expand a row, and stop or delete a sandbox.",
   surfaceName: ADMIN_SANDBOX_SURFACE_NAME,
   inheritsFrom: "matrx-default/architecture",
   client: "matrx-admin",

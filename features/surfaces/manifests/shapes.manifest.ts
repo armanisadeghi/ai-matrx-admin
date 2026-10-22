@@ -739,6 +739,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const shapesManifest: SurfaceManifest = {
+  situation:
+    "They are in Shape Studio, on its {studio_tab|list} view. Shape open: \"{kind_label|none}\" (version {kind_version|unknown}), with {kind_example_count|no} samples and {kind_instance_count|no} saved items of their own. You can fill in a new shape's description and sample, and on a shape they own, stage its name, title field, loading look and test data.",
   surfaceName: "matrx-user/shapes",
   inheritsFrom: "matrx-default/architecture",
   client: "matrx-user",

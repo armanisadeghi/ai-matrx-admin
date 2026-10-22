@@ -406,6 +406,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminKindRegistryManifest: SurfaceManifest = {
+  situation:
+    "They are in the Kind Registry admin, the platform-wide catalog of content shapes, on its {kind_registry_section} view. Shape open: {current_kind|none} (tab: {kind_detail_tab|none}); its schema, components, examples and warnings are in your context. On the build view they paste a data structure and notes, then start the builder agent.",
   surfaceName: ADMIN_KIND_REGISTRY_SURFACE_NAME,
   inheritsFrom: "matrx-default/architecture",
   client: "matrx-admin",

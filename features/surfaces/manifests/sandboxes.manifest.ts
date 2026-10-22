@@ -486,6 +486,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const sandboxesManifest: SurfaceManifest = {
+  situation:
+    "They are on their code sandboxes page: {active_sandbox_count|an unknown number of} active of {total_sandbox_count|an unknown number of} in all. Open sandbox: {sandbox_id|none} ({sandbox_status|no status}, time left {sandbox_time_remaining|not shown}), terminal in {current_working_directory|the home folder}. You can type a command or change folder for them; only they run it.",
   surfaceName: "matrx-user/sandboxes",
   inheritsFrom: "matrx-default/architecture",
   client: "matrx-user",
