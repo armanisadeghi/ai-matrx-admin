@@ -236,7 +236,12 @@ surface). Say which parts you judged as authored content.
   `collectionWriteHandlers`), plus `<record>_draft` when the page has a
   "New ___" dialog, and `draft` targets for authored fields on editors. All
   `ask`. Handlers save through the page's own save function, validate the whole
-  value before the approval card, and return what landed with ids. Never
+  value before the approval card (every problem at once; unknown keys refused, never
+  ignored), and return what landed with ids. A target that names records by id
+  ALWAYS checks they belong to this page's record — when membership cannot be
+  checked (still loading, read failed, ids not passed) it refuses, never skips
+  the check (2026-10-22: a window that passed no ids could archive any store
+  record). Never
   targets for ids/ownership, credentials, billing, permissions, or derived
   numbers (scores, counts).
 - **Told how:** the intro names which target does which job; a page with more
