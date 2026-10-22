@@ -39,7 +39,7 @@ export interface SurfaceBoundAgentsListProps {
    * Called when the user hits Play. Surfaces build their own
    * `applicationScope` + launch options here.
    */
-  onRunAgent: (agentId: string) => void | Promise<void>;
+  onRunAgent: (agentId: string, bindingId?: string) => void | Promise<void>;
   /** Disable Run buttons (e.g. no document content yet). */
   runDisabled?: boolean;
   /** Hide the whole block when empty and not loading. Default false. */
@@ -89,10 +89,11 @@ export function SurfaceBoundAgentsList({
   // (~3 s on a phone, PB-08 2026-10-01) — the pressed row spins meanwhile and
   // a second press is ignored instead of the tap looking dead.
   const [startingId, setStartingId] = useState<string | null>(null);
-  const run = (agentId: string) => {
+  // A bound row passes its binding id, so the run carries client.binding_id; a role row has none.
+  const run = (agentId: string, bindingId?: string) => {
     if (runDisabled || startingId) return;
     setStartingId(agentId);
-    void Promise.resolve(onRunAgent(agentId)).finally(() => setStartingId(null));
+    void Promise.resolve(onRunAgent(agentId, bindingId)).finally(() => setStartingId(null));
   };
   const { sections, loading, settled, error, hasAgents, refresh } = useSurfaceBoundAgents(
     surfaceName,
@@ -282,7 +283,7 @@ export function SurfaceBoundAgentsList({
               <div
                 key={`${section.key}:${a.agentId}`}
                 onClick={() => {
-                  run(a.agentId);
+                  run(a.agentId, a.bindingId);
                 }}
                 className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-card px-1.5"
               >
@@ -293,7 +294,7 @@ export function SurfaceBoundAgentsList({
                   disabled={runDisabled}
                   onClick={(event) => {
                     event.stopPropagation();
-                    run(a.agentId);
+                    run(a.agentId, a.bindingId);
                   }}
                   aria-busy={startingId === a.agentId}
                   className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-primary hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-40 disabled:pointer-events-none"
@@ -312,7 +313,7 @@ export function SurfaceBoundAgentsList({
                   fill
                   disablePeek
                   onOpen={() => {
-                    run(a.agentId);
+                    run(a.agentId, a.bindingId);
                   }}
                   className="min-w-0 flex-1 text-xs font-medium leading-none"
                 />
