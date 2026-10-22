@@ -7,7 +7,7 @@
  *   Tinder / Hinge  — one card, the deck faintly behind it; an answer throws the card (Yes right, No left,
  *                     Later down) on a quick spring and the next one rises into place.
  *   Apple Photos    — "Is this you?": the subject is huge (the real avatar, logo or value), one question,
- *                     big answers; a set of values is reviewed at once, each one switchable.
+ *                     big answers; one card is one thing — never a batch of logos or values answered at once.
  *   Superhuman      — every answer has one key (Y N O L I E U, Cmd+Z), shown on the control; zero chrome.
  *   Linear triage   — the Answered tray: every answer stays one press from Undo.
  *   Duolingo        — momentum: a springy progress line, "12 left", and a finish that says what happens next.
@@ -35,9 +35,8 @@ import { personNameOnPage } from "../personParty";
 import { outboundHref } from "../SmartAddExtras";
 import { compareRelationKinds, relationGroupKey, relationGroupLabel } from "../webKinds";
 import { WeThinkHint } from "../WeThinkHint";
-import { useLogoGroups } from "../logoGroups";
 import { ANSWER_LABEL, isGapKey, optionsFor, type Answer, type FocusItem } from "./queue";
-import { SECTION_LABEL, sectionOf } from "./fold";
+import { logoImageOf, SECTION_LABEL, sectionOf } from "./fold";
 import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 export interface AnsweredEntry {
@@ -54,8 +53,6 @@ export interface AnsweredEntry {
 export interface AnswerOptions {
   relationKey?: string | null;
   value?: string;
-  /** A set card: the member keys switched off (they are saved as Wrong). */
-  off?: string[];
 }
 
 /** "instant": answered right after the last answer: the card is gone at once, never a pile of leaving cards. */
@@ -218,25 +215,18 @@ function yesNo(item: FocusItem): { yes: Answer; no: Answer } {
   return { yes: "ours", no: "not_us" };
 }
 
-const NOTHING_SEPARATED: ReadonlySet<string> = new Set();
-
-/** Logos: one tile per picture (the same image found on five platforms is one tile), raw, never boxed. */
+/** Logos: the ONE picture this card asks about, raw, never boxed; the badge counts the places it was found. */
 function LogoHero({ item }: { item: FocusItem }) {
-  const sources = [item, ...(item.folded ?? [])].map((i) => i.evidence).filter((e): e is NonNullable<typeof e> => Boolean(e));
-  const groups = useLogoGroups(sources, NOTHING_SEPARATED);
+  const found = 1 + (item.folded?.length ?? 0);
   return (
-    <ul className="flex flex-wrap items-center gap-5" data-testid="validate-logos">
-      {groups.slice(0, 8).map((g) => (
-        <li key={g.id} className="relative">
-          <img src={g.lead.image_url ?? g.lead.value} alt="" className="h-20 max-w-[10rem] object-contain" />
-          {g.members.length > 1 ? (
-            <span className="absolute -top-2 -right-2">
-              <Badge>{g.members.length}</Badge>
-            </span>
-          ) : null}
-        </li>
-      ))}
-    </ul>
+    <div className="relative self-start" data-testid="validate-logo">
+      <img src={logoImageOf(item) ?? item.value} alt="" className="h-28 max-w-[14rem] object-contain" />
+      {found > 1 ? (
+        <span className="absolute -top-2 -right-2">
+          <Badge>{found}</Badge>
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -248,8 +238,6 @@ function Hero({
   setDraft,
   onSubmitEdit,
   onCancelEdit,
-  off,
-  toggleOff,
   ask,
 }: {
   item: FocusItem;
@@ -260,35 +248,7 @@ function Hero({
   setDraft: (v: string) => void;
   onSubmitEdit: () => void;
   onCancelEdit: () => void;
-  off: ReadonlySet<string>;
-  toggleOff: (key: string) => void;
 }) {
-  if (item.members?.length) {
-    return (
-      <ul className="-m-1 flex max-h-56 flex-wrap gap-2 overflow-y-auto p-1" data-testid="validate-set">
-        {item.members.map((m) => {
-          const isOff = off.has(m.key);
-          return (
-            <li key={m.key}>
-              <button
-                type="button"
-                aria-pressed={!isOff}
-                onClick={() => toggleOff(m.key)}
-                className={`flex min-h-10 items-center gap-2 rounded-full border px-4 text-base transition-colors ${
-                  isOff ? "border-border text-muted-foreground line-through" : "border-primary bg-primary/10 text-foreground"
-                }`}
-                data-testid="validate-set-value"
-              >
-                {isOff ? <X className="size-3.5 shrink-0" aria-hidden /> : <Check className="size-3.5 shrink-0 text-primary" aria-hidden />}
-                {/* Pixel cap, not ch: px-4 + icon + gap + this stays under the 320px pill budget at any font (MKT-129); the full value is the tooltip. */}
-                <span className="max-w-56 truncate" title={m.value}>{m.value}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    );
-  }
   if (item.kind === "logo") return <LogoHero item={item} />;
   if (editing) {
     return (
@@ -354,8 +314,6 @@ function FocusCard({
   onAnswer,
   editing,
   setEditing,
-  off,
-  toggleOff,
 }: {
   item: FocusItem;
   brandName: string;
@@ -363,23 +321,20 @@ function FocusCard({
   onAnswer: (answer: Answer, opts?: AnswerOptions) => void;
   editing: boolean;
   setEditing: (v: boolean) => void;
-  off: ReadonlySet<string>;
-  toggleOff: (key: string) => void;
 }) {
   const [draft, setDraft] = useState(item.value);
   // Founder / Key person on a page asks for the person's name before anything is saved (MKT-043).
   const [personFor, setPersonFor] = useState<BrandRelationKind | null>(null);
-  const set = Boolean(item.members?.length);
-  const options = set ? (["correct", "wrong", "later", "ignore"] as Answer[]) : optionsFor(item.kind);
-  const { yes, no } = set ? { yes: "correct" as Answer, no: "wrong" as Answer } : yesNo(item);
+  const options = optionsFor(item.kind);
+  const { yes, no } = yesNo(item);
   const glowOther = ["related", "alias", "later", "ignore"].includes(item.suggestion?.choice ?? "");
   const glow = (a: Answer) => item.suggestion?.choice === a;
   const suggestedRelation =
     item.suggestion?.choice === "related" && item.suggestion.relation_key ? kinds.find((k) => k.key === item.suggestion?.relation_key) : undefined;
   const section = SECTION_LABEL[sectionOf(item)];
   // The section leads on wide screens; a phone shows only what the card is.
-  const sectionLead = !set && !section.toLowerCase().startsWith(item.label.toLowerCase());
-  const canEdit = item.kind === "fact" && !set;
+  const sectionLead = !section.toLowerCase().startsWith(item.label.toLowerCase());
+  const canEdit = item.kind === "fact";
   // Key hints only where there is a keyboard: a phone shows clean buttons.
   const keys = useMediaQuery("(pointer: fine)");
   // Phones: the card itself is swiped — right = Yes, left = No, up = Skip for now (MKT-046). Buttons stay.
@@ -400,12 +355,12 @@ function FocusCard({
       setThrown(true);
       onAnswer(a, opts);
     };
-    if (Math.abs(dx) >= far && Math.abs(dx) > Math.abs(dy)) decide(dx > 0 ? yes : no, dx > 0 && set ? { off: [...off] } : undefined);
-    else if (!set && dy <= -far) decide("later");
+    if (Math.abs(dx) >= far && Math.abs(dx) > Math.abs(dy)) decide(dx > 0 ? yes : no);
+    else if (dy <= -far) decide("later");
   };
   return (
     <motion.div
-      drag={swipeable ? (set ? "x" : true) : false}
+      drag={swipeable}
       dragSnapToOrigin={!thrown}
       dragElastic={0.6}
       dragMomentum={false}
@@ -433,7 +388,7 @@ function FocusCard({
         {item.kind === "account" && item.platform ? <PlatformMark platform={item.platform} size={16} /> : null}
         <span className="truncate text-sm font-medium text-muted-foreground" data-testid="validate-label">
           {sectionLead ? <span className="max-sm:hidden">{section} · </span> : null}
-          {set || sectionLead ? item.label : section}
+          {sectionLead ? item.label : section}
         </span>
         <span className="ml-auto flex items-center gap-1">
           {canEdit ? (
@@ -463,8 +418,6 @@ function FocusCard({
           setDraft={setDraft}
           onSubmitEdit={() => (personFor ? onAnswer("related", { relationKey: personFor.key, value: draft }) : onAnswer("correct", { value: draft }))}
           onCancelEdit={() => (personFor ? setPersonFor(null) : setEditing(false))}
-          off={off}
-          toggleOff={toggleOff}
         />
       </div>
       <WeThink item={item} kinds={kinds} />
@@ -478,7 +431,7 @@ function FocusCard({
           onChange={(a) => {
             const answer = a === "yes" ? yes : no;
             if (editing && answer === "correct") onAnswer("correct", { value: draft });
-            else onAnswer(answer, set ? { off: [...off] } : undefined);
+            else onAnswer(answer);
           }}
           wayOut={[
             ...(suggestedRelation ? [{ value: `rel:${suggestedRelation.key}`, label: suggestedRelation.label, meta: "We think" }] : []),
@@ -584,7 +537,6 @@ export function ValidateStage({
   const current = queue[0] ?? null;
   // A core gap card is an empty field: it opens ready to type in — also when it is the very first card.
   const [editing, setEditing] = useState(() => Boolean(current?.key.startsWith("gap:")));
-  const [off, setOff] = useState<Set<string>>(new Set());
   const [dir, setDir] = useState<Throw>("yes");
   const lastAnswerAt = useRef(0);
   const [trayOpen, setTrayOpen] = useState(false);
@@ -599,7 +551,6 @@ export function ValidateStage({
     setSeenKey(current?.key);
     // A core gap card is an empty field: it opens ready to type in.
     setEditing(Boolean(current?.key.startsWith("gap:")));
-    setOff(new Set());
   }
 
   // The next cards' images load before they are needed.
@@ -629,19 +580,18 @@ export function ValidateStage({
       }
       if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target) || !current) return;
       const k = e.key.toLowerCase();
-      const set = Boolean(current.members?.length);
-      const { yes, no } = set ? { yes: "correct" as Answer, no: "wrong" as Answer } : yesNo(current);
+      const { yes, no } = yesNo(current);
       const press = (a: Answer, opts?: AnswerOptions) => {
         e.preventDefault();
         answer(current, a, opts);
       };
       if (k === "u" && answered[0]) return onUndo(answered[0]);
-      if (k === "y") return press(yes, set ? { off: [...off] } : undefined);
+      if (k === "y") return press(yes);
       if (k === "n") return press(no);
       if (k === "l") return press("later");
       if (k === "i") return press("ignore");
       if (k === "a" && current.kind === "name") return press("alias");
-      if (k === "e" && current.kind === "fact" && !set) {
+      if (k === "e" && current.kind === "fact") {
         e.preventDefault();
         return setEditing(true);
       }
@@ -730,15 +680,6 @@ export function ValidateStage({
                       kinds={kinds}
                       editing={editing}
                       setEditing={setEditing}
-                      off={off}
-                      toggleOff={(key) =>
-                        setOff((cur) => {
-                          const next = new Set(cur);
-                          if (next.has(key)) next.delete(key);
-                          else next.add(key);
-                          return next;
-                        })
-                      }
                       onAnswer={(a, o) => answer(current, a, o)}
                     />
                   </motion.div>

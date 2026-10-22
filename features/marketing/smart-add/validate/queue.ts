@@ -337,8 +337,6 @@ export interface FocusItem {
   twins: string[];
   /** fold.ts: the copies of this same real thing folded into this card (shown in its grounding hover). */
   folded?: FocusItem[];
-  /** fold.ts: a set card (services, categories, locations…): every value, answered at once, each switchable. */
-  members?: FocusItem[];
   /** fold.ts: a person's name as found spelled differently elsewhere ("John Akhoin" / "John Akhoian"). */
   spellings?: string[];
 }

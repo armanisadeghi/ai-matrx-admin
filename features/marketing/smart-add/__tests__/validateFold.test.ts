@@ -4,7 +4,7 @@
  */
 import { fromRow, type SavedRow } from "../validate/fromSaved";
 import { gapFacts } from "../validate/queue";
-import { accountOfPost, answeredKeysOf, foldQueue, sameSpokenName, socialIdentity, streetKey } from "../validate/fold";
+import { accountOfPost, answeredKeysOf, foldQueue, logoImagesOf, logoLabel, sameSpokenName, socialIdentity, streetKey } from "../validate/fold";
 import { buildQueue, type BrandFact } from "../validate/queue";
 import type { EvidenceItem } from "../evidence";
 
@@ -86,8 +86,9 @@ describe("validate fold", () => {
     const values = q.map((c) => `${c.kind}|${c.label}|${c.value}`);
     // One phone card (two spellings), one card per street (short, full and the agent's location fold).
     expect(q.filter((c) => /941-?8214/.test(c.value) || c.twins.some((t) => t.startsWith("phone")))).toHaveLength(1);
-    const locations = q.find((c) => c.key === "set:locations");
-    expect(locations?.members).toHaveLength(2);
+    // Two different streets: two cards, each asked on its own (never a set answered at once).
+    const locations = q.filter((c) => /Commerce Blvd|Aiello Dr/.test(c.value));
+    expect(locations).toHaveLength(2);
     // The Facebook account, the agent's social_facebook and the web result of the same page: one account card.
     const fb = q.filter((c) => c.value.includes("rooterherotosaveyourday") || c.twins.some((t) => t.includes("social_facebook")));
     expect(fb).toHaveLength(1);
@@ -100,11 +101,12 @@ describe("validate fold", () => {
     expect(values.some((v) => v.includes("Rooter Hero Plumbing & Air"))).toBe(false);
     // Two Yelp pages: one card.
     expect(q.filter((c) => c.value.includes("yelp.com"))).toHaveLength(1);
-    // Two services: one set card.
-    expect(q.find((c) => c.key === "set:offerings")?.members).toHaveLength(2);
+    // Two services: two cards, one each — one card asks about ONE thing (Arman, 2026-10-22).
+    expect(q.filter((c) => c.value === "Drain cleaning" || c.value === "HVAC services")).toHaveLength(2);
+    expect(q.some((c) => c.key.startsWith("set:"))).toBe(false);
     // Stage order: the account before the services before the locations.
-    const at = (pred: (k: string) => boolean) => q.findIndex((c) => pred(c.key));
-    expect(at((k) => k === "set:offerings")).toBeLessThan(at((k) => k === "set:locations"));
+    const at = (pred: (v: string) => boolean) => q.findIndex((c) => pred(c.value));
+    expect(at((v) => v === "HVAC services")).toBeLessThan(at((v) => /Commerce Blvd/.test(v)));
     expect(q[0].kind).toBe("account");
   });
 
@@ -187,9 +189,33 @@ describe("logos already answered (MKT-139)", () => {
     const items = rows.map((r) => fromRow(r)).flatMap((o) => (o && "item" in o ? [o.item] : []));
     return buildQueue({ items, facts: [], decisions: {}, webChoices: {}, answered: new Set(), later: [], kinds: [], ctx: { ourHosts: [], ourAccounts: [], name: null } });
   };
-  it("folds every logo into one card", () => {
+  it("asks about each picture on its own card, never a batch of logos at once (Arman, 2026-10-22)", () => {
     const cards = foldQueue({ queue: queueOf(logoRows), known: { names: [], hosts: [], urls: [], values: [] }, later: [] });
-    expect(cards).toHaveLength(1);
+    expect(cards).toHaveLength(2);
+    for (const c of cards) expect(c.folded ?? []).toHaveLength(0);
+    expect(cards.map(logoLabel)).toEqual(["Logo", "Logo"]);
+  });
+  it("folds the same picture found at two addresses into one card", () => {
+    const rows = [
+      ...logoRows,
+      row("media", "logo", "https://cdn.example.com/a.png", { image_url: "https://cdn.example.com/a.png" }, "https://www.facebook.com/acme"),
+    ];
+    const cards = foldQueue({ queue: queueOf(rows), known: { names: [], hosts: [], urls: [], values: [] }, later: [] });
+    expect(cards).toHaveLength(2);
+    const a = cards.find((c) => logoImagesOf(c).includes("https://cdn.example.com/a.png"));
+    expect(a?.folded ?? []).toHaveLength(1);
+    expect(logoImagesOf(a!)).toEqual(["https://cdn.example.com/a.png", "https://cdn.example.com/a.png"]);
+  });
+  it("folds near-identical pictures the server grouped (one mark, two image addresses) into one card", () => {
+    const rows = [...logoRows, row("media", "logo", "https://scontent.example.net/a-200.jpg", { image_url: "https://scontent.example.net/a-200.jpg" })];
+    const raw = queueOf(rows);
+    const groupOf = new Map([
+      [raw.find((q) => q.value.includes("a.png"))!.key, "g1"],
+      [raw.find((q) => q.value.includes("a-200"))!.key, "g1"],
+    ]);
+    const cards = foldQueue({ queue: raw, known: { names: [], hosts: [], urls: [], values: [] }, later: [], samePicture: groupOf });
+    expect(cards).toHaveLength(2);
+    expect(cards.map((c) => logoImagesOf(c).length).sort()).toEqual([1, 2]);
   });
   it("drops a logo whose picture was already answered, under whatever key a later round gives it", () => {
     const cards = foldQueue({ queue: queueOf(logoRows), known: { names: [], hosts: [], urls: [], values: [], images: ["https://cdn.example.com/a.png"] }, later: [] });

@@ -1,10 +1,11 @@
 /**
  * Smart Add validation — one real thing, one card (pure; no I/O).
  *
- * The queue (queue.ts) lists every open finding. Many are the same real thing found twice: a phone written
- * "(866) 941-8214" and "+1-866-941-8214", an address with and without its city, the facts agent's
- * `social_facebook` beside the Facebook account itself, nine Yelp location pages, eight copies of the bio.
- * This module:
+ * One card asks about ONE thing (Arman, 2026-10-22: "It needs to be one by one."). Folding is only for copies of
+ * the SAME thing: a phone written "(866) 941-8214" and "+1-866-941-8214", an address with and without its city, the
+ * facts agent's `social_facebook` beside the Facebook account itself, nine Yelp location pages, eight copies of the
+ * bio, one picture found at two addresses. Two different logos, two different services, two different streets are
+ * two cards — never a batch answered at once. This module:
  *
  *   1. drops what the brand already knows (its name and aliases, its own website and pages on it, its
  *      accounts, its confirmed facts) — the person is never asked twice;
@@ -12,9 +13,7 @@
  *      profile is a key person);
  *   3. folds every finding that is the same real thing into ONE card (`twins` = the folded keys, answered
  *      together; `folded` = the copies, shown in the grounding hover);
- *   4. gathers multi-value fields (services, categories, locations, licenses) into one SET card whose values
- *      are answered at once, each one switchable;
- *   5. orders the stage: accounts and websites, names, what you do, offerings, audience, locations, people,
+ *   4. orders the stage: accounts and websites, names, what you do, offerings, audience, locations, people,
  *      contact, the web, logos, everything else — the "Ask me later" pile last.
  *
  * Spec: common-docs/systems/marketing/websites-and-brands/projects/smart-add-brand/SPEC.md § Validation page
@@ -159,18 +158,24 @@ export function logoImageOf(item: FocusItem): string | null {
   return /^https?:\/\//i.test(v) ? v : null;
 }
 
-/** The tray's label for an answered logo card: how many pictures it settled. One word for live and reloaded answers. */
-export function logosLabel(item: FocusItem): string {
-  return `Logos · ${1 + (item.folded?.length ?? 0)}`;
+/** The tray's label for an answered logo card: one card is one picture, however many addresses it was found at. */
+export function logoLabel(_item: FocusItem): string {
+  return "Logo";
 }
 
-/** Every picture an answered logo card settled: its own and each folded copy's. */
+/** Every address of the one picture an answered logo card settled: its own and each folded copy's. */
 export function logoImagesOf(item: FocusItem): string[] {
   return [item, ...(item.folded ?? [])].map(logoImageOf).filter((u): u is string => Boolean(u));
 }
 
-/** Every identity a finding has; two findings sharing one are the same real thing. */
-export function identities(item: FocusItem): string[] {
+/**
+ * Every identity a finding has; two findings sharing one are the same real thing. Never a key for a whole kind (all
+ * logos, all services): a shared kind is not a shared thing. "about" is the one exception by design — every About
+ * line is a copy of the one answer to "what do you do" (MKT-044).
+ * `samePicture`: evidence key → the server's near-identical-image group (logoGroups.tsx), so one mark found at two
+ * image addresses is one card.
+ */
+export function identities(item: FocusItem, samePicture?: ReadonlyMap<string, string>): string[] {
   const f = field(item);
   const keys: string[] = [];
   const url = urlOf(item);
@@ -199,9 +204,10 @@ export function identities(item: FocusItem): string[] {
   if (CATEGORY_FIELDS.has(f)) keys.push(`cat:${norm(item.value)}`);
   if (ABOUT_FIELDS.has(f)) keys.push("about");
   if (f === "logo") {
-    keys.push("logo");
     const image = logoImageOf(item);
     if (image) keys.push(`img:${domainAddress(image)}`);
+    const group = samePicture?.get(item.key);
+    if (group) keys.push(`pic:${group}`);
   }
   if (f === "service_area") keys.push(`area:${norm(item.value)}`);
   if (item.fact) keys.push(`fact:${f}:${norm(item.value)}`);
@@ -293,7 +299,6 @@ const SECTION_OF = new Map(SECTION_FIELDS.flatMap(([s, fields]) => fields.map((f
 const SECTION_ORDER: Section[] = ["accounts", "names", "logos", "what_you_do", "offerings", "audience", "locations", "people", "contact", "web", "more"];
 
 export function sectionOf(item: FocusItem): Section {
-  if (item.members?.length) return sectionOf(item.members[0]);
   if (item.kind === "account" || item.kind === "website") return item.label === "Key person" ? "people" : "accounts";
   if (item.kind === "logo") return "logos";
   if (item.kind === "web") return "web";
@@ -301,17 +306,6 @@ export function sectionOf(item: FocusItem): Section {
   if (f.endsWith("_page") || f.startsWith("social_") || f === "website" || f === "additional_website") return "web";
   return SECTION_OF.get(f) ?? "more";
 }
-
-/** Multi-value fields answered as one set card: `[set key, label, fields]`. */
-const SETS: [string, string, readonly string[]][] = [
-  ["set:categories", "Categories", ["category", "business_category", "industry", "business_type", "specialty"]],
-  ["set:offerings", "Services", ["primary_products_services", "product", "service", "products", "services"]],
-  ["set:locations", "Locations", ["address", "street_address", "additional_location"]],
-  ["set:areas", "Service area", ["service_area"]],
-  ["set:licences", "Licenses", ["license_number", "registration_number"]],
-  ["set:metrics", "On your profiles", ["social_follower_count", "review_rating", "stated_metric", "employee_count_range", "ownership_type"]],
-];
-const SET_OF = new Map(SETS.flatMap(([key, label, fields]) => fields.map((f) => [f, { key, label }] as const)));
 
 // ── People: one person, however the sources spell them ──────────────────────────────
 
@@ -387,10 +381,12 @@ export interface FoldInput {
    * 70 of 71 Smart Add brands).
    */
   unconfirmed?: ReadonlySet<string>;
+  /** Evidence key → near-identical-image group from the server (logoGroups.tsx `postImageGroups`): one mark, one card. */
+  samePicture?: ReadonlyMap<string, string>;
 }
 
-/** The stage's queue: known findings dropped, one card per real thing, sets gathered, stage order. */
-export function foldQueue({ queue, known, later, reopened, unconfirmed }: FoldInput): FocusItem[] {
+/** The stage's queue: known findings dropped, one card per real thing, stage order. */
+export function foldQueue({ queue, known, later, reopened, unconfirmed, samePicture }: FoldInput): FocusItem[] {
   const knownSet = knownKeys(known);
   const ownHosts = new Set(known.hosts.map((h) => domainHost(/^https?:\/\//i.test(h) ? h : `https://${h}`)).filter(Boolean));
   const items = queue.map(reclassify).filter((item) => {
@@ -423,7 +419,7 @@ export function foldQueue({ queue, known, later, reopened, unconfirmed }: FoldIn
   const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
   const owner = new Map<string, number>();
   items.forEach((item, i) => {
-    for (const k of identities(item)) {
+    for (const k of identities(item, samePicture)) {
       const j = owner.get(k);
       if (j === undefined) owner.set(k, i);
       else parent[find(i)] = find(j);
@@ -455,46 +451,15 @@ export function foldQueue({ queue, known, later, reopened, unconfirmed }: FoldIn
     } else folded.push(withPages);
   }
 
-  // Sets: multi-value facts gathered into one card (two or more values; one value stays a plain card).
-  const bySet = new Map<string, FocusItem[]>();
-  const plain: FocusItem[] = [];
-  for (const item of folded) {
-    const set = SET_OF.get(field(item));
-    if (set && item.kind === "fact") bySet.set(set.key, [...(bySet.get(set.key) ?? []), item]);
-    else plain.push(item);
-  }
-  for (const [key, members] of bySet) {
-    if (members.length < 2) {
-      plain.push(...members);
-      continue;
-    }
-    const label = SETS.find(([k]) => k === key)?.[1] ?? "Facts";
-    plain.push({
-      ...members[0],
-      key,
-      label,
-      value: `${label} · ${members.length}`,
-      title: null,
-      openUrl: null,
-      detail: null,
-      suggestion: null,
-      fact: null,
-      evidence: null,
-      twins: [],
-      folded: undefined,
-      members,
-    });
-  }
-
   const laterAt = new Map(later.map((k, i) => [k, i]));
   const laterOf = (item: FocusItem) => {
-    const keys = [item.key, ...item.twins, ...(item.members ?? []).flatMap((m) => [m.key, ...m.twins])];
+    const keys = [item.key, ...item.twins];
     const hits = keys.map((k) => laterAt.get(k)).filter((n): n is number => n !== undefined);
     return hits.length ? Math.min(...hits) : -1;
   };
   const position = new Map(queue.map((q, i) => [q.key, i]));
-  return plain
-    .map((item) => ({ item, later: laterOf(item), section: SECTION_ORDER.indexOf(sectionOf(item)), at: position.get(item.members?.[0]?.key ?? item.key) ?? 0 }))
+  return folded
+    .map((item) => ({ item, later: laterOf(item), section: SECTION_ORDER.indexOf(sectionOf(item)), at: position.get(item.key) ?? 0 }))
     .sort((a, b) => {
       // The missing core (gap cards, queue.ts coreGaps) leads whatever its section (MKT-143).
       const gap = Number(b.item.key.startsWith("gap:")) - Number(a.item.key.startsWith("gap:"));
@@ -506,7 +471,7 @@ export function foldQueue({ queue, known, later, reopened, unconfirmed }: FoldIn
     .map((x) => x.item);
 }
 
-/** Every key a card answers: itself, its folded copies, and each set member with its copies. */
+/** Every key a card answers: itself and its folded copies (copies of the same one thing). */
 export function answeredKeysOf(item: FocusItem): string[] {
-  return [item.key, ...item.twins, ...(item.members ?? []).flatMap((m) => [m.key, ...m.twins])];
+  return [item.key, ...item.twins];
 }
