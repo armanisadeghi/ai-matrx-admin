@@ -264,6 +264,7 @@ export function SmartAddBrand({
   loginSeed = null,
   onWelcomeDone,
   onWelcomeSkip,
+  onIntakeFit,
 }: {
   onCreated?: (brand: MarketingBrand) => void;
   /** Create settled the core and the validation stage is up: the page moves the address to the brand's validate route. */
@@ -279,6 +280,8 @@ export function SmartAddBrand({
   onWelcomeDone?: (done: WelcomeDone) => void;
   /** door="welcome": the person skipped (no name to search by, or nothing found): the welcome page takes over. */
   onWelcomeSkip?: () => void;
+  /** The intake stage shows the choice or entry card: the page fits the screen (SmartAddHero `onFit`). */
+  onIntakeFit?: (fit: boolean) => void;
 }) {
   const dispatch = useAppDispatch();
   const runControls = useWorkflowRunControls();
@@ -2211,6 +2214,7 @@ export function SmartAddBrand({
           slow={quiet && working}
           loadingSession={Boolean(resume) && !fresh && (!showable || rounds.some((r) => r.runId && !views[r.runId]))}
           onRestart={restart}
+          onFit={onIntakeFit}
           onStarted={url?.markSearch}
           onWebsite={setWebsiteText}
           onSocial={setSocialText}
