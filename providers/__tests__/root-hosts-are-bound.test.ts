@@ -71,6 +71,17 @@ describe("root hosts are bound for every route", () => {
     expect(src).toMatch(/from "@\/features\/settings\/doors\/settingsHost"/);
   });
 
+  // 2026-10-22: the applet route (/applets/<slug>) takes the SHORT AppletProviders list, and its not-found
+  // page draws SlugAccessGate. Without SharingHost there, configureAccessUi never ran and the screen threw.
+  it("the applet providers mount the sharing host that binds the access screens", () => {
+    expect(read("features/applets-host/AppletProviders.tsx")).toMatch(/<SharingHost \/>/);
+  });
+
+  it("every route tree that draws an access screen takes a Providers tree that mounts the sharing host", () => {
+    expect(read("components/public-link/LinkProviders.tsx")).toMatch(/\bProviders\b/);
+    expect(read("app/Providers.tsx")).toMatch(/<SharingHost \/>/);
+  });
+
   it("each host module binds at load and exports the mountable component", () => {
     const refs = read("features/data-tables/records-ui-host/entityRefHost.tsx");
     expect(refs).toMatch(/configureEntityRefs\(entityRefHostPorts\)/);

@@ -8,7 +8,6 @@
   "components/kind-kit/TagList.tsx": 1,
   "components/official/icons/IconInputWithValidation.tsx": 2,
   "components/official/ImageCropUploader.tsx": 2,
-  "components/official/settings/primitives/SettingsButton.tsx": 1,
   "components/ui/matrx/matrix-switch.tsx": 1,
   "features/agents/components/builder/message-builders/DecisionQuestionsEditor.tsx": 2,
   "features/agents/components/builder/message-builders/SpeechScriptEditor.tsx": 1,

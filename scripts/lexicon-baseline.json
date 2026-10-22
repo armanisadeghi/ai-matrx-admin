@@ -47,7 +47,6 @@
   "components/markdown-studio/TemplatesPalette.tsx|block type": 1,
   "components/matrx/SearchableMultiSelect.tsx|select options": 1,
   "components/official/ProTextareaBoundAgentsMenuItems.tsx|bound agent": 1,
-  "features/access-gate/components/GovernedActionDialog.tsx|full access": 1,
   "features/admin/relationships/components/RuleEditorForm.tsx|content type": 1,
   "features/admin/scopes-context/components/ScopesContextOrganizationsIndex.tsx|scope type": 1,
   "features/administration/database-admin/PermissionsList.tsx|object type": 3,

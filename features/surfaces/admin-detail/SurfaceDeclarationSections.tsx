@@ -58,8 +58,8 @@ import {
   FLEET_READINESS_RULE,
   readinessGaps,
 } from "@/features/surfaces/utils/fleet-readiness";
-import { parseProbeRecord, probeUrl, type SurfaceProbeRecord } from "@/features/surfaces/utils/probe-record";
-import { probePreviewValues, renderSituation } from "@/features/surfaces/utils/situation-render";
+import { parseProbeRecord, probeUrl, type SurfaceProbeRecord } from "@ai-matrx/chat/surfaces/utils/probe-record";
+import { probePreviewValues, renderSituation } from "@ai-matrx/chat/surfaces/utils/situation-render";
 import { splitRunSupplyKeys } from "@/features/surfaces/utils/run-supply-keys";
 import { SurfaceReceivesSection } from "@/features/surfaces/admin-detail/SurfaceReceivesSection";
 

@@ -201,8 +201,8 @@ Sections, for code and database surfaces alike ([`admin-detail/SurfaceDeclaratio
 
 - **Chain** — AI Matrx › module › … › page, each level opening its own page (`ui.mv_surface_chain` + one `ui_surface` read).
 - **Declaration** — values (on by default, always there, type, inline limit, item type), write targets (handler handled / missing / unknown, patchable, mode, updates value), client tools and actions, each row naming the level that declares it; raw JSON through `CopyButtons data=`.
-- **Intro and situation** — each level's, own vs inherited, and the rendered situation (`utils/situation-render.ts`, a port of aidream `render_situation`; blanks filled from the probe's `last_check.values`, else `[Label]`).
-- **Latest probe** — `last_check` parsed by `utils/probe-record.ts`.
+- **Intro and situation** — each level's, own vs inherited, and the rendered situation (`@ai-matrx/chat/surfaces/utils/situation-render`, a port of aidream `render_situation`; blanks filled from the probe's `last_check.values`, else `[Label]`).
+- **Latest probe** — `last_check` parsed by `@ai-matrx/chat/surfaces/utils/probe-record`.
 - **What the agent receives** — [`admin-detail/SurfaceReceivesSection.tsx`](./admin-detail/SurfaceReceivesSection.tsx) over the receives endpoint (§ What the agent receives); loads when scrolled into view; an unknown route shows "Available after the next server release".
 - **Readiness** — the derived state, the rule, and what is still missing (`readinessGaps`).
 - **Run supply** — 30-day receipt keys; keys from other open screens (`<surface>::<value>`, `window::<title>`) show apart.

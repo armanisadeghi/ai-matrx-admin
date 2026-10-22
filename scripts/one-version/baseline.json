@@ -118,11 +118,6 @@
     },
     {
       "piece": "mac-detection",
-      "file": "components/official/settings/primitives/SettingsKeybinding.tsx",
-      "reason": "known duplicate, decision pending"
-    },
-    {
-      "piece": "mac-detection",
       "file": "features/audio/utils/microphone-diagnostics.ts",
       "reason": "known duplicate, decision pending"
     },
