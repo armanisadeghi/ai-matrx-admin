@@ -38,10 +38,16 @@ names the page and lists its live values. His review inbox gets one row per fini
   measured 2026-10-22), so it uses `pnpm type-check:files <files>`; it has no direct-Postgres
   credentials, so it syncs a surface by running `scripts/emit-surface-sync-sql.ts` output through
   the Supabase MCP and checks with the same script's `--check` SELECT (no rows = in sync).
-- **The list is computed.** `pnpm surface:census` (about a minute) now sees emitters inside the
-  installed `@ai-matrx/chat` package, surfaces mounted by name, and context-menu emitters. On
-  2026-10-22: 278 surfaces, 258 emitting, 20 not emitting; 72 verified / 194 partial / 12 stub;
+- **The list is computed.** `pnpm surface:census` (about a minute) sees scope builders in this
+  repo and inside the installed `@ai-matrx/chat` package, plus mounts that name the surface in
+  code (comments never count): a runtime provider, a context menu that resolves per-target context
+  (`resolveContextOnOpen`, how `assistant-message` emits), a name constant, or a `surfaceName`
+  prop. On 2026-10-22: 278 surfaces, 260 emitting, 18 not; 72 verified / 194 partial / 12 stub;
   16 detected by name only (probe these). Columns: write targets, guide, budgeted values.
+- **Cloud gaps that remain:** `check:agent-disclosure` needs the aidream checkout and errors in a
+  container; writes through the Supabase MCP sometimes hang for 60 s and do not apply (a sync of
+  ~28 KB timed out twice on 2026-10-22; small single updates mostly work) — read back, never
+  retry blind.
 - **The context budget** (10,000 chars per page, one bundle; `contextBudgetApproval` for
   exceptions) replaced the per-value inline rule; see page-pass area 1.
 - **Agents can report problems** with the `surface_feedback` write target on every surface;
@@ -83,10 +89,11 @@ names the page and lists its live values. His review inbox gets one row per fini
    - **Done when:** DB rows equal the rows shown, per type tab, and the example opens.
 
 4. **DONE 2026-10-22 — cloud sync and check.** `emit-surface-sync-sql.ts` names how to find the
-   system org when it is missing, and `--check` prints a read-only SELECT that compares the
-   surface's content hash, every keyed child row and the guide skill. Still missing in the cloud:
-   the direct check's EXPLAIN of every sync statement. A cleaner end state is an admin RPC pair
-   (`ui.sync_surface(jsonb)` / `ui.check_surface(text)`) so no SQL is pasted at all.
+   system org when it is missing, and `--check` prints a read-only SELECT comparing every column
+   the direct check compares (surface row and every keyed child table, both archival directions,
+   the guide skill). Not covered in the cloud: the direct check's EXPLAIN of every sync
+   statement. Still better: an admin RPC pair (`ui.sync_surface(jsonb)` /
+   `ui.check_surface(text)`) so no SQL is pasted, which would also dodge the MCP write timeouts.
 
 5. **A docked panel with its own surface replaces the page's surface.**
    - **Problem:** runtimes resolve "deepest wins, most recent breaks ties"
@@ -114,11 +121,11 @@ names the page and lists its live values. His review inbox gets one row per fini
    - Before deleting an orphan, move any `platform.associations` agent bindings that target it.
    - Two value-count drifts to resync: `matrx-user/markdown-pdf`, `matrx-user/settings`.
 
-8. **Surfaces the census sees only by name (16 on 2026-10-22).** `assistant-message` was settled:
-   it emits through its right-click menu (`resolveContextOnOpen`), and the census now counts that.
-   Probe the rest (`pnpm surface:census` lists them as "by name"), including the verified
-   `working-document`, `masterwork-rulebook` and `crm-manager`: either the census learns their
-   emitter or their readiness drops to `partial`.
+8. **Surfaces the census sees only by name (16 on 2026-10-22).** Probe each once the release
+   carrying the probe fix is live (`pnpm surface:census` lists them as "by name"); either the
+   census learns the emitter or readiness drops to `partial`. `masterwork-rulebook` was probed
+   live on 2026-10-22 and emits (33 values shown). `working-document` is declared verified but
+   nothing in this repo emits it — it is built inside `@ai-matrx/chat` (item 14).
 
 9. **Artifacts surface, remaining gaps.**
    - The access gate distinguishes "no access" from "not found" but emits only
