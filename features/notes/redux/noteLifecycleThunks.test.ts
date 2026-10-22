@@ -301,6 +301,30 @@ describe("fetchSharedNotesList", () => {
     ...overrides,
   });
 
+  // The RPC returns no metadata, so the thunk asks which of its ids are embedded rows.
+  const embeddedIds: string[] = [];
+  beforeEach(() => {
+    embeddedIds.length = 0;
+    schema.mockReturnValue({
+      from: () => ({
+        select: () => ({
+          in: (_c: string, ids: string[]) => ({
+            eq: async () => ({ data: ids.filter((id) => embeddedIds.includes(id)).map((id) => ({ id })), error: null }),
+          }),
+        }),
+      }),
+    });
+  });
+
+  it("never lists a shared row that a feature keeps inside itself (embedded)", async () => {
+    const configured = store([]);
+    embeddedIds.push(OTHER_NOTE_ID);
+    rpc.mockResolvedValue({ data: [sharedRow()], error: null });
+    const result = await configured.dispatch(fetchSharedNotesList());
+    expect(fetchSharedNotesList.fulfilled.match(result)).toBe(true);
+    expect(configured.getState().notes.notes[OTHER_NOTE_ID]).toBeUndefined();
+  });
+
   it("lands each shared row with the owner and permission the RPC reported", async () => {
     const configured = store([]);
     rpc.mockResolvedValue({ data: [sharedRow()], error: null });
