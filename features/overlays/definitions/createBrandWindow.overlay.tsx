@@ -23,25 +23,18 @@ export interface CreateBrandWindowHandle {
 
 export function useOpenCreateBrandWindow() {
   const dispatch = useAppDispatch();
-  const live = useRef<Set<() => void>>(new Set());
 
-  useEffect(() => {
-    const disposers = live.current;
-    return () => {
-      for (const dispose of disposers) dispose();
-      disposers.clear();
-    };
-  }, []);
+  // The opened window owns its callback group (it releases it on close / its own window-close
+  // event); this hook never drops it on unmount — a menu or sheet that opened the window unmounts
+  // first (an-opened-window-owns-its-callback-group.test.ts).
 
   return useCallback(
     (options: OpenCreateBrandWindowOptions = {}): CreateBrandWindowHandle => {
       const instanceId = `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const { callbackGroupId, dispose } = createCreateBrandCallbackGroup(options);
       dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data: { callbackGroupId } }));
-      live.current.add(dispose);
       const detach = () => {
         dispose();
-        live.current.delete(dispose);
       };
       return {
         instanceId,
