@@ -43,6 +43,8 @@ import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 
 export const scratchpadManifest: SurfaceManifest = {
   surfaceName: "matrx-user/scratchpad",
+  situation:
+    "They have their private scratchpad for this conversation open, \"{document_title|untitled}\" ({word_count|0} words, unsaved edits: {is_dirty|no}). In chat you only read it; actions run from its menu can replace the text, append, replace their selection or insert at the cursor.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

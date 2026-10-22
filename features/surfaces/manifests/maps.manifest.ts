@@ -203,6 +203,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const mapsManifest: SurfaceManifest = {
   surfaceName: MAPS_SURFACE_NAME,
+  situation:
+    "They have the visual map \"{map_title}\" open, with {box_count} boxes, {section_count} sections and {arrow_count} arrows; selected: {selected_item_kind|nothing}. The map is in your context; they can replace the whole map with a new version.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

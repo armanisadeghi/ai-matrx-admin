@@ -48,6 +48,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const canvasViewerManifest: SurfaceManifest = {
   surfaceName: CANVAS_VIEWER_SURFACE_NAME,
+  situation:
+    "They have the viewer for a shared canvas open; share link token: {share_token|none loaded yet, they can paste one}.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

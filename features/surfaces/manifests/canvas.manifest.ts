@@ -191,6 +191,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const canvasManifest: SurfaceManifest = {
   surfaceName: CANVAS_SURFACE_NAME,
+  situation:
+    "They have the canvas open with {item_count} items in tabs; in front is \"{current_canvas_title|a tab that is not an item}\" ({current_canvas_type|no item type}), saved: {current_canvas_is_saved}, split view: {is_split}. They can change the content of the item in front.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

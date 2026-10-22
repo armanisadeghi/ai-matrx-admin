@@ -531,6 +531,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const documentsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/documents",
+  situation:
+    "They are in Documents, on the {documents_view} view. Open document: \"{document_name|none}\" (version {document_version|unknown}, they may edit it: {document_can_edit|unknown}); the library shows {library_visible_count|no} of {library_document_count|their} documents. They can rename a document, edit its description or body, or create documents.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -179,6 +179,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const presentationManifest: SurfaceManifest = {
   surfaceName: PRESENTATION_SURFACE_NAME,
+  situation:
+    "They have the presentation \"{presentation_name|untitled}\" open in the slides editor: {slide_count|an unknown number of} slides, save state {save_state|unknown}, they may edit it: {can_edit}. The deck and the slide in front are in your context; they can rename it and change the deck.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

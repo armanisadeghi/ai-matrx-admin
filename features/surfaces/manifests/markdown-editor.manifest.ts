@@ -240,6 +240,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const markdownEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/markdown-editor",
+  situation:
+    "They have the markdown editor with live preview open, using the {coordinator_id} pipeline preset. The markdown is in your context; they can replace it, append to it, or change the processor that renders it.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

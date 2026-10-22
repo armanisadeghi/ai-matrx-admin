@@ -197,6 +197,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const mermaidEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/mermaid-editor",
+  situation:
+    "They have a {diagram_type} diagram, \"{diagram_title|untitled}\", open in the Mermaid workbench in the {editor_mode} view; the source is {validation_state} (valid means it draws). The source is in your context; they can replace it or rename the diagram.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

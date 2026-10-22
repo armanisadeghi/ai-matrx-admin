@@ -565,6 +565,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const notesEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/notes",
+  situation:
+    "They are in the notes editor on \"{current_note_title|no note open yet}\" (home: {current_note_home|none}, {current_note_word_count|0} words, {editor_mode} view, unsaved edits: {current_note_is_dirty|no}). The note's text is in your context. They can edit its text, title, tags and home, or create, update and delete notes.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

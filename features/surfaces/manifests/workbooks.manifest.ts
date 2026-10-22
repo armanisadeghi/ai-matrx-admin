@@ -376,6 +376,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const workbooksManifest: SurfaceManifest = {
   surfaceName: "matrx-user/workbooks",
+  situation:
+    "They are in Workbooks, with {workbooks_count|their} workbooks. Open: \"{workbook_name|none}\" on sheet \"{active_sheet_name|none}\" (save state: {workbook_save_status|nothing open}). They can rename a workbook, edit its description and sheet names, or create workbooks.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

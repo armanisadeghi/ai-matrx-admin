@@ -251,6 +251,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const markdownStudioManifest: SurfaceManifest = {
   surfaceName: "matrx-user/markdown-studio",
+  situation:
+    "They are in Markdown Studio on \"{document_label}\" in the {view_mode} mode (unsaved edits: {is_dirty}); the library holds {library_sample_count} saved samples. The markdown is in your context; they can replace it, append to it or switch the mode.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

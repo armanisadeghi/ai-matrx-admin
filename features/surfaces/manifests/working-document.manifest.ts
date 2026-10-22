@@ -42,6 +42,8 @@ import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 
 export const workingDocumentManifest: SurfaceManifest = {
   surfaceName: "matrx-user/working-document",
+  situation:
+    "They have this conversation's working document \"{document_title|untitled}\" open ({word_count|0} words, version {document_version}, unsaved edits: {is_dirty|no}, edit conflict: {has_conflict}). You and they both write it: replace the whole text, append, replace their selection or insert at the cursor.",
   inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
