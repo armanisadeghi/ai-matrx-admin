@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "@/components/navigation/AppLink";
 import { Button, DisclosureHeader, RowGroup, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ShadedLogo } from "../ShadedLogo";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
@@ -100,8 +101,7 @@ function Value({ fact, item }: { fact?: KnownFact | null; item?: EvidenceItem | 
     <span className="flex min-w-0 items-center gap-1.5">
       {platform ? <PlatformMark platform={platform} /> : null}
       {image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt="" className="h-10 w-auto max-w-[140px] object-contain" />
+        <ShadedLogo url={image} imgClassName="h-10 w-auto max-w-[140px] object-contain" />
       ) : (
         <span className="min-w-0 truncate text-sm">{text}</span>
       )}

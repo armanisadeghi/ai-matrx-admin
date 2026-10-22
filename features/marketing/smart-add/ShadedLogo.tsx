@@ -14,7 +14,12 @@ type Shade = "light" | "dark" | "checker";
  * `tile="always"` — a tile in every case (light / dark / checker, as Smart Add's logo choices).
  * `tile="when-needed"` — the logo sits bare on the page; only a logo that needs the dark backdrop gets one.
  */
-export function ShadedLogo({
+export function ShadedLogo(props: Parameters<typeof ShadedLogoOnce>[0]) {
+  // A new address is a new logo: its backdrop is read again, never carried over from the last one.
+  return <ShadedLogoOnce key={props.url} {...props} />;
+}
+
+function ShadedLogoOnce({
   url,
   tile = "when-needed",
   className = "",
@@ -32,9 +37,9 @@ export function ShadedLogo({
 }) {
   const [shade, setShade] = useState<Shade>("checker");
   const backdrop =
-    tile === "always" ? LOGO_TILE_BG[shade] : shade === "dark" ? `${LOGO_TILE_BG.dark} rounded-md p-[6%]` : "";
+    tile === "always" ? `overflow-hidden ${LOGO_TILE_BG[shade]}` : shade === "dark" ? `overflow-hidden rounded-md ${LOGO_TILE_BG.dark}` : "";
   return (
-    <span className={`inline-flex items-center justify-center overflow-hidden ${backdrop} ${className}`} data-testid={testId} data-shade={shade}>
+    <span className={`flex items-center justify-center ${backdrop} ${className}`} data-testid={testId} data-shade={shade}>
       <img
         src={browserImageUrl(url)}
         alt=""
