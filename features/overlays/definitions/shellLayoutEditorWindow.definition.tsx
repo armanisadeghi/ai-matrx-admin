@@ -8,7 +8,8 @@ import type { ShellLayoutEditorWindowDefinitionData } from "./shellLayoutEditorW
 export const shellLayoutEditorWindowOverlay = defineOverlay<ShellLayoutEditorWindowDefinitionData>()({
   id: "shellLayoutEditorWindow",
   label: "Edit layout",
-  instance: "single",
+  // One instance per layout edited (the person's, each organization's): shellLayoutEditorInstanceId.
+  instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
   window: {

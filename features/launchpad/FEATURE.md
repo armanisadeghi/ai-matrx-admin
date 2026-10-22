@@ -187,6 +187,9 @@ and favorites into an always-open launcher.
 
 ## Change log
 
+- `2026-10-22` — Lane Y: every widget body sits in its own error boundary (`WidgetBoundary`, frame.tsx): a body that
+  throws shows "This widget could not be shown." + Retry in its own box; the page keeps working. Guard
+  `__tests__/widgetBoundary.test.tsx`.
 - `2026-10-22` — Lane W: `kind` (Shape) and `space_page` widgets; page-bus value kind `shape`; Applet `out_shape`.
 - `2026-10-22` — Lane W: the dashboard widget picks its dashboard from the chosen table's dashboards (no raw id
   field); registry guard: no `*Id` field without a picker.

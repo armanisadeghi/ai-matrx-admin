@@ -80,6 +80,19 @@ export function standardPersonBody(): ShellLayoutBody {
   return { schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: SHELL_CATALOG_VERSION };
 }
 
+/**
+ * What "Reset to standard" does. A stored layout is never archived by it: it saves the empty body as a NEW
+ * version, so History keeps (and can restore) every earlier one — the dialog says "History keeps this one".
+ * Until 2026-10-22 a person without an organization layout was archived instead, and History went dark
+ * ("Not customized yet") with no way back (audit round 2 #5). With nothing stored, a person whose
+ * organization has a layout still saves the empty body (so the standard wins over the organization's);
+ * anything else has nothing to reset.
+ */
+export function resetToStandardPlan(input: { target: "person" | "organization"; stored: boolean; organizationHasLayout: boolean }): "save-empty" | "nothing" {
+  if (input.stored) return "save-empty";
+  return input.target === "person" && input.organizationHasLayout ? "save-empty" : "nothing";
+}
+
 /** The catalog entry a path opens, when one does exactly (a page already in our menus). */
 export function catalogEntryForPath(entries: readonly ShellCatalogEntry[], pathname: string): ShellCatalogEntry | undefined {
   const path = pathname.replace(/\/+$/, "") || "/";

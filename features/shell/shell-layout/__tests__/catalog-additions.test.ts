@@ -7,9 +7,9 @@
  *   - What's new never offers what the person already sees in a default region.
  */
 import { SHELL_LAYOUT_SCHEMA_VERSION, type ShellLayoutBody, type ShellNode } from "../contract";
-import { defaultSidebarTree, SHELL_CATALOG_VERSION } from "../catalog";
+import { buildShellCatalog, defaultSidebarTree, SHELL_CATALOG_VERSION } from "../catalog";
 import { resolveShellLayout } from "../resolve";
-import { standardPersonBody } from "../editor/regions";
+import { resetToStandardPlan, standardPersonBody } from "../editor/regions";
 import { primaryNavItems } from "../../constants/nav-data";
 import { RETIRED_NAV_IDS } from "../retired-nav-ids";
 
@@ -43,4 +43,33 @@ it("What's new never offers what a default region already shows", () => {
   const seen = asPerson({ schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: 1 });
   const shownByDefault = new Set(JSON.stringify(defaultSidebarTree()).match(/"ref":"[^"]+"/g)?.map((m) => m.slice(7, -1)));
   expect(seen.whatsNew.filter((e) => shownByDefault.has(e.id))).toEqual([]);
+});
+
+it("a new menu is offered as ONE row: entries under an offered entry ride in with it", () => {
+  // A sidebar without the Memory menu (version 3 added it under Knowledge: 8 rows and 16 under them).
+  const strip = (nodes: ShellNode[]): ShellNode[] =>
+    nodes
+      .filter((n) => n.kind !== "nav" || !n.ref.startsWith("memory."))
+      .map((n) => ((n.kind === "nav" || n.kind === "group") && n.children ? { ...n, children: strip(n.children) } : n));
+  const offered = asPerson({ schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: 2, sidebar: strip(defaultSidebarTree()) }).whatsNew.map((e) => e.id);
+  const memory = offered.filter((id) => id.startsWith("memory."));
+  // Its eight second-level rows are offered; the sixteen under them come with them (24 rows before).
+  expect(memory.length).toBeGreaterThan(0);
+  const parent = new Map(buildShellCatalog({ isAdmin: false }).map((e) => [e.id, e.parentId]));
+  expect(memory.filter((id) => offered.includes(parent.get(id) ?? ""))).toEqual([]);
+  expect(memory.length).toBeLessThan(24);
+});
+
+it("Reset to standard never archives a stored layout: it saves the empty body as a new version (History keeps the rest)", () => {
+  // Audit round 2 #5: a person without an organization layout was archived, and History went dark.
+  expect(resetToStandardPlan({ target: "person", stored: true, organizationHasLayout: false })).toBe("save-empty");
+  expect(resetToStandardPlan({ target: "person", stored: true, organizationHasLayout: true })).toBe("save-empty");
+  expect(resetToStandardPlan({ target: "organization", stored: true, organizationHasLayout: true })).toBe("save-empty");
+  // Nothing stored: only a person under an organization layout needs a body of her own to see the standard.
+  expect(resetToStandardPlan({ target: "person", stored: false, organizationHasLayout: true })).toBe("save-empty");
+  expect(resetToStandardPlan({ target: "person", stored: false, organizationHasLayout: false })).toBe("nothing");
+  expect(resetToStandardPlan({ target: "organization", stored: false, organizationHasLayout: false })).toBe("nothing");
+  const src = require("node:fs").readFileSync(require("node:path").join(__dirname, "../editor/ShellLayoutEditor.tsx"), "utf8") as string;
+  const reset = src.slice(src.indexOf("const resetToStandard"), src.indexOf("const showChoose"));
+  expect(reset).not.toMatch(/store\.clear\(/);
 });

@@ -319,7 +319,8 @@ function LaunchpadAppTile({ group }: { group: LaunchpadGroup }) {
         >
           <ShellIcon name={group.iconName} size={16} strokeWidth={2} />
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+        {/* Two lines fit the 56px tile: a long area name ("Human Resources") wraps instead of being cut. */}
+        <span title={group.label} className="line-clamp-2 min-w-0 flex-1 break-words text-sm leading-tight font-semibold text-foreground">
           {group.label}
         </span>
       </LaunchpadAnchor>

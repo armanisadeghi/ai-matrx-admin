@@ -9,11 +9,13 @@ import type { CSSProperties, ReactNode } from "react";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { AlertTriangle, ArrowUpRight, GripVertical } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, GripVertical, RotateCw } from "lucide-react";
+import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system";
 import { GRID_CANVAS_GAP_PX, GRID_CANVAS_ROW_PX } from "@ai-matrx/design-system";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { ErrorBoundaryWithCapture } from "@/lib/error-boundary/ErrorBoundaryWithCapture";
 /** Row height of a widget list (px): desktop, and touch screens (the 44px tap minimum). */
 export const WIDGET_ROW_PX = 32;
 export const WIDGET_ROW_PX_TOUCH = 44;
@@ -232,6 +234,50 @@ export function WidgetNotice({ children, tone }: { children: ReactNode; tone?: "
     >
       {tone === "error" ? <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden /> : null}
       <span className="line-clamp-2">{children}</span>
+    </div>
+  );
+}
+
+/**
+ * One widget's failure stays inside its box (audit round 2 #1: one Space page that threw took the whole
+ * launchpad down, org launchpads included). The box keeps its size; the rest of the page keeps working.
+ * Retry redraws the body; a changed config redraws it too; Edit's header X removes it.
+ */
+export function WidgetBoundary({ type, resetKey, children }: { type: string; resetKey: unknown; children: ReactNode }) {
+  return (
+    <ErrorBoundaryWithCapture
+      boundary="LaunchpadWidget"
+      relation={`widget:${type}`}
+      resetKeys={[resetKey]}
+      fallback={(error, retry) => <WidgetCrash error={error} type={type} onRetry={retry} />}
+    >
+      {children}
+    </ErrorBoundaryWithCapture>
+  );
+}
+
+function WidgetCrash({ error, type, onRetry }: { error: Error; type: string; onRetry: () => void }) {
+  return (
+    <div role="alert" data-launchpad-widget-crash className="flex h-full flex-col items-center justify-center gap-1 px-3 text-center">
+      <span className="flex items-center gap-1.5 text-xs text-destructive">
+        <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden />
+        This widget could not be shown. Retry, or remove it in Edit.
+      </span>
+      <span className="flex items-center gap-1">
+        <Button variant="quiet" icon={<RotateCw />} onClick={onRetry}>
+          Retry
+        </Button>
+        <ErrorAlchemyMenu
+          input={{
+            title: "This widget could not be shown.",
+            message: error.message || "A render error stopped this widget.",
+            error,
+            operation: `Render launchpad widget ${type}`,
+            details: { widget: type },
+            source: "section-boundary",
+          }}
+        />
+      </span>
     </div>
   );
 }
