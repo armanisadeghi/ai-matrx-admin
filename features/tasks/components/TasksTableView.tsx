@@ -1,6 +1,6 @@
 "use client";
 
-import { TASKS_DRILL } from "./tasksDrill";
+import { tasksDrillFor } from "./tasksDrill";
 import { getStore } from "@/lib/redux/store-singleton";
 import { useTasksRead } from "@/features/tasks/hooks/useTasksRead";
 import React from "react";
@@ -18,6 +18,7 @@ import {
   setSelectedTaskId,
   selectFilterOrgId,
   setFilterOrgId,
+  selectGroupBy,
 } from "@/features/tasks/redux/taskUiSlice";
 import {
   deleteTaskThunk,
@@ -98,6 +99,9 @@ function priorityLabel(priority: TaskWithProject["priority"]): string {
 export default function TasksTableView() {
   const dispatch = useAppDispatch();
   const tasks = useAppSelector(selectFilteredTasks);
+  // The sidebar's "Group" choice groups the table too (live walk 2026-10-22: it drew flat rows).
+  const groupBy = useAppSelector(selectGroupBy);
+  const drill = React.useMemo(() => tasksDrillFor(groupBy), [groupBy]);
   const filterOrgId = useAppSelector(selectFilterOrgId);
   const tasksRead = useTasksRead();
   const selectedTaskId = useAppSelector(selectSelectedTaskId);
@@ -588,7 +592,10 @@ export default function TasksTableView() {
   return (
     <div className="h-full min-h-0 flex flex-col">
       <MatrxDataTable<TaskWithProject>
-        drill={TASKS_DRILL}
+        // A new sidebar choice starts the table over at that grouping (the drill reads its first
+        // question once).
+        key={`tasks-table-${groupBy}`}
+        drill={drill}
         tableId="tasks-table"
         data={tasks}
         columns={columns}
