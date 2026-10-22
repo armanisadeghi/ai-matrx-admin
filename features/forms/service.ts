@@ -103,6 +103,11 @@ export interface PublicForm {
     thank_you?: { title?: string | null; body?: string | null; redirect_url?: string | null } | null;
     submit_label?: string | null;
     questions?: PublicFormQuestion[];
+    /** CD-PAGE-08: a respondent may change their answers through a private link. */
+    allow_edit?: boolean | null;
+    /** CD-PAGE-08: translations of the form's words (`@ai-matrx/records/forms` languages). */
+    languages?: Array<Record<string, unknown>> | null;
+    language?: { code?: string | null; label?: string | null } | null;
     /**
      * MAKE-HOME W5: the look a stranger sees, RESOLVED by the store (`custom._form_look` →
      * `custom._portal_style`): the organization's look under the form's own color, logo and
@@ -389,4 +394,64 @@ export async function publicFormOptions(formId: string): Promise<PublicFormOptio
     show_owner_header: row?.show_owner_header !== false,
     choice_auto_advance: row?.choice_auto_advance !== false,
   };
+}
+
+// ── CD-PAGE-08: A PASSWORD, AND ANSWERING AGAIN ─────────────────────────────────────────────
+// Three server-lane doors (`formx_a_a_form_can_be_locked_answered_again_and_keeps_its_score.sql`).
+// The password is checked by the store, never here; a right one comes back as the fingerprint of the
+// stored hash, which `features/sharing/public-view/unlock.ts` signs into a cookie for this form's page.
+
+/** Whether a published form is open to this visitor (`custom.form_unlock`); null is the 404. */
+export interface FormGate {
+  state: "open" | "locked";
+  /** The fingerprint of the stored password's hash, when a password was given right (or the cookie's was). */
+  unlock?: string | null;
+  wrong?: boolean;
+}
+
+export async function formUnlock(formId: string, password: string | null, unlock: string | null): Promise<FormGate | null> {
+  if (!isUuidShape(formId)) return null;
+  const { data, error } = await storeDoors().rpc("form_unlock", { p_form_id: formId, p_password: password, p_unlock: unlock });
+  if (error) throw new Error(`custom.form_unlock refused: ${error.message}`);
+  return (data as FormGate | null) ?? null;
+}
+
+/** A respondent's own answers, by the secret their answer-again link holds (`custom.form_response_read`). */
+export interface ResponseRead {
+  state: "found" | "off" | "locked" | "closed" | "not_found" | "unavailable";
+  message?: string | null;
+  answers?: Record<string, unknown> | null;
+  sent_at?: string | null;
+  edited_at?: string | null;
+}
+
+export async function readFormResponse(formId: string, edit: string, unlock: string | null): Promise<ResponseRead | null> {
+  if (!isUuidShape(formId)) return null;
+  const { data, error } = await storeDoors().rpc("form_response_read", { p_form_id: formId, p_edit: edit, p_unlock: unlock });
+  if (error) throw new Error(`custom.form_response_read refused: ${error.message}`);
+  return (data as ResponseRead | null) ?? null;
+}
+
+/** Change the record a respondent's answer became (`custom.form_response_update`); the store's sentence on refusal. */
+export async function updateFormResponse(args: {
+  formId: string;
+  edit: string;
+  origin: string;
+  bucket: string;
+  values: Record<string, unknown>;
+}): Promise<SubmitOutcome> {
+  const { data, error } = await storeDoors().rpc("form_response_update", {
+    p_form_id: args.formId,
+    p_edit: args.edit,
+    p_origin: args.origin,
+    p_payload: args.values,
+    p_bucket: args.bucket,
+  });
+  if (error) {
+    const err = new Error(error.message) as Error & { hint?: string };
+    if (error.hint) err.hint = error.hint;
+    throw err;
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  return (row as SubmitOutcome | undefined) ?? { submission_id: null, record_id: null, state: "held", message: null };
 }
