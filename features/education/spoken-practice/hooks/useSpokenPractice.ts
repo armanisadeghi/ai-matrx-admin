@@ -29,7 +29,11 @@
 // worse. `useLiveRunHandle` owns the kept-alive instance (released on the next
 // run and on unmount).
 
-import { recordPracticeLineage } from "../data/recordPracticeLineage";
+import { announceLineage } from "@/features/education/convert/announceLineage";
+import {
+  recordLineageForSources,
+  type LineageArtifact,
+} from "@/features/education/convert/recordSourceLineage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@/lib/toast";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -235,14 +239,21 @@ export function useSpokenPractice(
             prompts: designed.prompts,
           },
         });
-        // Lineage edges: study_session --source--> every Source it was built on. The
-        // session IS saved; a failed edge is logged loudly by the writer, never fatal.
-        if (opened.data) {
-          await recordPracticeLineage(
-            opened.data,
-            config.source?.sourceSet,
-            config.source?.sourceNames,
-          );
+        // Lineage edges: study_session --source--> every Source it was built on,
+        // through the ONE lineage writer. The session IS saved; a failed edge is
+        // announced with Retry (the edge writes are idempotent), never console-only.
+        const lineageSources = config.source?.lineageSources ?? [];
+        if (opened.data && lineageSources.length > 0) {
+          const made: LineageArtifact = {
+            targetKind: "spoken_practice",
+            artifactId: opened.data.id,
+            resourceType: "study_session",
+            href: "/education/practice-oral",
+            title: designed.sessionTitle,
+          };
+          const orgId = opened.data.organization_id ?? undefined;
+          const link = () => recordLineageForSources(made, lineageSources, orgId);
+          announceLineage(await link(), link);
         }
         return opened;
       });

@@ -40,6 +40,7 @@ import {
   DEFAULT_PROMPTS,
   PROMPT_COUNT_OPTIONS,
 } from "../constants";
+import { practiceDesignerModelId } from "../data/designerModel";
 import { practiceSourceFromResolved } from "../data/practiceSources";
 import {
   publishPracticeSetupSnapshot,
@@ -294,7 +295,11 @@ export function PracticeSetup({
         const names = sourceNamesOf(set.sources);
         let resolved;
         try {
-          resolved = await set.resolve();
+          // Inside the designer model's real window (the server's budget); an
+          // unreadable model resolves with no model budget — never a browser cut.
+          resolved = await set.resolve({
+            targetModelId: await practiceDesignerModelId(mode),
+          });
         } catch (e) {
           toast.error(
             e instanceof Error
@@ -315,7 +320,7 @@ export function PracticeSetup({
         if (!source) {
           toast.error("Your sources have no readable text — continuing ungrounded");
         } else if (made.cut) {
-          toast.info("A long source was cut to fit. Review what goes in to choose parts.");
+          toast.info("A source was cut to the size you chose.");
         }
       }
 

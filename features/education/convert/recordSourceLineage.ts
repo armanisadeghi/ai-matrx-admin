@@ -17,6 +17,16 @@ import { associationsService } from "@/features/scopes/service/associationsServi
 import type { AssociationTargetType } from "@/features/scopes/types";
 import type { ConvertResult, ConvertSource, LineageOutcome } from "./types";
 
+/**
+ * What a lineage edge needs to know about the made thing. `targetKind` is a plain
+ * string so a made thing that is not a converter target (a spoken-practice session)
+ * links through this same writer.
+ */
+export type LineageArtifact = Omit<
+  Pick<ConvertResult, "resourceType" | "artifactId" | "targetKind" | "title" | "href" | "detail">,
+  "targetKind"
+> & { targetKind: string };
+
 const LINKED: LineageOutcome = { failed: [], kitMemberFailed: false };
 
 /**
@@ -48,7 +58,7 @@ function resolveAnchor(
  * The association RPC is idempotent (ON CONFLICT), so a retry is safe.
  */
 export async function recordSourceLineage(
-  result: Pick<ConvertResult, "resourceType" | "artifactId" | "targetKind" | "title" | "href" | "detail">,
+  result: LineageArtifact,
   source: ConvertSource,
   orgId: string | undefined,
 ): Promise<LineageOutcome> {
@@ -97,7 +107,7 @@ export async function recordSourceLineage(
  * There is no merged copy to point at.
  */
 async function recordKitLineage(
-  result: Pick<ConvertResult, "resourceType" | "artifactId" | "targetKind" | "title" | "href" | "detail">,
+  result: LineageArtifact,
   source: ConvertSource,
   kitId: string,
   orgId: string | undefined,
@@ -149,7 +159,7 @@ export function lineageFailureLine(outcome: LineageOutcome | undefined, inKit: b
 
 /** Link one artifact to several Sources; the outcome names every edge that failed. */
 export async function recordLineageForSources(
-  result: Pick<ConvertResult, "resourceType" | "artifactId" | "targetKind" | "title" | "href" | "detail">,
+  result: LineageArtifact,
   sources: readonly ConvertSource[],
   orgId: string | undefined,
 ): Promise<LineageOutcome> {

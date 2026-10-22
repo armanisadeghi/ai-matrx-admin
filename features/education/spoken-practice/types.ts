@@ -7,6 +7,7 @@
 // 'spoken'). See FEATURE.md.
 
 import type { SourceSet } from "@ai-matrx/agents/sources";
+import type { ConvertSource } from "@/features/education/convert/types";
 import type {
   GradeResult,
   TrustConfidence,
@@ -55,6 +56,8 @@ export interface PracticeSource {
   sourceSet?: SourceSet;
   /** How each chosen Source was named on its card (the Source input's own map). */
   sourceNames?: Record<string, { label: string; kind: string; sourceKind?: string }>;
+  /** Where the session's lineage edges point (the one lineage writer's input). */
+  lineageSources?: ConvertSource[];
 }
 
 /** One planned prompt: the agent's output + a client-minted id + assembled trust. */
