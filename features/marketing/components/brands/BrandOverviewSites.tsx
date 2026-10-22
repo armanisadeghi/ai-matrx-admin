@@ -9,7 +9,7 @@
 import Link from "next/link";
 import { ChevronRight, Globe2, Lock, LockOpen, FileText } from "lucide-react";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import { Badge, EmptyState } from "@ai-matrx/design-system/controls";
 import { ReadFailure, Skeleton } from "@ai-matrx/design-system";
 import { InlineMediaRef } from "@ai-matrx/media/react";
@@ -132,7 +132,7 @@ function SiteRow({ brandSeg, site }: { brandSeg: string; site: MarketingSite }) 
           />
           <Stat
             label="Issues"
-            value={metrics ? metrics.openFindings.toLocaleString() : null}
+            value={metrics ? formatCount(metrics.openFindings) : null}
             href={marketingRoutes.site(brandSeg, siteSeg, "/findings")}
             loading={overview.isLoading}
           />

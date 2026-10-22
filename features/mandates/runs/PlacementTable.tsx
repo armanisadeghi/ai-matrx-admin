@@ -9,6 +9,7 @@
 // preview's own problem list) are red with the server's message, verbatim.
 // Nothing here decides where a value went — the server's trace is painted.
 
+import { formatCount } from "@ai-matrx/kit/format";
 import type { ReactNode } from "react";
 import { StatusToken } from "@ai-matrx/design-system/controls";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
@@ -69,7 +70,7 @@ export function ValueBox({
   if (withheld) {
     return (
       <span className="text-muted-foreground" data-testid={`value-withheld-${name}`}>
-        Withheld{typeof chars === "number" ? ` · ${chars.toLocaleString()} chars` : ""}
+        Withheld{typeof chars === "number" ? ` · ${formatCount(chars)} chars` : ""}
       </span>
     );
   }

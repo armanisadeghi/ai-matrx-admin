@@ -821,6 +821,10 @@
         {
           "file": "features/marketing/components/reputation/crisis/CrisisHoldingView.tsx",
           "why": "PROVABLY NOT A COUNT: `until` is a Date (`new Date(result.decay.valid_until)`), and Date#toLocaleString renders a timestamp, not an integer. The line is the holding statement's valid-until time."
+        },
+        {
+          "file": "features/approvals/ApprovalQueue.tsx",
+          "reason": "NOT AN INTEGER COUNT. `proposedAt.toLocaleString()` formats a Date into a local date-time string."
         }
       ],
       "shapeCensus": [
@@ -1807,6 +1811,14 @@
         {
           "file": "scripts/unwired/check-unwired.ts",
           "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
+        },
+        {
+          "file": "features/marketing/seo/domain-research/summaries.ts",
+          "why": "kit output differs: the tile voice reads \"12K\" / \"1.2M\" / \"1.2B\" (uppercase K from 10,000, whole K); kit compact reads lowercase \"12k\" with other tiers. Same body is censused under formatUsd."
+        },
+        {
+          "file": "features/marketing/smart-add/found/FoundStage.tsx",
+          "why": "kit output differs: `compact` is an exported Intl compact formatter that reads \"1.2K\" (uppercase K, locale of the reader); kit's compact voice reads \"1.2k\" in en-US."
         }
       ]
     },

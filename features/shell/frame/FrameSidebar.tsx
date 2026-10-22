@@ -4,6 +4,7 @@
 // name on top, then only this product's menu. It sits on the app canvas with
 // no border. The top row is the header's height and offset, so the product
 // name lines up with the sheet's breadcrumbs. Every row is a real link.
+import { formatCount } from "@ai-matrx/kit/format";
 import type { MouseEvent, ReactNode } from "react";
 import { ExternalLink, PanelLeftClose } from "lucide-react";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
@@ -79,7 +80,7 @@ export function FrameSidebar({
                           </>
                         ) : item.count != null ? (
                           <span className="type-meta text-muted-foreground">
-                            {item.count.toLocaleString()}
+                            {formatCount(item.count)}
                           </span>
                         ) : undefined
                       }

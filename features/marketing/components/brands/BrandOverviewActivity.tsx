@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { FileSearch, ImagePlus, Inbox, MessageSquareText, type LucideIcon } from "lucide-react";
 
 import { ReadFailure, Skeleton } from "@ai-matrx/design-system";
-import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { marketingSeg } from "@/features/marketing/lib/keys";
@@ -168,7 +168,7 @@ function useBrandRecentActivity({
           key: "findings",
           at: newestFinding,
           icon: Inbox,
-          label: `${pendingCount.toLocaleString()} finding${pendingCount === 1 ? "" : "s"} to review`,
+          label: `${formatCount(pendingCount)} finding${pendingCount === 1 ? "" : "s"} to review`,
           detail: null,
           href: marketingRoutes.brandDiscovery(brandSeg),
         });

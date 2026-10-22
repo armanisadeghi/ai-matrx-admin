@@ -3,6 +3,7 @@
  * A Tool is named by what it does — never by who serves it (CONTRACT §13; R-1).
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import {
   BarChart3,
   Building2,
@@ -69,7 +70,7 @@ export function reliabilityFacts(r: CatalogReliability): ReliabilityFacts {
   }
   const pct = Math.round(r.success_rate * 100);
   const tone = pct >= 90 ? "success" : pct >= 70 ? "warning" : "danger";
-  return { headline: `${pct}% worked`, sample: `${r.samples.toLocaleString("en-US")} runs`, tone };
+  return { headline: `${pct}% worked`, sample: `${formatCount(r.samples, { locale: "en-US" })} runs`, tone };
 }
 
 /** The typical wait: "~0.8 s", "~12 s", "~2 min". Null when nobody has timed it. */

@@ -13,7 +13,7 @@ import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ExternalLink, Loader2, MapPin, Pencil, Plus, Star, X } from "lucide-react";
 import { Badge, Button, Chip } from "@ai-matrx/design-system/controls";
-import { formatPoints } from "@ai-matrx/kit/format";
+import { formatCount, formatPoints } from "@ai-matrx/kit/format";
 
 import { ProInput } from "@/components/official/ProInput";
 import { cn } from "@/lib/utils";
@@ -290,7 +290,7 @@ function RatingLine({ match, source }: { match: LookupMatch; source: string }) {
     <span className="type-meta inline-flex items-center gap-1 text-muted-foreground">
       {match.rating !== null ? (<><Star className="h-3 w-3 fill-current text-warning" aria-hidden />
         <span className="font-medium tabular-nums text-foreground">{match.rating.toFixed(1)}</span></>) : null}
-      {match.reviews_count !== null ? <span className="tabular-nums">({match.reviews_count.toLocaleString()})</span> : null}
+      {match.reviews_count !== null ? <span className="tabular-nums">({formatCount(match.reviews_count)})</span> : null}
       <span>· {source}</span>
     </span>
   );
