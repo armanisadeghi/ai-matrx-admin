@@ -526,7 +526,7 @@ export function PublicImageSearch({
               <button
                 type="button"
                 onClick={handleClearInput}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground"
                 disabled={disabled}
               >
                 <X className="h-3 w-3" />
@@ -638,7 +638,7 @@ function SearchDialog({
               <button
                 type="button"
                 onClick={() => handleSearch(searchQuery)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground"
               >
                 <Search className="h-4 w-4" />
               </button>
@@ -673,11 +673,11 @@ function SearchDialog({
               />
             ) : photos.length === 0 && !loading ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <ImagePlus className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                <ImagePlus className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium text-foreground dark:text-muted-foreground">
                   No images found
                 </h3>
-                <p className="type-body text-gray-500 dark:text-gray-400 max-w-md mt-2">
+                <p className="type-body text-muted-foreground max-w-md mt-2">
                   {searchQuery
                     ? "Try a different search term"
                     : "Start by searching for images above"}
@@ -745,7 +745,7 @@ function SearchDialog({
           {multiSelect && (
             <div className="p-4 border-t border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="type-body text-gray-500 dark:text-gray-400">
+                <span className="type-body text-muted-foreground">
                   {selectedPhotos.length} image
                   {selectedPhotos.length !== 1 ? "s" : ""} selected
                 </span>

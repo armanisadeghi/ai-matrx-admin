@@ -46,11 +46,29 @@ begin
     -- Every row that is ahead of its history, OR that this lane logged (whatever its version now).
     execute format($q$
       insert into _c
+      -- FIX-HISTSUITES (2026-10-21): compared over the columns BOTH sides carry. A column added
+      -- after the newest history row (T-13 phase 5's published_to_web = false on chat.agent_run,
+      -- 2026-09-28) or dropped since (workbench.notes folder_id / folder_name, folders retired
+      -- 2026-10-10) is a change to the TABLE, not to the row: no update of the row has happened
+      -- since (it would have written a newer history row carrying the new column), so it read
+      -- "same=f" on 88 rows whose values were identical. A column present on both sides is still
+      -- compared exactly — except the actor-tier stamps, which are read in today's words
+      -- (`platform.canonical_actor_tier`): the provenance vocabulary was renamed in place
+      -- (code -> system, human -> user, ai -> agent) on live rows and never in history, so a
+      -- workflow.definition row stamped "code" in 2026-09 reads "system" now with no write.
       select %2$L, %3$L, t.id, t.version, h.mv,
-        (select coalesce(jsonb_object_agg(e.key, e.value), '{}'::jsonb)
+        (select coalesce(jsonb_object_agg(e.key,
+                  case when e.key like '%%by_tier' and jsonb_typeof(e.value) = 'string'
+                       then coalesce(to_jsonb(platform.canonical_actor_tier(e.value #>> '{}')), e.value)
+                       else e.value end), '{}'::jsonb)
            from jsonb_each((to_jsonb(t) - 'search_tsv' - 'embedding') - $1) e
-          where h.row_data ? e.key or e.value not in ('null'::jsonb, '{}'::jsonb, '[]'::jsonb))
-        = ((h.row_data - 'search_tsv' - 'embedding') - $1)
+          where h.row_data ? e.key)
+        = (select coalesce(jsonb_object_agg(e.key,
+                  case when e.key like '%%by_tier' and jsonb_typeof(e.value) = 'string'
+                       then coalesce(to_jsonb(platform.canonical_actor_tier(e.value #>> '{}')), e.value)
+                       else e.value end), '{}'::jsonb)
+             from jsonb_each((h.row_data - 'search_tsv' - 'embedding') - $1) e
+            where to_jsonb(t) ? e.key)
       from %1$s t
       cross join lateral (select r.version as mv, r.row_data from history.row_versions r
                            where r.entity_type = %3$L and r.row_id = t.id

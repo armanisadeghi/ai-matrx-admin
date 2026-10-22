@@ -111,7 +111,7 @@ providers/AudioOutputHostImpl.tsx    ← app-root streaming speaker owner
 lib/cartesia/               ← Low-level Cartesia client & types
   client.ts                 ← LEGACY: direct NEXT_PUBLIC_CARTESIA_API_KEY
   cartesia.types.ts         ← Full Cartesia type definitions
-  voices.ts / voices.json   ← Voice catalog
+  voices.ts                 ← re-export of the one voice catalog (@ai-matrx/media/voices)
 
 app/api/cartesia/route.ts   ← Token endpoint (authenticated)
 app/api/audio/              ← TTS + STT API routes

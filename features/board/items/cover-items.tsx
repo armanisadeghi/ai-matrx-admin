@@ -15,9 +15,10 @@
  */
 
 import { useContext, useEffect, useState } from "react";
-import { LayoutTemplate, Pencil, Wand2 } from "lucide-react";
+import { LayoutTemplate, Pencil } from "lucide-react";
 import { HtmlSampleFrame, TokenScope } from "@ai-matrx/records-ui/html-frame";
 import { Button, Textarea } from "@ai-matrx/design-system/controls";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import type { NodeSource } from "../board/document";
 import type { BoardItemType, ItemBodyProps, TileMenuAction, TileMenuContext } from "./types";
@@ -27,7 +28,6 @@ import { MarkdownTileBody } from "../tiles/MarkdownTileBody";
 import { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
 import { CoverStructure } from "./structures";
 import { useBoardTokenTables } from "./board-token-tables";
-import { startDesignBuild } from "../templates/board-start";
 
 export { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
 
@@ -203,16 +203,13 @@ export const COVER_ITEMS: BoardItemType[] = [
   },
 ];
 
-/** An empty cover: on a design-system board it invites the AI build (one line, one door); elsewhere it says so. */
+/** An empty cover: on a design-system board the AI is building it (it starts on its own, `useBoardStartRun`). */
 function EmptyCover() {
   const designBoard = useBoardTokenTables().length > 0;
   if (!designBoard) return <p className="py-6 text-center text-sm text-muted-foreground">Empty cover</p>;
   return (
     <div data-board-cover-empty="" className="flex flex-col items-center gap-3 py-6">
-      <p className="text-sm text-muted-foreground">The AI builds this system for your business.</p>
-      <Button variant="primary" icon={<Wand2 size={16} />} onClick={() => startDesignBuild(null)}>
-        Build with AI
-      </Button>
+      <ShimmerText text="The design agent is building this system…" className="text-sm" />
     </div>
   );
 }

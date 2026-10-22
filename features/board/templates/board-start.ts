@@ -1,10 +1,11 @@
 "use client";
 
-// THE START OF A NEW DESIGN BOARD, and its one door to the AI build (Arman 2026-10-21: reuse first, no parallel
-// path). The design-system job runs in the board's SIDE CHAT on the board surface (`matrx-user/board`) like any
-// surface-bound job: the surface hands it the board's values and tools, the person's words are its first message,
-// sent exactly as typed (`startShellChatJob`, the shell chat's own composer Send). Never a window, never a second
-// launcher. The choice rides from the gallery to the opened board in this tab only (`sessionStorage`, never the URL).
+// THE AI BUILDS A DESIGN BOARD, AND IT TALKS FIRST (Arman 2026-10-21/22, smart-add-brand VISION Parts 30-31). There
+// is no "Build with AI" step: a design-system board that is still empty (its cover has nothing) opens with the
+// design-system job already running in the board's SIDE CHAT on the board surface (`matrx-user/board`), which
+// hands it the board's values and tools. The job starts with NO message (`startShellChatJob` `run`): the agent
+// speaks first; nothing is typed for the person. Never a window, never a second launcher. A board started from a
+// style says the style is in instead (the choice rides from the gallery in this tab only, `sessionStorage`).
 
 import { useEffect, useRef } from "react";
 
@@ -14,22 +15,19 @@ import { toast } from "@/lib/toast";
 
 const DESIGN_SYSTEM_BUILD = MANDATE_KEYS.design_system__build;
 
-/**
- * Opens the design-system job in the side chat beside this board. With the person's own words they are sent at
- * once, untouched; without, the chat waits for them.
- */
-export function startDesignBuild(brief: string | null): void {
-  const send = brief && brief.trim() ? brief : undefined;
-  if (!startShellChatJob(DESIGN_SYSTEM_BUILD, send ? { send } : undefined)) {
-    toast.error("The chat could not open here. Use the Agents menu.");
-  }
+/** Starts the design-system job in the side chat beside this board; the agent speaks first. */
+export function startDesignBuild(): boolean {
+  if (startShellChatJob(DESIGN_SYSTEM_BUILD, { run: true })) return true;
+  toast.error("The chat could not open here. Use the Agents menu.");
+  return false;
 }
 
-/** What the person chose; `brief` is their own words, sent as typed (never added to). */
-export type BoardStart = { mode: "ai"; brief: string } | { mode: "style"; styleName: string };
-export type BoardStartChoice = { name: string; brandId?: string | null } & ({ mode: "ai"; brief: string } | { mode: "style"; styleTemplateId: string; styleName: string });
+/** How a new design board was started: by the AI (the default) or from a style. */
+export type BoardStart = { mode: "ai" } | { mode: "style"; styleName: string };
+export type BoardStartChoice = { name: string; brandId?: string | null } & ({ mode: "ai" } | { mode: "style"; styleTemplateId: string; styleName: string });
 
 const stashKey = (boardId: string) => `matrx:board:start:${boardId}`;
+const startedKey = (boardId: string) => `matrx:board:ai-started:${boardId}`;
 
 /** Keeps the start for the board about to open (this tab only). */
 export function stashBoardStart(boardId: string, start: BoardStart): void {
@@ -45,7 +43,7 @@ export function takeBoardStart(boardId: string): BoardStart | null {
   window.sessionStorage.removeItem(stashKey(boardId));
   try {
     const v = JSON.parse(raw) as BoardStart;
-    if (v?.mode === "ai" && typeof v.brief === "string") return v;
+    if (v?.mode === "ai") return v;
     if (v?.mode === "style" && typeof v.styleName === "string") return v;
   } catch {
     // An unreadable start is no start: the board opens as it is.
@@ -53,18 +51,39 @@ export function takeBoardStart(boardId: string): BoardStart | null {
   return null;
 }
 
+/** Whether this tab already started the build for this board (one start per board per tab). */
+function startedHere(boardId: string): boolean {
+  try {
+    return window.sessionStorage.getItem(startedKey(boardId)) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markStarted(boardId: string): void {
+  try {
+    window.sessionStorage.setItem(startedKey(boardId), "1");
+  } catch {
+    // Storage refused: the in-memory guard still holds for this mount.
+  }
+}
+
 /**
- * On the opened design-system board: runs the kept start once. "ai" starts the job in the side chat with the
- * person's words as its first message; "style" says the style is in and offers the AI to adapt it.
+ * On a design-system board: an EMPTY one opens with the AI building it (no click, no words); one just started
+ * from a style says so. Once per board per tab; a board with content starts nothing.
  */
-export function useBoardStartRun(boardId: string | null, isDesignBoard: boolean): void {
+export function useBoardStartRun(boardId: string | null, isDesignBoard: boolean, isEmpty: boolean): void {
   const done = useRef(false);
   useEffect(() => {
     if (!boardId || !isDesignBoard || done.current) return;
     const start = takeBoardStart(boardId);
-    if (!start) return;
+    if (start?.mode === "style") {
+      done.current = true;
+      toast.success(`${start.styleName} style added`);
+      return;
+    }
+    if (!isEmpty || startedHere(boardId)) return;
     done.current = true;
-    if (start.mode === "ai") startDesignBuild(start.brief);
-    else toast.success(`${start.styleName} style added`, { action: { label: "Adapt with AI", onClick: () => startDesignBuild(null) } });
-  }, [boardId, isDesignBoard]);
+    if (startDesignBuild()) markStarted(boardId);
+  }, [boardId, isDesignBoard, isEmpty]);
 }

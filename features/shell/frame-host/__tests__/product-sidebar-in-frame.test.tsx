@@ -15,9 +15,16 @@ import { createRoot, type Root } from "react-dom/client";
 import { MessageCircle } from "lucide-react";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
 import { PRODUCTS, PRODUCT_FAMILIES } from "@/features/shell/frame/products";
+import type { FrameProduct } from "@/features/shell/frame/types";
 import { routeMenuRegistry } from "@/features/shell/constants/route-menu-registry";
-import { FrameSidebarContent, FrameSidebarSlotContext, useFrameSidebarSlot } from "../frameSidebarSlot";
-import { frameRouteMenu, useFrameProductSidebar } from "../frameProductSidebar";
+import {
+  FRAME_PAGE_SIDEBAR_ROUTES,
+  FrameSidebarContent,
+  FrameSidebarSlotContext,
+  routeSuppliesPageSidebar,
+  useFrameSidebarSlot,
+} from "../frameSidebarSlot";
+import { PAGE_SIDEBAR_RESERVE_MS, frameRouteMenu, useFrameProductSidebar } from "../frameProductSidebar";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -65,8 +72,20 @@ afterEach(() => {
 });
 
 /** The frame host's composition (FrameHostImpl): the product sidebar hook + the slot around the body. */
-function FrameHost({ pathname, productId, page }: { pathname: string; productId: string; page: React.ReactNode }) {
-  const product = productFor(productId);
+function FrameHost({
+  pathname,
+  productId,
+  page,
+  product: given,
+  activeItemId,
+}: {
+  pathname: string;
+  productId: string;
+  page: React.ReactNode;
+  product?: FrameProduct;
+  activeItemId?: string;
+}) {
+  const product = given ?? productFor(productId);
   const { slotHost, sidebarContent } = useFrameProductSidebar(pathname, <MessageCircle aria-hidden />);
   return (
     <AppFrame
@@ -79,6 +98,7 @@ function FrameHost({ pathname, productId, page }: { pathname: string; productId:
       actions={[]}
       variant="workspace"
       form="desktop"
+      activeMenuItemId={activeItemId}
       sidebarContent={sidebarContent}
     >
       <main data-testid="body">
@@ -129,9 +149,78 @@ describe("kind A: a registered route menu is the frame's sidebar", () => {
     const rendered = nav!.querySelector(`[data-testid="menu-${menu}"]`);
     expect(rendered).not.toBeNull();
     expect(rendered!.getAttribute("data-expanded")).toBe("true");
-    // The route table's rows yield: the product's flow menu is not drawn beside the module's.
+    // The route table's rows yield the body: none of them is drawn inside the module's region.
     const rowLabels = productFor(productId).menu.flatMap((s) => s.items.map((i) => i.label));
-    for (const label of rowLabels) expect(sidebar().querySelector(`[title="${label}"]`)).toBeNull();
+    for (const label of rowLabels) expect(titles(nav!)).not.toContain(label);
+  });
+});
+
+/** A live-shaped product: the module's own row plus its sibling pages (Chat on /chat/new). */
+function chatLike(count: number): FrameProduct {
+  const base = productFor("chat");
+  const labels = ["Chats", "Voice / Talk", "Agent Messenger", "Imported AI chats", "AI Work", "Shared", "Archive"];
+  return {
+    ...base,
+    menu: [
+      {
+        id: "main",
+        items: labels.slice(0, count).map((label, i) => ({ id: `item-${i}`, label, icon: MessageCircle, href: `/x/${i}` })),
+      },
+    ],
+  };
+}
+const strip = () => sidebar().querySelector<HTMLElement>('[data-mf-region="product-rows"]');
+/** The row titles drawn inside a node (the Tile renders its title as text). */
+const titles = (node: Element) => Array.from(node.querySelectorAll(".matrx-tile-title")).map((n) => n.textContent);
+
+describe("the product's other pages stay above its module menu (owner-session, 2026-10-22)", () => {
+  it("kind A: Chat's sibling pages are one-line rows above the chat menu, the current one selected", async () => {
+    await mount(
+      <FrameHost pathname="/chat/new" productId="chat" product={chatLike(4)} activeItemId="item-0" page={<p>Page</p>} />,
+    );
+    const rows = strip();
+    expect(rows).not.toBeNull();
+    expect(titles(rows!)).toEqual(["Chats", "Voice / Talk", "Agent Messenger", "Imported AI chats"]);
+    expect(rows!.querySelector('[aria-current="page"]')?.textContent).toBe("Chats");
+    // Above the module's menu, never inside it.
+    const nav = sidebar().querySelector('[data-mf-region="product-nav"]')!;
+    expect(rows!.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(nav.querySelector('[data-mf-region="product-rows"]')).toBeNull();
+  });
+
+  it("kind B: the same strip sits above a page's own sidebar", async () => {
+    await mount(
+      <FrameHost pathname="/notes" productId="docs" product={chatLike(2)} activeItemId="item-0" page={<PageWithOwnSidebar />} />,
+    );
+    expect(strip()).not.toBeNull();
+    expect(titles(strip()!)).toContain("Voice / Talk");
+    expect(sidebar().querySelector('[data-testid="page-sidebar"]')).not.toBeNull();
+  });
+
+  it("no strip when the product has no page beyond the current module", async () => {
+    await mount(
+      <FrameHost pathname="/chat/new" productId="chat" product={chatLike(1)} activeItemId="item-0" page={<p>Page</p>} />,
+    );
+    expect(strip()).toBeNull();
+  });
+
+  it("more than four rows fold: the current row stays, the rest open with one click", async () => {
+    await mount(
+      <FrameHost pathname="/chat/new" productId="chat" product={chatLike(7)} activeItemId="item-5" page={<p>Page</p>} />,
+    );
+    const shown = () => titles(strip()!.querySelector("ul")!);
+    expect(shown()).toContain("Shared");
+    expect(shown().length).toBeLessThan(7);
+    const more = strip()!.querySelector<HTMLButtonElement>('[data-mf-product-rows-toggle]')!;
+    expect(more.getAttribute("aria-expanded")).toBe("false");
+    await act(async () => more.click());
+    expect(shown()).toHaveLength(7);
+    expect(more.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("the route table's own body (no module menu, no page sidebar) has no strip", async () => {
+    await mount(<FrameHost pathname="/tasks" productId="chat" product={chatLike(4)} page={<p>Page</p>} />);
+    expect(strip()).toBeNull();
   });
 });
 
@@ -200,5 +289,66 @@ describe("kind B: a page's own sidebar goes into the frame's one column", () => 
     await mount(<PageWithOwnSidebar />);
     expect(host.querySelector('[data-testid="classic-column"] [data-testid="page-sidebar"]')).not.toBeNull();
     expect(host.querySelectorAll('[data-testid="page-sidebar"]')).toHaveLength(1);
+  });
+});
+
+describe("a declared page sidebar never flashes the route rows first", () => {
+  const rowsBody = () => sidebar().querySelector(".mf-noscrollbar.px-2");
+
+  it("the declared list resolves the kind-B routes and nothing else", () => {
+    for (const path of ["/notes", "/notes/abc", "/files/all", "/messages", "/agent-connections/x"]) {
+      expect(routeSuppliesPageSidebar(path)).toBe(true);
+    }
+    for (const path of ["/chat/new", "/notesbook", "/marketing/brands"]) {
+      expect(routeSuppliesPageSidebar(path)).toBe(false);
+    }
+  });
+
+  it("every declared owner really renders <FrameSidebarContent>", () => {
+    const fs = jest.requireActual<typeof import("fs")>("fs");
+    const path = jest.requireActual<typeof import("path")>("path");
+    for (const { owner } of FRAME_PAGE_SIDEBAR_ROUTES) {
+      const src = fs.readFileSync(path.join(process.cwd(), owner), "utf8");
+      expect(`${owner}: ${src.includes("<FrameSidebarContent")}`).toBe(`${owner}: true`);
+    }
+  });
+
+  it("before the page claims it, the body is a quiet skeleton, then the page's sidebar", async () => {
+    function Late() {
+      const [on, setOn] = React.useState(false);
+      return (
+        <FrameHost
+          pathname="/notes"
+          productId="docs"
+          page={
+            <>
+              <button data-testid="arrive" onClick={() => setOn(true)} />
+              {on ? <PageWithOwnSidebar /> : null}
+            </>
+          }
+        />
+      );
+    }
+    await mount(<Late />);
+    expect(sidebar().querySelector("[data-mf-page-sidebar-pending]")).not.toBeNull();
+    expect(rowsBody()).toBeNull();
+    await act(async () => host.querySelector<HTMLButtonElement>('[data-testid="arrive"]')!.click());
+    expect(sidebar().querySelector("[data-mf-page-sidebar-pending]")).toBeNull();
+    expect(sidebar().querySelector('[data-testid="page-sidebar"]')).not.toBeNull();
+  });
+
+  it("a page that never claims it gets the route rows back", async () => {
+    jest.useFakeTimers({ advanceTimers: true });
+    try {
+      await mount(<FrameHost pathname="/notes" productId="docs" page={<p>Narrow list</p>} />);
+      expect(sidebar().querySelector("[data-mf-page-sidebar-pending]")).not.toBeNull();
+      await act(async () => {
+        jest.advanceTimersByTime(PAGE_SIDEBAR_RESERVE_MS + 10);
+      });
+      expect(sidebar().querySelector("[data-mf-page-sidebar-pending]")).toBeNull();
+      expect(sidebar().querySelector('[data-mf-region="product-nav"]')).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

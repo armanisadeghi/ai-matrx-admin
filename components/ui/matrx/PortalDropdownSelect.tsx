@@ -185,15 +185,15 @@ const PortalDropdownSelect: React.FC<SearchableSelectProps> = ({
   const defaultStyles = {
     container: "",
     trigger: `flex items-center justify-between w-full p-2 text-left rounded-md outline-none 
-      bg-textured border border-border text-gray-700 dark:text-gray-300 
+      bg-textured border border-border text-foreground dark:text-muted-foreground 
       hover:bg-gray-50 dark:hover:bg-gray-750 focus:bg-white dark:focus:bg-gray-800 
       focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500`,
     dropdown: "bg-textured border-border",
-    option: "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300",
+    option: "hover:bg-gray-100 dark:hover:bg-gray-700 text-foreground dark:text-muted-foreground",
     optionSelected: "bg-blue-50 dark:bg-blue-900/20",
-    groupHeading: "text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-750",
-    searchInput: "bg-gray-50 dark:bg-gray-700 border-border text-gray-800 dark:text-gray-200",
-    emptyMessage: "text-gray-500 dark:text-gray-400",
+    groupHeading: "text-muted-foreground bg-gray-50 dark:bg-gray-750",
+    searchInput: "bg-gray-50 dark:bg-gray-700 border-border text-foreground",
+    emptyMessage: "text-muted-foreground",
     floatingLabel: "absolute left-3 transition-all duration-200 ease-in-out pointer-events-none z-20 text-sm",
   };
 
@@ -257,7 +257,7 @@ const PortalDropdownSelect: React.FC<SearchableSelectProps> = ({
         {showSearch && (
           <div className="p-2 border-b border-border">
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
@@ -292,7 +292,7 @@ const PortalDropdownSelect: React.FC<SearchableSelectProps> = ({
                       ${value === option.value ? styles.optionSelected : ''}`}
                   >
                     {option.icon && (
-                      <span className="flex-shrink-0 text-gray-500 dark:text-gray-400">
+                      <span className="flex-shrink-0 text-muted-foreground">
                         {option.icon}
                       </span>
                     )}
@@ -314,7 +314,7 @@ const PortalDropdownSelect: React.FC<SearchableSelectProps> = ({
   return (
     <div className={`relative ${width} ${className} ${styles.container}`}>
       {!floatingLabel && label && (
-        <label htmlFor={`select-trigger-${id}`} className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor={`select-trigger-${id}`} className="block mb-1 text-sm font-medium text-foreground dark:text-muted-foreground">
           {label}
           {required && !disabled && <span className="text-red-500 ml-1">*</span>}
         </label>

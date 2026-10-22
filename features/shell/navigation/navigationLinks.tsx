@@ -24,7 +24,7 @@ import type { FaviconConfig } from "@/constants/favicon-route-data";
 export type { FaviconConfig, AdminNavSurface };
 
 const iconClassName =
-  "text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0";
+ "text-foreground h-5 w-5 flex-shrink-0";
 
 function buildIconNode(iconName: ShellIconName): React.ReactNode {
   const Icon = shellIconComponents[iconName];

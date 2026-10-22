@@ -26,6 +26,8 @@ export const TABLE_META_TOKEN = "token";
 /** The template pack's table token on a custom-Table tile ("color", "type_style"…), stamped at install. */
 export const TABLE_META_PACK_TOKEN = "table_token";
 export const TABLE_META_FILTER = "filter";
+/** `meta.read_only` = "true": the tile shows the rows and never writes, whatever the person's level (drawn as a section). */
+export const TABLE_META_READ_ONLY = "read_only";
 
 /** A parent constraint: every key equals its value. */
 export type EntityTileFilter = Record<string, string | number | boolean | null>;
@@ -48,21 +50,27 @@ function readFilter(raw: string | undefined): EntityTileFilter | undefined {
 }
 
 /** The entity token (and parent filter) a table tile shows, or null when it shows a custom Table. */
-export function entityTableOf(source: NodeSource): { token: string; filter?: EntityTileFilter } | null {
+export function entityTableOf(source: NodeSource): { token: string; filter?: EntityTileFilter; readOnly?: true } | null {
   // A tile with a custom Table id is never a schema table, whatever its meta says (a template stamps its
   // pack table token as `meta.table_token`; boards made 2026-10-19 carry it as `meta.token` beside the id).
   if (source.kind !== "entity" || source.entity !== TABLE_ENTITY || source.id) return null;
   const token = source.meta?.[TABLE_META_TOKEN];
   if (!token) return null;
   const filter = readFilter(source.meta?.[TABLE_META_FILTER]);
-  return filter ? { token, filter } : { token };
+  const readOnly = source.meta?.[TABLE_META_READ_ONLY] === "true";
+  return { token, ...(filter ? { filter } : {}), ...(readOnly ? { readOnly: true as const } : {}) };
 }
 
-/** A table tile over a registered entity token, optionally pinned to one parent and drawn as a section. */
-export function entityTableSource(token: string, options: { filter?: EntityTileFilter; layout?: "section" | "table" } = {}): NodeSource {
+/**
+ * A table tile over a registered entity token, optionally pinned to one parent and drawn as a section.
+ * `readOnly`: shows the rows and never writes; always a section (records-ui's `SectionCard` is the card with a
+ * read-only option), whatever `layout` says.
+ */
+export function entityTableSource(token: string, options: { filter?: EntityTileFilter; layout?: "section" | "table"; readOnly?: boolean } = {}): NodeSource {
   const meta: Record<string, string> = { [TABLE_META_TOKEN]: token };
   if (options.filter && Object.keys(options.filter).length > 0) meta[TABLE_META_FILTER] = JSON.stringify(options.filter);
-  if (options.layout === "section") meta.layout = TABLE_LAYOUT_SECTION;
+  if (options.layout === "section" || options.readOnly) meta.layout = TABLE_LAYOUT_SECTION;
+  if (options.readOnly) meta[TABLE_META_READ_ONLY] = "true";
   return { kind: "entity", entity: TABLE_ENTITY, id: null, meta };
 }
 

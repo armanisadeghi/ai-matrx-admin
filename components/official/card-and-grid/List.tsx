@@ -40,7 +40,7 @@ export const List = ({
   return (
     <div className={className}>
       {title && <h2 className="text-md font-semibold mb-4">{title}</h2>}
-      {description && <p className="type-body text-gray-500 dark:text-gray-400 mb-4">{description}</p>}
+      {description && <p className="type-body text-muted-foreground mb-4">{description}</p>}
       
       {showContainer ? (
         <div className={cn(

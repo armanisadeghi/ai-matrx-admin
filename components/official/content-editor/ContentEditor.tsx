@@ -290,9 +290,9 @@ export function ContentEditor({
             {collapsible && (
               <div className="flex-none">
                 {isCollapsed ? (
-                  <ChevronRight className="h-3.5 w-3.5 text-zinc-500" />
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                 )}
               </div>
             )}
@@ -322,7 +322,7 @@ export function ContentEditor({
                         <config.icon className="h-3.5 w-3.5" />
                         <div className="flex flex-col">
                           <span className="font-medium">{config.label}</span>
-                          <span className="type-meta text-zinc-500">
+                          <span className="type-meta text-muted-foreground">
                             {config.description}
                           </span>
                         </div>
@@ -335,7 +335,7 @@ export function ContentEditor({
 
             {/* Title */}
             {title && (
-              <div className="type-secondary font-medium text-zinc-700 dark:text-zinc-300">
+              <div className="type-secondary font-medium text-foreground dark:text-muted-foreground">
                 {title}
               </div>
             )}
@@ -396,7 +396,7 @@ export function ContentEditor({
 
             {/* Auto-save status */}
             {autoSave && onSave && (
-              <div className="flex items-center gap-1.5 type-secondary text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-1.5 type-secondary text-muted-foreground">
                 {isSaving ? (
                   <>
                     <Save className="h-3 w-3 animate-pulse" />
@@ -530,7 +530,7 @@ export function ContentEditor({
                     <RichContent level="full" imagePolicy={imagePolicy} source={localContent} />
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-zinc-400 dark:text-zinc-500">
+                  <div className="text-center py-12 text-muted-foreground">
                     No content to preview
                   </div>
                 )}
@@ -554,7 +554,7 @@ export function ContentEditor({
                 className="absolute left-1/2 bottom-1 -translate-x-1/2 flex items-center justify-center h-6 w-6 rounded-full bg-white dark:bg-zinc-800 border border-border shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
                 title="Expand"
               >
-                <ChevronDown className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-300" />
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             </>
           )}

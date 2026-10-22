@@ -2510,5 +2510,5 @@ export const iconColorMap: Record<string, string> = {
   pink: "bg-pink-500/15 text-pink-600 dark:bg-pink-400/15 dark:text-pink-400",
   red: "bg-red-500/15 text-red-600 dark:bg-red-400/15 dark:text-red-400",
   slate:
-    "bg-slate-500/15 text-slate-600 dark:bg-slate-400/15 dark:text-slate-400",
+ "bg-slate-500/15 text-muted-foreground dark:bg-slate-400/15 ",
 };

@@ -76,7 +76,14 @@ delete from custom.external_source where organization_id = :ORG;
 delete from history.migration_log where organization_id = :ORG;
 -- this suite's own history, so a previous run's share is never counted as this one's
 delete from history.row_versions where entity_type = 'iam.permissions' and row_id in (:GRANT, :GRANT2);
-delete from history.row_versions where organization_id = :ORG;
+-- BY THE INDEX (lane ASOF-REVOKE, 2026-10-21): history.row_versions has no index on
+-- organization_id alone, so `where organization_id = …` scanned every monthly partition and passed
+-- this file's 60 s ceiling (even one month's partition does). rv_org_latest_idx is
+-- (entity_type, organization_id, id): naming every captured entity type (history.capture_window,
+-- the capture's own register) turns it into index probes, ~0.4 s measured on main.
+delete from history.row_versions
+ where entity_type = any (array(select w.entity_type from history.capture_window w))
+   and organization_id = :ORG;
 delete from platform.knob_override where organization_id = :ORG;
 delete from iam.memberships where organization_id = :ORG;
 delete from iam.organizations where id = :ORG;
@@ -599,7 +606,14 @@ delete from iam.organizations where id = :ORG;
 -- itself a change, and their capture triggers write history rows in THIS transaction. Sweeping
 -- history before them left five rows behind on the first run.
 delete from history.row_versions where entity_type = 'iam.permissions' and row_id in (:GRANT, :GRANT2);
-delete from history.row_versions where organization_id = :ORG;
+-- BY THE INDEX (lane ASOF-REVOKE, 2026-10-21): history.row_versions has no index on
+-- organization_id alone, so `where organization_id = …` scanned every monthly partition and passed
+-- this file's 60 s ceiling (even one month's partition does). rv_org_latest_idx is
+-- (entity_type, organization_id, id): naming every captured entity type (history.capture_window,
+-- the capture's own register) turns it into index probes, ~0.4 s measured on main.
+delete from history.row_versions
+ where entity_type = any (array(select w.entity_type from history.capture_window w))
+   and organization_id = :ORG;
 do $t$
 declare
   v_org constant uuid := 'a50f0000-0000-4a00-8a00-000000000a01';
@@ -612,7 +626,9 @@ begin
        + (select count(*) from platform.associations where organization_id = v_org)
        + (select count(*) from platform.knob_override where organization_id = v_org)
        + (select count(*) from platform.reachability where origin = 'store-asof-test')
-       + (select count(*) from history.row_versions where organization_id = v_org)
+       + (select count(*) from history.row_versions
+           where entity_type = any (array(select w.entity_type from history.capture_window w))
+             and organization_id = v_org)
        + (select count(*) from iam.permissions where id in ('a50f0000-0000-4a00-8a00-000000009901',
                                                               'a50f0000-0000-4a00-8a00-000000009902'))
     into n;

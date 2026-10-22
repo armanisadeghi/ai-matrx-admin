@@ -94,7 +94,7 @@ function FloatingDockMobile({
           iconBgColor,
         )}
       >
-        <IconLayoutNavbarCollapse className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+        <IconLayoutNavbarCollapse className="h-5 w-5 text-muted-foreground" />
       </button>
 
       {/* Full screen overlay menu */}
@@ -144,7 +144,7 @@ function FloatingDockMobile({
                     </div>
                     <span className="font-medium">{item.label}</span>
                   </div>
-                  <IconChevronRight className="h-5 w-5 text-gray-400" />
+                  <IconChevronRight className="h-5 w-5 text-muted-foreground" />
                 </Link>
               ))}
             </div>
@@ -265,7 +265,7 @@ function IconContainer({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: 1, x: "-50%" }}
               className={cn(
-                "p-0 whitespace-pre rounded-md bg-transparent text-gray-800 dark:text-gray-100 absolute left-1/2 -translate-x-1/2 -top-0 w-fit type-secondary",
+ "p-0 whitespace-pre rounded-md bg-transparent text-foreground absolute left-1/2 -translate-x-1/2 -top-0 w-fit type-secondary",
                 bgColor,
               )}
             >

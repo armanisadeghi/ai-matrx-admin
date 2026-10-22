@@ -48,8 +48,17 @@ else
         # reason screams to the ship-all lanes.
         echo ""
         echo "ship.sh: the sync did not finish (exit $SYNC_RC; its reason is printed above). Releasing origin/main anyway, without this checkout's unpushed commits."
-        python3 "$HOME/code/matrx-ship/scripts/release-scream.py" --repo matrx-frontend --where "ship.sh sync" \
-            --check "sync-main did not push (exit $SYNC_RC)" \
+        # The scream's default banner says "PUSHED ANYWAY" — false here: nothing was pushed. Use
+        # release-scream's --title when it has one; until then the true title leads the --check text.
+        SCREAM_PY="$HOME/code/matrx-ship/scripts/release-scream.py"
+        SYNC_TITLE="RELEASE WARNING — SYNC DID NOT PUSH; releasing origin/main without this checkout's local commits"
+        if python3 "$SCREAM_PY" --help 2>/dev/null | grep -q -- '--title'; then
+            SCREAM_TITLE=(--title "$SYNC_TITLE"); SYNC_CHECK="sync-main did not push (exit $SYNC_RC)"
+        else
+            SCREAM_TITLE=(); SYNC_CHECK="$SYNC_TITLE: sync-main exit $SYNC_RC"
+        fi
+        python3 "$SCREAM_PY" --repo matrx-frontend --where "ship.sh sync" ${SCREAM_TITLE[@]+"${SCREAM_TITLE[@]}"} \
+            --check "$SYNC_CHECK" \
             --detail "$(grep -E 'SYNC STOPPED|NOT PUSHED|PUSH REFUSED|REFUSED' "$SYNC_LOG" | tail -3)" || true
         export RELEASE_REMOTE_MAIN_ONLY=1
     fi

@@ -153,7 +153,7 @@ const HelpIcon: React.FC<HelpIconProps> = ({
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
     >
-      <InfoIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200" />
+      <InfoIcon className="h-4 w-4 text-muted-foreground hover:text-muted-foreground transition-colors duration-200" />
       
       {isVisible && typeof document !== 'undefined' && createPortal(
         <div 
@@ -172,7 +172,7 @@ const HelpIcon: React.FC<HelpIconProps> = ({
             <div className="flex items-center gap-2 mb-2">
               <HelpCircleIcon className="h-4 w-4 flex-shrink-0 text-blue-500 dark:text-blue-400" />
               {title && (
-                <h3 className="text-gray-900 dark:text-gray-100 type-title">
+                <h3 className="text-foreground type-title">
                   {title}
                 </h3>
               )}
@@ -188,7 +188,7 @@ const HelpIcon: React.FC<HelpIconProps> = ({
             </div>
             
             {/* Content */}
-            <div className="type-body text-gray-700 dark:text-gray-300 leading-relaxed">
+            <div className="type-body text-foreground dark:text-muted-foreground leading-relaxed">
               {content ? content : (text && formatTextWithLineBreaks(text))}
             </div>
             

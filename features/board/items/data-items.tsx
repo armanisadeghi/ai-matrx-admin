@@ -229,6 +229,8 @@ function AdoptTableLook({ tableId, source, onSource }: { tableId: string } & Pic
 /** The table tile's own "…" entries: switch between the table page and the section card. */
 export function tableMenuActions({ source, onSource }: TileMenuContext): TileMenuAction[] {
   if (!tableIdOf(source) && !entityTableOf(source)) return [];
+  // A read-only tile has one layout (the section is the card that takes `readOnly`): nothing to switch.
+  if (entityTableOf(source)?.readOnly) return [];
   const now = tableLayoutOf(source);
   const next = now === "table" ? "section" : "table";
   return [
@@ -332,14 +334,15 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
  * through the platform's entity doors. Mounted in the person's working organization: that is where a row added
  * here is filed (reads are every organization she can see, narrowed only by the tile's own filter).
  */
-function EntityTableTileBody({ token, filter, source }: { token: string; filter?: EntityTileFilter; source: NodeSource }) {
-  const section = tableLayoutOf(source) === "section";
+function EntityTableTileBody({ token, filter, readOnly, source }: { token: string; filter?: EntityTileFilter; readOnly?: boolean; source: NodeSource }) {
+  // A read-only tile is always a section: records-ui's SectionCard is the card that takes `readOnly`.
+  const section = readOnly === true || tableLayoutOf(source) === "section";
   const auto = useTileAutoHeight() && section;
   const entitySource = { kind: "entity" as const, token, ...(filter ? { filter } : {}) };
   return (
     <div className={auto ? "flex min-w-0 flex-col gap-2 overflow-x-auto" : "h-full min-h-0 overflow-y-auto px-2 pb-2 pt-1"}>
       <WorkingOrganizationRecords>
-        {section ? <SectionCard source={entitySource} /> : <RecordsTableCard source={entitySource} />}
+        {section ? <SectionCard source={entitySource} {...(readOnly ? { readOnly: true } : {})} /> : <RecordsTableCard source={entitySource} />}
       </WorkingOrganizationRecords>
     </div>
   );
@@ -347,7 +350,7 @@ function EntityTableTileBody({ token, filter, source }: { token: string; filter?
 
 function TableItemBody(props: ItemBodyProps) {
   const entityTable = entityTableOf(props.source);
-  if (entityTable) return <EntityTableTileBody key={entityTable.token} token={entityTable.token} {...(entityTable.filter ? { filter: entityTable.filter } : {})} source={props.source} />;
+  if (entityTable) return <EntityTableTileBody key={entityTable.token} token={entityTable.token} {...(entityTable.filter ? { filter: entityTable.filter } : {})} {...(entityTable.readOnly ? { readOnly: true } : {})} source={props.source} />;
   const id = tableIdOf(props.source);
   if (id) return <TableRecordBody key={id} id={id} {...props} />;
   // "Get data": the tile is the fetch panel until the server answers with the table.

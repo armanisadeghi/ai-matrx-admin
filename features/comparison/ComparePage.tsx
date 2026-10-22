@@ -26,7 +26,8 @@ import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { CompareLayerInputs } from "@/features/provision-window/CompareLayerInputs";
 
 import { useComparisonKinds, useComparisonOrganizationId } from "./hooks";
-import { followRun, runComparison } from "./server";
+import { answerConfirm, followRun, getConfirmPrice, runComparison } from "./server";
+import type { FacetConfirm } from "./components/ConfirmFacetLine";
 import {
   applyProgress,
   ComparisonRefusal,
@@ -300,14 +301,28 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
     setPhase("build");
   }
 
+  /** "Is this them?" for the run on screen: the price first, then the owner's answer rebuilds the result in place. */
+  function facetConfirm(runId: string): FacetConfirm {
+    return {
+      runId,
+      price: (item, facet) => getConfirmPrice(runId, item.item_index ?? 0, facet, { organizationId }),
+      answer: async (item, facet, answer) => {
+        const state = await answerConfirm(runId, item.item_index ?? 0, facet, answer, { organizationId });
+        if (state.result) setResult(state.result);
+      },
+    };
+  }
+
   if (phase === "result" && result) {
     const savedRunId = params.get("run");
+    const confirmRunId = ownRun.current ?? savedRunId;
     return (
       <>
         <ComparisonView
           result={result}
           factsHref={(i) => (i.table_id ? `/data/${i.table_id}` : null)}
           onPick={pick}
+          onConfirm={confirmRunId ? facetConfirm(confirmRunId) : undefined}
           actions={<><ShareButton /><Button variant="outline" icon={<RotateCcw className="h-4 w-4" />} onClick={startOver}>New comparison</Button></>}
         />
         {savedRunId ? (

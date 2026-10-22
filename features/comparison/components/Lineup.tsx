@@ -11,12 +11,13 @@
 
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, ExternalLink, Loader2, MapPin, Pencil, Plus, Star, X } from "lucide-react";
+import { Check, ExternalLink, MapPin, Pencil, Plus, Star, X } from "lucide-react";
 import { Badge, Button, Chip } from "@ai-matrx/design-system/controls";
 import { formatCount, formatPoints } from "@ai-matrx/kit/format";
 
 import { ProInput } from "@/components/official/ProInput";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/loaders/Spinner";
 
 import type { ComparisonKindInfo, LookupMatch } from "../contract";
 import { resolveRow, type ResolveCandidate } from "../discovery";
@@ -185,12 +186,11 @@ export function Lineup({
         ))}
         {canAdd ? (
           <li>
-            <button type="button" data-clickable=""
+            <Button variant="quiet" icon={<Plus className="h-5 w-5" />}
               onClick={() => onRows((rs) => [...rs, newRow(places && near.trim() ? { city: near.trim(), cityFromNear: true, focus: true } : { focus: true })])}
-              className="flex h-full min-h-40 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:text-foreground">
-              <Plus className="h-5 w-5" aria-hidden />
-              <span className="type-secondary font-medium">Add another</span>
-            </button>
+              className="h-full min-h-40 w-full flex-col gap-2 rounded-2xl border border-dashed border-border">
+              Add another
+            </Button>
           </li>
         ) : null}
       </ol>
@@ -202,7 +202,7 @@ export function Lineup({
         <div className="type-secondary min-h-5 text-muted-foreground" aria-live="polite">
           {matched.length < 2 ? (
             <><span className="tabular-nums text-foreground">{matched.length}</span> of 2 matched
-              {busy ? <span className="ml-2 inline-flex items-center gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />Matching</span>
+              {busy ? <span className="ml-2 inline-flex items-center gap-1"><Spinner size="xs" variant="ghost" label="Matching" />Matching</span>
                 : unsettled ? <span className="ml-2">· Finish the open card</span> : null}</>
           ) : quote.data ? (
             <><span className="tabular-nums text-foreground">{matched.length}</span> matched · <span className="font-medium tabular-nums text-foreground">{formatPoints(quote.data.total_points)}</span>
@@ -256,7 +256,7 @@ function SlotCard({ index, row, kind, onEdit, onFind, onPick, onChange, onRemove
           found ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>{index + 1}</span>
         {found ? <span className="type-meta inline-flex items-center gap-1 text-success-ink"><Check className="h-3.5 w-3.5" aria-hidden />Matched</span>
           : row.state === "resolving" ? <span className="type-meta inline-flex items-center gap-1 text-muted-foreground" aria-label="Looking it up">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />Matching</span>
+            <Spinner size="xs" variant="ghost" label="Matching" />Matching</span>
           : row.state === "choose" ? <Badge tone="warning">{row.candidates.length > 1 ? "Pick one" : "Is this it?"}</Badge>
           : row.state === "not_found" ? <Badge tone="neutral">No match</Badge> : null}
         <span className="flex-1" />

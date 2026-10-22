@@ -97,7 +97,7 @@ function CrumbOptions({ crumb }: { crumb: Crumb }) {
         <button
           type="button"
           aria-label={`Switch ${crumb.optionsLabel ?? crumb.label}`}
-          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 hover:text-foreground hover:bg-accent/60"
+          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent/60"
         >
           <ChevronDown className="h-3.5 w-3.5" />
         </button>
@@ -235,7 +235,7 @@ export function CrumbTrailHeader({
             {trail.map((crumb, i) => (
               <Fragment key={`${crumb.label}-${i}`}>
                 {i > 0 && (
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 )}
                 <CrumbNode crumb={crumb} isLast={i === trail.length - 1} />
               </Fragment>

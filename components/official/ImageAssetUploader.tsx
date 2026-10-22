@@ -378,7 +378,7 @@ function PreviewBar({
       <div className="flex-1 min-w-0">
         <p className="type-secondary font-medium text-muted-foreground">Image set</p>
         <p className="type-meta text-muted-foreground truncate">{imageUrl}</p>
-        <p className="type-meta text-muted-foreground/60 mt-0.5">
+        <p className="type-meta text-muted-foreground mt-0.5">
           Use the tabs below to change
         </p>
       </div>

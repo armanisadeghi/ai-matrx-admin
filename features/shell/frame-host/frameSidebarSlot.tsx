@@ -18,6 +18,32 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 
+/**
+ * THE ROUTES WHOSE PAGE HANDS THE FRAME ITS SIDEBAR (kind B) — the ONE declared list. The frame
+ * reserves its sidebar body (a quiet skeleton, never the route rows) on these routes until the page
+ * claims it, so the rows never flash first. `owner` is the file that renders <FrameSidebarContent>
+ * (a test holds the two in step). A page that adopts the door adds its route here.
+ */
+export const FRAME_PAGE_SIDEBAR_ROUTES: readonly { pattern: RegExp; owner: string }[] = [
+  { pattern: /^\/notes(\/|$)/, owner: "features/notes/components/NotesView.tsx" },
+  { pattern: /^\/files(\/|$)/, owner: "features/files/components/surfaces/PageShell.tsx" },
+  { pattern: /^\/messages(\/|$)/, owner: "app/(core)/messages/MessagesLayoutClient.tsx" },
+  {
+    pattern: /^\/agent-connections(\/|$)/,
+    owner: "features/agent-connections/components/AgentConnectionsRouteShell.tsx",
+  },
+];
+
+/** The declared kind-B entry this route falls under (its owner file), or null. */
+export function pageSidebarOwner(pathname: string): string | null {
+  return FRAME_PAGE_SIDEBAR_ROUTES.find((r) => r.pattern.test(pathname))?.owner ?? null;
+}
+
+/** True when this route's page supplies the frame's sidebar body (kind B). */
+export function routeSuppliesPageSidebar(pathname: string): boolean {
+  return pageSidebarOwner(pathname) != null;
+}
+
 export interface FrameSidebarSlotHost {
   /** The frame's sidebar body node, once a page has claimed it; null until then. */
   target: HTMLElement | null;

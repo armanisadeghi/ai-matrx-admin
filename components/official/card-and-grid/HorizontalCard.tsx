@@ -53,7 +53,7 @@ const colorClasses: Record<CardColor, {
   },
   gray: {
     iconBg: "bg-gray-100 dark:bg-zinc-700",
-    iconColor: "text-gray-500 dark:text-gray-400",
+    iconColor: "text-muted-foreground",
     hover: "hover:bg-gray-50 dark:hover:bg-zinc-700",
   },
   red: {
@@ -108,7 +108,7 @@ const colorClasses: Record<CardColor, {
   },
   slate: {
     iconBg: "bg-slate-100 dark:bg-slate-800/70",
-    iconColor: "text-slate-500 dark:text-slate-400",
+    iconColor: "text-muted-foreground",
     hover: "hover:bg-slate-50 dark:hover:bg-slate-800/40",
   },
 };
@@ -121,7 +121,7 @@ export const HorizontalCard = ({
   color,
   path,
   className,
-  rightIcon = <ChevronRight size={20} className="text-gray-400 dark:text-gray-500" />,
+  rightIcon = <ChevronRight size={20} className="text-muted-foreground" />,
   onClick,
   showBorder = true,
   isLast = false,
@@ -147,7 +147,7 @@ export const HorizontalCard = ({
         <div>
           <h3 className="font-medium">{title}</h3>
           {description && (
-            <p className="type-body text-gray-500 dark:text-gray-400">
+            <p className="type-body text-muted-foreground">
               {description}
             </p>
           )}

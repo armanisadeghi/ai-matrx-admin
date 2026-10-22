@@ -46,7 +46,7 @@ const convertUiPathToExtractorPath = (uiPath: PathArray): string => {
  */
 const ProcessorExtractor = (props: ProcessorExtractorProps) => {
     if (!props.jsonData) {
-        return <div className="p-4 text-gray-500 dark:text-gray-400">No raw data available</div>;
+        return <div className="p-4 text-muted-foreground">No raw data available</div>;
     }
     return <ProcessorExtractorBody {...props} />;
 };
@@ -287,7 +287,7 @@ const ProcessorExtractorBody = ({ jsonData, configKey }: ProcessorExtractorProps
                     >
                         {(item, index) => (
                             <div>
-                                <pre className="whitespace-pre-wrap bg-gray-50 dark:bg-gray-800 p-4 rounded-md type-body text-gray-800 dark:text-gray-200 overflow-auto max-h-[300px]">
+                                <pre className="whitespace-pre-wrap bg-gray-50 dark:bg-gray-800 p-4 rounded-md type-body text-foreground overflow-auto max-h-[300px]">
                                     {formatJson(item, 2)}
                                 </pre>
                                 <div className="mt-2 flex justify-end">
@@ -341,7 +341,7 @@ const ProcessorExtractorBody = ({ jsonData, configKey }: ProcessorExtractorProps
                     contentSource={{ type: "raw" }}
                     contextData={{ content: displayJsonStr }}
                 >
-                    <pre className="whitespace-pre-wrap bg-gray-50 dark:bg-gray-800 p-4 rounded-md type-body text-gray-800 dark:text-gray-200 overflow-auto max-h-[60dvh]">
+                    <pre className="whitespace-pre-wrap bg-gray-50 dark:bg-gray-800 p-4 rounded-md type-body text-foreground overflow-auto max-h-[60dvh]">
                         {displayJsonStr}
                     </pre>
                 </NonEditableContextMenu>

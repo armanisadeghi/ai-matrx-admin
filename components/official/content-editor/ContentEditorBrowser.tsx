@@ -130,26 +130,26 @@ function BrowserHeader({
   return (
     <div className="flex-none border-b border-border bg-zinc-50 dark:bg-zinc-900/60">
       {title && (
-        <div className="px-3 pt-2 pb-1 type-secondary font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <div className="px-3 pt-2 pb-1 type-secondary font-semibold uppercase tracking-wide text-muted-foreground">
           {title}
         </div>
       )}
 
       {/* Search */}
       <div className="relative px-2 py-2">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <input
           type="text"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full pl-7 pr-7 py-1 text-xs rounded bg-white dark:bg-zinc-950 border border-border focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-600 placeholder:text-zinc-400"
+          className="w-full pl-7 pr-7 py-1 text-xs rounded bg-white dark:bg-zinc-950 border border-border focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-600 placeholder:text-muted-foreground"
         />
         {query && (
           <button
             type="button"
             onClick={() => onQueryChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center h-4 w-4 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500"
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center h-4 w-4 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-muted-foreground"
             title="Clear"
           >
             <X className="h-3 w-3" />
@@ -160,7 +160,7 @@ function BrowserHeader({
       {/* Filter chips */}
       {filters && filters.length > 0 && (
         <div className="flex items-center gap-1 flex-wrap px-2 pb-2">
-          <ListFilter className="h-3 w-3 text-zinc-400" />
+          <ListFilter className="h-3 w-3 text-muted-foreground" />
           {filters.map((f) => {
             const isActive = activeFilterIds.includes(f.id);
             const tone = toneClasses[f.tone ?? "zinc"];
@@ -173,7 +173,7 @@ function BrowserHeader({
                   "text-[10px] px-2 py-0.5 rounded-full border transition-colors",
                   isActive
                     ? tone
-                    : "bg-transparent text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                    : "bg-transparent text-muted-foreground border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800",
                 )}
               >
                 {f.label}

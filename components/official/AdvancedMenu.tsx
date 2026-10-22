@@ -175,7 +175,7 @@ const MenuItemsContent: React.FC<MenuItemsContentProps> = ({
       <div key={category}>
         {categorizeItems && category && catIndex > 0 && (
           <div className="px-2.5 pt-2 pb-0.5">
-            <h4 className="type-meta font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <h4 className="type-meta font-medium text-muted-foreground uppercase tracking-wide">
               {category}
             </h4>
           </div>
@@ -226,7 +226,7 @@ const MenuItemsContent: React.FC<MenuItemsContentProps> = ({
                   {isLoading ? (
                     <Loader2
                       size={15}
-                      className="animate-spin text-gray-400 dark:text-gray-500"
+                      className="animate-spin text-muted-foreground"
                     />
                   ) : isSuccess ? (
                     <Check
@@ -237,7 +237,7 @@ const MenuItemsContent: React.FC<MenuItemsContentProps> = ({
                     <Icon
                       size={15}
                       className={
-                        item.iconColor || "text-gray-600 dark:text-gray-400"
+                        item.iconColor || "text-muted-foreground"
                       }
                     />
                   )}
@@ -252,13 +252,13 @@ const MenuItemsContent: React.FC<MenuItemsContentProps> = ({
                       isError && "text-red-700 dark:text-red-300",
                       !isSuccess &&
                         !isError &&
-                        "text-gray-900 dark:text-gray-100",
+ "text-foreground",
                     )}
                   >
                     {item.label}
                   </span>
                   {item.disabled && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-400 font-medium">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-muted-foreground font-medium">
                       UNAVAILABLE
                     </span>
                   )}
@@ -267,7 +267,7 @@ const MenuItemsContent: React.FC<MenuItemsContentProps> = ({
                 {/* Submenu affordance — the row says out loud that more sits
                     behind it, with the count so nothing is a surprise. */}
                 {hasChildren && (
-                  <div className="flex-shrink-0 flex items-center gap-1 text-gray-400 dark:text-gray-500">
+                  <div className="flex-shrink-0 flex items-center gap-1 text-muted-foreground">
                     <span className="type-meta tabular-nums">
                       {visibleChildCount}
                     </span>
@@ -703,20 +703,20 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
               >
                 <ChevronLeft
                   size={16}
-                  className="text-gray-500 dark:text-gray-400"
+                  className="text-muted-foreground"
                 />
-                <DrawerTitle className="text-[15px] font-semibold text-gray-900 dark:text-gray-100">
+                <DrawerTitle className="text-[15px] font-semibold text-foreground">
                   {activeParent.label}
                 </DrawerTitle>
               </button>
             </div>
           ) : showHeader && title ? (
             <div className="px-4 pt-1 pb-3 border-b border-zinc-200/60 dark:border-zinc-700/60 flex-shrink-0">
-              <DrawerTitle className="text-[15px] font-semibold text-gray-900 dark:text-gray-100 text-center">
+              <DrawerTitle className="text-[15px] font-semibold text-foreground text-center">
                 {title}
               </DrawerTitle>
               {description && (
-                <p className="type-body text-gray-500 dark:text-gray-400 text-center mt-1">
+                <p className="type-body text-muted-foreground text-center mt-1">
                   {description}
                 </p>
               )}
@@ -797,9 +797,9 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           >
             <ChevronLeft
               size={14}
-              className="text-gray-500 dark:text-gray-400"
+              className="text-muted-foreground"
             />
-            <span className="type-meta font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+            <span className="type-meta font-medium text-muted-foreground uppercase tracking-wide">
               {activeParent.label}
             </span>
           </button>
@@ -807,7 +807,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           showHeader &&
           title && (
             <div className="px-2.5 py-1.5 border-b border-zinc-200/60 dark:border-zinc-700/60 flex-shrink-0">
-              <h3 className="type-meta font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+              <h3 className="type-meta font-medium text-muted-foreground uppercase tracking-wide">
                 {title}
               </h3>
             </div>

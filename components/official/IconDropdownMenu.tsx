@@ -102,12 +102,12 @@ export default function IconDropdownMenu<T extends string = string>({
                 size={16} 
                 className={cn(
                   "flex-shrink-0",
-                  isSelected ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
+                  isSelected ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"
                 )}
               />
               <span className={cn(
                 "type-body flex-1 leading-tight",
-                isSelected ? "font-medium text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"
+                isSelected ? "font-medium text-blue-600 dark:text-blue-400" : "text-foreground dark:text-muted-foreground"
               )}>
                 {option.label}
               </span>

@@ -39,6 +39,12 @@ describe("payment return stays on the host it was served on", () => {
     expect(new URL(res.headers.get("location") ?? "").origin).toBe("https://book.theirbusiness.com");
   });
 
+  it("a retry POST with no form body is refused back to the page, never a 500", async () => {
+    const res = await retryPOST(new NextRequest("https://internal.vercel.app/api/payments/retry", { method: "POST", headers: HOST }));
+    expect(res.status).toBe(303);
+    expect(new URL(res.headers.get("location") ?? "").origin).toBe("https://book.theirbusiness.com");
+  });
+
   it("retry hands Stripe the served host, never the Origin header", async () => {
     const body = new URLSearchParams({ subject: UUID, record: UUID, back: "/intake" });
     await retryPOST(
@@ -65,6 +71,11 @@ describe("no payer-facing route trusts the Origin header", () => {
     }
     return out;
   }
+  it("reads a public POST body without letting a non-form post throw a 500", () => {
+    const offenders = DIRS.flatMap((d) => files(join(ROOT, d))).filter((f) => /\.formData\(\)(?!\s*\.catch)/.test(readFileSync(f, "utf8")));
+    expect(offenders.map((f) => f.slice(ROOT.length + 1))).toEqual([]);
+  });
+
   it("imports requestHostOrigin, never requestOrigin", () => {
     const offenders = DIRS.flatMap((d) => files(join(ROOT, d))).filter((f) => /\brequestOrigin\s*\(/.test(readFileSync(f, "utf8")));
     expect(offenders.map((f) => f.slice(ROOT.length + 1))).toEqual([]);

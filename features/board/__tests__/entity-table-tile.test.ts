@@ -8,6 +8,8 @@ import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, entityTableOf, entityTableSource } 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { checkPack } from "@/lib/spaces-blocks/template-pack-check";
+import { BRAND_ASSET_TOKEN, withBrandAssets } from "../design-brand/brand-assets-tile";
+import { startNewEntries, type BoardItemType } from "../items/types";
 
 const PACK_JSON = readFileSync(join(__dirname, "../../spaces/templates/packs/design-system-board.pack.json"), "utf8");
 
@@ -58,3 +60,32 @@ describe("a table tile over a real schema table", () => {
     expect(checkBoardPack({ kind: "table", title: "Choices", entity: "web_brand_choice", table: "color", size: { w: 640, h: 400 } }).join(" ")).toMatch(/never both/);
   });
 });
+
+// A design board linked to a brand offers the brand's assets (web.brand_asset, that brand's rows only) as a
+// READ-ONLY table tile from the Add menu; a board with no brand offers nothing extra.
+describe("the brand's assets on its design board", () => {
+  const table = { key: TABLE_ENTITY, label: "Table", startNew: [{ label: "New table", create: () => ({ title: "t", source: entityTableSource("x") }) }] } as unknown as BoardItemType;
+  const note = { key: "note", label: "Note" } as unknown as BoardItemType;
+
+  it("a read-only tile keeps its token, its brand filter and read-only through the meta, drawn as a section", () => {
+    const source = entityTableSource(BRAND_ASSET_TOKEN, { filter: { brand_id: BRAND }, readOnly: true });
+    expect(entityTableOf(source)).toEqual({ token: BRAND_ASSET_TOKEN, filter: { brand_id: BRAND }, readOnly: true });
+    expect(source.kind === "entity" && source.meta?.layout).toBe(TABLE_LAYOUT_SECTION);
+  });
+
+  it("a linked board adds 'Brand assets' to the Table type only, placing that brand's read-only tile", () => {
+    const [t, n] = withBrandAssets([table, note], BRAND);
+    const entries = startNewEntries(t!);
+    expect(entries.map((e) => e.label)).toEqual(["New table", "Brand assets"]);
+    const brand = entries[1]!;
+    if (!("create" in brand)) throw new Error("Brand assets places at once");
+    expect(entityTableOf(brand.create().source)).toEqual({ token: BRAND_ASSET_TOKEN, filter: { brand_id: BRAND }, readOnly: true });
+    expect(n).toBe(note);
+  });
+
+  it("a board with no brand offers nothing extra", () => {
+    const types = [table, note];
+    expect(withBrandAssets(types, null)).toBe(types);
+  });
+});
+

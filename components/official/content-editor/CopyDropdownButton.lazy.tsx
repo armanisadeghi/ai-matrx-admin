@@ -63,7 +63,7 @@ export function CopyDropdownButton({
         title="Copy"
       >
         {loading ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-500" />
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
         ) : (
           <>
             <Copy className="h-3.5 w-3.5" />

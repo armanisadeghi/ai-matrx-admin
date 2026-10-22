@@ -165,6 +165,7 @@ export function DrillExplorer({
   pageWindow,
   base,
   surfaceName,
+  urlStateId,
   onShown,
 }: DrillExplorerProps) {
   // THE FIXED BASE (lane DRILL-PRIMITIVE-3) narrows every ask like the page's own filters, and is said as crumbs.
@@ -688,6 +689,7 @@ export function DrillExplorer({
                 emptyLabel={emptyLabel}
                 exportTitle={title}
                 search
+                {...(urlStateId ? { urlStateId } : {})}
                 {...(glance ? { attributes: glance } : {})}
                 cross={cross}
                 {...(question.where.length > 0 && headlineKey ? { coverage: { whole: whole?.measures[headlineKey] ?? null, measure: headlineKey } } : {})}

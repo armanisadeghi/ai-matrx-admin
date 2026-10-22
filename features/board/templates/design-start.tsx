@@ -1,22 +1,20 @@
 "use client";
 
-// THE START OF A BOARD THAT STARTS EMPTY (Arman 2026-10-21, smart-add-brand VISION Part 30): two ways, AI first.
-//   1. Build with AI (default): the board is made empty, then opens with the side chat already holding the
-//      design-system job on the board surface, the person's own words about their business as its first message
-//      (`board-start.ts`, `startShellChatJob`).
+// THE START OF A BOARD THAT STARTS EMPTY (Arman 2026-10-21/22, smart-add-brand VISION Parts 30-31): two ways, AI first.
+//   1. Create (default): the board is made empty and opens with the design agent already building it in the side
+//      chat, talking first; the person clicks and types nothing more (`board-start.ts`, `startShellChatJob` `run`).
 //   2. Start from a style: a short list of the reference-only styles (`listBoardStyles`, never gallery entries);
 //      the chosen one's rows fill the new board (records door inserts), then the AI is offered to adapt it.
 // From the press until the board opens the dialog shows the work in place (`progress`): the stages, the current
 // one shimmering. The choice rides from the gallery to the opened board in this tab only (`sessionStorage`).
 
-import { Palette, Wand2 } from "lucide-react";
+import { Palette } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@ai-matrx/design-system";
 import { Button, RegionSkeleton, StageSteps } from "@ai-matrx/design-system/controls";
 import { ShimmerText } from "@ai-matrx/design-system";
 import { ProInput } from "@/components/official/ProInput";
-import { ProTextarea } from "@/components/official/ProTextarea";
 
 import { BrandPicker } from "@/features/marketing/components/brands/BrandPicker";
 import { listBoardStyles, type BoardStyle } from "./board-packs";
@@ -38,7 +36,7 @@ export function designBoardStages(mode: "ai" | "style"): { id: string; label: st
       ];
 }
 
-/** Name the board, then start it: Build with AI (default) or Start from a style. */
+/** Name the board, then start it: the AI builds it (default) or Start from a style. */
 export function DesignBoardStartDialog({
   open,
   onOpenChange,
@@ -59,7 +57,6 @@ export function DesignBoardStartDialog({
   defaultBrandId?: string | null;
 }) {
   const [name, setName] = useState(defaultName);
-  const [brief, setBrief] = useState("");
   const [step, setStep] = useState<"start" | "style">("start");
   const [styles, setStyles] = useState<BoardStyle[] | null>(null);
   const [stylesError, setStylesError] = useState<string | null>(null);
@@ -72,7 +69,6 @@ export function DesignBoardStartDialog({
     setWasOpen(open);
     if (open) {
       setName(defaultName);
-      setBrief("");
       setStep("start");
       setPicked(null);
       setBrandId(defaultBrandId);
@@ -130,16 +126,6 @@ export function DesignBoardStartDialog({
               <ProInput value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Acme design system" autoFocus />
             </label>
             <BrandPicker organizationId={null} value={brandId} onChange={setBrandId} allowAll allLabel="No brand yet" label="Brand (optional)" />
-            <label className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-muted-foreground">Your business</span>
-              <ProTextarea
-                value={brief}
-                onChange={(e) => setBrief(e.target.value)}
-                rows={4}
-                placeholder="What you do, who for, colors or fonts you use"
-                data-testid="design-board-brief"
-              />
-            </label>
           </div>
         ) : (
           <div className="flex max-h-80 flex-col gap-1 overflow-y-auto" role="radiogroup" aria-label="Styles">
@@ -168,8 +154,8 @@ export function DesignBoardStartDialog({
               <Button variant="outline" icon={<Palette size={16} />} onClick={() => setStep("style")} disabled={!named}>
                 Start from a style
               </Button>
-              <Button variant="primary" icon={<Wand2 size={16} />} disabled={!named} onClick={() => onStart({ name: named, mode: "ai", brief, brandId })}>
-                Build with AI
+              <Button variant="primary" disabled={!named} onClick={() => onStart({ name: named, mode: "ai", brandId })}>
+                Create
               </Button>
             </>
           ) : (
