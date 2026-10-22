@@ -29,7 +29,7 @@ function toRowSummary(doc: DocumentRow): DocumentSummaryValue {
     name: doc.document_name,
     description: doc.description,
     source: doc.source,
-    is_public: doc.is_public,
+    is_public: doc.visibility === "public",
     created_at: doc.created_at,
     updated_at: doc.updated_at,
   };
@@ -153,7 +153,7 @@ export function buildDocumentContextData(
     document_organization_id: document.organization_id ?? undefined,
     document_summary: summary,
     document_body_text: bodyText ?? undefined,
-    document_is_public: document.is_public,
+    document_is_public: document.visibility === "public",
     document_can_edit: canEdit,
     document_is_owner: isOwner,
     context: {
