@@ -37,7 +37,6 @@
     "features/agents/agent-creators/chatbot-customizer/AIOptionComponents.tsx",
     "components/ssr/select/navigation-select.tsx",
     "components/official/IconDropdownMenu.tsx",
-    "components/official/settings/primitives/SettingsSelect.tsx",
     "components/official/mobile-action-bar/MobileFilterDrawer.tsx",
     "components/matrx/three-dot-menu/index.tsx",
     "components/mardown-display/blocks/questionnaire/QuestionnaireRenderer.tsx",

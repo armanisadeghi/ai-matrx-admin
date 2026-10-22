@@ -18,8 +18,7 @@ import {
 } from "../lib/guestAccess";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs } from "@ai-matrx/design-system/controls";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
+import { Tabs, KpiTile } from "@ai-matrx/design-system/controls";
 import { UserAcquisitionExplorer, useAcquisitionTotals, useFocusedPersonName } from "./UserAcquisitionExplorer";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { formatCount } from "@ai-matrx/kit/format";

@@ -10,9 +10,8 @@
 import { useRouter } from "next/navigation";
 import { Link2 } from "lucide-react";
 
-import { Button, RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { Button, RegionSkeleton, KpiTile } from "@ai-matrx/design-system/controls";
 
-import { KpiTile } from "@/components/official/kpi/KpiTile";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 
 import { INSIGHT_METRICS } from "../insights";

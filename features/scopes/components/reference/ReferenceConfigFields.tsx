@@ -3,8 +3,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { AlertTriangle, Eye, Link2, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
-import { Field } from "@/components/official/Field";
+import { Input, LabeledField as Field } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,

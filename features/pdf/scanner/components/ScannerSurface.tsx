@@ -81,11 +81,13 @@ export default function ScannerSurface() {
       itemId: string,
       quad: Quad | null,
       rotation: ScanRotation,
-      enhance: CropEnhance,
+      enhance: CropEnhance | null,
     ) => {
       session.setQuad(itemId, quad);
       session.setRotation(itemId, rotation);
-      session.setEnhance(itemId, enhance.mode, enhance.fileId);
+      // Untouched enhance row → leave the page's enhance (and any Clean all
+      // still running for it) alone.
+      if (enhance) session.setEnhance(itemId, enhance.mode, enhance.fileId);
     },
     [session],
   );
@@ -218,7 +220,7 @@ export default function ScannerSurface() {
               variant="primary"
               className="flex-1"
               disabled={
-                !session.allUploaded ||
+                !session.readyToSave ||
                 Boolean(flow.processing) ||
                 flow.navigating
               }
@@ -233,6 +235,11 @@ export default function ScannerSurface() {
                 <>
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                   Waiting for uploads…
+                </>
+              ) : session.enhancingCount > 0 ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  Finishing cleanup…
                 </>
               ) : (
                 <>
@@ -275,6 +282,7 @@ export default function ScannerSurface() {
 
         <CropSheet
           item={cropItem}
+          enhancing={cropItem ? session.enhancingIds.has(cropItem.itemId) : false}
           onClose={() => setCropItem(null)}
           onApply={handleCropApply}
         />

@@ -10,7 +10,7 @@ import {
   type ProJsonValidationState,
   type ProJsonValidator,
 } from "@/components/official/ProJsonTextarea";
-import { Field } from "@/components/official/Field";
+import { LabeledField as Field } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/lib/toast";
@@ -154,7 +154,6 @@ export default function ProTextareaDisplay({
   // this top-level block summarizes the full prop surface.
   const code = `import { ProTextarea } from '@/components/official/ProTextarea';
 import { ProJsonTextarea } from '@/components/official/ProJsonTextarea';
-import { Field } from '@/components/official/Field';
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
 // Every supported prop, with defaults inline.

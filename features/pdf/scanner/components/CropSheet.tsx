@@ -59,16 +59,24 @@ export interface CropEnhance {
 
 interface CropSheetProps {
   item: ScanItem | null;
+  /** A background enhance (Clean all) is running for this page. */
+  enhancing?: boolean;
   onClose: () => void;
+  /** `enhance` is null when the person left the enhance row untouched. */
   onApply: (
     itemId: string,
     quad: Quad | null,
     rotation: ScanRotation,
-    enhance: CropEnhance,
+    enhance: CropEnhance | null,
   ) => void;
 }
 
-export function CropSheet({ item, onClose, onApply }: CropSheetProps) {
+export function CropSheet({
+  item,
+  enhancing = false,
+  onClose,
+  onApply,
+}: CropSheetProps) {
   return (
     <Drawer open={Boolean(item)} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent className="h-[92dvh]">
@@ -77,6 +85,7 @@ export function CropSheet({ item, onClose, onApply }: CropSheetProps) {
           <CropEditor
             key={item.itemId}
             item={item}
+            enhancing={enhancing}
             onClose={onClose}
             onApply={onApply}
           />
@@ -149,8 +158,12 @@ const DISPLAY_MAX_DIM = 2400;
 function useRotatedImage(
   src: string | null,
   rotation: ScanRotation,
-): { url: string | null; loading: boolean } {
-  const [state, setState] = useState<{ key: string; url: string | null }>({
+): { url: string | null; loading: boolean; failed: boolean } {
+  const [state, setState] = useState<{
+    key: string;
+    url: string | null;
+    failed?: boolean;
+  }>({
     key: "",
     url: null,
   });
@@ -172,11 +185,23 @@ function useRotatedImage(
       canvas.width = swap ? h : w;
       canvas.height = swap ? w : h;
       const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.drawImage(img, -w / 2, -h / 2, w, h);
-      setState({ key, url: canvas.toDataURL("image/jpeg", 0.85) });
+      if (!ctx) {
+        setState({ key, url: null, failed: true });
+        return;
+      }
+      try {
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.drawImage(img, -w / 2, -h / 2, w, h);
+        setState({ key, url: canvas.toDataURL("image/jpeg", 0.85) });
+      } catch (err) {
+        // A tainted canvas (or an out-of-memory bitmap) must say so, never spin.
+        console.error("[pdf-scanner] rotated preview failed", err);
+        setState({ key, url: null, failed: true });
+      }
+    };
+    img.onerror = () => {
+      if (!cancelled) setState({ key, url: null, failed: true });
     };
     img.src = src;
     return () => {
@@ -184,22 +209,29 @@ function useRotatedImage(
     };
   }, [src, rotation, key]);
 
-  if (rotation === 0) return { url: src, loading: false };
-  return { url: state.key === key ? state.url : null, loading: state.key !== key };
+  if (rotation === 0) return { url: src, loading: false, failed: false };
+  const mine = state.key === key;
+  return {
+    url: mine ? state.url : null,
+    loading: !mine,
+    failed: mine && Boolean(state.failed),
+  };
 }
 
 function CropEditor({
   item,
+  enhancing,
   onClose,
   onApply,
 }: {
   item: ScanItem;
+  enhancing: boolean;
   onClose: () => void;
   onApply: (
     itemId: string,
     quad: Quad | null,
     rotation: ScanRotation,
-    enhance: CropEnhance,
+    enhance: CropEnhance | null,
   ) => void;
 }) {
   // Quad state lives in ORIGINAL post-EXIF space (the server contract).
@@ -221,6 +253,14 @@ function CropEditor({
     item.enhancedFileId,
   );
   const [enhanceBusy, setEnhanceBusy] = useState<ScanEnhanceMode | null>(null);
+  const cornerEditsRef = useRef(0);
+  // The shown image (or its rotated copy) failed to load: say so, never spin.
+  const [loadFailedFor, setLoadFailedFor] = useState<string | null>(null);
+  // Did the person change the enhance HERE? Apply writes it only then, so
+  // adjusting a crop never cancels a Clean all still running for this page.
+  const [enhanceTouched, setEnhanceTouched] = useState(false);
+  // Bumped by every pick: only the newest pick may land.
+  const pickGenRef = useRef(0);
 
   // The item is the LIVE session row: an enhance applied while the sheet is
   // open (Clean all, an agent write) is adopted here, so the sheet always
@@ -236,14 +276,27 @@ function CropEditor({
     setSeenEnhance({ mode: item.enhance, fileId: item.enhancedFileId });
     setEnhanceState(item.enhance);
     setEnhancedFileId(item.enhancedFileId);
+    setEnhanceTouched(false);
+    setEnhanceBusy(null);
   }
+  // The live page's enhance, readable from an in-flight pick's callback: a
+  // result that arrives after the page changed underneath it is dropped.
+  const liveEnhanceRef = useRef(`${item.enhance}|${item.enhancedFileId}`);
+  useEffect(() => {
+    liveEnhanceRef.current = `${item.enhance}|${item.enhancedFileId}`;
+  }, [item.enhance, item.enhancedFileId]);
 
   const pickEnhance = useCallback(
     (mode: ScanEnhanceMode | undefined) => {
       if (enhanceBusy) return;
+      const gen = ++pickGenRef.current;
+      const liveAtPick = liveEnhanceRef.current;
+      const superseded = () =>
+        gen !== pickGenRef.current || liveAtPick !== liveEnhanceRef.current;
       if (mode === undefined) {
         setEnhanceState(undefined);
         setEnhancedFileId(undefined);
+        setEnhanceTouched(true);
         return;
       }
       if (mode === enhance && enhancedFileId) return;
@@ -251,17 +304,28 @@ function CropEditor({
       setEnhanceBusy(mode);
       applyEnhance(item.fileId, mode)
         .then((res) => {
+          if (superseded()) {
+            // Never silently: the page changed while this pick was loading.
+            if (liveAtPick !== liveEnhanceRef.current) {
+              toast.info("Another change to this page landed first — showing it");
+            }
+            return;
+          }
           setEnhanceState(mode);
           setEnhancedFileId(res.fileId);
+          setEnhanceTouched(true);
         })
         .catch((err: unknown) => {
+          if (superseded()) return;
           toast.error(
             err instanceof Error
               ? `Enhance failed: ${err.message}`
               : "Enhance failed — keeping the original.",
           );
         })
-        .finally(() => setEnhanceBusy(null));
+        .finally(() => {
+          if (gen === pickGenRef.current) setEnhanceBusy(null);
+        });
     },
     [enhanceBusy, enhance, enhancedFileId, item.fileId],
   );
@@ -295,8 +359,13 @@ function CropEditor({
       if (!item.fileId || !size) return;
       setDetecting(true);
       setOfferRetry(false);
+      // Corners the person drags while detection runs are their decision;
+      // a result arriving after that is dropped, never applied over them.
+      const editsAtStart = cornerEditsRef.current;
+      const stillTheirs = () => cornerEditsRef.current === editsAtStart;
       detectDocument(item.fileId, mode)
         .then((res) => {
+          if (!stillTheirs()) return;
           if (res.found && res.quad) {
             setQuad(res.quad);
             setDetectNote(
@@ -314,6 +383,7 @@ function CropEditor({
           }
         })
         .catch(() => {
+          if (!stillTheirs()) return;
           setQuad(fullFrameQuad(size.w, size.h));
           setDetectNote("Detection unavailable — drag the corners manually");
         })
@@ -353,10 +423,14 @@ function CropEditor({
     if (!quad) return;
     // A full-frame quad means "no crop" — store null so the server skips
     // the warp entirely (faster, byte-identical page).
-    onApply(item.itemId, isFullFrame ? null : quad, rotation, {
-      mode: enhance,
-      fileId: enhance ? enhancedFileId : undefined,
-    });
+    onApply(
+      item.itemId,
+      isFullFrame ? null : quad,
+      rotation,
+      enhanceTouched
+        ? { mode: enhance, fileId: enhance ? enhancedFileId : undefined }
+        : null,
+    );
     onClose();
   }, [
     item.itemId,
@@ -365,6 +439,7 @@ function CropEditor({
     rotation,
     enhance,
     enhancedFileId,
+    enhanceTouched,
     onApply,
     onClose,
   ]);
@@ -398,10 +473,16 @@ function CropEditor({
   const handleEditorChange = useCallback(
     (dq: Quad) => {
       if (!naturalSize) return;
+      cornerEditsRef.current += 1;
       setQuad(quadFromDisplay(dq, rotation, naturalSize.w, naturalSize.h));
     },
     [naturalSize, rotation],
   );
+
+  const cannotShow =
+    shown.failed ||
+    rotated.failed ||
+    (imageUrl !== null && loadFailedFor === imageUrl);
 
   const ready = Boolean(
     imageUrl && naturalSize && displayDims && editorSize && displayQuad && rotated.url,
@@ -428,6 +509,11 @@ function CropEditor({
         {detectNote && !detecting && (
           <p className="text-left text-xs text-muted-foreground">{detectNote}</p>
         )}
+        {enhancing && !enhanceTouched && (
+          <p className="text-left text-xs text-muted-foreground">
+            Cleaning this page…
+          </p>
+        )}
         {shown.enhanceFailed && (
           <p className="text-left text-xs text-muted-foreground">
             Enhanced version unavailable — showing the original
@@ -445,10 +531,17 @@ function CropEditor({
             {/* Hidden probe reads the ORIGINAL dimensions once. */}
             {!naturalSize && (
               <img
+                key={shown.retryKey}
                 src={imageUrl}
                 alt=""
                 className="absolute h-px w-px opacity-0"
                 onLoad={handleImageLoad}
+                onError={(e) => {
+                  // A local preview the browser cannot decode (e.g. HEIC)
+                  // has no recovery; an uploaded file rides the client's.
+                  if (imageUrl === item.previewUrl) setLoadFailedFor(imageUrl);
+                  else shown.onLoadError(e);
+                }}
               />
             )}
             {ready && (
@@ -466,18 +559,23 @@ function CropEditor({
             )}
           </>
         )}
-        {imageUrl && !ready && (
+        {cannotShow && (
+          <div className="flex h-full items-center justify-center px-6 text-center text-xs text-muted-foreground">
+            This page's image could not be loaded
+          </div>
+        )}
+        {imageUrl && !ready && !cannotShow && (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         )}
-        {!imageUrl && !shown.updating && (
+        {!imageUrl && !shown.updating && !cannotShow && (
           <div className="flex h-full items-center justify-center px-6 text-center text-xs text-muted-foreground">
             Preview unavailable for this file format — the crop editor needs a
             browser-renderable image.
           </div>
         )}
-        {(detecting || Boolean(enhanceBusy) || shown.updating) && (
+        {(detecting || Boolean(enhanceBusy) || shown.updating || enhancing) && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background/40">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>

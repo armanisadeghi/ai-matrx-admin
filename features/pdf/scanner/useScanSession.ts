@@ -102,14 +102,42 @@ export interface UseScanSessionResult {
   setRotation: (itemId: string, rotation: ScanRotation) => void;
   /** Rename an item (display label; persisted in the manifest). */
   setItemLabel: (itemId: string, itemLabel: string) => void;
-  /** Record an enhance result (mode undefined = back to original). */
+  /**
+   * The person's explicit enhance choice (mode undefined = back to original).
+   * Supersedes any enhance still running for that page.
+   */
   setEnhance: (
     itemId: string,
     enhance: ScanEnhanceMode | undefined,
     enhancedFileId?: string,
   ) => void;
-  /** All items durable — Save may proceed. */
+  /**
+   * Start a background enhance (Clean all) for a page; returns its token.
+   * Only the newest request for a page may land, and any explicit
+   * `setEnhance` after it wins — so a slow result never overwrites a later
+   * choice.
+   */
+  beginEnhance: (itemId: string) => number;
+  /** Land a background enhance; false (and no change) if superseded. */
+  finishEnhance: (
+    itemId: string,
+    token: number,
+    enhance: ScanEnhanceMode,
+    enhancedFileId: string,
+  ) => boolean;
+  /** A background enhance failed: stop showing it as in progress. */
+  cancelEnhance: (itemId: string, token: number) => void;
+  /** Is this request still the newest for its page? (Skip work that would be dropped.) */
+  isEnhanceCurrent: (itemId: string, token: number) => boolean;
+  /** Pages with a background enhance in flight. */
+  enhancingIds: ReadonlySet<string>;
+  /** Set a detected crop only if the person has not chosen one meanwhile. */
+  setDetectedQuad: (itemId: string, quad: Quad) => void;
+  /** All items durable — Save may proceed once nothing is enhancing. */
   allUploaded: boolean;
+  /** Uploads done AND no enhance in flight — what Save waits for. */
+  readyToSave: boolean;
+  enhancingCount: number;
   uploadingCount: number;
   errorCount: number;
   /** Wipe the session after a successful save (files belong to the PDF now). */
@@ -135,6 +163,12 @@ export function useScanSession(): UseScanSessionResult {
   // Object URLs we created, revoked on remove/clear.
   const blobUrlsRef = useRef(new Map<string, string>());
   const shotCounterRef = useRef(0);
+  // Per-page enhance generation: every explicit choice and every new
+  // background request bumps it; a result lands only if it is still newest.
+  const enhanceGenRef = useRef(new Map<string, number>());
+  const [enhancing, setEnhancing] = useState<ReadonlyMap<string, number>>(
+    () => new Map(),
+  );
 
   // Sync the manifest to localStorage — the sanctioned external-system
   // effect. Writes only when the session has content; explicit clears
@@ -178,6 +212,22 @@ export function useScanSession(): UseScanSessionResult {
     // Dismiss = keep the manifest for next time; discard() is the
     // destructive path. Just stop showing the banner this visit.
     setResumable(null);
+  }, []);
+
+  const bumpEnhanceGen = useCallback((itemId: string) => {
+    const next = (enhanceGenRef.current.get(itemId) ?? 0) + 1;
+    enhanceGenRef.current.set(itemId, next);
+    return next;
+  }, []);
+
+  const dropEnhancing = useCallback((itemId: string, token?: number) => {
+    setEnhancing((prev) => {
+      if (!prev.has(itemId)) return prev;
+      if (token !== undefined && prev.get(itemId) !== token) return prev;
+      const next = new Map(prev);
+      next.delete(itemId);
+      return next;
+    });
   }, []);
 
   const updateItem = useCallback((itemId: string, patch: Partial<ScanItem>) => {
@@ -283,9 +333,11 @@ export function useScanSession(): UseScanSessionResult {
       blobUrlsRef.current.delete(itemId);
     }
     setItems((prev) => prev.filter((i) => i.itemId !== itemId));
+    bumpEnhanceGen(itemId);
+    dropEnhancing(itemId);
     // The hidden upload is left in place — the session folder is cleaned
     // as a whole on discard; a removed item is simply not sent to save.
-  }, []);
+  }, [bumpEnhanceGen, dropEnhancing]);
 
   const moveItem = useCallback((activeId: string, overId: string) => {
     setItems((prev) => {
@@ -326,18 +378,70 @@ export function useScanSession(): UseScanSessionResult {
       enhance: ScanEnhanceMode | undefined,
       enhancedFileId?: string,
     ) => {
+      bumpEnhanceGen(itemId);
+      dropEnhancing(itemId);
       updateItem(itemId, {
         enhance,
         enhancedFileId: enhance ? enhancedFileId : undefined,
       });
     },
-    [updateItem],
+    [bumpEnhanceGen, dropEnhancing, updateItem],
   );
+
+  const beginEnhance = useCallback(
+    (itemId: string) => {
+      const token = bumpEnhanceGen(itemId);
+      setEnhancing((prev) => new Map(prev).set(itemId, token));
+      return token;
+    },
+    [bumpEnhanceGen],
+  );
+
+  const finishEnhance = useCallback(
+    (
+      itemId: string,
+      token: number,
+      enhance: ScanEnhanceMode,
+      enhancedFileId: string,
+    ) => {
+      if (enhanceGenRef.current.get(itemId) !== token) return false;
+      dropEnhancing(itemId, token);
+      updateItem(itemId, { enhance, enhancedFileId });
+      return true;
+    },
+    [dropEnhancing, updateItem],
+  );
+
+  const cancelEnhance = useCallback(
+    (itemId: string, token: number) => dropEnhancing(itemId, token),
+    [dropEnhancing],
+  );
+
+  const isEnhanceCurrent = useCallback(
+    (itemId: string, token: number) =>
+      enhanceGenRef.current.get(itemId) === token,
+    [],
+  );
+
+  const setDetectedQuad = useCallback((itemId: string, quad: Quad) => {
+    setItems((prev) =>
+      prev.map((i) =>
+        // `undefined` = untouched; a crop or explicit full frame is the
+        // person's decision and a late detection never replaces it.
+        i.itemId === itemId && i.quad === undefined ? { ...i, quad } : i,
+      ),
+    );
+  }, []);
 
   const clearAfterSave = useCallback(() => {
     blobUrlsRef.current.forEach((url) => revokeTrackedObjectUrl(url));
     blobUrlsRef.current.clear();
     pendingFilesRef.current.clear();
+    // Every in-flight enhance belongs to the cleared session: none may land.
+    enhanceGenRef.current.forEach((gen, id) =>
+      enhanceGenRef.current.set(id, gen + 1),
+    );
+    setEnhancing(new Map());
     setItems([]);
     setLabel("");
     writeManifest(null);
@@ -364,6 +468,11 @@ export function useScanSession(): UseScanSessionResult {
   const errorCount = items.filter((i) => i.status === "error").length;
   const allUploaded =
     items.length > 0 && items.every((i) => i.status === "uploaded");
+  const enhancingIds = new Set(
+    items.filter((i) => enhancing.has(i.itemId)).map((i) => i.itemId),
+  );
+  const enhancingCount = enhancingIds.size;
+  const readyToSave = allUploaded && enhancingCount === 0;
 
   return {
     sessionId,
@@ -382,7 +491,15 @@ export function useScanSession(): UseScanSessionResult {
     setRotation,
     setItemLabel,
     setEnhance,
+    beginEnhance,
+    finishEnhance,
+    cancelEnhance,
+    isEnhanceCurrent,
+    enhancingIds,
+    setDetectedQuad,
     allUploaded,
+    readyToSave,
+    enhancingCount,
     uploadingCount,
     errorCount,
     clearAfterSave,

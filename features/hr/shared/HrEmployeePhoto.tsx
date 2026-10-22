@@ -6,9 +6,11 @@
 //
 // The record stores a `photo_file_id` — a file id, FK to `files.files(id)` — and
 // NOTHING here stores, caches or persists a URL. The durable URL is built from
-// the id at render time by string concatenation (`fileUrls`), contains only that
-// id, and never expires; authorization happens at REQUEST time via the HttpOnly
-// `mx_files_session` cookie that rides plain `<img>` bindings.
+// the id at render time, contains only that id, and never expires. The bytes
+// come through `useMediaSrc` — the media client's bearer-authenticated lane for
+// private pixels, with its one load-recovery contract. A plain `<img>` bound to
+// the byte route rode the files-session cookie instead, which a browser that
+// blocks third-party cookies never sends (2026-10-22).
 //
 // That is the platform's file lane, not a local choice: `features/files/handler`
 // eradicated presigned transport outright ("There is no presigned transport"),
@@ -28,11 +30,9 @@
 //     NOT name a photo, so this is not wired there on a component's authority.
 //   · No approval or decision surface mentions a photo, so it is not on one.
 
-import { useEffect, useState } from "react";
+import { useMediaSrc } from "@ai-matrx/media/core";
 
 import { cn } from "@/lib/utils";
-import { pythonFileInlineUrl } from "@/features/files/handler/utils/python-base";
-import { mediaFilesClient } from "@/features/files/media-client/client";
 // THE package initials formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07) — this file already computed first+last, identical to the
 // package's recorded decision, so this is a byte-for-byte behavior match
@@ -58,26 +58,14 @@ export function HrEmployeePhoto({
   textClassName?: string;
 }) {
   const id = photoFileId?.trim() || null;
-  const [failed, setFailed] = useState(false);
-  const [retried, setRetried] = useState(false);
-
-  useEffect(() => {
-    // The cookie is what authorizes the <img>. Idempotent and deduped, so every
-    // photo on a directory page shares one establishment.
-    if (id) void mediaFilesClient.ensureSession();
-  }, [id]);
-
-  useEffect(() => {
-    setFailed(false);
-    setRetried(false);
-  }, [id]);
+  const photo = useMediaSrc(id ? { file_id: id } : null);
 
   const shell = cn(
     "flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted",
     className,
   );
 
-  if (!id || failed) {
+  if (!id || photo.failed || !photo.src) {
     return (
       <div aria-hidden className={cn(shell, "font-medium text-muted-foreground", textClassName)}>
         {hrInitials(name)}
@@ -88,27 +76,11 @@ export function HrEmployeePhoto({
   return (
     <div className={shell}>
       <img
-        src={pythonFileInlineUrl(id)}
+        key={photo.retryKey}
+        src={photo.src}
         alt={name ? `${name}'s photo` : "Employee photo"}
         className="h-full w-full object-cover"
-        onError={() => {
-          /*
-            Recovery is a SESSION REFRESH, not a new URL — the URL is durable and
-            was never the problem. A revoked or expired cookie looks identical to
-            a missing file from here, so the cookie is re-established once and the
-            load retried; a second failure falls back to initials rather than
-            leaving a broken image where a person's face should be.
-          */
-          if (!retried) {
-            setRetried(true);
-            void mediaFilesClient.ensureSession({ force: true }).then(() => {
-              // Re-mount the <img> by clearing the failure flag on the next tick.
-              setFailed(false);
-            });
-            return;
-          }
-          setFailed(true);
-        }}
+        onError={photo.onLoadError}
       />
     </div>
   );

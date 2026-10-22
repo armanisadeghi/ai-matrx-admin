@@ -23,7 +23,7 @@ function ScannerHeaderFallback() {
   return (
     <PageHeader>
       <div className="flex w-full min-w-0 items-center">
-        <ChevronLeftTapButton href="/tools/pdf-extractor" ariaLabel="Back" />
+        <ChevronLeftTapButton href="/pdf" ariaLabel="Back" />
       </div>
     </PageHeader>
   );

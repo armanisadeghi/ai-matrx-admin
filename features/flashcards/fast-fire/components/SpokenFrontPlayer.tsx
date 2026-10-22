@@ -33,6 +33,7 @@ export function SpokenFrontPlayer({
   /** Fired when the question finishes playing (or errors) — starts the timer. */
   onEnded?: (cardId: string) => void;
 }) {
+  // media-src-ok: <audio> element — files-session cookie lane
   const src = useMediaResolution(fileId ?? null).resolution?.src ?? null;
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);

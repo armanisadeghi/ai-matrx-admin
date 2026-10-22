@@ -37,7 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { usePdfClient as usePdfDemoApi } from "@/features/pdf/api/client";
+import { usePdfClient } from "@/features/pdf/api/client";
 import { useDownloadBlob } from "@/features/pdf/hooks/useDownloadBlob";
 import { PdfPresetPicker } from "@/features/pdf/components/PdfPresetPicker";
 import type { PdfBinaryResult as BinaryResult } from "@/features/pdf/api/client";
@@ -57,7 +57,7 @@ type OpKey =
   | "split";
 
 export function DocumentOpsPanel({ fileId }: Props) {
-  const api = usePdfDemoApi();
+  const api = usePdfClient();
   const downloadBlob = useDownloadBlob();
   const [busy, setBusy] = useState<OpKey | null>(null);
   const [error, setError] = useState<string | null>(null);

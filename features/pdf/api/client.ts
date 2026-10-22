@@ -6,7 +6,7 @@
  * One typed transport for every /utilities/pdf/* call, shared by every
  * surface (extractor studio, Analysis Studio panels, demos, future UIs).
  * Folds the best of the three previous parallel layers:
- *   - usePdfDemoApi's endpoint typing + Content-Disposition filename parse
+ *   - the retired demo hook's endpoint typing + Content-Disposition filename parse
  *     + 422-aware error mapper (kept verbatim — it was the best one)
  *   - backend-client's auth/header discipline (via useApiAuth)
  *   - binary/JSON discrimination with a content-type guard so a JSON error
@@ -15,7 +15,7 @@
  * Sources are built ONLY with buildPdfSource/buildSecondSource
  * (features/pdf/utils/source.ts) — the keystone contract (`media.file_id`).
  *
- * usePdfDemoApi now re-exports this hook; new code imports from here.
+ * The demo alias is gone; everything imports `usePdfClient` from here.
  */
 
 import { useApiAuth } from "@/hooks/useApiAuth";

@@ -90,12 +90,13 @@ Auth lanes for the durable byte routes:
     **Do not claim live TUS verification until a real browser upload (preflight, resume,
     lost-final-response, token refresh) passes against the deployed server** — today it is unit-tested
     only.
-11. **`useMediaLoadRecovery` (raw URL retry) is for a raw URL string only.** With a
-    `file_id`/`MediaRef`, use `useMediaResolution` / `<InlineMediaRef>` from
-    `@ai-matrx/media`, which resolve the durable URL up front.
-12. **A canvas must not use the bare `/files/{id}/download` URL as `<img src>`** — an element cannot
-    attach the bearer token, and a display/CDN URL is not a promise of CORS-readable pixels. Route
-    `crossOrigin` consumers through `useFileBlob` and render a same-origin `blob:` URL.
+11. **An image's pixels come through `useMediaSrc` (`@ai-matrx/media/core`) or `<InlineMediaRef>`.**
+    `useMediaResolution().resolution.src` is the file's ADDRESS: for private pixels it is a
+    bearer-authenticated byte route an `<img>`, CSS background or canvas cannot load. Only a
+    `<video>`/`<audio>` element or a link href may use it, marked `// media-src-ok: <why>`
+    (guard `pnpm check:media-src-door`). `useMediaLoadRecovery` alone is for a raw foreign URL.
+12. **A canvas never binds a bare `/files/{id}/…` URL** — pass `crossOrigin: true` to
+    `useMediaSrc`, which serves a same-origin `blob:` URL for everything but a verified public CDN.
 13. **The blob-cache service worker is the platform's ONLY service worker**, registered at scope `/`
     (it also carries education offline study). A second registration would replace it and silently
     kill transparent media serving.

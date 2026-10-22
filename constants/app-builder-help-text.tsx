@@ -1,4 +1,4 @@
-import HelpIcon from "@/components/official/HelpIcon";
+import { HelpIcon } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 

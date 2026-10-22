@@ -28,6 +28,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  AlertCircle,
   ArrowRight,
   Check,
   ChevronLeft,
@@ -95,7 +96,7 @@ export function DesktopReview({
     }
   };
 
-  const saveDisabled = !session.allUploaded || saving;
+  const saveDisabled = !session.readyToSave || saving;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -165,6 +166,11 @@ export function DesktopReview({
                 <>
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                   Waiting for uploads…
+                </>
+              ) : session.enhancingCount > 0 ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  Finishing cleanup…
                 </>
               ) : (
                 <>
@@ -275,7 +281,20 @@ function SourceChip({ item }: { item: ScanItem }) {
 }
 
 function ItemThumb({ item, className }: { item: ScanItem; className?: string }) {
-  const { src, updating } = useScanThumbSrc(item);
+  const { src, updating, failed, onLoadError, retryKey } = useScanThumbSrc(item);
+  if (item.kind === "image" && failed) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-1 bg-muted/60 text-muted-foreground",
+          className,
+        )}
+      >
+        <AlertCircle className="h-6 w-6" />
+        <span className="text-[10px]">Image unavailable</span>
+      </div>
+    );
+  }
   if (item.kind === "pdf" || !src) {
     return (
       <div
@@ -292,7 +311,9 @@ function ItemThumb({ item, className }: { item: ScanItem; className?: string }) 
     <>
       {/* Enhanced derivative, session-local preview, or the uploaded original. */}
       <img
+        key={retryKey}
         src={src}
+        onError={onLoadError}
         alt={item.fileName}
         className={cn("object-cover", className)}
       />

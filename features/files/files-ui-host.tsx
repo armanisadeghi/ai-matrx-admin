@@ -58,7 +58,4 @@ export const filesUiHost: FilesUiHost = {
     import("@/components/errors/ErrorAlchemyMenu").then((m) => m.ErrorAlchemyMenu as unknown as ComponentType<Loose>),
   ),
   copyNotify,
-  showManualCopy: (options) => {
-    void import("@ai-matrx/kit/clipboard-fallback-opener").then((m) => m.openClipboardFallback(options.text, { title: options.title, description: options.description }));
-  },
 };

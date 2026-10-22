@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "PDF workspace" };
 export default async function Page({ params }: { params: Promise<{ fileId: string }> }) {
   const { fileId } = await params;
   const supabase = await createClient();
-  const { data } = await filesDb(supabase).from("files").select("id").eq("id", fileId).is("deleted_at", null).maybeSingle();
+  const { data } = await filesDb(supabase).from("files").select("id, organization_id").eq("id", fileId).is("deleted_at", null).maybeSingle();
   if (!data) {
     return (
       <div className="h-full overflow-hidden">
@@ -20,5 +20,5 @@ export default async function Page({ params }: { params: Promise<{ fileId: strin
       </div>
     );
   }
-  return <PdfWorkspaceRoute fileId={fileId} />;
+  return <PdfWorkspaceRoute fileId={fileId} organizationId={data.organization_id} />;
 }

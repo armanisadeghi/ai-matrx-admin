@@ -32,12 +32,5 @@ export const RAG_PLACES: FeaturePlaces = {
       mandateKeys: [K.rag__pdf_page_cleaner],
       sources: ["features/pdf-extractor/studio/PdfStudioHeaderControls.tsx"],
     },
-    {
-      id: "pdf-extractor-window",
-      label: "PDF extractor window",
-      trigger: "Run AI Cleanup on a long document (page by page)",
-      mandateKeys: [K.rag__pdf_page_cleaner],
-      sources: ["features/pdf-extractor/components/PdfExtractorWorkspace.tsx"],
-    },
   ],
 };

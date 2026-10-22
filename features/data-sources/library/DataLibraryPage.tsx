@@ -15,7 +15,7 @@
  * fetches until Get data. A price shows only behind the Cost door on a source's detail.
  */
 
-import { createElement, useState } from "react";
+import { createElement, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { pushAddressWithoutNavigating, replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ArrowLeft, ChevronRight, Database, SearchX, ShieldCheck, Wrench } from "lucide-react";
@@ -44,7 +44,6 @@ import { SourceSpeed } from "./SourceSpeed";
 import { SourceMethodTag } from "./UnderTheHood";
 import { SourceDetail, type SourceAsk } from "./SourceDetail";
 import { AskBox, type AskPlan } from "./AskBox";
-import { dropAskRuns, newAsk } from "./askRun";
 import { LIBRARY_TASKS, resolveTask, resolveTasks, type ResolvedTask } from "./tasks";
 import { useLibrary, useLibraryOrganizationId } from "./hooks";
 import { GiveToAgentDialog } from "./tools/GiveToAgentDialog";
@@ -185,7 +184,8 @@ function LibraryBody({ library }: { library: Library }) {
   const organizationId = useLibraryOrganizationId();
   const [view, setView] = useState<View>({ kind: "home" });
   // The plain-language box's reading: the source it opens is filled (and run) from it.
-  const [asked, setAsked] = useState<(SourceAsk & { sourceKey: string; switchTo: AskPlan | null }) | null>(null);
+  const [asked, setAsked] = useState<(SourceAsk & { sourceKey: string }) | null>(null);
+  const askCount = useRef(0);
   const router = useRouter();
   const params = useSearchParams();
   const go = useLibraryAddress();
@@ -199,24 +199,17 @@ function LibraryBody({ library }: { library: Library }) {
 
   const openSource = (key: string) => go({ source: key, job: null, field: null, value: null });
   const openRun = (r: { id: string; sourceKey: string }) => go({ source: r.sourceKey, job: r.id, field: null, value: null });
-  const leaveSource = () => {
-    dropAskRuns();
-    if (window.history.length > 1) router.back();
-    else go({ source: null, job: null, field: null, value: null }, { replace: true });
-  };
+  const leaveSource = () =>
+    window.history.length > 1 ? router.back() : go({ source: null, job: null, field: null, value: null }, { replace: true });
 
   const openAsk = (plan: AskPlan) => {
-    // The ask's id is a one-time run ticket (`./askRun`): it runs once, at most, and never on a re-mount.
     setAsked({
-      nonce: newAsk(plan.run),
+      nonce: ++askCount.current,
       sourceKey: plan.source.key,
       values: plan.fill.values,
       option: plan.fill.option,
       run: plan.run,
       unapplied: plan.fill.unapplied,
-      canRunAnyway: plan.fill.complete,
-      alternative: plan.alternative ? { key: plan.alternative.source.key, label: plan.alternative.source.label } : null,
-      switchTo: plan.alternative,
     });
     go({ task: plan.task.id, source: plan.source.key, job: null, field: null, value: null });
   };
@@ -243,7 +236,6 @@ function LibraryBody({ library }: { library: Library }) {
           onJob={(id, opts) => go({ job: id }, opts)}
           onOpenRun={openRun}
           ask={asked?.sourceKey === source.key ? asked : undefined}
-          onSwitchAsk={asked?.switchTo ? () => asked.switchTo && openAsk(asked.switchTo) : undefined}
         />
       </div>
     );

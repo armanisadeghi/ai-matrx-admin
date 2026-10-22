@@ -51,6 +51,7 @@ export function AudioPlayback({
   // The player always resolves a durable identity first. A freshly produced
   // study has only fileId; recovered studies retain an episode URL. Both pass
   // through the media client so a stale URL can be re-minted before playback.
+  // media-src-ok: <audio> element (podcast player) — files-session cookie lane
   const audioUrl = useMediaResolution(fileId ?? episodeUrl ?? null).resolution
     ?.src;
 

@@ -74,7 +74,7 @@ import {
   Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePdfClient as usePdfDemoApi } from "@/features/pdf/api/client";
+import { usePdfClient } from "@/features/pdf/api/client";
 import type { PdfBinaryResult as BinaryResult } from "@/features/pdf/api/client";
 import { buildPdfSource } from "@/features/pdf/utils/source";
 import { parsePagesInput } from "@/features/pdf/utils/pages";
@@ -573,7 +573,7 @@ function CropOverlay({
   pagesInput: string;
   onCancel: () => void;
 }) {
-  const api = usePdfDemoApi();
+  const api = usePdfClient();
   const userId = useAppSelector(selectUserId) ?? "";
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -833,7 +833,7 @@ function PageReorderView({
   doc: PdfDocument;
   onCancel: () => void;
 }) {
-  const api = usePdfDemoApi();
+  const api = usePdfClient();
   const userId = useAppSelector(selectUserId) ?? "";
   const totalPages = doc.totalPages ?? 1;
 

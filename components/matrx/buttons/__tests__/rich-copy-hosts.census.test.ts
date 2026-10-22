@@ -606,7 +606,6 @@ const OLD_WORDS_NOT_RICH_CONTENT: Record<string, string> = {
   "features/scraper/parts/ScraperFloatingWorkspace.tsx": "\"Copy text\" copies a scraped page's plain text — no markup",
   "app/(admin)/administration/utilities/utils/text-cleaner/components/TextCleanerComponent.tsx": "a text cleaner's plain output",
   "features/rag/components/library/StageStatusPills.tsx": "\"Raw Text\" names an ingestion stage, not a copy",
-  "features/pdf-extractor/components/PdfExtractorWorkspace.tsx": "\"Raw Text\" names a view tab, not a copy",
 };
 const OLD_WORD_ROOTS = [
   "features",

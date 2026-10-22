@@ -44,8 +44,6 @@
     "bare-text-field|components/ai/AiAssistModal.tsx": 1,
     "bare-text-field|components/auth/AnnimatedSignup.tsx": 2,
     "bare-text-field|components/crud/CrudForm.tsx": 1,
-    "bare-text-field|components/dialogs/clipboard-fallback/ClipboardFallbackDialog.tsx": 1,
-    "bare-text-field|components/dialogs/text-input/TextInputDialog.tsx": 1,
     "bare-text-field|components/flashcard-app/components/EditFlashcardDialog.tsx": 3,
     "bare-text-field|components/generic-table/GenericTableHeader.tsx": 1,
     "bare-text-field|components/image/cloud/CloudFilesTab.tsx": 1,

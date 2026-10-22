@@ -106,13 +106,14 @@ export function useScanSaveFlow(
       const { itemId, fileId } = item;
       detectDocument(fileId)
         .then((res) => {
-          if (res.found && res.quad) session.setQuad(itemId, res.quad);
+          // Only lands on a page the person has not cropped meanwhile.
+          if (res.found && res.quad) session.setDetectedQuad(itemId, res.quad);
         })
         .catch(() => {
           // Silent — purely an accelerator; the crop editor retries.
         });
     }
-  }, [session.items, session.setQuad]);
+  }, [session.items, session.setDetectedQuad]);
 
   // ── Lifecycle guard ─────────────────────────────────────────────────────
   // If the user navigates away mid-save, the save stream still resolves —
@@ -223,7 +224,18 @@ export function useScanSaveFlow(
 
   const saveNow = useCallback(() => {
     const uploaded = session.items.filter((i) => i.fileId);
+    // Never build from pages mid-upload or mid-enhance: the PDF would
+    // silently carry the un-enhanced original (the Save buttons wait too).
     if (uploaded.length === 0 || processing) return;
+    if (!session.readyToSave) {
+      const waiting = session.uploadingCount + session.enhancingCount;
+      toast.info(
+        session.errorCount > 0
+          ? `${session.errorCount} page${session.errorCount === 1 ? "" : "s"} failed to upload — retry or remove ${session.errorCount === 1 ? "it" : "them"} first`
+          : `Waiting for ${waiting} page${waiting === 1 ? "" : "s"} to finish…`,
+      );
+      return;
+    }
 
     pendingDocIdRef.current = null;
     savedDocIdRef.current = null;

@@ -19,7 +19,7 @@ import { selectFileById } from "@/features/files/redux/selectors";
 import { renameFile } from "@/features/files/redux/thunks";
 import { invalidate } from "@/features/files/hooks/blob-cache";
 import { useEnsureCloudFile } from "@/features/files/hooks/useEnsureCloudFile";
-import { usePdfRemoteSource } from "@/features/files/hooks/usePdfRemoteSource";
+import { usePdfRemoteSource } from "@/features/pdf/hooks/usePdfRemoteSource";
 import { streamPdfExtractTextRemote } from "@/features/pdf-extractor/service/streamPdf";
 import type { PdfTablesReport } from "@/features/pdf-extractor/types";
 import { drainPdfStream } from "../api/streamDrain";
@@ -29,6 +29,7 @@ import PdfPreview from "../components/viewer/PdfPreview";
 import { callsFor, fileIdOf, type PdfCall } from "./pdfOps";
 import { createThumbnailQueue, type ThumbnailQueue } from "./pdfThumbnails";
 import { PdfThumbnail } from "./PdfThumbnail";
+import { useWorkspaceTools, type StudioBridge } from "./useWorkspaceTools";
 
 async function saveBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
@@ -39,7 +40,7 @@ async function saveBlob(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; ready: boolean } {
+export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; ready: boolean; studio: StudioBridge } {
   const router = useRouter();
   const dispatch = useAppDispatch();
   useEnsureCloudFile(fileId);
@@ -130,11 +131,16 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
     [executeCall, fileId],
   );
 
+  const openFile = useCallback((id: string) => router.push(`/pdf/${id}`), [router]);
+  const { tools, viewerOverride, studio } = useWorkspaceTools({ fileId, fileName: file?.fileName ?? "document.pdf", openFile });
+
   const host = useMemo<PdfWorkspaceHost>(
     () => ({
       file: { id: fileId, name: file?.fileName ?? "PDF" },
       online,
-      renderViewer: (state) => (
+      tools,
+      renderViewer: (state) =>
+        viewerOverride(state) ?? (
         <PdfPreview
           fileId={fileId}
           layout="continuous"
@@ -150,11 +156,11 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
           }}
           className="w-full"
         />
-      ),
+        ),
       renderThumbnail: (page) => <PdfThumbnail page={page} queue={queue} />,
       run,
       openTool: (tool) => router.push(tool === "scan" ? "/tools/scanner" : "/esign/new"),
-      openFile: (id) => router.push(`/pdf/${id}`),
+      openFile,
       download: () => {
         fetchBytes().then((b) => saveBlob(b, file?.fileName ?? "document.pdf"), (e) => toast.error(e instanceof Error ? e.message : "Download failed."));
       },
@@ -187,8 +193,8 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
           .flatMap((p) => (typeof p.id === "string" ? [{ id: p.id, label: p.label ?? p.name ?? p.id }] : []));
       },
     }),
-    [fileId, file?.fileName, online, queue, run, router, fetchBytes, dispatch, client],
+    [fileId, file?.fileName, online, queue, run, router, fetchBytes, dispatch, client, tools, viewerOverride, openFile],
   );
 
-  return { host, ready: !!file };
+  return { host, ready: !!file, studio };
 }

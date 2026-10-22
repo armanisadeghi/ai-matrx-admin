@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import {
   StatusBadge,
   type StatusBadgeSize,
-} from "@/components/official/status-badge/StatusBadge";
+} from "@ai-matrx/design-system/controls";
 import { MANDATE_STATUS_META, type MandateStatus } from "./mandate-status";
 
 export function MandateStatusBadge({

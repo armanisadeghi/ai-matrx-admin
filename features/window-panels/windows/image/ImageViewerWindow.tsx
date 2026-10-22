@@ -28,7 +28,9 @@ import {
   FlipHorizontal,
   FlipVertical,
   Image as ImageIcon,
+  ImageOff,
   Link as LinkIcon,
+  Loader2,
   ZoomIn,
   ZoomOut,
   RotateCcw,
@@ -42,6 +44,7 @@ import {
   initialImageViewerTransform,
 } from "./imageViewerTransforms";
 import { InlineMediaRef } from "@ai-matrx/media/react";
+import { useMediaSrc } from "@ai-matrx/media/core";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   IMAGE_VIEWER_SURFACE_NAME,
@@ -102,6 +105,9 @@ export function ImageViewer({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, ox: 0, oy: 0 });
 
   const url = images[index] ?? "";
+  // One of OUR file URLs is an identity: the media client promotes it to the
+  // bearer blob lane, so a private image loads like it does in the strip.
+  const media = useMediaSrc(url || null);
   const alt = alts?.[index] ?? `Image ${index + 1}`;
   const hasMany = images.length > 1;
 
@@ -222,9 +228,19 @@ export function ImageViewer({
         onPointerCancel={onPanEnd}
         onWheel={onWheel}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {media.failed || !url ? (
+          <div className="flex flex-col items-center gap-2 text-muted-foreground">
+            <ImageOff className="h-8 w-8" />
+            <span className="text-xs">This image could not be loaded</span>
+          </div>
+        ) : !media.src ? (
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        ) : (
+        /* eslint-disable-next-line @next/next/no-img-element */
         <img
-          src={url}
+          key={media.retryKey}
+          src={media.src}
+          onError={media.onLoadError}
           alt={alt}
           draggable={false}
           style={{
@@ -240,6 +256,7 @@ export function ImageViewer({
             userSelect: "none",
           }}
         />
+        )}
 
         {hasMany && (
           <>

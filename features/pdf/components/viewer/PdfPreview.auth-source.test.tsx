@@ -24,7 +24,7 @@ const CDN_URL = `https://cdn.matrxserver.com/${FILE_ID}.pdf`;
 const mockUsePdfRemoteSource = jest.fn();
 const rendererProps: Array<Record<string, unknown>> = [];
 
-jest.mock("@/features/files/hooks/usePdfRemoteSource", () => ({
+jest.mock("@/features/pdf/hooks/usePdfRemoteSource", () => ({
   usePdfRemoteSource: (...args: unknown[]) => mockUsePdfRemoteSource(...args),
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => null }));

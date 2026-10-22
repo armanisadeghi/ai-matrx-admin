@@ -41,7 +41,7 @@ import {
   Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePdfClient as usePdfDemoApi } from "@/features/pdf/api/client";
+import { usePdfClient } from "@/features/pdf/api/client";
 import { useDownloadBlob } from "@/features/pdf/hooks/useDownloadBlob";
 import { saveDerivative as saveDerivativeCanonical } from "@/features/pdf/services/saveDerivative";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
@@ -433,7 +433,7 @@ export function ManipulationPanel({
   onStartReorder?: () => void;
   onEditModeCancel?: () => void;
 }) {
-  const api = usePdfDemoApi();
+  const api = usePdfClient();
   const userId = useAppSelector(selectUserId) ?? "";
 
   // ── Source payload (canonical wire — media.file_id / url) ─────────────────

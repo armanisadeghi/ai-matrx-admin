@@ -14,7 +14,7 @@ import React from "react";
 import { AudioLines, Layers, Loader2, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
+import { ActionFeedbackButton } from "@ai-matrx/design-system/controls";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
 import {
@@ -70,7 +70,7 @@ export function CleanupSessionsToolbar({
           icon={<Plus className="h-3.5 w-3.5" />}
           tooltip="New session"
           onClick={onCreate}
-          className="h-6 w-6 text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground"
         />
       </div>
     </div>
@@ -233,7 +233,7 @@ export function CleanupSessionList({
                       });
                       if (ok) onDelete(s.id);
                     }}
-                    className="h-5 w-5 text-muted-foreground/60 hover:text-destructive"
+                    className="text-muted-foreground/60 hover:text-destructive"
                   />
                 </span>
               </li>

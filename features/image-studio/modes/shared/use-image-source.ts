@@ -2,21 +2,20 @@
 
 import { useEffect, useState } from "react";
 import type { ImageSource } from "./types";
-import { useMediaResolution } from "@ai-matrx/media/core";
+import { useMediaSrc } from "@ai-matrx/media/core";
+import { fileIdFromFileEndpointUrl } from "@ai-matrx/media/files/engine/media/our-file-sources";
 
 /**
  * Resolve an `ImageSource` to a single, browser-loadable URL plus a
  * suggested filename. Manages object-URL lifecycle for `file` sources.
  *
- * For `cloudFileId` sources, this layer expects the caller to already have
- * the public URL (passed via `url` source); we don't fetch it here. The
- * pages/modals that mount the mode either:
- *   - pass `?source=<cloudFileId>` and resolve to the share URL via the
- *     standard cloud-files lookup before rendering, OR
- *   - pass `?url=` directly when the URL is already known.
- *
- * Keeping the resolution out of the hook keeps the modes pure and easy
- * to mount in tests / Storybook.
+ * A `cloudFileId` source — and a `url` source that is one of OUR file byte
+ * endpoints, which is the same identity in disguise — loads through
+ * `useMediaSrc` with `crossOrigin`: private pixels arrive as a bearer-fetched
+ * object URL, so `new Image()`, canvas reads, the cropper and `fetch` all
+ * work and never taint the canvas. Binding `resolution.src` here handed
+ * every mode an authenticated route it could not load (2026-10-22). A
+ * foreign `url` source passes through untouched.
  */
 export function useImageSource(source: ImageSource | null): {
   url: string | null;
@@ -30,14 +29,20 @@ export function useImageSource(source: ImageSource | null): {
   error: Error | null;
 } {
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
-  const cloudResolution = useMediaResolution(
-    source?.kind === "cloudFileId" ? source.cloudFileId : null,
-  );
-  const cloudFileUrl = cloudResolution.resolution?.src ?? null;
+  const ownFileId =
+    source?.kind === "cloudFileId"
+      ? source.cloudFileId
+      : source?.kind === "url"
+        ? fileIdFromFileEndpointUrl(source.url)
+        : null;
+  const cloud = useMediaSrc(ownFileId ? { file_id: ownFileId } : null, {
+    crossOrigin: true,
+  });
+  const cloudFileUrl = cloud.failed ? null : cloud.src;
   const error =
-    source?.kind === "cloudFileId" && cloudResolution.status === "unavailable"
+    ownFileId && cloud.failed
       ? new Error(
-          `This image could not be opened (${(cloudResolution.reason ?? "unknown").replace(/_/g, " ")}).`,
+          `This image could not be opened (${(cloud.failureReason ?? "unknown").replace(/[_-]/g, " ")}).`,
         )
       : null;
 
@@ -61,15 +66,15 @@ export function useImageSource(source: ImageSource | null): {
       ? source.file.name
       : source?.kind === "url"
         ? (source.suggestedFilename ?? deriveFilenameFromUrl(source.url))
-        : "image";
+        : (source?.suggestedFilename ?? "image");
 
   const resolvedUrl =
     source?.kind === "file"
       ? objectUrl
-      : source?.kind === "url"
-        ? source.url
-        : source?.kind === "cloudFileId"
-          ? cloudFileUrl
+      : ownFileId
+        ? cloudFileUrl
+        : source?.kind === "url"
+          ? source.url
           : null;
 
   return {

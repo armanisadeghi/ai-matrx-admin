@@ -46,12 +46,11 @@ import {
   Workflow,
 } from "lucide-react";
 
-import { Badge, Button, PropertyRow, InfoHint } from "@ai-matrx/design-system/controls";
+import { Badge, Button, PropertyRow, InfoHint, KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ReadFailure, Skeleton } from "@ai-matrx/design-system";
 import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { AssetTile, type OverviewAsset } from "@/features/marketing/components/brands/BrandOverview";
 import { rankLogos } from "@/features/marketing/components/brands/logo-rank";

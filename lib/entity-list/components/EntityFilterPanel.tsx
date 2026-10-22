@@ -16,7 +16,7 @@
 
 import { useState } from "react";
 import { resolveColumnMarker } from "@ai-matrx/design-system/data-table";
-import { useScrollFade } from "@ai-matrx/design-system";
+import { useScrollFade, RadioList } from "@ai-matrx/design-system";
 import { SlidersHorizontal, RotateCcw, Star, ArrowUpDown } from "lucide-react";
 import {
   ArchiveFilter,
@@ -29,7 +29,6 @@ import {
   FacetChips,
   FilterSection,
   NONE_SENTINEL,
-  RadioSelect,
   type FacetOption,
 } from "@/components/official/filter-panel/parts";
 import { cn } from "@/lib/utils";
@@ -409,7 +408,7 @@ export function EntityFilterPanel<TRow>({
                     {section.hint}
                   </p>
                 ) : null}
-                <RadioSelect
+                <RadioList
                   value={narrowedTo}
                   onChange={(id) =>
                     byOrganization
@@ -466,7 +465,7 @@ export function EntityFilterPanel<TRow>({
           })}
           {hasFavorites && (
             <FilterSection label="Favorites" active={favValue !== "all"}>
-              <RadioSelect
+              <RadioList
                 value={favValue}
                 onChange={setFav}
                 options={FAV_OPTIONS.map((o) =>
@@ -537,7 +536,7 @@ export function EntityFilterPanel<TRow>({
               label="Sort"
               active={sortKey !== sortOptions[0]?.value}
             >
-              <RadioSelect<SortKey>
+              <RadioList<SortKey>
                 value={sortKey}
                 onChange={(v) => {
                   const idx = v.lastIndexOf("-");

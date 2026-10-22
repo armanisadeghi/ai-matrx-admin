@@ -67,10 +67,6 @@ describe("the surfaces whose empty states were ALREADY honest stay that way", ()
       pattern: /recent\.active\.length === 0 && recent\.archived\.length === 0/,
     },
     {
-      file: "features/pdf-extractor/components/PdfExtractorWorkspace.tsx",
-      pattern: /history\.length === 0 && archivedHistory\.length === 0/,
-    },
-    {
       file: "features/page-extraction/components/SavedJobsList.tsx",
       pattern: /jobs\.length === 0 && archivedJobs\.length === 0/,
     },

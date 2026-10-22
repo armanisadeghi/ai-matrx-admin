@@ -219,6 +219,7 @@ export function TranscriptViewer({ transcriptId = null }: { transcriptId?: strin
   // Durable audio URL, resolved through the injected MediaClient.
   const audioFileId = activeTranscript?.audio_file_path ?? null;
   const audioResolution = useMediaResolution(audioFileId);
+  // media-src-ok: <audio> element — files-session cookie lane
   const resolvedAudioUrl = audioResolution.resolution?.src ?? null;
   // A load error refreshes the file session and retries the same durable URL
   // before it is terminal (and reports itself) — the canonical media machine.

@@ -4,7 +4,7 @@ import * as React from "react";
 import { Mail, Zap } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { Field } from "@/components/official/Field";
+import { LabeledField as Field } from "@ai-matrx/design-system/controls";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Demo card primitive

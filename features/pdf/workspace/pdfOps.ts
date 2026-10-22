@@ -68,3 +68,42 @@ export function fileIdOf(response: unknown): string | null {
   }
   return null;
 }
+
+// ── Regions, images and OCR (server operations with no other UI: drawn-region redaction, page images, OCR as text). ──
+// scrub / strip-metadata / flatten / compress / split already live in the Analysis tool's Doc Ops tab.
+
+export type CleanupOp =
+  | { op: "redact-regions"; regions: RedactRegion[]; reason: string; scrubMetadata: boolean }
+  | { op: "render-all"; dpi: number; fmt: "png" | "jpg" | "jpeg" | "webp" | "tiff"; jpegQuality: number; pages: number[] | null }
+  | { op: "ocr-text"; threshold: number };
+
+export interface RedactRegion {
+  page_number: number;
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  replacement: "BLOCK" | "REMOVE";
+  preserve_text: boolean;
+}
+
+export type CleanupCall =
+  /** Makes a NEW FILE with lineage; the original is untouched. */
+  | { kind: "file"; endpoint: "redactRegions"; body: Record<string, unknown> }
+  /** Returns bytes (a ZIP of page images) the person saves. */
+  | { kind: "zip"; endpoint: "renderAll"; body: Record<string, unknown> }
+  /** Streams text, forcing OCR on every page. */
+  | { kind: "ocr"; body: Record<string, unknown> };
+
+/** How one clean-up request becomes a server call. Sources are built ONLY with `buildPdfSourceFromFileId`. */
+export function cleanupCallFor(fileId: string, request: CleanupOp): CleanupCall {
+  const src = buildPdfSourceFromFileId(fileId);
+  switch (request.op) {
+    case "redact-regions":
+      return { kind: "file", endpoint: "redactRegions", body: { ...src, regions: request.regions, reason: request.reason, scrub_metadata: request.scrubMetadata, output_mode: "derivative" } };
+    case "render-all":
+      return { kind: "zip", endpoint: "renderAll", body: { ...src, dpi: request.dpi, fmt: request.fmt, jpeg_quality: request.jpegQuality, ...(request.pages ? { pages: request.pages } : {}) } };
+    case "ocr-text":
+      return { kind: "ocr", body: { ...src, force_ocr: true, use_ocr_threshold: request.threshold, include_page_metadata: false } };
+  }
+}

@@ -40,7 +40,8 @@ export const PAGE_DATABASE = "page_database";
  */
 export async function adoptPageDatabase(spaceId: string, tableId: string, db: { rpc: (fn: "assoc_link", args: Record<string, unknown>) => PromiseLike<{ error: { message: string } | null }> } = createClient().schema("platform") as never): Promise<void> {
   if (!tableId) throw new Error("The database has no table id to share with the page.");
-  const { error } = await db.schema("platform").rpc("assoc_link", {
+  // `db` is already the platform schema (the default above, or a caller-scoped client).
+  const { error } = await db.rpc("assoc_link", {
     p_source_type: "document",
     p_source_id: spaceId,
     p_target_type: "record",

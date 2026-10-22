@@ -31,6 +31,10 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-22-162900/features/data-sources/library/AskBox.tsx.held — LOCAL latest 2026-10-22 16:23; GITHUB latest 2026-10-22 15:30; LOCAL lacks 3 of GITHUB's 93 new lines; GITHUB lacks 15 of LOCAL's 105 new lines; recover: git show d7a7e32f87:'features/data-sources/library/AskBox.tsx' / 957617fef7:'features/data-sources/library/AskBox.tsx'
+- _conflicts/2026-10-22-162900/features/data-sources/library/DataLibraryPage.tsx.held — LOCAL latest 2026-10-22 16:24; GITHUB latest 2026-10-22 15:28; LOCAL lacks 4 of GITHUB's 28 new lines; GITHUB lacks 12 of LOCAL's 36 new lines; recover: git show d7a7e32f87:'features/data-sources/library/DataLibraryPage.tsx' / 957617fef7:'features/data-sources/library/DataLibraryPage.tsx'
+- _conflicts/2026-10-22-162900/features/data-sources/library/SourceDetail.tsx.held — LOCAL latest 2026-10-22 16:27; GITHUB latest 2026-10-22 15:30; LOCAL lacks 10 of GITHUB's 39 new lines; GITHUB lacks 32 of LOCAL's 61 new lines; recover: git show d7a7e32f87:'features/data-sources/library/SourceDetail.tsx' / 957617fef7:'features/data-sources/library/SourceDetail.tsx'
+- _conflicts/2026-10-22-162900/pnpm-lock.yaml.held — LOCAL latest 2026-10-22 16:27; GITHUB latest 2026-10-22 16:21; LOCAL lacks 18 of GITHUB's 336 new lines; GITHUB lacks 22 of LOCAL's 341 new lines; recover: git show d7a7e32f87:'pnpm-lock.yaml' / 957617fef7:'pnpm-lock.yaml'
 
 ## Resolution log
 - 2026-10-22 PDT — Claude frontend conflict lane cleared `_conflicts/2026-10-22-112813/` (5 unlisted holds: PublicResourceView, FileMenu, files-host, RecordingsLibrary, DataStoresPage): each held copy was byte-identical to the live file, so live kept. They carried no marker, so the checker printed clean over them; it now lists every `_conflicts/**/*.held` (`--self-test`).

@@ -43,7 +43,6 @@ import {
   useLibraryOrganizationId,
   sourceCostRow,
 } from "./hooks";
-import { takeAskRun } from "./askRun";
 import { PastRuns } from "./PastRuns";
 import { PAST_RUNS_PREFIX, isOpenStatus, useDataFetchJob, useOpenJob } from "./runHistory";
 import { LiveRunResults, SavedRunResults } from "./SourceResults";
@@ -67,23 +66,19 @@ export function refillFromInputs(
   }
   if (Object.keys(values).length === 0) return null;
   if (values.url) return { values, option: LINK_OPTION };
-  const option = searchOptions(source).find((o) => o.fields.every((f) => !f.required || f.name in values))?.name ?? null;
+  const option = searchOptions(source).find((o) => o.fields.every((f) => f.name in values))?.name ?? null;
   return { values, option };
 }
 
 /** A sentence the plain-language box read: the form opens filled with it, and runs when `run` is set. */
 export interface SourceAsk {
-  /** The ask's id (`./askRun`): a new ask opens the form fresh, and an armed one runs at most once, ever. */
+  /** A new ask has a new nonce, so the form opens fresh for it. */
   nonce: number;
   values: Record<string, string>;
   option: string | null;
   run: boolean;
   /** What the person said that this source cannot apply (said, never silently dropped). */
   unapplied: string[];
-  /** The fill is complete, so "Run anyway" can run it as it stands. */
-  canRunAnyway?: boolean;
-  /** A source of the same task that takes everything asked. */
-  alternative?: { key: string; label: string } | null;
 }
 
 export interface SourceDetailProps {
@@ -97,12 +92,10 @@ export interface SourceDetailProps {
   onOpenRun?: (run: { id: string; sourceKey: string }) => void;
   /** The plain-language box's reading for this source, if that is how it was opened. */
   ask?: SourceAsk;
-  /** Open the ask on `ask.alternative` instead. */
-  onSwitchAsk?: () => void;
 }
 
 /** The source on the page: reads the library (cached) and shows the one source. */
-export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun, ask, onSwitchAsk }: SourceDetailProps) {
+export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun, ask }: SourceDetailProps) {
   const organizationId = useLibraryOrganizationId();
   const library = useLibrary(organizationId);
   if (library.isLoading) {
@@ -146,7 +139,6 @@ export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, on
       onOpenRun={onOpenRun}
       labelOf={labelOf}
       ask={ask}
-      onSwitchAsk={onSwitchAsk}
     />
   );
 }
@@ -161,7 +153,6 @@ function SourceRun({
   onOpenRun,
   labelOf,
   ask,
-  onSwitchAsk,
 }: {
   source: LibrarySource;
   library: Library;
@@ -172,7 +163,6 @@ function SourceRun({
   onOpenRun?: SourceDetailProps["onOpenRun"];
   labelOf: (key: string) => string;
   ask?: SourceAsk;
-  onSwitchAsk?: () => void;
 }) {
   const key = libraryRunKey(source.key);
   const run = useRun(key);
@@ -238,12 +228,7 @@ function SourceRun({
         initialValues={refill?.values ?? ask?.values ?? initialValues}
         initialOption={refill?.option ?? ask?.option ?? null}
         unapplied={refill ? [] : (ask?.unapplied ?? [])}
-        autoRunId={!refill && ask?.run === true ? ask.nonce : null}
-        askChoice={
-          !refill && ask && !ask.run && ask.unapplied.length > 0
-            ? { runAnyway: ask.canRunAnyway === true, alternative: ask.alternative ?? null, onSwitch: onSwitchAsk }
-            : null
-        }
+        autoRun={!refill && ask?.run === true}
         busy={run.status === "running"}
         onFetch={(input, count) => {
           if (runState(key).status === "running") return;
@@ -346,8 +331,7 @@ function SourceForm({
   initialValues,
   initialOption = null,
   unapplied = [],
-  autoRunId = null,
-  askChoice = null,
+  autoRun = false,
   busy,
   onFetch,
 }: {
@@ -359,10 +343,8 @@ function SourceForm({
   initialOption?: string | null;
   /** What the person said that this source cannot apply. */
   unapplied?: string[];
-  /** The plain-language box's one-time run ticket (`./askRun`): runs once, when the ticket is still unspent. */
-  autoRunId?: number | null;
-  /** An ask that stopped because something asked was not applied: run it anyway, or switch source. */
-  askChoice?: { runAnyway: boolean; alternative: { key: string; label: string } | null; onSwitch?: () => void } | null;
+  /** Run once as soon as the form holds a complete ask (the plain-language box). */
+  autoRun?: boolean;
   /** A run of this source is going: Get data waits for it. */
   busy: boolean;
   onFetch: (
@@ -393,15 +375,14 @@ function SourceForm({
     latest.current = { input: built.input, count, busy, onFetch };
   });
   useEffect(() => {
-    // The ticket is spent here, on first sight: a later mount for the same ask (Back and reopen) never runs.
-    if (!takeAskRun(autoRunId)) return;
+    if (!autoRun) return;
     const timer = setTimeout(() => {
       const now = latest.current;
       if (now.busy || !now.input) return;
       now.onFetch(now.input, now.count);
     }, 0);
     return () => clearTimeout(timer);
-  }, [autoRunId]);
+  }, [autoRun]);
 
   return (
     <form
@@ -449,19 +430,9 @@ function SourceForm({
       </Section>
 
       {unapplied.length > 0 && (
-        <div className="-mt-2 flex flex-wrap items-center gap-2" data-ask-unapplied="">
-          <span className="text-xs text-muted-foreground">Not applied here: {unapplied.join(", ")}</span>
-          {askChoice?.runAnyway && built.input && (
-            <Button type="button" variant="outline" disabled={busy} onClick={() => built.input && onFetch(built.input, count)} data-ask-run-anyway="">
-              Run anyway
-            </Button>
-          )}
-          {askChoice?.alternative && askChoice.onSwitch && (
-            <Button type="button" variant="quiet" onClick={askChoice.onSwitch} data-ask-switch={askChoice.alternative.key}>
-              Use {askChoice.alternative.label}
-            </Button>
-          )}
-        </div>
+        <p className="-mt-2 text-xs text-muted-foreground" data-ask-unapplied="">
+          Not used for this source: {unapplied.join(", ")}
+        </p>
       )}
 
       <Section title="What to enter">

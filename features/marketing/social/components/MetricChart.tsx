@@ -16,7 +16,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { KpiTile } from "@/components/official/kpi/KpiTile";
+import { KpiTile } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 
 import { formatCompact } from "../outlier";

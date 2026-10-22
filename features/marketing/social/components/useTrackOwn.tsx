@@ -27,7 +27,7 @@ export function useTrackOwn(organizationId: string, brandId: string) {
   const [busyRow, setBusyRow] = useState<string | null>(null);
   /** The server's live step line for the row being tracked ("Fetching posts · 2 of 3"). */
   const [progress, setProgress] = useState<string | null>(null);
-  const { pointsText, confirmSpend, confirmPosts, postsTotalText } = useSocialSpend(organizationId);
+  const { costNode, confirmSpend, confirmPosts, postsNode } = useSocialSpend(organizationId);
 
   /** Track one own property as role Own; an empty account asks before tracking it anyway. */
   async function trackOwnRow(row: AccountRow, allowEmpty = false): Promise<"ok" | "failed"> {
@@ -91,7 +91,12 @@ export function useTrackOwn(organizationId: string, brandId: string) {
   async function trackAllOwn(list: AccountRow[]) {
     const ok = await confirm({
       title: `Track ${list.length} own account${list.length === 1 ? "" : "s"}?`,
-      description: [list.map((r) => accountName(r) === "YouTube channel" ? "YouTube channel" : `${platformLabel(r.platform)} ${accountName(r)}`).join(", "), pointsText("track", list.length) ?? "points (price not loaded yet)"].join(" · "),
+      description: (
+        <>
+          {list.map((r) => accountName(r) === "YouTube channel" ? "YouTube channel" : `${platformLabel(r.platform)} ${accountName(r)}`).join(", ")}{" "}
+          {costNode("track", list.length, true)}
+        </>
+      ),
       confirmLabel: "Track all",
     });
     if (!ok) return;
@@ -146,10 +151,14 @@ export function useTrackOwn(organizationId: string, brandId: string) {
       toast.error(COUNT_UNREADABLE_MESSAGE);
       return;
     }
-    const total = postsTotalText(rows.map((r) => r.platform), maxPosts);
+    const total = postsNode(rows.map((r) => r.platform), maxPosts);
     const ok = await confirm({
       title: `Fetch new posts for ${rows.length} account${rows.length === 1 ? "" : "s"}?`,
-      description: [`Up to ${maxPosts} posts each`, total ? `uses about ${total}` : null].filter(Boolean).join(" · "),
+      description: (
+        <>
+          {`Up to ${maxPosts} posts each`} {total}
+        </>
+      ),
       confirmLabel: "Refresh all",
     });
     if (!ok) return;

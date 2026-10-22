@@ -7,7 +7,7 @@ import { ComponentEntry } from "../parts/component-list";
 import { ComponentDisplayWrapper } from "../component-usage";
 import { ProInput } from "@/components/official/ProInput";
 import { ProFieldWidthsShowcase } from "@/components/official/ProFieldWidthsShowcase";
-import { Field } from "@/components/official/Field";
+import { LabeledField as Field } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/lib/toast";
@@ -72,7 +72,6 @@ export default function ProInputDisplay({ component }: ComponentDisplayProps) {
   if (!component) return null;
 
   const code = `import { ProInput } from '@/components/official/ProInput';
-import { Field } from '@/components/official/Field';
 
 <ProInput
   value={value}

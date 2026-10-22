@@ -1,0 +1,620 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/data-sources/library/SourceDetail.tsx
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/data-sources/library/SourceDetail.tsx
+  Both grew from the same COMMON version: commit fc045d5f12, 2026-10-22 15:51.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-22 16:27  (uncommitted edit; the time the file was last saved on this Mac)
+    2026-10-22 16:40  d7a7e32f87  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-22 15:30  de4361756a  "data library: ask box error through ErrorNotice; auto-run without setState in an effect (lint)"
+    2026-10-22 15:28  8174e3f0f1  "data library: plain-language box + homes filters on the form (lane L4b)"
+  LOCAL's latest change is 56m AFTER GITHUB's latest change.
+
+SIZE: common version 472 lines, LOCAL 546 lines, GITHUB 517 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 61 lines and removed 5 lines.
+  GITHUB added 39 lines and removed 4 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 29 of the 39 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | /** A new ask has a new nonce, so the form opens fresh for it. */
+      | export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun, ask }: SourceDetailProps) {
+      | autoRun={!refill && ask?.run === true}
+      | autoRun = false,
+      | /** Run once as soon as the form holds a complete ask (the plain-language box). */
+      | autoRun?: boolean;
+      | if (!autoRun) return;
+      | }, [autoRun]);
+      | <p className="-mt-2 text-xs text-muted-foreground" data-ask-unapplied="">
+      | Not used for this source: {unapplied.join(", ")}
+  GITHUB has 29 of the 61 lines LOCAL added.
+    Lines LOCAL added that GITHUB does NOT have:
+      | import { takeAskRun } from "./askRun";
+      | const option = searchOptions(source).find((o) => o.fields.every((f) => !f.required || f.name in values))?.name ?? null;
+      | /** The ask's id (`./askRun`): a new ask opens the form fresh, and an armed one runs at most once, ever. */
+      | /** The fill is complete, so "Run anyway" can run it as it stands. */
+      | canRunAnyway?: boolean;
+      | /** A source of the same task that takes everything asked. */
+      | alternative?: { key: string; label: string } | null;
+      | /** Open the ask on `ask.alternative` instead. */
+      | onSwitchAsk?: () => void;
+      | export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun, ask, onSwitchAsk }: SourceDetailProps) {
+      | onSwitchAsk={onSwitchAsk}
+      | onSwitchAsk,
+      | onSwitchAsk?: () => void;
+      | autoRunId={!refill && ask?.run === true ? ask.nonce : null}
+      | !refill && ask && !ask.run && ask.unapplied.length > 0
+      | ... and 17 more
+    Lines LOCAL deliberately REMOVED that GITHUB still has: 1
+      | const option = searchOptions(source).find((o) => o.fields.every((f) => f.name in values))?.name ?? null;
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 957617fef771:'features/data-sources/library/SourceDetail.tsx') <(git show d7a7e32f8736:'features/data-sources/library/SourceDetail.tsx')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show d7a7e32f8736:'features/data-sources/library/SourceDetail.tsx'
+  GITHUB: git show 957617fef771:'features/data-sources/library/SourceDetail.tsx'
+
+---------------- LOCAL VERSION BELOW ----------------
+"use client";
+
+/**
+ * One data source, in full, ON THE LIBRARY PAGE (no window): what you get (every column), what to
+ * enter (with examples), how many (capped by the organization's limit, shown with its Change link)
+ * and what it costs at THIS source's own price — the decide step, the only place points show — then
+ * Get data. The run streams its results right below the search (`./SourceResults`): the person's
+ * own custom table, drawn inline by the one table mount, filling as the server stores rows. The
+ * run is held by `../runs` (leaving never loses it); its job id rides the address (`&job=`), so a
+ * reload re-attaches to it (else to the newest open job for this source); refusals through the
+ * shared `RefusalView`. Earlier runs are listed below (`./PastRuns`) and reopen inline.
+ */
+
+import { CostDoor } from "@/components/cost/CostDoor";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
+import { DownloadCloud } from "lucide-react";
+import {
+  Badge,
+  Button,
+  Chip,
+  ChipSet,
+  ClampedNumberInput,
+  EmptyState,
+  RegionSkeleton,
+  SegmentedControl,
+} from "@ai-matrx/design-system/controls";
+import { ReadFailure } from "@ai-matrx/design-system";
+import { formatCount } from "@ai-matrx/kit/format";
+
+import { buildInput, capCount, countChoices, searchOptions } from "../contract";
+import { LINK_OPTION, SourceInputFields, modeOf } from "../SourceInputFields";
+import { sourceColumns } from "../openingColumns";
+import { limitSettingHref, fetchedTablesKey } from "../hooks";
+import { clearRun, resumeRun, runState, startRun, useRun } from "../runs";
+import { fetchData, getJob } from "../server";
+import { plainIssue, type Library, type LibrarySource } from "./catalog";
+import { GroupMark } from "./groupMark";
+import {
+  libraryKey,
+  useLibrary,
+  useLibraryOrganizationId,
+  sourceCostRow,
+} from "./hooks";
+import { takeAskRun } from "./askRun";
+import { PastRuns } from "./PastRuns";
+import { PAST_RUNS_PREFIX, isOpenStatus, useDataFetchJob, useOpenJob } from "./runHistory";
+import { LiveRunResults, SavedRunResults } from "./SourceResults";
+
+export const libraryRunKey = (sourceKey: string) => `library:${sourceKey}`;
+
+/**
+ * What a shown run asked for, back in the form (a reload or a reopened past run keeps the question
+ * visible): the first input set's values, and the search option whose fields it carries. Pure.
+ */
+export function refillFromInputs(
+  source: Pick<LibrarySource, "input">,
+  inputs: unknown,
+): { values: Record<string, string>; option: string | null } | null {
+  const first = Array.isArray(inputs) ? inputs[0] : inputs;
+  if (!first || typeof first !== "object") return null;
+  const values: Record<string, string> = {};
+  for (const [k, v] of Object.entries(first as Record<string, unknown>)) {
+    if (typeof v === "string" && v.trim()) values[k] = v;
+    else if (typeof v === "number" && Number.isFinite(v)) values[k] = String(v);
+  }
+  if (Object.keys(values).length === 0) return null;
+  if (values.url) return { values, option: LINK_OPTION };
+  const option = searchOptions(source).find((o) => o.fields.every((f) => !f.required || f.name in values))?.name ?? null;
+  return { values, option };
+}
+
+/** A sentence the plain-language box read: the form opens filled with it, and runs when `run` is set. */
+export interface SourceAsk {
+  /** The ask's id (`./askRun`): a new ask opens the form fresh, and an armed one runs at most once, ever. */
+  nonce: number;
+  values: Record<string, string>;
+  option: string | null;
+  run: boolean;
+  /** What the person said that this source cannot apply (said, never silently dropped). */
+  unapplied: string[];
+  /** The fill is complete, so "Run anyway" can run it as it stands. */
+  canRunAnyway?: boolean;
+  /** A source of the same task that takes everything asked. */
+  alternative?: { key: string; label: string } | null;
+}
+
+export interface SourceDetailProps {
+  sourceKey: string;
+  initialValues?: Record<string, string>;
+  /** The run whose results show (the address's `&job=`); null = the run in memory, if any. */
+  jobId?: string | null;
+  /** Put a run in the address (null clears it). `replace`: the live run naming itself, not a new step. */
+  onJob?: (jobId: string | null, opts?: { replace?: boolean }) => void;
+  /** Reopen a past run of another source (a task's list) — the page moves to that source. */
+  onOpenRun?: (run: { id: string; sourceKey: string }) => void;
+  /** The plain-language box's reading for this source, if that is how it was opened. */
+  ask?: SourceAsk;
+  /** Open the ask on `ask.alternative` instead. */
+  onSwitchAsk?: () => void;
+}
+
+/** The source on the page: reads the library (cached) and shows the one source. */
+export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun, ask, onSwitchAsk }: SourceDetailProps) {
+  const organizationId = useLibraryOrganizationId();
+  const library = useLibrary(organizationId);
+  if (library.isLoading) {
+    return (
+      <div className="p-4">
+        <RegionSkeleton shape="rows" count={6} aria-label="Loading source" />
+      </div>
+    );
+  }
+  if (library.error || !library.data) {
+    return (
+      <div className="p-4">
+        <ReadFailure
+          error={library.error}
+          what="the data source"
+          onRetry={() => void library.refetch()}
+        />
+      </div>
+    );
+  }
+  const source = library.data.sources.find((s) => s.key === sourceKey);
+  if (!source || !organizationId) {
+    return (
+      <EmptyState
+        icon={<DownloadCloud className="h-5 w-5" />}
+        title="Source not available"
+        line="It is no longer in the library."
+      />
+    );
+  }
+  const labelOf = (key: string) => library.data?.sources.find((s) => s.key === key)?.label ?? key;
+  return (
+    <SourceRun
+      key={source.key}
+      source={source}
+      library={library.data}
+      organizationId={organizationId}
+      initialValues={initialValues}
+      jobId={jobId}
+      onJob={onJob ?? (() => {})}
+      onOpenRun={onOpenRun}
+      labelOf={labelOf}
+      ask={ask}
+      onSwitchAsk={onSwitchAsk}
+    />
+  );
+}
+
+function SourceRun({
+  source,
+  library,
+  organizationId,
+  initialValues,
+  jobId,
+  onJob,
+  onOpenRun,
+  labelOf,
+  ask,
+  onSwitchAsk,
+}: {
+  source: LibrarySource;
+  library: Library;
+  organizationId: string;
+  initialValues?: Record<string, string>;
+  jobId: string | null;
+  onJob: NonNullable<SourceDetailProps["onJob"]>;
+  onOpenRun?: SourceDetailProps["onOpenRun"];
+  labelOf: (key: string) => string;
+  ask?: SourceAsk;
+  onSwitchAsk?: () => void;
+}) {
+  const key = libraryRunKey(source.key);
+  const run = useRun(key);
+  const queryClient = useQueryClient();
+  const openJob = useOpenJob(source.key);
+  const addressJob = useDataFetchJob(jobId);
+
+  const runJobId =
+    run.status === "running" ? (run.progress?.jobId ?? null) : run.status === "done" ? run.result.job_id || null : null;
+
+  // The live run names itself in the address once the server gives it an id: a reload re-attaches.
+  const named = useRef<string | null>(null);
+  // The run THIS page started (its form already holds what was asked); a run it only re-attached to
+  // (a reload mid-run) refills the form from the job's own inputs.
+  const justStarted = useRef(false);
+  const [startedHere, setStartedHere] = useState<string | null>(null);
+  useEffect(() => {
+    if (!runJobId || named.current === runJobId) return;
+    named.current = runJobId;
+    if (justStarted.current) {
+      justStarted.current = false;
+      setStartedHere(runJobId);
+    }
+    if (jobId !== runJobId) onJob(runJobId, { replace: true });
+  }, [runJobId, jobId, onJob]);
+
+  // A fetch still running on the server with nothing in memory (a reload): reconnect to it — the
+  // address's run when it is still open, else the newest open run of this source.
+  const savedJob = jobId ? (isOpenStatus(addressJob.data?.status) ? jobId : null) : (openJob.data ?? null);
+  useEffect(() => {
+    if (!savedJob || runState(key).status !== "idle") return;
+    named.current = savedJob;
+    return resumeRun(key, (signal) => getJob(savedJob, { organizationId, signal }));
+  }, [savedJob, organizationId, key]);
+
+  const done = run.status === "done" ? run.result : null;
+  useEffect(() => {
+    if (!done) return;
+    void queryClient.invalidateQueries({ queryKey: fetchedTablesKey });
+    void queryClient.invalidateQueries({ queryKey: PAST_RUNS_PREFIX });
+  }, [done, queryClient]);
+
+  // A run shown that this page did not start (a reload, a reopened past run): its question refills the form.
+  const refill =
+    jobId && jobId !== startedHere && addressJob.data?.source_key === source.key
+      ? refillFromInputs(source, addressJob.data.inputs)
+      : null;
+
+  // Which results show: the run in memory (unless the person reopened a different past run).
+  const showLive = run.status !== "idle" && (!jobId || !runJobId || jobId === runJobId);
+  const clear = () => {
+    clearRun(key);
+    onJob(null);
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <SourceForm
+        key={refill ? `run:${jobId}` : ask ? `ask:${ask.nonce}` : "new"}
+        source={source}
+        library={library}
+        organizationId={organizationId}
+        initialValues={refill?.values ?? ask?.values ?? initialValues}
+        initialOption={refill?.option ?? ask?.option ?? null}
+        unapplied={refill ? [] : (ask?.unapplied ?? [])}
+        autoRunId={!refill && ask?.run === true ? ask.nonce : null}
+        askChoice={
+          !refill && ask && !ask.run && ask.unapplied.length > 0
+            ? { runAnyway: ask.canRunAnyway === true, alternative: ask.alternative ?? null, onSwitch: onSwitchAsk }
+            : null
+        }
+        busy={run.status === "running"}
+        onFetch={(input, count) => {
+          if (runState(key).status === "running") return;
+          justStarted.current = true;
+          clearRun(key);
+          named.current = null;
+          onJob(null);
+          void queryClient.invalidateQueries({ queryKey: PAST_RUNS_PREFIX });
+          startRun(
+            key,
+            (onProgress) =>
+              // org-filter: server-call the data fetch executes in the selected organization
+              fetchData(
+                { sourceKey: source.key, input, maxRecords: count },
+                { organizationId, onProgress },
+              ),
+            () => {
+              void queryClient.invalidateQueries({
+                queryKey: libraryKey(organizationId), // org-filter: server-call invalidates the selected organization library response
+              });
+            },
+          );
+        }}
+      />
+
+      {showLive ? (
+        <section className="flex flex-col gap-3" aria-label="Results" data-results="live">
+          <LiveRunResults label={source.label} run={run} organizationId={organizationId} onClear={clear} />
+        </section>
+      ) : jobId ? (
+        <section className="flex flex-col gap-3" aria-label="Results" data-results="saved">
+          <SavedRunResults jobId={jobId} />
+        </section>
+      ) : null}
+
+      <PastRuns
+        sourceKeys={[source.key]}
+        labelOf={labelOf}
+        onOpen={(r) => (r.sourceKey === source.key || !onOpenRun ? onJob(r.id) : onOpenRun(r))}
+      />
+    </div>
+  );
+}
+
+type CountChoice = "10" | "50" | "100" | "500" | "custom";
+
+function Section({
+  title,
+  end,
+  children,
+}: {
+  title: string;
+  end?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <h3 className="type-meta font-semibold uppercase tracking-wide text-muted-foreground">
+          {title}
+        </h3>
+        {end && (
+          <div className="ml-auto text-xs text-muted-foreground">{end}</div>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/** The columns a fetch brings back: the source's short opening set in plain names; every other column behind "All columns". */
+function WhatYouGet({ sourceKey, fields }: { sourceKey: string; fields: string[] }) {
+  const [all, setAll] = useState(false);
+  if (fields.length === 0) {
+    return <p className="text-xs text-muted-foreground">Every column the source returns becomes a table column</p>;
+  }
+  const columns = sourceColumns(sourceKey, fields);
+  const shown = all ? columns.all : columns.opening;
+  const more = columns.all.length - columns.opening.length;
+  return (
+    <div className="flex flex-col gap-2" data-opening-columns={columns.opening.length}>
+      <ChipSet>
+        {shown.map((c) => (
+          <Chip key={c.field} label={c.label} />
+        ))}
+      </ChipSet>
+      {more > 0 && (
+        <Button variant="quiet" className="self-start" onClick={() => setAll((v) => !v)} aria-expanded={all}>
+          {all ? "Fewer columns" : `All columns (${columns.all.length})`}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function SourceForm({
+  source,
+  library,
+  organizationId,
+  initialValues,
+  initialOption = null,
+  unapplied = [],
+  autoRunId = null,
+  askChoice = null,
+  busy,
+  onFetch,
+}: {
+  source: LibrarySource;
+  library: Library;
+  organizationId: string;
+  initialValues?: Record<string, string>;
+  /** The search option a refilled run used (null = by link). */
+  initialOption?: string | null;
+  /** What the person said that this source cannot apply. */
+  unapplied?: string[];
+  /** The plain-language box's one-time run ticket (`./askRun`): runs once, when the ticket is still unspent. */
+  autoRunId?: number | null;
+  /** An ask that stopped because something asked was not applied: run it anyway, or switch source. */
+  askChoice?: { runAnyway: boolean; alternative: { key: string; label: string } | null; onSwitch?: () => void } | null;
+  /** A run of this source is going: Get data waits for it. */
+  busy: boolean;
+  onFetch: (
+    input: NonNullable<ReturnType<typeof buildInput>["input"]>,
+    count: number,
+  ) => void;
+}) {
+  const limit = library.limits.max_records_per_fetch;
+  const [values, setValues] = useState<Record<string, string>>(initialValues ?? {});
+  const [option, setOption] = useState<string | null>(initialOption);
+  const [choice, setChoice] = useState<CountChoice>(
+    limit && limit.value < 10 ? "custom" : "10",
+  );
+  const [custom, setCustom] = useState(capCount(10, limit?.value));
+  const count = capCount(
+    choice === "custom" ? custom : Number(choice),
+    limit?.value,
+  );
+  const costRows = [sourceCostRow(source, 1, "Per record"), sourceCostRow(source, count, "Total")];
+  const built = buildInput(source, values, modeOf(source, option, values).option);
+  const settingHref = limit
+    ? limitSettingHref(organizationId, limit.setting)
+    : null;
+
+  // The plain-language box runs the ask once, after the inputs below have settled their own defaults.
+  const latest = useRef({ input: built.input, count, busy, onFetch });
+  useEffect(() => {
+    latest.current = { input: built.input, count, busy, onFetch };
+  });
+  useEffect(() => {
+    // The ticket is spent here, on first sight: a later mount for the same ask (Back and reopen) never runs.
+    if (!takeAskRun(autoRunId)) return;
+    const timer = setTimeout(() => {
+      const now = latest.current;
+      if (now.busy || !now.input) return;
+      now.onFetch(now.input, now.count);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [autoRunId]);
+
+  return (
+    <form
+      className="flex flex-col gap-5 rounded-xl border border-border bg-card p-4"
+      data-source-detail={source.key}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (built.input) onFetch(built.input, count);
+      }}
+    >
+      <div className="flex items-start gap-3">
+        <GroupMark group={source.group} subgroup={source.subgroup} />
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">{source.label}</h1>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {source.knownIssue ? (
+              <Badge tone="warning">Known issue</Badge>
+            ) : source.confirmed ? (
+              <Badge tone="success">Confirmed</Badge>
+            ) : (
+              <Badge tone="neutral">Not confirmed yet</Badge>
+            )}
+          </div>
+          <div className="mt-1 truncate text-xs text-muted-foreground">
+            {[source.group, source.subgroup].filter(Boolean).join(" · ")}
+          </div>
+        </div>
+      </div>
+      {source.description && (
+        <p className="-mt-2 text-sm text-foreground">{source.description}</p>
+      )}
+      {source.knownIssue && (
+        <p className="-mt-2 text-xs text-warning">{plainIssue(source.knownIssue)}</p>
+      )}
+
+      <Section
+        title="What you get"
+        end={
+          source.outputFields.length
+            ? `${source.outputFields.length} columns`
+            : undefined
+        }
+      >
+        <WhatYouGet sourceKey={source.key} fields={source.outputFields} />
+      </Section>
+
+      {unapplied.length > 0 && (
+        <div className="-mt-2 flex flex-wrap items-center gap-2" data-ask-unapplied="">
+          <span className="text-xs text-muted-foreground">Not applied here: {unapplied.join(", ")}</span>
+          {askChoice?.runAnyway && built.input && (
+            <Button type="button" variant="outline" disabled={busy} onClick={() => built.input && onFetch(built.input, count)} data-ask-run-anyway="">
+              Run anyway
+            </Button>
+          )}
+          {askChoice?.alternative && askChoice.onSwitch && (
+            <Button type="button" variant="quiet" onClick={askChoice.onSwitch} data-ask-switch={askChoice.alternative.key}>
+              Use {askChoice.alternative.label}
+            </Button>
+          )}
+        </div>
+      )}
+
+      <Section title="What to enter">
+        <SourceInputFields
+          source={source}
+          values={values}
+          option={option}
+          onValues={setValues}
+          onOption={setOption}
+          organizationId={organizationId}
+        />
+      </Section>
+
+      <Section
+        title="How many"
+        end={
+          limit ? (
+            <span data-limit={limit.value}>
+              Up to {formatCount(limit.value)}
+              {settingHref && (
+                <>
+                  {" · "}
+                  <Link
+                    href={settingHref}
+                    className="text-primary hover:underline"
+                    target="_blank"
+                  >
+                    Change
+                  </Link>
+                </>
+              )}
+            </span>
+          ) : undefined
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <SegmentedControl<CountChoice>
+            aria-label="How many records"
+            value={choice}
+            onValueChange={setChoice}
+            data={[
+              ...countChoices(limit?.value).map((c) => ({
+                value: String(c.value) as CountChoice,
+                label: String(c.value),
+                disabled: !c.allowed,
+                title: c.allowed
+                  ? undefined
+                  : `Above your limit of ${limit?.value}`,
+              })),
+              { value: "custom" as const, label: "Custom" },
+            ]}
+          />
+          {choice === "custom" && (
+            <ClampedNumberInput
+              aria-label="Custom count"
+              className="w-24"
+              value={custom}
+              min={1}
+              max={limit?.value ?? null}
+              onChange={(n) => setCustom(n)}
+            />
+          )}
+        </div>
+      </Section>
+
+      <div className="-mx-4 -mb-4 flex items-center justify-end gap-3 border-t border-border px-4 py-3">
+        <span className="mr-auto flex items-center gap-2 text-xs text-muted-foreground" data-estimate="">
+          {formatCount(count)} {count === 1 ? "record" : "records"}
+          <CostDoor rows={costRows} />
+        </span>
+        <Button
+          type="submit"
+          variant="primary"
+          icon={<DownloadCloud className="h-4 w-4" />}
+          disabled={!built.input || busy}
+        >
+          {busy ? "Getting data" : "Get data"}
+        </Button>
+      </div>
+    </form>
+  );
+}

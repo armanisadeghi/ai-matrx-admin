@@ -121,6 +121,7 @@ export function FilePreview({
   const { resolution: previewResolution } = useMediaResolution(
     !useAssetForPreview && fileId ? { file_id: fileId } : null,
   );
+  // media-src-ok: only non-image, non-PDF files (video/audio elements, previewers that read the fileId's bytes)
   const resolvedUrl = previewResolution?.src ?? null;
   // Prefer a larger variant (hero / cover) when present, else the canonical
   // `primary_url`, else the original variant. Asset endpoint guarantees at

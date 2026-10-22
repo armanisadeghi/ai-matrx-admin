@@ -10,7 +10,7 @@
 import { useState } from "react";
 
 import { InlineQueryError, LoadingSurface, SectionCard } from "@/features/marketing/components/shared/MarketingUi";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
+import { KpiTile } from "@ai-matrx/design-system/controls";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 import { useBrandSocialData, useKpiGoals } from "../hooks";

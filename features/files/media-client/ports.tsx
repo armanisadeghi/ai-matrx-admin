@@ -77,6 +77,7 @@ const actions: MediaHostPorts["actions"] = {
     // refuses). Copy never MINTS a share link — that is the share door's
     // job (`mediaClient.shareableUrl`).
     const shareable = mediaFilesClient.shareableUrlNoMint(ctx.ref);
+    // media-src-ok: copied link text, never bound to an element
     const url = shareable ?? ctx.resolution?.src ?? null;
     if (!url) {
       toast.error("No link available for this file");
@@ -103,6 +104,7 @@ const actions: MediaHostPorts["actions"] = {
       openFilePreview(fileId);
       return;
     }
+    // media-src-ok: openOutbound — a top-level navigation
     const src = ctx.resolution?.src;
     if (src) openOutbound(src, "_blank", "noopener");
   },

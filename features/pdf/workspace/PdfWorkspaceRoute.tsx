@@ -1,34 +1,55 @@
 "use client";
 
 import { PdfWorkspace } from "@ai-matrx/office/pdf";
-import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { rememberFileOrganization } from "@/features/files/api/fileOrganization";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import { cn } from "@/lib/utils";
 import { usePdfWorkspaceHost } from "./usePdfWorkspaceHost";
+import { PDF_WORKSPACE_SURFACE_NAME, WorkspaceSurface } from "./WorkspaceSurface";
 
-/** The agent-visible surface of the PDF workspace page. */
-export const PDF_WORKSPACE_SURFACE_NAME = "matrx-user/pdf-workspace";
+export { PDF_WORKSPACE_SURFACE_NAME };
 
 /**
- * The PDF workspace for one cloud file: the Acrobat-style chrome from `@ai-matrx/office/pdf` on this
- * app's host. The shell header is a solid band; the workspace fills the area below it. Its own bars and
- * panels have fixed sizes, so nothing here shifts the page.
+ * The workspace itself for one cloud file, without a page header: the page route, the Files "Edit" tab and
+ * the floating window all mount THIS. `surface` declares the agent surface; a host that already sits under
+ * its own surface (a file tab) turns it off.
  */
-export function PdfWorkspaceRoute({ fileId }: { fileId: string }) {
-  const { host } = usePdfWorkspaceHost(fileId);
-  return (
-    <SurfaceRuntimeProvider
-      surfaceName={PDF_WORKSPACE_SURFACE_NAME}
-      getScope={() => ({ file_id: fileId, file_name: host.file.name })}
-      isEditable
-    >
-      <RecordPageHeader
-        backHref="/pdf"
-        parents={[{ label: "PDF", href: "/pdf" }]}
-        record={{ name: host.file.name, token: "file", id: fileId }}
-      />
-      <div className="h-dvh w-full pt-[var(--shell-header-h)]" data-surface={PDF_WORKSPACE_SURFACE_NAME}>
+export function PdfWorkspaceBody({
+  fileId,
+  organizationId,
+  surface = true,
+  header = false,
+  className,
+}: {
+  fileId: string;
+  organizationId?: string | null;
+  surface?: boolean;
+  header?: boolean;
+  className?: string;
+}) {
+  // Every per-file request carries the file's own organization (the Analysis panels read it).
+  rememberFileOrganization(fileId, organizationId);
+  const { host, studio } = usePdfWorkspaceHost(fileId);
+  const body = (
+    <>
+      {header ? (
+        <RecordPageHeader backHref="/pdf" parents={[{ label: "PDF", href: "/pdf" }]} record={{ name: host.file.name, token: "file", id: fileId }} />
+      ) : null}
+      <div className={cn(header ? "h-dvh w-full pt-[var(--shell-header-h)]" : "h-full w-full", className)} data-surface={surface ? PDF_WORKSPACE_SURFACE_NAME : undefined}>
         <PdfWorkspace host={host} />
       </div>
-    </SurfaceRuntimeProvider>
+    </>
   );
+  return surface ? (
+    <WorkspaceSurface fileId={fileId} fileName={host.file.name} studio={studio}>
+      {body}
+    </WorkspaceSurface>
+  ) : (
+    body
+  );
+}
+
+/** `/pdf/[fileId]`: the workspace under the record page header, declaring the agent surface. */
+export function PdfWorkspaceRoute({ fileId, organizationId }: { fileId: string; organizationId?: string | null }) {
+  return <PdfWorkspaceBody fileId={fileId} organizationId={organizationId} header />;
 }

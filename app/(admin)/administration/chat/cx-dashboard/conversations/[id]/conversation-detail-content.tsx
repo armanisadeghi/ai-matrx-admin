@@ -5,8 +5,7 @@ import AppLink from "@/components/navigation/AppLink";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
-import { Tabs } from "@ai-matrx/design-system/controls";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
+import { Tabs, KpiTile } from "@ai-matrx/design-system/controls";
 import {
   ConversationErrorsView,
   ConversationUsageView,

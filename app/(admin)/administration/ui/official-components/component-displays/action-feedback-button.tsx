@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
-import ActionFeedbackButton from '@/components/official/ActionFeedbackButton';
+import { ActionFeedbackButton } from "@ai-matrx/design-system/controls";
 import { Save, Trash, Send, Check, Bookmark, Download } from 'lucide-react';
 
 interface ComponentDisplayProps {
@@ -27,7 +27,7 @@ export default function ActionFeedbackButtonDisplay({ component }: ComponentDisp
   };
   
   // Example code with all available props and their default values
-  const code = `import ActionFeedbackButton from '@/components/official/ActionFeedbackButton';
+  const code = `import { ActionFeedbackButton } from "@ai-matrx/design-system/controls";
 import { Save, Check } from 'lucide-react';
 
 // Example usage
@@ -42,12 +42,10 @@ import { Save, Check } from 'lucide-react';
   successTooltip="Saved successfully!" // Optional - defaults to "Success!"
   feedbackDuration={2000} // Optional - time in ms to show success state (default: 2000)
   
-  // Props inherited from IconButton
-  variant="ghost" // Optional - defaults to 'ghost' (options: 'default', 'destructive', 'outline', 'secondary', 'ghost', 'link')
-  size="sm" // Optional - defaults to 'sm' (options: 'default', 'sm', 'lg')
+  // Props of the controls Button
+  variant="quiet" // Optional - a controls button variant: quiet (default), outline, danger, primary, success, link
   className="" // Optional - additional classes
   disabled={false} // Optional - whether the button is disabled
-  showTooltipOnDisabled={true} // Optional - whether to show tooltip when disabled
   disabledTooltip="Cannot save at this time" // Optional - different tooltip text for disabled state
 />`;
 
@@ -81,7 +79,7 @@ import { Save, Check } from 'lucide-react';
               tooltip="Delete item"
               successTooltip="Deleted!"
               onClick={() => handleAction('delete')}
-              variant="destructive"
+              variant="danger"
             />
           </div>
           
@@ -92,7 +90,7 @@ import { Save, Check } from 'lucide-react';
               tooltip="Send message"
               disabledTooltip="Cannot send at this time"
               onClick={() => handleAction('send')}
-              variant="secondary"
+              variant="outline"
               disabled={true}
             />
           </div>
@@ -109,14 +107,12 @@ import { Save, Check } from 'lucide-react';
           </div>
           
           <div className="flex flex-col items-center gap-2">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Large Size</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Another glyph</p>
             <ActionFeedbackButton
               icon={<Bookmark className="h-6 w-6 text-amber-500 dark:text-amber-400" />}
               tooltip="Bookmark page"
               successTooltip="Bookmarked!"
               onClick={() => handleAction('bookmark')}
-              size="lg"
-              className="aspect-square"
             />
           </div>
         </div>

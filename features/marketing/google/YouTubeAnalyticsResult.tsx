@@ -5,7 +5,7 @@ import { formatCount } from "@ai-matrx/kit/format";
 import { LiteTable, type MatrxColumnDef } from "@ai-matrx/design-system/lite-table";
 import { Badge } from "@/components/ui/badge";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
+import { KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import type { YouTubeAnalyticsPreview } from "@/features/marketing/google/types";
 import type { YouTubeAnalyticsSelection } from "@/features/marketing/google/youtube-analytics-request";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";

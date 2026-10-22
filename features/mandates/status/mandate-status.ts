@@ -22,7 +22,7 @@
 
 import type { LucideIcon } from "lucide-react";
 import { Archive, CircleCheck, CircleDashed, CircleOff } from "lucide-react";
-import type { StatusTone } from "@/components/official/status-badge/StatusBadge";
+import type { StatusTone } from "@ai-matrx/design-system/controls";
 
 export type MandateStatus = "draft" | "active" | "disabled" | "archived";
 

@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3450",
+  "version": "0.4.3451",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
@@ -226,6 +226,8 @@
     "check:static-loader": "tsx scripts/check-static-loader.ts",
     "check:google-auth-gate": "tsx scripts/check-google-auth-gate.ts",
     "check:google-auth-gate:self-test": "tsx scripts/check-google-auth-gate.ts --self-test",
+    "check:media-src-door": "tsx scripts/check-media-src-door.ts",
+    "check:media-src-door:self-test": "tsx scripts/check-media-src-door.ts --self-test",
     "check:server-pipeline": "tsx scripts/check-server-pipeline.ts",
     "check:server-pipeline:self-test": "tsx scripts/check-server-pipeline.ts --self-test",
     "check:static-loader:self-test": "tsx scripts/check-static-loader.ts --self-test",
@@ -459,6 +461,8 @@
     "check:org-flag-readers:self-test": "tsx scripts/check-org-flag-readers.ts --self-test",
     "check:one-door": "tsx scripts/check-one-door.ts",
     "check:one-door:self-test": "tsx scripts/check-one-door.ts --self-test",
+    "check:pdf-one-home": "tsx scripts/check-pdf-one-home.ts",
+    "check:pdf-one-home:self-test": "tsx scripts/check-pdf-one-home.ts --self-test",
     "check:pdf-one-page-reader": "tsx scripts/check-pdf-one-page-reader.ts",
     "check:pdf-one-page-reader:self-test": "tsx scripts/check-pdf-one-page-reader.ts --self-test",
     "check:single-record-writes": "tsx scripts/check-single-record-writes.ts",

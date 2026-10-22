@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import IconDropdownMenu from '@/components/official/IconDropdownMenu';
+import { IconDropdownMenu } from "@ai-matrx/design-system/controls";
 import { 
   Clock, 
   Calendar, 
@@ -70,7 +70,6 @@ export default function IconDropdownMenuDemo() {
             options={filterOptions}
             value={filterValue}
             onValueChange={setFilterValue}
-            compact={true}
             align="center"
           />
           <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -115,7 +114,6 @@ const [value, setValue] = useState('recent');
   options={options}
   value={value}
   onValueChange={setValue}
-  compact={false}
   align="end"
   menuWidth="w-48"
 />`}
