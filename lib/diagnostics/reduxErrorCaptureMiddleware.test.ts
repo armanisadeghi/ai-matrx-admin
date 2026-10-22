@@ -200,3 +200,30 @@ describe("reduxErrorCaptureMiddleware cancellation vs failure", () => {
     expect(run(action)).toBe(1);
   });
 });
+
+describe("reduxErrorCaptureMiddleware expected file read refusals", () => {
+  beforeEach(() => clearCapturedErrors());
+  const run = (type: string, code: string) =>
+    reduxErrorCaptureMiddleware({} as never)(jest.fn())({
+      type,
+      error: { name: "BackendApiError", message: "User 'u' lacks 'read' access on file 'f'.", code },
+    });
+
+  it.each(["permission_denied", "file_not_found"])(
+    "keeps a metadata-read %s out of the inspector (captureApiError already skips it)",
+    (code) => {
+      run("cloudFiles/ensureCloudFileFields/rejected", code);
+      expect(getSnapshot()).toHaveLength(0);
+    },
+  );
+
+  it("still captures other codes on the read and refusals on file writes", () => {
+    run("cloudFiles/ensureCloudFileFields/rejected", "internal_error");
+    run("cloudFiles/rename/rejected", "permission_denied");
+    expect(getSnapshot().map((c) => c.relation).sort()).toEqual([
+      "cloudFiles/ensureCloudFileFields",
+      "cloudFiles/rename",
+    ]);
+    expect(getSnapshot()).toHaveLength(2);
+  });
+});

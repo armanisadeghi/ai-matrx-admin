@@ -19,6 +19,12 @@
  *     reason) is a real failure and is still captured.
  *   - SessionUnavailableError (an expected auth-lifecycle pause)
  *   - a rejection marked ResumeRetryScheduled (its own retry is already queued)
+ *   - a file-metadata READ refused `permission_denied` / `file_not_found`
+ *     (`isExpectedFileReadRefusal`) — the same refusal `captureApiError`
+ *     already keeps out at the HTTP layer; the slice stores it on the file
+ *     for the surface to render (files handler rule 15). Records pointing at
+ *     a file their owner cannot read are caught at the data layer by
+ *     aidream `scripts/check_file_refs_readable.py --live`, not here.
  *
  * `relation` is the thunk name (the action type minus `/rejected`) so an admin
  * can downgrade a whole slice or a single thunk by `relation` in
@@ -123,6 +129,23 @@ export function isStreamWrapperDuplicate(
   );
 }
 
+/** Read-only file thunks whose typed refusal is a rendered state, not an incident. */
+const FILE_READ_RELATIONS = new Set(["cloudFiles/ensureCloudFileFields"]);
+const FILE_READ_REFUSAL_CODES = new Set(["permission_denied", "file_not_found"]);
+
+/**
+ * Mirrors `captureApiError`'s `expectedFileReadRefusal`: that layer skips the
+ * HTTP 403/404, so capturing the thunk that carried it would re-file the same
+ * expected refusal as an orange incident (2026-10-22, brand home screenshot).
+ * Writes and every other code stay captured.
+ */
+export function isExpectedFileReadRefusal(action: RejectedAction): boolean {
+  const relation = action.type.slice(0, -"/rejected".length);
+  if (!FILE_READ_RELATIONS.has(relation)) return false;
+  const code = action.error?.code;
+  return typeof code === "string" && FILE_READ_REFUSAL_CODES.has(code);
+}
+
 export const reduxErrorCaptureMiddleware: Middleware =
   () => (next) => (action) => {
     const result = next(action);
@@ -149,6 +172,7 @@ export const reduxErrorCaptureMiddleware: Middleware =
           return result;
         }
         if (isStreamWrapperDuplicate(a)) return result;
+        if (isExpectedFileReadRefusal(a)) return result;
         if (isCapturedSurfaceRegistrationError(a.error)) return result;
         captureError({
           source: "redux-rejected",

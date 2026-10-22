@@ -103,7 +103,10 @@ Auth lanes for the durable byte routes:
 15. **Unavailable is a rendered state, not an incident.** Typed access-denied, missing, and deleted
     results remain on `useFileAs().error` for the surface to render, but never emit `console.error`;
     unexpected resolver failures stay loud. Structured GET 403 `permission_denied` and analysis
-    404 `file_not_found` refusals likewise never enter the durable error queue.
+    404 `file_not_found` refusals likewise never enter the durable error queue — at the HTTP layer
+    (`captureApiError`) AND the Redux layer (`isExpectedFileReadRefusal` for
+    `cloudFiles/ensureCloudFileFields`). A record pointing at a file its own creator cannot read is a
+    data defect, caught by aidream `scripts/check_file_refs_readable.py --live`.
 
 ## Deliberately not owned here
 
