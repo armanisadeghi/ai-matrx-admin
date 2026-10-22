@@ -33,7 +33,7 @@ import dynamic from "next/dynamic";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { CodeEditorTabBar } from "@/features/code-editor/multi-file-core/CodeEditorTabBar";
+import { CodeEditorTabBar } from "@ai-matrx/chat/window-panels/windows/code/CodeEditorTabBar";
 import { getLanguageIconNode } from "@ai-matrx/rich-content/code-block/LanguageDisplay";
 import { ReviewStage } from "./ReviewStage";
 import { ErrorPanel } from "./ErrorPanel";
