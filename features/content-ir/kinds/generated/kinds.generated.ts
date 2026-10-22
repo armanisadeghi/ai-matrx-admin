@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1689 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1693 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "156d907830fd";
+export const KIND_REGISTRY_FINGERPRINT = "27e2d25565dc";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -29528,6 +29528,107 @@ export interface EducationVoiceTutorOffer {
    * The 1–5 rating given before flipping.
    */
   pre_flip_confidence?: number;
+}
+
+/**
+ * The learner's active study plan as the screen holds it (``education.study_plan``).
+ *  *
+ *  * Kind `education_active_plan` (registry v1).
+ */
+export interface EducationActivePlan {
+  id: string;
+  title: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_active_plan";
+  status?: string | null;
+  goal_id?: string | null;
+  version?: number | null;
+  /**
+   * YYYY-MM-DD; the exam day when there is one.
+   */
+  end_date?: string | null;
+  /**
+   * What the plan schedules (from the plan's config).
+   */
+  item_type?: string | null;
+  rationale?: string | null;
+  /**
+   * Weekdays off, 0 = Sunday.
+   */
+  rest_days?: number[] | null;
+  /**
+   * YYYY-MM-DD.
+   */
+  start_date: string;
+  generated_by?: string | null;
+  daily_minutes?: number | null;
+  daily_item_cap?: number | null;
+}
+
+/**
+ * One deck (or document) the learner picked as the source on a creation screen.
+ *  *
+ *  * Kind `education_deck_choice` (registry v1).
+ */
+export interface EducationDeckChoice {
+  id: string;
+  name: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_deck_choice";
+}
+
+/**
+ * What the learner is about to generate on an audio-study or memory-aid screen.
+ *  *
+ *  * Kind `education_generation_request` (registry v1).
+ */
+export interface EducationGenerationRequest {
+  focus?: string | null;
+  topic?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_generation_request";
+  /**
+   * Audio study: the episode format.
+   */
+  format?: string | null;
+  deck_id?: string | null;
+  /**
+   * Audio study: whether it adapts to weak cards.
+   */
+  adaptive?: boolean | null;
+  deck_title?: string | null;
+  /**
+   * Audio study: how many voices.
+   */
+  host_count?: number | null;
+  /**
+   * What it is made from: deck, topic, notes…
+   */
+  source_kind: string;
+}
+
+/**
+ * The open flashcard set's details as the set, study or editor screen holds them.
+ *  *
+ *  * Kind `education_set_details` (registry v1).
+ */
+export interface EducationSetDetails {
+  name: string;
+  topic?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_set_details";
+  lesson?: string | null;
+  difficulty?: string | null;
+  visibility?: string | null;
+  description?: string | null;
 }
 
 /**
@@ -60788,13 +60889,25 @@ export interface VisionInterviewRoomActivationOffer {
 }
 
 /**
- * Kind `vision_interview.scribe_pass.offer` (registry v10).
+ * Kind `vision_interview.scribe_pass.offer` (registry v11).
  */
 export interface VisionInterviewScribePassOffer {
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "vision_interview.scribe_pass.offer";
+  /**
+   * The Scribe's own earlier observer note; empty when it holds nothing.
+   */
+  held_note?: string;
+  /**
+   * What this stage of the interview is trying to achieve; empty when the Scribe only observes.
+   */
+  stage_goal?: string;
+  /**
+   * Open holes the router sent to the Scribe this round; empty when none.
+   */
+  routed_holes?: string;
   /**
    * The questions still waiting for an answer, each with its short label and its full reference, so the Scribe can update or close them.
    */
@@ -66864,6 +66977,10 @@ export type GeneratedKindSlug =
   | "education.study_pack_v2.offer"
   | "education.tutor_message.offer"
   | "education.voice_tutor.offer"
+  | "education_active_plan"
+  | "education_deck_choice"
+  | "education_generation_request"
+  | "education_set_details"
   | "electronics_intake_analysis"
   | "email_candidates"
   | "email_verdict"
@@ -68556,6 +68673,10 @@ export interface KindPayloadBySlug {
   "education.study_pack_v2.offer": EducationStudyPackV2Offer;
   "education.tutor_message.offer": EducationTutorMessageOffer;
   "education.voice_tutor.offer": EducationVoiceTutorOffer;
+  "education_active_plan": EducationActivePlan;
+  "education_deck_choice": EducationDeckChoice;
+  "education_generation_request": EducationGenerationRequest;
+  "education_set_details": EducationSetDetails;
   "electronics_intake_analysis": ElectronicsIntakeAnalysis;
   "email_candidates": EmailCandidates;
   "email_verdict": EmailVerdict;
@@ -70252,6 +70373,10 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "education.study_pack_v2.offer",
   "education.tutor_message.offer",
   "education.voice_tutor.offer",
+  "education_active_plan",
+  "education_deck_choice",
+  "education_generation_request",
+  "education_set_details",
   "electronics_intake_analysis",
   "email_candidates",
   "email_verdict",

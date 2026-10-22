@@ -76,6 +76,7 @@ const AgentPeekDuplicateButton = lazySlot("AgentPeekDuplicateButton", SlotLoadin
 const CustomDataBindingSummary = lazySlot("CustomDataBindingSummary", SlotLoadingInline);
 const CustomDataBindingPreview = lazySlot("CustomDataBindingPreview", SlotLoadingBlock);
 const Cost = lazySlot("Cost", SlotLoadingInline);
+const CostDoor = lazySlot("CostDoor", SlotLoadingInline);
 const CanvasItemCard = lazySlot("CanvasItemCard", SlotLoadingBlock);
 
 import { canvasArtifactService } from "@/features/canvas/services/canvasArtifactService";
@@ -456,6 +457,7 @@ registerChatUi({
 
 registerChatUi({
   Cost: Cost,
+  CostDoor: CostDoor,
 });
 
 import { currentPointsRate as Host_currentPointsRate } from "@/components/cost/pointsRate";

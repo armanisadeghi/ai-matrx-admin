@@ -29,6 +29,7 @@ import { AgentPeekDuplicateButton } from "@/features/agents/components/shared/Ag
 import type { CustomDataBindingSummary as CustomDataBindingSummaryType } from "@/features/agents/components/variables-management/custom-data/CustomDataBindingSummary";
 import type { CustomDataBindingPreview as CustomDataBindingPreviewType } from "@/features/agents/components/variables-management/custom-data/CustomDataBindingPreview";
 import { Cost } from "@/components/cost/Cost";
+import { CostDoor } from "@/components/cost/CostDoor";
 import type { CanvasItemCard as CanvasItemCardType } from "@/features/canvas/components/CanvasItemCard";
 import type { NoteEditorCore as NoteEditorCoreType } from "@/features/notes/components/NoteEditorCore";
 import { loadCodeEditHistoryThunk } from "@/features/code/redux/codeEditHistoryHydration";
@@ -97,6 +98,7 @@ export const fullSlotImpls = {
   CustomDataBindingSummary,
   CustomDataBindingPreview,
   Cost,
+  CostDoor,
   CanvasItemCard,
 };
 

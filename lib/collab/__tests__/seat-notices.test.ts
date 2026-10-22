@@ -1,4 +1,4 @@
-import { notSharedNotice, seatRefusal } from "../seat-notices";
+import { notSharedNotice, resyncedNotice, seatRefusal } from "../seat-notices";
 
 describe("the refusal names the product", () => {
   it("a Doc says document", () => {
@@ -23,5 +23,14 @@ describe("the rollback notice for a change that cannot be shared", () => {
       expect(`${n.title} ${n.description}`).not.toContain("That change was undone");
       expect(n.description.length).toBeLessThan(100);
     }
+  });
+});
+
+describe("the notice for a sheet that was refreshed to match the others", () => {
+  it("is one short plain line", () => {
+    const n = resyncedNotice();
+    expect(n).toEqual({ title: "Your sheet was refreshed to match everyone else" });
+    expect(n.title.length).toBeLessThan(60);
+    expect(n.title).not.toMatch(/hash|resync|mismatch|rev/i);
   });
 });

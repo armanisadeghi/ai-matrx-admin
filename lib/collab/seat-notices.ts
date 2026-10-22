@@ -29,3 +29,11 @@ export function notSharedNotice(mutationId?: string): { title: string; descripti
   }
   return { title: "That change was removed", description: "It can't be shared with other editors yet, so it was taken back." };
 }
+
+/**
+ * What a seat is told when its sheet disagreed with everyone else's and was reloaded to match, changing what the person
+ * sees (`resynced`). One short line; the seat keeps working.
+ */
+export function resyncedNotice(): { title: string } {
+  return { title: "Your sheet was refreshed to match everyone else" };
+}

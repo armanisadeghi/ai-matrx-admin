@@ -37,3 +37,40 @@ export function withoutEmbeddedNotes<T extends { metadata?: unknown }>(rows: rea
 export function excludeEmbeddedNotes<Q extends { or(filters: string): Q }>(query: Q): Q {
   return query.or(NOT_EMBEDDED_FILTER);
 }
+
+/** The smallest slice of a supabase client this needs (kept structural so tests can fake it). */
+type EmbeddedIdReader = {
+  schema(name: "workbench"): {
+    from(table: "notes"): {
+      select(columns: string): {
+        in(column: "id", values: string[]): {
+          eq(column: string, value: string): PromiseLike<{ data: { id: string }[] | null; error: unknown }>;
+        };
+      };
+    };
+  };
+};
+
+const EMBEDDED_ID_CHUNK = 100;
+
+/**
+ * Which of these ids are embedded rows. For reads that cannot carry `metadata` themselves
+ * (the `get_notes_shared_with_me` RPC returns no metadata column): one small follow-up read of the
+ * marker, chunked to keep the URL short. A failed read throws — showing an internal row because the
+ * check could not run is the exact leak this helper exists to stop.
+ */
+export async function readEmbeddedNoteIds(client: EmbeddedIdReader, ids: readonly string[]): Promise<Set<string>> {
+  const embedded = new Set<string>();
+  for (let i = 0; i < ids.length; i += EMBEDDED_ID_CHUNK) {
+    const chunk = ids.slice(i, i + EMBEDDED_ID_CHUNK);
+    const { data, error } = await client
+      .schema("workbench")
+      .from("notes")
+      .select("id")
+      .in("id", chunk)
+      .eq(`metadata->>${EMBEDDED_NOTE_KEY}`, "true");
+    if (error) throw error;
+    for (const row of data ?? []) embedded.add(row.id);
+  }
+  return embedded;
+}

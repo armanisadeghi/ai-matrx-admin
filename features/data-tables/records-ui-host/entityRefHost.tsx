@@ -1,3 +1,5 @@
+"use client";
+
 // features/data-tables/records-ui-host/entityRefHost.tsx
 //
 // THE APP'S ENTITY-REF HOST: what `@ai-matrx/records-ui/entity-ref` (EntityRef, doors, TextWithDoors,

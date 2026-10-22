@@ -65,6 +65,7 @@ import { toast } from "@/lib/toast";
 import { organizationArchiveState, restoreArchivedOrganizationById } from "@/features/organizations/service/organizationArchive";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { currentPointsRate } from "@/components/cost/pointsRate";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createRecordsPresencePort } from "@ai-matrx/records/realtime";
 import type { DataBuildOrAskOffer } from "@ai-matrx/agents/generated/provision-offers";
@@ -187,6 +188,8 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     // Every cost the package shows is points at the platform's rate (records-ui `pointsRate`).
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{ pointsRate: currentPointsRate() },
+    // The enrichment cost and the fill estimate sit behind the quiet cost door (records-ui `CostDoor`).
+    ...{ CostDoor },
     // WRITE-THROUGH (lane SYNC-AIRTABLE, CFL-058): a synced cell's edit goes to its connected Google
     // Sheet through the server first; a sheet changed since the last sync comes back as a conflict.
     // Spread as its own object: a records-ui build before the port ignores the key.

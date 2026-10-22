@@ -1,3 +1,5 @@
+"use client";
+
 // features/settings/doors/settingsHost.tsx
 //
 // THE APP'S SETTINGS HOST: what `@ai-matrx/design-system/settings` (SettingsRow, SettingsSection, the

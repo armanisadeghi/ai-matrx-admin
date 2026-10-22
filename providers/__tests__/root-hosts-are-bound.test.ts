@@ -80,6 +80,24 @@ describe("root hosts are bound for every route", () => {
     expect(settings).toMatch(/export function SettingsHost\(\): null/);
   });
 
+  // app/Providers.tsx is a SERVER component. A local module it mounts as JSX without "use client"
+  // is evaluated in the RSC graph: its module-scope binding runs on the server only (never in the
+  // browser), and any client-only call it reaches throws there. 2026-10-22: settingsHost.tsx reached
+  // lib/toast.ts (createMatrxToast at module scope) and every Providers route answered 500.
+  it("every local component app/Providers.tsx mounts is a client module", () => {
+    const src = read("app/Providers.tsx");
+    const offenders: string[] = [];
+    for (const m of src.matchAll(/^import\s+\{([^}]+)\}\s+from\s+"@\/([^"]+)";/gm)) {
+      const names = m[1].split(",").map((n) => n.trim().replace(/^type\s+/, "").split(/\s+as\s+/).pop() ?? "");
+      if (!names.some((n) => /^[A-Z]/.test(n) && new RegExp(`<${n}[\\s/>]`).test(src))) continue;
+      const file = [".tsx", ".ts", "/index.tsx", "/index.ts"].map((ext) => `${m[2]}${ext}`).find((rel) => existsSync(join(ROOT, rel)));
+      if (!file) continue;
+      const body = read(file).replace(/^(\s*(\/\/[^\n]*|\/\*[\s\S]*?\*\/))*\s*/, "");
+      if (!/^["']use client["']/.test(body)) offenders.push(file);
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("no chat registration file is the only thing binding them", () => {
     const base = read("providers/chatUiRegistrationBase.ts");
     expect(base).not.toMatch(/^import "@\/features\/(data-tables\/records-ui-host\/entityRefHost|settings\/doors\/settingsHost)"/m);

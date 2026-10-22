@@ -20,6 +20,7 @@
 
 "use client";
 
+import { excludeEmbeddedNotes } from "@/features/notes/service/embeddedNotes";
 import { throwIfHeld, whileAgentHoldsTheNote } from "@/features/notes/service/noteEditHold";
 import { StickyNote } from "lucide-react";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -93,7 +94,7 @@ const notesAdapter: VirtualSourceAdapter = {
             .schema("workbench").from("notes")
             .select("home_scope_id", { count: "exact" })
             .is("deleted_at", null);
-          q = listScope.apply(q);
+          q = excludeEmbeddedNotes(listScope.apply(q));
           return q.order("home_scope_id").range(from, to);
         },
         { label: "workbench.notes (files tree homes)" },
@@ -137,7 +138,7 @@ const notesAdapter: VirtualSourceAdapter = {
         let query = supabase
           .schema("workbench").from("notes")
           .select("id, label, updated_at, version", { count: "exact" });
-        query = listListScope.apply(query);
+        query = excludeEmbeddedNotes(listListScope.apply(query));
         query = args.includeDeleted
           ? query.not("deleted_at", "is", null)
           : query.is("deleted_at", null);
