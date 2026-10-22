@@ -9,7 +9,8 @@
  * host, so any route that loads one is wired. A host configured first (jest's
  * lazy test host, a private chat store) is kept. Every member is read at CALL time — the
  * module namespaces and getters below keep a test's `jest.mock` of
- * `@/lib/python-client`, `@/utils/supabase/client` or `@/lib/toast` in force.
+ * `@/lib/api/server-api`, `@/lib/python-client`, `@/utils/supabase/client` or
+ * `@/lib/toast` in force.
  */
 
 import {
@@ -17,6 +18,7 @@ import {
   isFilesHostConfigured,
 } from "@ai-matrx/media/files/engine/host/configure";
 import * as pythonClient from "@/lib/python-client";
+import * as serverApiModule from "@/lib/api/server-api";
 import * as supabaseClient from "@/utils/supabase/client";
 import * as shareLinks from "@/utils/permissions/shareLinks";
 import * as toastModule from "@/lib/toast";
@@ -38,7 +40,14 @@ if (!isFilesHostConfigured()) configureFilesHost({
   get db() {
     return supabaseClient.supabase;
   },
-  server: pythonClient,
+  // THE website's @ai-matrx/api client: every file-server call is an @ai-matrx/files operation over
+  // it, so its identity, organization admission, server toggle and Error Inspector capture apply.
+  get api() {
+    return serverApiModule.serverApi;
+  },
+  // The resumable (TUS) lane's headers: the same builder every website request uses.
+  wireHeaders: async (organizationId) =>
+    (await pythonClient.buildHeaders(organizationId ? { organizationId } : {}, false)).headers,
   store: () => getStoreSingleton(),
   scope: (state) => {
     const s = state as
