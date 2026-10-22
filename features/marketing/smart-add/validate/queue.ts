@@ -19,6 +19,8 @@ import {
   type EvidenceItem,
 } from "../evidence";
 import { webProfileAsAccount, withoutOwnAccountRows } from "../ownAccountRows";
+import { isPlaceholderName } from "../placeholderName";
+import { normalizeName } from "../brandMatch";
 import { suggestKind, type SuggestContext, type WebChoice } from "../webKinds";
 import { EARLY_FACTS_MANDATE, PERSON_FACTS_MANDATE, WHATS_NEW_MANDATE } from "../factIdentity";
 
@@ -135,6 +137,23 @@ export function optionsFor(kind: FocusKind): Answer[] {
   if (kind === "name") return ["preferred", "alias", "not_us", "related", "later", "ignore"];
   if (kind === "fact") return ["correct", "wrong", "later", "ignore"];
   return ["ours", "not_us", "related", "later", "ignore"];
+}
+
+/**
+ * Yes / No per card kind: Yes = "this is it", No = "not us" / "wrong". A NAME card's Yes is "preferred" (it becomes
+ * the brand's name) only while the brand has no real name yet; once it has one, Yes means "this is also our name" and
+ * is saved as an alias. Live 2026-10-22 (Four Barrel Coffee, fresh Smart Add brand): the main name was confirmed at
+ * Create, then Yes on the LinkedIn display name "FOURBARREL COFFEE" renamed the brand to it. Preferred stays one
+ * press away (P, or the Other menu).
+ */
+export function yesNoFor(item: Pick<FocusItem, "kind" | "value">, brandName: string | null | undefined): { yes: Answer; no: Answer } {
+  if (item.kind === "fact") return { yes: "correct", no: "wrong" };
+  if (item.kind === "name") {
+    const current = (brandName ?? "").trim();
+    const named = current !== "" && !isPlaceholderName(current) && normalizeName(current) !== normalizeName(item.value ?? "");
+    return { yes: named ? "alias" : "preferred", no: "not_us" };
+  }
+  return { yes: "ours", no: "not_us" };
 }
 
 /** The "we think" slot: filled by rules today (web results) and by the suggestion agent later. */
