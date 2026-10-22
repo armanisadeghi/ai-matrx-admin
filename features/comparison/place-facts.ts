@@ -80,20 +80,14 @@ function minutes(token: string, fallbackMeridiem: string | null): { m: number; m
   return { m: h * 60 + Number(t[2] ?? 0), mer: t[3]?.toLowerCase() ?? null };
 }
 
-/**
- * Open now / Closed on the business's clock, from a day's text ("9 am–6 pm", "9 am–12 pm, 2–6 pm", "Closed", "Open 24 hours").
- * null when the text is not a clean time range: we say nothing rather than guess.
- */
-export function openNow(text: string, now: Date, timezone: string | null): boolean | null {
+/** A day's text as minute ranges ([start, end), end past 1440 = runs into the next day); null when not a clean time range. */
+function rangesOf(text: string): [number, number][] | null {
   const t = text.trim().toLowerCase();
-  if (t === "closed") return false;
-  if (/^open 24 hours?$/.test(t)) return true;
-  const clock = clockIn(now, timezone);
-  if (!clock) return null;
-  const at = clock.at;
-  let any = false;
+  if (t === "closed") return [];
+  if (/^open 24 hours?$/.test(t)) return [[0, 1440]];
+  const out: [number, number][] = [];
   for (const part of t.split(",")) {
-    const sides = part.split(/\s*(?:–|—|-|to)\s*/).map((s) => s.trim().replace(/[  ]/g, " "));
+    const sides = part.split(/\s*(?:–|—|-|to)\s*/).map((x) => x.trim().replace(/[\u202f\u00a0]/g, " "));
     if (sides.length !== 2) return null;
     const end = minutes(sides[1], null);
     if (!end) return null;
@@ -102,10 +96,28 @@ export function openNow(text: string, now: Date, timezone: string | null): boole
     // "9–5 pm": 9 inherits pm (21:00) and lands after 5 pm, so it was am
     if (!/(am|pm)/.test(sides[0]) && start.m > end.m) start = minutes(sides[0], end.mer === "pm" ? "am" : "pm");
     if (!start) return null;
-    const e = end.m <= start.m ? end.m + 1440 : end.m;
-    if ((at >= start.m && at < e) || (at + 1440 >= start.m && at + 1440 < e)) any = true;
+    out.push([start.m, end.m <= start.m ? end.m + 1440 : end.m]);
   }
-  return any;
+  return out;
+}
+
+/**
+ * Open now / Closed on the business's clock. Today's line decides from its start on; the previous
+ * day's line decides the early hours when it runs past midnight ("6 pm–2 am"). null when today's text
+ * is not a clean time range or the business has no zone: we say nothing rather than guess.
+ */
+export function openStatus(week: Week, now: Date): boolean | null {
+  const c = clockIn(now, week.timezone);
+  if (!c) return null;
+  const line = (day: string) => week.days.find(([d]) => d.toLowerCase() === day.toLowerCase())?.[1];
+  const todayText = line(c.day);
+  if (todayText === undefined) return null;
+  const today = rangesOf(todayText);
+  if (!today) return null;
+  if (today.some(([s, e]) => c.at >= s && c.at < Math.min(e, 1440))) return true;
+  const prev = line(DAYS[(DAYS.indexOf(c.day) + 6) % 7]);
+  const yesterday = prev !== undefined ? rangesOf(prev) : null;
+  return Boolean(yesterday?.some(([, e]) => e > 1440 && c.at < e - 1440));
 }
 
 // ── contact, status, tags, reviews ───────────────────────────────────────────

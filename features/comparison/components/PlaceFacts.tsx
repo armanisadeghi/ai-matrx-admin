@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 import type { CompareField, ComparedItem, ComparisonResult } from "../contract";
 import {
-  attributeGrid, contactOf, hoursToday, openNow, reviewsOf, starShares, statusOf, tagsOf, weekOf,
+  attributeGrid, contactOf, hoursToday, openStatus, reviewsOf, starShares, statusOf, tagsOf, weekOf,
 } from "../place-facts";
 import { comparedItems } from "../verdict";
 import { ItemLogo } from "./ItemLogo";
@@ -96,7 +96,7 @@ function HoursRow({ item, field, kind, now }: { item: ComparedItem; field: Compa
   const v = item.values[field.key];
   const week = weekOf(v?.value);
   const today = week && now ? hoursToday(week, now) : null;
-  const status = today && now && week ? openNow(today.text, now, week.timezone) : null;
+  const status = now && week ? openStatus(week, now) : null;
   return (
     <li className="space-y-1">
       <Who item={item} kind={kind} />
