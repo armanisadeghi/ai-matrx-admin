@@ -107,7 +107,10 @@ async function selfTest(): Promise<number> {
   copy.push(orphan);
   const differs = copy.find((row) => row !== backed && manifests.has(row.name));
   if (!differs) throw new Error("self-test: need a second manifest-backed row");
-  differs.executor_name = "chrome-extension";
+  // Plant a value that CANNOT equal the manifest's executor. A fixed literal
+  // (it was "chrome-extension") silently plants nothing whenever the first
+  // backed row's manifest already declares that executor.
+  differs.executor_name = `${manifests.get(differs.name)}-self-test-mismatch`;
   const { failures } = judgeSurfaceExecutors(manifests, copy);
   const caught = [backed.name, orphan.name, differs.name].map((name) =>
     failures.some((line) => line.startsWith(`${name}:`)),
