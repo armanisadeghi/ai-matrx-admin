@@ -49,13 +49,13 @@ export type ScanRotation = 0 | 90 | 180 | 270;
 export type ScanItemSource = "camera" | "file";
 
 /**
- * Enhance mode (design: Auto / Original / Grayscale / B&W). Applied via the
- * platform image-ops registry (`POST /images/edit` — auto_levels, grayscale,
- * levels): each pick creates a NON-DESTRUCTIVE derivative cld file whose id
+ * Enhance mode (design: Original / Auto / Clean / Grayscale / B&W). Applied via
+ * the platform image-ops registry (`POST /images/edit` — auto_levels,
+ * document_clean, grayscale, levels): each pick creates a NON-DESTRUCTIVE derivative cld file whose id
  * replaces the original in the save payload. Ops load with exif_transpose,
  * so the derivative shares the quad's post-EXIF coordinate space.
  */
-export type ScanEnhanceMode = "auto" | "grayscale" | "bw";
+export type ScanEnhanceMode = "auto" | "clean" | "grayscale" | "bw";
 
 export interface ScanItem {
   /** Local id — stable across reorder/crop; NOT the cld_files id. */
