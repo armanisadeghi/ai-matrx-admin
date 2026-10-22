@@ -19,6 +19,8 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { LAUNCHPAD_WIDGET_CATALOG } from "../widgets/catalog";
 import { DataPagePicker, DataTablePicker, TableDashboardPicker } from "../widgets/DataPagePicker";
 import { configText, type LaunchpadWidgetSpec } from "../widgets/types";
+import { KindInstancePicker } from "../widgets/KindInstancePicker";
+import { SpacePagePicker } from "@/features/spaces/embed/SpaceWidget";
 import { loadBoardItemCatalog } from "../widgets/bodies/BoardItemWidget";
 import type { BoardItemType } from "@/features/board/items/types";
 
@@ -149,6 +151,14 @@ export function ConfigureWidgetPanel({
                   value={value}
                   // A dashboard chosen for the old table is not one of the new table's.
                   onChange={(v) => onConfigure(spec.fields.some((f) => f.picker === "tableDashboard") ? { [field.key]: v, dashboardId: "" } : { [field.key]: v })}
+                />
+              ) : field.picker === "spacePage" ? (
+                <SpacePagePicker value={value} onChange={(spaceId, title) => onConfigure({ spaceId, title })} />
+              ) : field.picker === "kindInstance" ? (
+                <KindInstancePicker
+                  kindDefinitionId={configText(widget.config, "kindDefinitionId")}
+                  value={value}
+                  onChange={(c) => onConfigure({ ...c })}
                 />
               ) : field.picker === "tableDashboard" ? (
                 <TableDashboardPicker tableId={configText(widget.config, "tableId")} value={value} onChange={set} />

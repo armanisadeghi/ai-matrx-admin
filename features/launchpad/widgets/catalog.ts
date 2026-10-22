@@ -7,7 +7,7 @@
 //
 // Sizes are 12-column grid units with 24px rows (GridCanvas): w 3 = a quarter of the desktop width,
 // h 10 ≈ 240px. The Start widgets' old s / m / l are w 3 / 6 / 12 (`START_SIZE_WIDTH`).
-import { AppWindow, BarChart3, CalendarDays, Clock, Compass, Gauge, LayoutDashboard, ListChecks, Rocket, Star, Table2, Blocks, StickyNote } from "lucide-react";
+import { AppWindow, BarChart3, FileText, Shapes, CalendarDays, Clock, Compass, Gauge, LayoutDashboard, ListChecks, Rocket, Star, Table2, Blocks, StickyNote } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { METRIC_CARDS } from "@/features/dashboard/constants/metricCards";
 import { USER_LAUNCHPAD_DESTINATIONS } from "../catalog";
@@ -192,6 +192,31 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
         : null,
   },
   {
+    // A Space page as a Notion-like text area, written in place (the Spaces editor through its fence door).
+    type: "space_page",
+    label: "Space page",
+    icon: FileText,
+    section: "notes",
+    sizes: { defaultW: 6, defaultH: 16, minW: 3, minH: 6 },
+    defaultConfig: {},
+    fields: [{ key: "spaceId", label: "Page", picker: "spacePage" }],
+    describe: (c) => configText(c, "title") || (configText(c, "spaceId") ? "Space page" : "Space page (none chosen)"),
+    href: (c) => (configText(c, "spaceId") ? `/spaces/${configText(c, "spaceId")}` : null),
+  },
+  {
+    // Any registered kind (a Shape) as a widget, drawn through the ONE kind pipeline: a saved shape, or a value
+    // of a kind another widget on the page offers (an Applet's `out_shape`).
+    type: "kind",
+    label: "Shape",
+    icon: Shapes,
+    section: "data",
+    sizes: { defaultW: 6, defaultH: 14, minW: 3, minH: 6 },
+    defaultConfig: {},
+    fields: [{ key: "instanceId", label: "Saved shape", picker: "kindInstance" }],
+    describe: (c, page) => configText(c, "title") || (page?.connected ? "Shape from the page" : configText(c, "instanceId") ? "Saved shape" : "Shape (none chosen)"),
+    accepts: [{ key: "value", label: "Shape", kind: "shape" }],
+  },
+  {
     // Every Board item type, placeable as a widget (lane U): the config is the reference a board tile holds.
     type: "board_item",
     label: "Board item",
@@ -211,10 +236,11 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     defaultConfig: {},
     fields: [{ key: "appId", label: "Applet", picker: "applet" }],
     describe: (c) => configText(c, "name") || (configText(c, "appId") ? "Applet" : "Applet (none chosen)"),
-    // The Applet reads these with `useValue("in_record")` and publishes with `useValue("out_record")`'s setter.
+    // The Applet reads these with `useValue("in_record")` and publishes with `useValue("out_record" | "out_text" | "out_shape")`'s setter.
     publishes: [
       { key: "out_record", label: "Record it picks", kind: "record" },
       { key: "out_text", label: "Text it sets", kind: "text" },
+      { key: "out_shape", label: "Shape it sets", kind: "shape" },
     ],
     accepts: [
       { key: "in_record", label: "Record", kind: "record" },

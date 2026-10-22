@@ -95,6 +95,11 @@ Two things live here, one feature:
   EVERY Board item type (`board_item`: config `{ itemType, id, title }`, the reference a board tile holds; the
   body is that type's own `Body`, the picker is that type's own bring-in picker; the board catalog loads only
   when used). The Board is a free canvas, not a grid; its item catalog is the source `board_item` reads.
+  Lane W added **any kind** (`kind`, "Shape": a saved kind instance picked shape → instance through
+  `listAllKinds` + `listKindInstances`, or a page value of kind `shape` — any JSON carrying `__kind`, kept whole;
+  an Applet offers one as `out_shape`; drawn by `KindInstanceRender`, the ONE kind pipeline, behind one dynamic
+  edge) and a **Space page** (`space_page`: the Spaces editor through the fence door
+  `features/spaces/embed/SpaceWidget.tsx`, read-only while the launchpad is in Edit mode).
   Guard: `__tests__/one-grid-one-registry.census.test.ts` fails on a second grid engine or a second widget
   registry anywhere in app/, features/, components/, lib/ (three collection-reorder sortables are named
   exceptions); `widgets/__tests__/boardItemWidget.test.tsx`.
@@ -182,6 +187,7 @@ and favorites into an always-open launcher.
 
 ## Change log
 
+- `2026-10-22` — Lane W: `kind` (Shape) and `space_page` widgets; page-bus value kind `shape`; Applet `out_shape`.
 - `2026-10-22` — Lane W: the dashboard widget picks its dashboard from the chosen table's dashboards (no raw id
   field); registry guard: no `*Id` field without a picker.
 

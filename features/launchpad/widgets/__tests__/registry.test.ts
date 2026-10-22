@@ -13,6 +13,8 @@ jest.mock("../bodies/LaunchpadLinkWidget", () => ({ LaunchpadLinkWidget: () => n
 jest.mock("../bodies/AppPageWidget", () => ({ AppPageWidget: () => null }));
 jest.mock("../bodies/DashboardWidget", () => ({ DashboardWidget: () => null }));
 jest.mock("../bodies/BoardItemWidget", () => ({ BoardItemWidget: () => null }));
+jest.mock("../bodies/KindWidget", () => ({ KindWidget: () => null }));
+jest.mock("../bodies/SpacePageWidget", () => ({ SpacePageWidget: () => null }));
 
 import { BOARD_SECTIONS } from "@/features/board/items/types";
 import { LAUNCHPAD_WIDGET_CATALOG, describeLaunchpadWidget } from "../catalog";
