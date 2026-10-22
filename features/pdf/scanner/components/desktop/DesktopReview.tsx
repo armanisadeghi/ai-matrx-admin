@@ -275,7 +275,7 @@ function SourceChip({ item }: { item: ScanItem }) {
 }
 
 function ItemThumb({ item, className }: { item: ScanItem; className?: string }) {
-  const src = useScanThumbSrc(item);
+  const { src, updating } = useScanThumbSrc(item);
   if (item.kind === "pdf" || !src) {
     return (
       <div
@@ -289,12 +289,19 @@ function ItemThumb({ item, className }: { item: ScanItem; className?: string }) 
     );
   }
   return (
-    // Enhanced derivative, session-local preview, or the uploaded original.
-    <img
-      src={src}
-      alt={item.fileName}
-      className={cn("object-cover", className)}
-    />
+    <>
+      {/* Enhanced derivative, session-local preview, or the uploaded original. */}
+      <img
+        src={src}
+        alt={item.fileName}
+        className={cn("object-cover", className)}
+      />
+      {updating && (
+        <span className="absolute bottom-1.5 right-1.5 rounded bg-black/60 p-1">
+          <Loader2 className="h-3 w-3 animate-spin text-white" />
+        </span>
+      )}
+    </>
   );
 }
 

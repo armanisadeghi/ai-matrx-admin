@@ -176,7 +176,13 @@ export default function ScannerDesktop() {
 
   const [view, setView] = useState<DesktopView>("home");
   const [capturing, setCapturing] = useState(false);
-  const [cropItem, setCropItem] = useState<ScanItem | null>(null);
+  // Track the open page by id and read it live from the session, so the
+  // sheet follows every change made while it is open (Clean all, agents).
+  const [cropItemId, setCropItemId] = useState<string | null>(null);
+  const cropItem =
+    session.items.find((i) => i.itemId === cropItemId) ?? null;
+  const setCropItem = (item: ScanItem | null) =>
+    setCropItemId(item?.itemId ?? null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [recent, setRecent] = useState<RecentScans | null>(null);

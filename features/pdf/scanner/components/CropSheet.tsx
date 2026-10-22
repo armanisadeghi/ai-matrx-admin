@@ -38,10 +38,10 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
-import { useMediaResolution } from "@ai-matrx/media/core";
 
 import { detectDocument } from "../api";
 import { ENHANCE_LABELS, applyEnhance } from "../enhance";
+import { useScanImageSrc } from "../useScanThumbSrc";
 import type {
   Quad,
   QuadPoint,
@@ -222,6 +222,22 @@ function CropEditor({
   );
   const [enhanceBusy, setEnhanceBusy] = useState<ScanEnhanceMode | null>(null);
 
+  // The item is the LIVE session row: an enhance applied while the sheet is
+  // open (Clean all, an agent write) is adopted here, so the sheet always
+  // shows — and Apply always keeps — the page's current version.
+  const [seenEnhance, setSeenEnhance] = useState({
+    mode: item.enhance,
+    fileId: item.enhancedFileId,
+  });
+  if (
+    seenEnhance.mode !== item.enhance ||
+    seenEnhance.fileId !== item.enhancedFileId
+  ) {
+    setSeenEnhance({ mode: item.enhance, fileId: item.enhancedFileId });
+    setEnhanceState(item.enhance);
+    setEnhancedFileId(item.enhancedFileId);
+  }
+
   const pickEnhance = useCallback(
     (mode: ScanEnhanceMode | undefined) => {
       if (enhanceBusy) return;
@@ -265,13 +281,12 @@ function CropEditor({
     return () => ro.disconnect();
   }, []);
 
-  // Prefer the session-local preview; fall back to the uploaded file's URL
-  // (resumed sessions have no local preview).
-  const remoteSrc =
-    useMediaResolution(
-      !item.previewUrl && item.fileId ? item.fileId : null,
-    ).resolution?.src ?? null;
-  const imageUrl = item.previewUrl ?? remoteSrc ?? null;
+  // What the page looks like with the current enhance pick: the derivative
+  // once its bytes arrive (the previous image stays up meanwhile), else the
+  // session-local preview, else the uploaded original (resumed sessions).
+  // Derivatives keep the original's dimensions, so the quad stays valid.
+  const shown = useScanImageSrc(item, enhance ? enhancedFileId : undefined);
+  const imageUrl = shown.src;
   const rotated = useRotatedImage(imageUrl, rotation);
 
   const runDetect = useCallback(
@@ -413,6 +428,11 @@ function CropEditor({
         {detectNote && !detecting && (
           <p className="text-left text-xs text-muted-foreground">{detectNote}</p>
         )}
+        {shown.enhanceFailed && (
+          <p className="text-left text-xs text-muted-foreground">
+            Enhanced version unavailable — showing the original
+          </p>
+        )}
       </DrawerHeader>
 
       {/* The measured, non-scrolling stage — the editor ALWAYS fits inside. */}
@@ -451,13 +471,13 @@ function CropEditor({
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         )}
-        {!imageUrl && (
+        {!imageUrl && !shown.updating && (
           <div className="flex h-full items-center justify-center px-6 text-center text-xs text-muted-foreground">
             Preview unavailable for this file format — the crop editor needs a
             browser-renderable image.
           </div>
         )}
-        {detecting && (
+        {(detecting || Boolean(enhanceBusy) || shown.updating) && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background/40">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
