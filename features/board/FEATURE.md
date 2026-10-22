@@ -14,6 +14,10 @@
 
 - Stability program (state core, gestures, tile life, remount law, containment, working copy): vision, current gaps and next steps in `HANDOFF-stability.md`.
 
+## A design board's brand (2026-10-22)
+
+A design-system board (one that holds token tables) is linked to a brand by ONE association edge: `board -> web_brand`, role `design_system` (`design-brand/design-board-brand.ts`, through `associationsService` only; the board's own organization rides the write). Set in the new-design-system dialog (optional `BrandPicker`, linked right after the board is made) or changed later with the same picker in `DesignBoardBrandChip` (top-left of the board; "No brand" unlinks). The surface publishes it as `brand_id` (manifest `board.manifest.ts`, emitter `BoardSurface`), which the server's `design_system.build` provision reads. `settings.brand_id` / `studio_brand_id` stay what they were (the Social Studio's links), not this. Not built yet: a brand-page entry that starts a design board for that brand, and an Add-menu table tile of `web_brand_asset` filtered to the brand (`items/table-tile.ts` `entityTableSource`).
+
 ## Page layout, chapters and pages (2026-10-17)
 
 - **Chapters = frames.** The outline rail (`components/BoardOutline.tsx`) lists the board's frames in reading order (`chapterOrder`); a click flies to one (page layout: `pageScrollTo` its top); the chapter being read is highlighted as the view moves (`activeChapter`). In page layout each chapter has move up / down (`planPageLayout(scene, order)`). Rail: open by default in page layout, a toggle on the canvas (title menu "Show outline", the list icon beside Layers), slides on the panel motion tokens; a phone gets a bottom drawer.

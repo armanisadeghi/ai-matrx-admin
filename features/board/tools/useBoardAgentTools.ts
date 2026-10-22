@@ -162,6 +162,8 @@ export interface BoardToolHost<T extends BoardTileBase & { title: string }> {
   boardTitle: string;
   /** The saved board's id (null on an unsaved or demo board): what a design-system run reads the board by. */
   boardId?: string | null;
+  /** The brand a design board is linked to (platform.associations board -> web_brand); null when none. */
+  brandId?: string | null;
   /** Build a tile of `input.kind` with this id and size (position is decided here). */
   createTile: (id: string, input: AddTileInput, size: { w: number; h: number }) => T | Failure;
   /** A patch for a tile's content, or a failure saying why it cannot change. An

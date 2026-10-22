@@ -27,7 +27,7 @@ export function startDesignBuild(brief: string | null): void {
 
 /** What the person chose; `brief` is their own words, sent as typed (never added to). */
 export type BoardStart = { mode: "ai"; brief: string } | { mode: "style"; styleName: string };
-export type BoardStartChoice = { name: string } & ({ mode: "ai"; brief: string } | { mode: "style"; styleTemplateId: string; styleName: string });
+export type BoardStartChoice = { name: string; brandId?: string | null } & ({ mode: "ai"; brief: string } | { mode: "style"; styleTemplateId: string; styleName: string });
 
 const stashKey = (boardId: string) => `matrx:board:start:${boardId}`;
 

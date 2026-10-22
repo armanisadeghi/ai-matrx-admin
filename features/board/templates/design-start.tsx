@@ -18,6 +18,7 @@ import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 
+import { BrandPicker } from "@/features/marketing/components/brands/BrandPicker";
 import { listBoardStyles, type BoardStyle } from "./board-packs";
 import type { BoardStartChoice } from "./board-start";
 
@@ -60,6 +61,7 @@ export function DesignBoardStartDialog({
   const [styles, setStyles] = useState<BoardStyle[] | null>(null);
   const [stylesError, setStylesError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
+  const [brandId, setBrandId] = useState<string | null>(null);
 
   // A fresh open starts at the AI step with the template's name (adjusted during render, never an effect).
   const [wasOpen, setWasOpen] = useState(open);
@@ -70,6 +72,7 @@ export function DesignBoardStartDialog({
       setBrief("");
       setStep("start");
       setPicked(null);
+      setBrandId(null);
     }
   }
 
@@ -122,6 +125,7 @@ export function DesignBoardStartDialog({
               <span className="text-xs font-medium text-muted-foreground">Board name</span>
               <ProInput value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Acme design system" autoFocus />
             </label>
+            <BrandPicker organizationId={null} value={brandId} onChange={setBrandId} allowAll allLabel="No brand yet" label="Brand (optional)" />
             <label className="flex flex-col gap-1">
               <span className="text-xs font-medium text-muted-foreground">Your business</span>
               <ProTextarea
@@ -160,7 +164,7 @@ export function DesignBoardStartDialog({
               <Button variant="outline" icon={<Palette size={16} />} onClick={() => setStep("style")} disabled={!named}>
                 Start from a style
               </Button>
-              <Button variant="primary" icon={<Wand2 size={16} />} disabled={!named} onClick={() => onStart({ name: named, mode: "ai", brief })}>
+              <Button variant="primary" icon={<Wand2 size={16} />} disabled={!named} onClick={() => onStart({ name: named, mode: "ai", brief, brandId })}>
                 Build with AI
               </Button>
             </>
@@ -172,7 +176,7 @@ export function DesignBoardStartDialog({
               <Button
                 variant="primary"
                 disabled={!style || !named}
-                onClick={() => style && onStart({ name: named, mode: "style", styleTemplateId: style.templateId, styleName: style.name })}
+                onClick={() => style && onStart({ name: named, mode: "style", styleTemplateId: style.templateId, styleName: style.name, brandId })}
               >
                 Use style
               </Button>

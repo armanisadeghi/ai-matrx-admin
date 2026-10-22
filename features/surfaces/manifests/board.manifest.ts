@@ -55,6 +55,16 @@ const values: SurfaceValue[] = [
     sortOrder: 105,
   },
   {
+    name: "brand_id",
+    label: "Brand",
+    description: "The brand this design board is linked to (a web_brand id); null when none.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 36,
+    group: "board",
+    sortOrder: 106,
+  },
+  {
     name: "board_items",
     label: "Items on the board",
     description:
