@@ -15,7 +15,7 @@
 
 import { useMemo } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
+import type { AppDispatch, AppStore } from "@/lib/redux/store";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { UntypedOverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
@@ -47,7 +47,7 @@ export interface MandateWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createMandateWindowOpener(store: AppStore) {
+export function createMandateWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (opts: OpenMandateWindowOptions = {}): MandateWindowHandle => {
     opener.open(dispatch, { data: {

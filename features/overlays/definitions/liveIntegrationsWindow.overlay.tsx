@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
+import type { AppDispatch, AppStore } from "@/lib/redux/store";
 import type { OverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
 import { hookController } from "./hook-controller";
@@ -24,7 +24,7 @@ export interface OpenLiveIntegrationsWindowOptions {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createLiveIntegrationsWindowOpener(store: Pick<AppStore, "dispatch">) {
+export function createLiveIntegrationsWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (options?: OpenLiveIntegrationsWindowOptions): LiveIntegrationsWindowHandle => {
     opener.open(dispatch, {
