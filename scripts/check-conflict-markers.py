@@ -8,7 +8,13 @@ folders under _conflicts/, and compares what it finds with the list in _conflict
   - a marker whose item is not listed         -> "NOT LISTED"
   - a listed item whose marker is gone        -> "DONE, DELETE ITS LINE"
   - an empty folder under _conflicts/         -> "EMPTY FOLDER, DELETE IT"
+Every `_conflicts/**/*.held` file is an open item even when it carries no marker (older holds were
+raw copies with no FACTS block, and five of them sat unlisted while this printed "clean").
 Exit 0 and "clean" when nothing is open, 1 otherwise.
+
+  python3 scripts/check-conflict-markers.py --self-test [checker.py]
+builds a throwaway repo holding one marker-less, unlisted .held file and requires the checker
+(this file, or the one named) to report it; it fails on a checker that only greps for markers.
 """
 import os
 import subprocess
@@ -52,6 +58,13 @@ def main():
             if path and path not in SELF:
                 found.setdefault(path, set()).add(kind)
 
+    # A .held file is held whether or not it carries the marker.
+    if os.path.isdir(HOLD_ROOT):
+        for root, _dirs, files in os.walk(HOLD_ROOT):
+            for name in files:
+                if name.endswith(".held"):
+                    found.setdefault(os.path.join(root, name), set()).add("held")
+
     listed = set(listed_items(LOG_REL))
 
     problems = 0
@@ -76,5 +89,30 @@ def main():
     print("clean: nothing from sync-main is open in this repo.")
 
 
+def self_test(checker):
+    """RED on a marker-only checker, GREEN on this one: an unlisted, marker-less .held must be named."""
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as repo:
+        subprocess.run(["git", "init", "-q", repo], check=True)
+        hold = os.path.join(repo, HOLD_ROOT, "2026-01-01-000000", "features")
+        os.makedirs(hold)
+        with open(os.path.join(repo, LOG_REL), "w") as fh:
+            fh.write("# Merge conflicts\n\n## Held files\n\n## Resolution log\n")
+        with open(os.path.join(hold, "a.tsx.held"), "w") as fh:
+            fh.write("export const a = 1;\n")  # a raw copy: no marker, no FACTS
+        res = subprocess.run([sys.executable, os.path.abspath(checker)], cwd=repo,
+                             capture_output=True, text=True)
+        want = "_conflicts/2026-01-01-000000/features/a.tsx.held"
+        if res.returncode == 1 and want in res.stdout and "NOT LISTED" in res.stdout:
+            print("SELF-TEST PASSED: an unlisted marker-less .held is reported")
+            return 0
+        print("SELF-TEST FAILED: the checker said %r (exit %d) with %s held"
+              % (res.stdout.strip(), res.returncode, want))
+        return 1
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--self-test":
+        sys.exit(self_test(sys.argv[2] if len(sys.argv) > 2 else __file__))
     main()
