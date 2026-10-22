@@ -36,6 +36,11 @@ export interface AudioOutputBlockProps {
   cover?: string;
   /** Default layout mode */
   defaultMode?: "portrait" | "landscape";
+  /**
+   * Where a live player left off when this saved file took over (chat's live
+   * TTS hand-over): start here, and keep playing when the listener was.
+   */
+  startAt?: { timeSec: number; resume: boolean } | null;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -161,11 +166,15 @@ function CoverArt({
    Shared audio engine hook
 ───────────────────────────────────────────────────────────────────────────── */
 
-function useAudioEngine(url: string) {
+function useAudioEngine(
+  url: string,
+  startAt?: { timeSec: number; resume: boolean } | null,
+) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [currentTime, setCurrentTime] = useState(startAt?.timeSec ?? 0);
   const [duration, setDuration] = useState(0);
+  const startRef = useRef(startAt ?? null);
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
 
@@ -173,7 +182,17 @@ function useAudioEngine(url: string) {
     const audio = audioRef.current;
     if (!audio) return undefined;
     const onTime = () => setCurrentTime(audio.currentTime);
-    const onMeta = () => setDuration(audio.duration);
+    const onMeta = () => {
+      setDuration(audio.duration);
+      // The live hand-over: pick up exactly where the listener was, once.
+      const start = startRef.current;
+      if (start) {
+        startRef.current = null;
+        audio.currentTime = start.timeSec;
+        setCurrentTime(start.timeSec);
+        if (start.resume) setIsPlaying(true);
+      }
+    };
     const onEnd = () => setIsPlaying(false);
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
@@ -274,9 +293,10 @@ interface PlayerProps {
   title: string;
   artist: string;
   cover?: string | null;
+  startAt?: { timeSec: number; resume: boolean } | null;
 }
 
-function PortraitPlayer({ url, mimeType, title, artist, cover }: PlayerProps) {
+function PortraitPlayer({ url, mimeType, title, artist, cover, startAt }: PlayerProps) {
   const {
     audioRef,
     isPlaying,
@@ -288,7 +308,7 @@ function PortraitPlayer({ url, mimeType, title, artist, cover }: PlayerProps) {
     isMuted,
     changeVolume,
     toggleMute,
-  } = useAudioEngine(url);
+  } = useAudioEngine(url, startAt);
   const { isDownloading, download, isCopied, copyLink } = useFileActions(
     url,
     mimeType,
@@ -396,7 +416,7 @@ function PortraitPlayer({ url, mimeType, title, artist, cover }: PlayerProps) {
    Landscape player (cover thumbnail left, info + controls right)
 ───────────────────────────────────────────────────────────────────────────── */
 
-function LandscapePlayer({ url, mimeType, title, artist, cover }: PlayerProps) {
+function LandscapePlayer({ url, mimeType, title, artist, cover, startAt }: PlayerProps) {
   const {
     audioRef,
     isPlaying,
@@ -408,7 +428,7 @@ function LandscapePlayer({ url, mimeType, title, artist, cover }: PlayerProps) {
     isMuted,
     changeVolume,
     toggleMute,
-  } = useAudioEngine(url);
+  } = useAudioEngine(url, startAt);
   const { isDownloading, download, isCopied, copyLink } = useFileActions(
     url,
     mimeType,
@@ -561,6 +581,7 @@ const AudioOutputBlock: React.FC<AudioOutputBlockProps> = ({
   artist,
   cover,
   defaultMode = "landscape",
+  startAt,
 }) => {
   const [mode, setMode] = useState<"portrait" | "landscape">(defaultMode);
 
@@ -587,6 +608,7 @@ const AudioOutputBlock: React.FC<AudioOutputBlockProps> = ({
             title={resolvedTitle}
             artist={resolvedArtist}
             cover={cover}
+            startAt={startAt}
           />
         ) : (
           <LandscapePlayer
@@ -595,6 +617,7 @@ const AudioOutputBlock: React.FC<AudioOutputBlockProps> = ({
             title={resolvedTitle}
             artist={resolvedArtist}
             cover={cover}
+            startAt={startAt}
           />
         )}
       </div>

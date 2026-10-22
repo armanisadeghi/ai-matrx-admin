@@ -55,19 +55,30 @@ const AudioOutputBlockRenderer: React.FC<AudioOutputBlockRendererProps> = ({
 
   if (!resolvedUrl) return null;
 
+  // Chat's live TTS hand-over: the saved file starts where the live player was.
+  const startAt = readLiveHandoff(data);
+
   // A speech-script run carries the performed script: player + script, side
   // by side when there is room, stacked on a phone.
   const script = readPerformedScript(data);
   if (script) {
     return (
       <div className="grid gap-3 md:grid-cols-[minmax(0,22rem)_1fr] items-start">
-        <AudioOutputBlock url={resolvedUrl} mimeType={mime} title={title} />
+        <AudioOutputBlock url={resolvedUrl} mimeType={mime} title={title} startAt={startAt} />
         <SpeechScriptPanel script={script} />
       </div>
     );
   }
 
-  return <AudioOutputBlock url={resolvedUrl} mimeType={mime} title={title} />;
+  return <AudioOutputBlock url={resolvedUrl} mimeType={mime} title={title} startAt={startAt} />;
 };
+
+/** `live_handoff` as chat's process-stream stamps it on the saved-file block. */
+function readLiveHandoff(data: Record<string, unknown>): { timeSec: number; resume: boolean } | null {
+  const h = data.live_handoff as { timeSec?: unknown; resume?: unknown } | null | undefined;
+  return h && typeof h.timeSec === "number" && Number.isFinite(h.timeSec)
+    ? { timeSec: h.timeSec, resume: h.resume === true }
+    : null;
+}
 
 export default AudioOutputBlockRenderer;
