@@ -150,7 +150,7 @@ export function publicCoverImage(
   if (!cover || !("url" in cover) || typeof cover.url !== "string") return null;
   if (/^https?:\/\//i.test(cover.url)) return cover.url;
   if (cover.url.startsWith(GALLERY_PREFIX)) {
-    const photo = galleryImage(cover.url);
+    const photo = galleryImage(cover.url, false, cover);
     return photo ? new URL(photo, origin).toString() : null;
   }
   return null;

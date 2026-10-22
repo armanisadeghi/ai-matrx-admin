@@ -25,7 +25,7 @@ const GALLERY_KEYS = Object.keys(COVER_GALLERY);
 const CATEGORY_LABEL = new Map<string, string>(SPACE_TEMPLATE_CATEGORIES.map((c) => [c.key, c.label]));
 
 function coverStyle(cover: CoverValue, url: string | null, offsetY: number): React.CSSProperties {
-  if ("url" in cover && cover.url.startsWith("gallery:") && !galleryImage(cover.url)) {
+  if ("url" in cover && cover.url.startsWith("gallery:") && !galleryImage(cover.url, false, cover)) {
     return { background: COVER_GALLERY[cover.url.slice("gallery:".length)] ?? COVER_GALLERY["solid-gray"] };
   }
   if (url) {
@@ -160,7 +160,7 @@ export function Cover({ cover, editable, onChange }: { cover: CoverValue; editab
   const [offset, setOffset] = useState(cover.offsetY ?? 50);
   const drag = useRef<{ y: number; start: number; height: number } | null>(null);
   const url = useSpaceMediaUrl(cover);
-  const isImage = "fileId" in cover || ("url" in cover && (!cover.url.startsWith("gallery:") || galleryImage(cover.url) !== null));
+  const isImage = "fileId" in cover || ("url" in cover && (!cover.url.startsWith("gallery:") || galleryImage(cover.url, false, cover) !== null));
   const shown = repositioning ? offset : (cover.offsetY ?? 50);
 
   return (

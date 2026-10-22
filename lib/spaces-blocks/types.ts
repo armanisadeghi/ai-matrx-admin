@@ -74,7 +74,7 @@ export interface SpaceBlock<P extends Record<string, unknown> = Record<string, u
 }
 
 /** A Space's media: an uploaded file id (our file handler), an external URL, a Lucide icon name, or an emoji a person chose (Notion parity). */
-export type SpaceMedia = { fileId: string } | { url: string } | { icon: string } | { emoji: string };
+export type SpaceMedia = { fileId: string } | { url: string; src?: string; thumb?: string } | { icon: string } | { emoji: string };
 
 export interface SpacePageSettings {
   font: "default" | "serif" | "mono";

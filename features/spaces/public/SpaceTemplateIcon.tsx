@@ -16,7 +16,7 @@ export function SpaceTemplateIcon({ media, size = 28 }: { media: SpaceMedia | nu
 /** A template's cover as a card strip: a gallery photo (the library's small copy), a gradient, or nothing. */
 export function SpaceTemplateCover({ cover, className }: { cover: (SpaceMedia & { offsetY?: number }) | null | undefined; className?: string }) {
   if (!cover || !("url" in cover) || !cover.url.startsWith(GALLERY_PREFIX)) return null;
-  const src = galleryImage(cover.url, true);
+  const src = galleryImage(cover.url, true, cover);
   if (src) {
     return <img src={src} alt="" loading="lazy" decoding="async" className={className} style={{ objectFit: "cover", objectPosition: `center ${cover.offsetY ?? 50}%` }} data-space-card-cover="" />;
   }

@@ -41,7 +41,7 @@ export function useSpaceMediaUrl(media: SpaceMedia | null | undefined): string |
   const published = useContext(PublishedMediaContext);
   // A public page never asks the file handler (it needs a session): the door's address, or nothing.
   const { file } = useFile(fileId && !published ? { kind: "file_id", fileId } : null);
-  if (media && "url" in media) return media.url.startsWith(GALLERY_PREFIX) ? galleryImage(media.url) : media.url;
+  if (media && "url" in media) return media.url.startsWith(GALLERY_PREFIX) ? galleryImage(media.url, false, media) : media.url;
   if (published) return fileId ? (published[fileId] ?? null) : null;
   return file?.url ?? null;
 }

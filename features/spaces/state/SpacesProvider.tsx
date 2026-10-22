@@ -24,7 +24,7 @@ import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
 import { attemptJournal } from "../templates/use-attempt";
 import { noteTemplatePage } from "../data/install-host";
-import { removeCopyQuestion, restorePageOrCopy, runCopyDoor, templateCopyOfPage, trashPageOrCopy, type TemplateCopy } from "../templates/template-copy";
+import { forgetTemplateCopyOfPage, removeCopyQuestion, restorePageOrCopy, runCopyDoor, templateCopyOfPage, trashPageOrCopy, type TemplateCopy } from "../templates/template-copy";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { installTemplateTables, olderTemplateCopies, packRunJournal, readSpaceTemplate, readStarterTemplate, runUseTemplate, timed, USE_TEMPLATE_OPEN_DEADLINE_MS, withDeadline, type PreviewSizes } from "../templates/use-pack";
 
@@ -606,6 +606,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
     const verb = door === "template_uninstall" ? "Removing" : "Restoring";
     toast.loading(`${verb} ${copy.title}…`, { id, duration: Infinity });
     const out = await runCopyDoor(door, copy, (done, total) => toast.loading(`${verb} ${copy.title} · ${done}/${total}`, { id, duration: Infinity }));
+    forgetTemplateCopyOfPage(copy.rootId);
     store.notifyTree();
     if (out.ok) {
       toast.success(door === "template_uninstall" ? `Removed ${copy.title}` : `Restored ${copy.title}`, { id, duration: 4000 });

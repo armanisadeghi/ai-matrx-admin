@@ -61,6 +61,30 @@ export async function templateCopyOfPage(pageId: SpaceId): Promise<TemplateCopy 
   };
 }
 
+const copyOfPageCache = new Map<string, Promise<TemplateCopy | null>>();
+
+/**
+ * ADVERSARIAL-7 F7: `templateCopyOfPage`, asked when a page OPENS and kept per page, so the ••• menu already knows
+ * whether this is a copy's root (the lookup took 2–6 s; asked on menu open, "Remove template copy" arrived late and
+ * people picked Move to Trash). One read per page, re-used by every caller; a failed read is not kept (asked again).
+ */
+export function templateCopyOfPageCached(pageId: SpaceId): Promise<TemplateCopy | null> {
+  const kept = copyOfPageCache.get(pageId);
+  if (kept) return kept;
+  const asked = templateCopyOfPage(pageId);
+  copyOfPageCache.set(pageId, asked);
+  asked.catch(() => {
+    if (copyOfPageCache.get(pageId) === asked) copyOfPageCache.delete(pageId);
+  });
+  return asked;
+}
+
+/** Forget what was kept for a page (its copy was removed or restored): the next ask reads again. */
+export function forgetTemplateCopyOfPage(pageId?: SpaceId): void {
+  if (pageId) copyOfPageCache.delete(pageId);
+  else copyOfPageCache.clear();
+}
+
 /** Codes the store answers when it was busy, not when the template is wrong. */
 const BUSY_CODES = new Set(["57014", "55P03", "40P01", "40001"]);
 /** Codes and statuses that mean the database API itself was away. */
