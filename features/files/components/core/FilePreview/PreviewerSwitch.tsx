@@ -147,7 +147,7 @@ function HostAudioViewer({
   );
 }
 
-function HostPdfViewer({
+export function HostPdfViewer({
   source,
   fileName,
   className,
