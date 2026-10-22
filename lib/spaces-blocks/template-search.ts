@@ -101,6 +101,16 @@ export const TEMPLATE_SYNONYMS: readonly (readonly string[])[] = [
   ["shipping", "shipment", "freight", "fulfillment"],
 ];
 
+/**
+ * One-way expansions for a BROAD industry word: typing the field ("logistics") finds every trade inside it, but typing
+ * one trade ("freight") never widens to its neighbours (a symmetric group would make "freight" answer warehouses).
+ * Without this, "logistics" matched only the category label "Manufacturing & logistics" and the cards there tied,
+ * so a food kitchen outranked the trucking and warehouse desks (the "logistics finds…" test, 2026-10-22).
+ */
+const BROAD_TERMS: Readonly<Record<string, readonly string[]>> = {
+  logistic: ["trucking", "freight", "warehouse", "courier", "delivery", "dispatch", "fleet", "shipping", "fulfillment", "3pl", "carrier"],
+};
+
 /** Typed phrases folded to one word before the query is cut ("to do" → "todo"). */
 const PHRASES: ReadonlyArray<[RegExp, string]> = [
   [/\bto[\s-]+dos?\b/g, "todo"],
@@ -159,6 +169,12 @@ const GROUPS_OF = (() => {
     }
   return m;
 })();
+
+for (const [word, members] of Object.entries(BROAD_TERMS)) {
+  const set = GROUPS_OF.get(word) ?? new Set<string>();
+  for (const m of members) set.add(m);
+  GROUPS_OF.set(word, set);
+}
 
 interface Concept {
   word: string;
