@@ -62,6 +62,7 @@ export interface WorkbookOrderedRoomArgs {
   uid: string;
   clientId: string;
   displayName?: string;
+  avatarUrl?: string | null;
   /** The unit id of the workbook this editor shows now. */
   unitId: () => string | null;
   /** Replace the shown workbook's whole content, keeping its unit id (the editor's guarded swap). */
@@ -128,6 +129,7 @@ export async function startWorkbookOrderedRoom(a: WorkbookOrderedRoomArgs): Prom
     uid: a.uid,
     clientId: a.clientId,
     ...(a.displayName ? { displayName: a.displayName } : {}),
+    ...(a.avatarUrl ? { avatarUrl: a.avatarUrl } : {}),
     ...(a.readAntiEntropyIntervalMs ? { readAntiEntropyIntervalMs: a.readAntiEntropyIntervalMs } : {}),
     onAwareness: a.onAwareness,
     onNotice: showWorkbookCollabNotice,
