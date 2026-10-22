@@ -25,7 +25,7 @@
  * off-screen, an image swaps to a thumbnail…).
  */
 
-import { Activity, createContext, type ReactNode, Suspense, useContext, useSyncExternalStore, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Activity, createContext, type ReactNode, Suspense, useContext, useSyncExternalStore, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -270,6 +270,8 @@ export function BoardTile({
   // moves into this slot (`HostTitle`) and its in-body name / Open row drops out (`HostedRecordBar`).
   const [titleTarget, setTitleTarget] = useState<HTMLDivElement | null>(null);
   const [titleClaims, setTitleClaims] = useState(0);
+  // Stable: HostTitle re-claims whenever this identity changes, so an inline arrow would re-claim on every tile render.
+  const claimTitle = useCallback((claimed: boolean) => setTitleClaims((n) => Math.max(0, n + (claimed ? 1 : -1))), []);
   const tileRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [hint, setHint] = useState<ThrowAction>("none");
@@ -806,7 +808,7 @@ export function BoardTile({
                         names={!headerless}
                         opens={Boolean(menu?.href)}
                         titleTarget={headerless ? null : titleTarget}
-                        onTitleClaim={(claimed) => setTitleClaims((n) => Math.max(0, n + (claimed ? 1 : -1)))}
+                        onTitleClaim={claimTitle}
                       >
                         <AfterFirstPaint placeholder={<TileSkeleton typeLabel={typeLabel ?? ""} />}>{children(tier)}</AfterFirstPaint>
                       </RecordHostChrome>

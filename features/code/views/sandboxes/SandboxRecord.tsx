@@ -480,6 +480,8 @@ export function SandboxRecord({
           {
             label: lifecycleBusy === "stop" ? "Stopping…" : "Stop",
             icon: Square,
+            placement: "bar" as const,
+            barTone: "danger" as const,
             // Stopping ends everything running inside; ask first and say so.
             onPress: () =>
               void (async () => {
@@ -1188,7 +1190,7 @@ function SandboxHeader({
 }) {
   if (!embedded) return <EntityModeHeader backHref="/sandbox" entityLabel={label} actions={actions} right={right} />;
   const all = actions ?? [];
-  const visible = all.filter((a) => a.label === "Stop" || a.label === "Stopping…");
+  const visible = all.filter((a) => a.placement === "bar");
   const overflow = all.filter((a) => !visible.includes(a));
   return (
     <HostedRecordBar
@@ -1201,7 +1203,7 @@ function SandboxHeader({
           <Button
             key={a.label}
             type="button"
-            variant="outline"
+            variant={a.barTone === "danger" ? "danger" : "outline"}
             icon={<a.icon />}
             onClick={a.onPress}
             disabled={a.disabled}

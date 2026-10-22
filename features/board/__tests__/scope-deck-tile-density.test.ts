@@ -16,9 +16,9 @@ describe("scope tile density", () => {
     expect(read("board/items/scope-items.tsx")).not.toMatch(/density=/);
     expect(read("../app/(core)/organizations/[orgId]/scopes/[typeId]/[scopeId]/page.tsx")).not.toMatch(/density=/);
   });
-  it("the editor drops the h1 and Open full page only in the tile density", () => {
+  it("the editor drops the h1 in the tile density but keeps the Context items door (a different page than Open)", () => {
     expect(editor).toMatch(/inTile \? \(\s*countLine\([^)]*\)\s*\) : \(\s*<h1/);
-    expect(editor).toMatch(/\{inTile \? null : \(\s*<Button\s+asChild[\s\S]*?Open full page/);
+    expect(editor).toMatch(/data-scope-context-items-door[\s\S]*?Open context items/);
   });
 });
 

@@ -144,9 +144,10 @@ export function EditorDocumentHeader({
       {embedded ? null : <ShellChromeMode mode="canvas" />}
       {hostedTitle}
       {hosted ? (
-        menuBar || actions ? (
+        // ONE control set: in the Microsoft look the ribbon IS the menus + toolbar, so the menu bar is not drawn too.
+        (!office && menuBar) || actions ? (
           <header className={cn("canvas-workspace-header flex h-9 shrink-0 items-center gap-1.5 border-b border-border/60 pl-2 pr-3", !settled && "invisible")}>
-            <div className="flex min-w-0 flex-1 items-center">{menuBar}</div>
+            <div className="flex min-w-0 flex-1 items-center">{office ? null : menuBar}</div>
             {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
           </header>
         ) : null

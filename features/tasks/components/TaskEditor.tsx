@@ -11,6 +11,7 @@
 // the SAME controller + body but presents its own slot-based chrome.
 
 import { HostTitle, useHostNamesRecord } from "@/features/shell/host-chrome/RecordHostChrome";
+import { SizedTitleInput } from "@/features/shell/host-chrome/SizedTitleInput";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import {
@@ -192,17 +193,12 @@ function TaskEditorInner({
           // only the copy doors (complete and delete are on the bottom bar).
           <>
             <HostTitle record={hostRecord}>
-              <ProInput
+              <SizedTitleInput
                 value={effective.title}
                 onChange={(e) => patch("title", e.target.value)}
                 placeholder="Untitled task"
-                showCopyButton={false}
                 aria-label="Task title"
-                className={cn(
-                  "h-6 min-w-0 flex-1 border-none bg-transparent text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground",
-                  completed && "text-muted-foreground line-through",
-                )}
-                wrapperClassName="min-w-0 flex-1"
+                className={cn(completed && "text-muted-foreground line-through")}
               />
             </HostTitle>
             <div className="flex h-7 shrink-0 items-center justify-end gap-1 border-b border-border bg-card px-2">
