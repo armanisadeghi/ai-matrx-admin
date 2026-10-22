@@ -120,6 +120,7 @@ export default function AppletBuildResultBlock({ serverData }: { serverData?: un
       {!building && data.files.length > 0 ? (
         <div className="flex flex-col gap-2">
           <DisclosureHeader
+            chevron="end"
             open={showCode}
             onClick={() => setShowCode((v) => !v)}
             icon={<Code2 className="h-4 w-4" />}

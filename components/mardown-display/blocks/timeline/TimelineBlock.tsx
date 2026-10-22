@@ -384,6 +384,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
                 {/* Period header */}
                 <div className="mb-4 min-w-0 border-b border-border">
                   <DisclosureHeader
+                    chevron="end"
                     open={!isCollapsed}
                     onClick={() => togglePeriodCollapse(period.period)}
                     icon={

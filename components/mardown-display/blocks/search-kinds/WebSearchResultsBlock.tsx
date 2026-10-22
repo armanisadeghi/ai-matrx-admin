@@ -325,7 +325,7 @@ function LocalPack({ places }: { places: Record<string, unknown>[] }) {
               variant="quiet"
               onClick={() => setAll((v) => !v)}
               aria-expanded={all}
-              icon={<ChevronDown className={cn(all && "rotate-180")} />}
+              iconEnd={<ChevronDown className={cn(all && "rotate-180")} />}
             >
               {all ? "Fewer places" : "More places"}
             </Button>

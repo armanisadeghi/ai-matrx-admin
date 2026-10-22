@@ -233,7 +233,7 @@ const NestedCell: React.FC<{
   return (
     <div className="flex min-w-0 flex-col gap-0.5">
       <div className="flex min-w-0 items-center gap-1">
-        <Button variant="quiet" icon={open ? (
+        <Button variant="quiet" iconEnd={open ? (
             <ChevronDown />
           ) : (
             <ChevronRight />
