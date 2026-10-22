@@ -11,12 +11,18 @@ export interface DemoProbe {
   height: number | null;
   /** Unresolved-import stand-in chips found in the box (null when the box is a frame). */
   standIns: number | null;
-  /** Images in the box (null when the box is a frame and cannot be inspected). */
-  images: { total: number; broken: number; cropped: number } | null;
+  /** Images and videos in the box (null when the box is a frame and cannot be inspected). */
+  images: { total: number; broken: number; cropped: number; upscaled?: number } | null;
   /** Errors captured for this demo's kind since it mounted. */
   errors: string[];
   /** Ms since mount — checks wait a moment before failing on "nothing rendered". */
   ageMs: number;
+  /**
+   * The render surface says it is still starting (a sandbox frame whose document has not loaded or
+   * has not answered yet). "Rendered" stays pending, whatever the age: the frame bounds its own wait
+   * and reports "silent" when it gives up, which is the failure.
+   */
+  starting?: boolean;
 }
 
 export interface DemoCheck {
@@ -38,7 +44,7 @@ export function judgeDemo(probe: DemoProbe): { checks: DemoCheck[]; verdict: Che
       : {
           id: "rendered",
           label: "Rendered",
-          status: probe.ageMs >= RENDER_GRACE_MS ? "fail" : "pending",
+          status: probe.ageMs >= RENDER_GRACE_MS && !probe.starting ? "fail" : "pending",
           detail: probe.height === null ? null : `${Math.round(probe.height)}px`,
         };
   const errors: DemoCheck =
@@ -54,7 +60,7 @@ export function judgeDemo(probe: DemoProbe): { checks: DemoCheck[]; verdict: Che
   let images: DemoCheck;
   if (probe.images === null) images = { id: "images", label: "Images", status: "na", detail: "In frame" };
   else if (probe.images.total === 0) images = { id: "images", label: "Images", status: "na", detail: "None" };
-  else if (probe.images.broken + probe.images.cropped === 0)
+  else if (probe.images.broken + probe.images.cropped + (probe.images.upscaled ?? 0) === 0)
     images = { id: "images", label: "Images", status: "pass", detail: `${probe.images.total} whole` };
   else
     images = {
@@ -64,6 +70,7 @@ export function judgeDemo(probe: DemoProbe): { checks: DemoCheck[]; verdict: Che
       detail: [
         probe.images.broken ? `${probe.images.broken} broken` : null,
         probe.images.cropped ? `${probe.images.cropped} cropped` : null,
+        probe.images.upscaled ? `${probe.images.upscaled} upscaled` : null,
       ]
         .filter(Boolean)
         .join(", "),
@@ -77,17 +84,21 @@ export function judgeDemo(probe: DemoProbe): { checks: DemoCheck[]; verdict: Che
   return { checks, verdict };
 }
 
+/** Drawn larger than this many times its natural size reads as blurry: the design stretched the media. */
+export const UPSCALE_LIMIT = 1.25;
+
 /**
- * Is this image shown whole? Broken when it never decoded; cropped when the box
- * it is drawn in cuts it (object-fit cover at another ratio) or a clipping
- * ancestor inside the shape hides part of it.
+ * Is this image (or video) shown whole and sharp? Broken when it never decoded; cropped when the
+ * box it is drawn in cuts it (object-fit cover at another ratio) or a clipping ancestor inside the
+ * shape (or the shape's own edge) hides part of it; upscaled when a raster is drawn more than
+ * UPSCALE_LIMIT times its natural size (vector media pass `vector`).
  */
 export function imageProbe(
-  img: { naturalWidth: number; naturalHeight: number; complete: boolean },
+  img: { naturalWidth: number; naturalHeight: number; complete: boolean; vector?: boolean },
   box: { width: number; height: number },
   objectFit: string,
   visible: { width: number; height: number },
-): "ok" | "broken" | "cropped" | "loading" {
+): "ok" | "broken" | "cropped" | "upscaled" | "loading" {
   if (!img.complete) return "loading";
   if (img.naturalWidth === 0 || img.naturalHeight === 0) return "broken";
   if (box.width === 0 || box.height === 0) return "cropped";
@@ -95,5 +106,7 @@ export function imageProbe(
   const drawn = box.width / box.height;
   if (objectFit === "cover" && Math.abs(drawn - natural) / natural > 0.02) return "cropped";
   if (visible.width + 1 < box.width || visible.height + 1 < box.height) return "cropped";
+  if (!img.vector && (box.width > img.naturalWidth * UPSCALE_LIMIT || box.height > img.naturalHeight * UPSCALE_LIMIT))
+    return "upscaled";
   return "ok";
 }

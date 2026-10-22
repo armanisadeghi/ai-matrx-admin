@@ -24,6 +24,10 @@ describe("shape playground", () => {
     expect(judgeDemo({ ...base, standIns: 2 }).verdict).toBe("fail");
     expect(judgeDemo({ ...base, height: 0 }).verdict).toBe("pending");
     expect(judgeDemo({ ...base, height: 0, ageMs: RENDER_GRACE_MS }).verdict).toBe("fail");
+    // A sandbox frame still starting (cold /kind-sandbox compile) is pending past the grace; only the
+    // frame's own "silent" verdict (starting: false, height 0) fails it.
+    expect(judgeDemo({ ...base, height: 0, ageMs: RENDER_GRACE_MS * 3, starting: true }).verdict).toBe("pending");
+    expect(judgeDemo({ ...base, height: 0, ageMs: RENDER_GRACE_MS * 3, starting: false }).verdict).toBe("fail");
     expect(judgeDemo({ ...base, images: { total: 1, broken: 0, cropped: 1 } }).verdict).toBe("fail");
     expect(judgeDemo({ ...base, standIns: null, images: null }).verdict).toBe("pass");
   });
@@ -34,6 +38,16 @@ describe("shape playground", () => {
     expect(imageProbe(img, { width: 400, height: 400 }, "cover", { width: 400, height: 400 })).toBe("cropped");
     expect(imageProbe(img, { width: 400, height: 200 }, "contain", { width: 400, height: 120 })).toBe("cropped");
     expect(imageProbe({ ...img, naturalWidth: 0 }, { width: 1, height: 1 }, "contain", { width: 1, height: 1 })).toBe("broken");
+  });
+
+  it("calls media upscaled when a raster is stretched past its natural size, never a vector", () => {
+    const small = { naturalWidth: 200, naturalHeight: 100, complete: true };
+    expect(imageProbe(small, { width: 240, height: 120 }, "contain", { width: 240, height: 120 })).toBe("ok");
+    expect(imageProbe(small, { width: 800, height: 400 }, "contain", { width: 800, height: 400 })).toBe("upscaled");
+    expect(imageProbe({ ...small, vector: true }, { width: 800, height: 400 }, "contain", { width: 800, height: 400 })).toBe("ok");
+    const judged = judgeDemo({ height: 300, standIns: 0, images: { total: 2, broken: 0, cropped: 0, upscaled: 1 }, errors: [], ageMs: 100 });
+    expect(judged.verdict).toBe("fail");
+    expect(judged.checks.find((c) => c.id === "images")?.detail).toBe("1 upscaled");
   });
 
   it.each(PLAYGROUND_DEMOS.map((d) => [d.slug, d] as const))("%s passes the save gate", (_slug, demo) => {
