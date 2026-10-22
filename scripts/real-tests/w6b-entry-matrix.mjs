@@ -180,25 +180,41 @@ async function archiveNote(id) {
   const { error } = await userDb.schema("workbench").from("notes").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   return error ? `archive refused: ${error.message}` : "archived";
 }
-async function ensureBinding(orgId) {
-  // An organization-tier binding (role binding:o:<the account's test org>) of the test agent to the
-  // notes surface with ONE value mapping from a page value (note_canary ← note_bundle). Made once and
-  // reused; a person binding without a mapping may also exist for this agent (not ours, untouched).
-  const role = `binding:o:${orgId}`;
-  const { data: surf } = await userDb.schema("ui").from("ui_surface").select("id").eq("name", NOTES_SURFACE).single();
-  const { data: rows } = await refDb.schema("platform").from("associations").select("id,role,payload")
-    .eq("source_type", "agent").eq("source_id", TEST_DATA_AGENT.id).eq("target_type", "surface").eq("target_id", surf.id);
-  const mine = (rows || []).find((r) => r.role === role);
-  if (mine) return { id: mine.id, created: false, role, payload: mine.payload, others: (rows || []).filter((r) => r !== mine).map((r) => ({ role: r.role, payload: r.payload })) };
-  const value_mappings = { note_canary: { target: "note_bundle", mapType: "surface_value", required: false } };
-  const { data, error } = await userDb.rpc("assoc_add", {
-    p_source_type: "agent", p_source_id: TEST_DATA_AGENT.id, p_target_type: "surface", p_target_id: surf.id,
-    p_org_id: orgId, p_label: null, p_role: role, p_position: null,
-    p_metadata: { tier: "org", user_id: null, project_id: null, task_id: null, version: 1, w6b_fixture: true },
-    p_payload_kind: "surface_binding", p_payload: { value_mappings },
+// The mapped binding (W6-C ruling, 2026-10-22): the admin test account's own person binding of the
+// write agent on matrx-user/notes (role binding:u:<admin>, edge 03c304e9, in the agent's org — the
+// database requires a binding edge to live in its agent's organization, and each role is unique, so
+// the harness cannot add a second one). For ONE run it is re-saved through the binding path
+// (assoc_add upserts on the role) with value_mappings note_canary ← note_bundle, and restored exactly
+// afterwards in a finally — every column assoc_add writes is read first and replayed.
+const MAPPED_BINDING_ID = "03c304e9-4bba-441b-942b-3c553809b86f";
+const BINDING_MAPPING = { note_canary: { target: "note_bundle", mapType: "surface_value", required: false } };
+async function readBinding() {
+  const { data, error } = await refDb.schema("platform").from("associations")
+    .select("id,source_type,source_id,target_type,target_id,organization_id,label,role,position,metadata,payload_kind,payload,created_by")
+    .eq("id", MAPPED_BINDING_ID).single();
+  if (error || !data) throw new Error(`binding ${MAPPED_BINDING_ID} unreadable: ${error?.message ?? "missing"}`);
+  return data;
+}
+async function saveBinding(row, payload) {
+  const { error } = await userDb.rpc("assoc_add", {
+    p_source_type: row.source_type, p_source_id: row.source_id, p_target_type: row.target_type, p_target_id: row.target_id,
+    p_org_id: row.organization_id, p_label: row.label, p_role: row.role, p_position: row.position,
+    p_metadata: row.metadata, p_payload_kind: row.payload_kind, p_payload: payload,
   });
-  if (error) return { id: null, created: false, role, refused: error.message, others: (rows || []).map((r) => ({ role: r.role, payload: r.payload })) };
-  return { id: data, created: true, role, payload: { value_mappings } };
+  if (error) throw new Error(`binding save refused: ${error.message}`);
+}
+async function mapBinding(saved) {
+  if (saved.created_by !== session.userId) throw new Error(`binding ${MAPPED_BINDING_ID} is not this account's`);
+  await saveBinding(saved, { ...saved.payload, value_mappings: BINDING_MAPPING });
+  const now = await readBinding();
+  return { saved, applied: now.payload };
+}
+async function restoreBinding(saved) {
+  await saveBinding(saved, saved.payload);
+  const now = await readBinding();
+  const same = ["organization_id", "label", "role", "position", "metadata", "payload_kind", "payload"]
+    .every((k) => JSON.stringify(now[k]) === JSON.stringify(saved[k]));
+  return same ? "restored exactly" : `RESTORE MISMATCH: now ${JSON.stringify({ metadata: now.metadata, payload: now.payload })}`;
 }
 async function createShortcut(orgId, instruction) {
   const { data: cats } = await userDb.schema("platform").from("categories").select("id")
@@ -435,8 +451,13 @@ async function runNotes(trigger, orgId, browser) {
   const instruction = "In the note open on this page, one word is misspelled: \"recieve\". Fix only that word so it reads \"receive\" by editing the note. Change nothing else.";
   const res = { trigger, scenario: "notes", as: opt.as, note_id: note.id, canary: note.canary, agent: TEST_DATA_AGENT.id, oracles: {}, blocked: null, setup: {} };
   let shortcut = null;
+  let bindingSaved = null;
   try {
-    if (trigger === "binding") res.setup.binding = await ensureBinding(orgId);
+    if (trigger === "binding" && opt.as === "admin") {
+      bindingSaved = await readBinding(); // saved before any write, so the finally always restores
+      const m = await mapBinding(bindingSaved);
+      res.setup.binding = { id: MAPPED_BINDING_ID, payload: m.applied, saved_payload: bindingSaved.payload };
+    }
     if (trigger === "shortcut" || trigger === "mandate") { shortcut = await createShortcut(orgId, instruction); res.setup.shortcut = shortcut; }
     const ctx = await browser.newContext({ viewport: { width: 1500, height: 950 }, serviceWorkers: "block" });
     await markBrowserAgentTraffic(ctx, "w6b-entry-matrix", BASE);
@@ -484,6 +505,8 @@ async function runNotes(trigger, orgId, browser) {
       res.cleanup = { note: await archiveNote(note.id) };
       if (shortcut) res.cleanup.shortcut = await archiveShortcut(shortcut.id);
     }
+    // The binding is restored whatever happened (also with --keep): it is not a disposable record.
+    if (bindingSaved) res.cleanup.binding = await restoreBinding(bindingSaved).catch((e) => `RESTORE FAILED: ${e.message}`);
   }
 }
 async function runHr(trigger, browser) {
