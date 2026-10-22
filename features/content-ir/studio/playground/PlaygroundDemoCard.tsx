@@ -71,12 +71,21 @@ export interface PlaygroundDemoCardProps {
 
 export function PlaygroundDemoCard({ demo, mode: pageMode, frameSandbox, frameRefusal, onVerdict }: PlaygroundDemoCardProps) {
   const [mode, setMode] = React.useState<RenderMode>(pageMode);
-  React.useEffect(() => setMode(pageMode), [pageMode]);
+  const [mountedAt, setMountedAt] = React.useState(() => Date.now());
+  // The page-wide switch restarts the card's clock exactly as the card's own switch does: without it
+  // the new mode's render was judged against the OLD mode's mount time, already past the grace, so a
+  // shape still loading its library (react-pdf) read "Fail (0px)" the instant the page switched.
+  const shownPageMode = React.useRef(pageMode);
+  React.useEffect(() => {
+    if (shownPageMode.current === pageMode) return;
+    shownPageMode.current = pageMode;
+    setMode(pageMode);
+    setMountedAt(Date.now());
+  }, [pageMode]);
   const [width, setWidth] = React.useState<WidthMode>("full");
   const [dataMode, setDataMode] = React.useState<DataMode>("full");
   const [frames, setFrames] = React.useState<Record<string, unknown>[] | null>(null);
   const [tick, setTick] = React.useState(0);
-  const [mountedAt, setMountedAt] = React.useState(() => Date.now());
   const [resetNonce, setResetNonce] = React.useState(0);
   const host = useDemoItemHost(demo);
   const hostRef = React.useRef<HTMLDivElement | null>(null);
