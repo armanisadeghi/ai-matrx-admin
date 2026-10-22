@@ -17,12 +17,13 @@ import { callApi } from "@/lib/api/call-api";
 import { toast } from "@/lib/toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+import { hasConnectedEbayStore } from "@/features/commerce-review/service";
 
 const RETURN_MESSAGES: Record<string, { ok: boolean; text: string }> = {
   connected: { ok: true, text: "eBay store connected" },
   declined: { ok: false, text: "eBay authorization was declined" },
-  expired: { ok: false, text: "The eBay sign-in expired — connect again" },
-  error: { ok: false, text: "eBay could not finish connecting — try again" },
+  expired: { ok: false, text: "The eBay sign-in expired. Connect again" },
+  error: { ok: false, text: "eBay could not finish connecting. Try again" },
 };
 
 const buildSteps = (
@@ -71,29 +72,54 @@ export function StoreConnectShell() {
   const dispatch = useAppDispatch();
   const returnStatus = useSearchParams().get("status");
   const [connecting, setConnecting] = useState(false);
-  const steps = buildSteps(organizationId, returnStatus === "connected");
+  const [storeConnected, setStoreConnected] = useState(false);
+  const steps = buildSteps(organizationId, storeConnected);
 
+  // The step's check mark is the server's truth, never the return param.
+  useEffect(() => {
+    if (!organizationId) return;
+    let live = true;
+    hasConnectedEbayStore(organizationId)
+      .then((connected) => {
+        if (live) setStoreConnected(connected);
+      })
+      .catch((err: unknown) => {
+        if (live) toast.error(err instanceof Error ? err.message : String(err));
+      });
+    return () => {
+      live = false;
+    };
+  }, [organizationId, returnStatus]);
+
+  // Toast the callback's verdict once, then drop it from the URL so a
+  // reload or Back never replays it.
   useEffect(() => {
     const message = returnStatus ? RETURN_MESSAGES[returnStatus] : undefined;
     if (!message) return;
     if (message.ok) toast.success(message.text);
     else toast.error(message.text);
+    window.history.replaceState(null, "", window.location.pathname);
   }, [returnStatus]);
 
   const connectEbay = async () => {
     if (connecting) return;
     setConnecting(true);
-    const result = await dispatch(
-      callApi({ path: "/ebay/oauth/connect", method: "GET" }),
-    );
-    const url = (result.data as { authorization_url?: string } | undefined)
-      ?.authorization_url;
-    if (result.error || !url) {
+    try {
+      const result = await dispatch(
+        callApi({ path: "/ebay/oauth/connect", method: "GET" }),
+      );
+      const url = (result.data as { authorization_url?: string } | undefined)
+        ?.authorization_url;
+      if (result.error || !url) {
+        toast.error(result.error?.message ?? "eBay connect is unavailable");
+        setConnecting(false);
+        return;
+      }
+      window.location.assign(url);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : String(err));
       setConnecting(false);
-      toast.error(result.error?.message ?? "eBay connect is unavailable");
-      return;
     }
-    window.location.assign(url);
   };
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4">

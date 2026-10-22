@@ -154,6 +154,16 @@ export interface AssetReviewRow {
   metadata: Json;
 }
 
+/** The slice of `commerce.marketplace_account` the connect page reads. */
+export interface MarketplaceAccountRow {
+  id: string;
+  organization_id: string;
+  marketplace_provider: string;
+  store_name: string | null;
+  username_observed: string | null;
+  deleted_at: string | null;
+}
+
 type TableShape<Row> = {
   Row: Row;
   Insert: Partial<Row>;
@@ -168,6 +178,7 @@ export interface CommerceReviewSchema {
     recall_audit: TableShape<RecallAuditRow>;
     human_correction: TableShape<HumanCorrectionRow>;
     asset_review: TableShape<AssetReviewRow>;
+    marketplace_account: TableShape<MarketplaceAccountRow>;
   };
   Views: Record<string, never>;
   Functions: Record<string, never>;
