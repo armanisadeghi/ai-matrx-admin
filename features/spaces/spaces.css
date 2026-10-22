@@ -408,7 +408,7 @@
   height: 28px;
   margin: 0 8px;
   color: hsl(var(--muted-foreground) / 0.8);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 28px;
 }
 .spaces-trash-row {

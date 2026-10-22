@@ -41,7 +41,7 @@ import {
   cn,
 } from "@ai-matrx/design-system";
 import { Button, Field } from "@ai-matrx/design-system/controls";
-import { TREE_INDENT_PX, TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
+import { TREE_INDENT_PX, TreeDisclosure } from "@/components/official/topic-tree/geometry";
 import ShellIcon from "@/features/shell/components/ShellIcon";
 import { getCatalogEntry } from "../catalog";
 import type { ShellNode } from "../contract";
@@ -301,8 +301,10 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
         </ul>
       ) : null}
       {node.kind === "group" && children?.length === 0 ? (
-        <p className="type-body flex items-center gap-1 py-1 text-muted-foreground" style={treeIndentStyle(depth)}>
+        {/* Mirrors a child row's slots (pl-1, grip gutter, depth spacer, disclosure) so the text sits where a child's would. */}
+        <p className="type-body flex items-center gap-1 py-1 pl-1 text-muted-foreground">
           <span aria-hidden="true" className="w-5 shrink-0" />
+          <span aria-hidden="true" className="shrink-0" style={{ width: depth * TREE_INDENT_PX }} />
           <TreeDisclosure expandable={false} />
           Drop rows here
         </p>

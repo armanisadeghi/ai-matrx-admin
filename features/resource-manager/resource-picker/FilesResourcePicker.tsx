@@ -222,7 +222,7 @@ function FileRow({ file, onSelect, multiple, selected, checkboxInGutter }: FileR
           className={cn(
             "flex h-11 shrink-0 cursor-pointer items-center justify-center",
             checkboxInGutter
-              ? "relative -ml-5 w-4 before:absolute before:-inset-x-1 before:inset-y-0 before:content-['']"
+              ? "relative -ml-5 w-4 before:absolute before:-inset-x-1 before:inset-y-0 before:content-[''] pointer-coarse:before:-left-6"
               : "w-8 pointer-coarse:w-11",
           )}
         >
