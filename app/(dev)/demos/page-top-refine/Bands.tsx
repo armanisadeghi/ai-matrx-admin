@@ -9,7 +9,7 @@
 // Summary: one clean row of KPI tiles — four across on desktop, two by two on a phone, never 3 + 1.
 // Every number that names a set opens it; a number that could not be read shows "—", never 0.
 import type { ReactNode } from "react";
-import { KpiTile, type KpiTone } from "@/components/official/kpi/KpiTile";
+import { KpiTile, type KpiTone } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
 
 export interface IntroBandProps {

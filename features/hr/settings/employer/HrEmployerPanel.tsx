@@ -24,7 +24,7 @@
 
 "use client";
 
-import { InfoHint, Input } from "@ai-matrx/design-system/controls";
+import { InfoHint, Input, LabeledField as Field } from "@ai-matrx/design-system/controls";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -50,7 +50,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Field } from "@/components/official/Field";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorNotice } from "@ai-matrx/design-system";

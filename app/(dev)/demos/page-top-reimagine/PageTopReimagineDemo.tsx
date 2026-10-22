@@ -18,11 +18,10 @@ import {
   RefreshCw,
   TriangleAlert,
 } from "lucide-react";
-import { Button, EmptyState, RegionSkeleton, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState, RegionSkeleton, SegmentedControl, KpiTile } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
 import { usePinned } from "@/components/favorites/usePinned";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectPreferencesLoadStatus } from "@/lib/redux/preferences/userPreferenceSelectors";
