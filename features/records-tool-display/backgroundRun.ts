@@ -8,7 +8,7 @@
  * drawn again when the conversation is reopened, from the `run_id` in the persisted answer.
  *
  *  - Progress arrives as `node_progress` (`message` "<step>: <detail>", `current`, `total`).
- *    An import walks seven named stages; `total` GROWS while reading discovers pages, and a late
+ *    An import walks nine named stages; `total` GROWS while reading discovers pages, and a late
  *    "columns" pass follows "rows". So the bar is a RATCHET: the stage never steps back and the
  *    fill never shrinks (streamed shapes only move forward).
  *  - A mapped copy reports "Slice N: X added, Y updated so far" with no total: the bar is the
@@ -17,7 +17,7 @@
  *    added / updated / archived / conflicts). A stopped run names the server's own sentence.
  */
 
-import type { NodeInvocationState, WorkflowRunState } from "@/features/workflow-runtime/redux/workflow-runs.slice";
+import { isShutdownCancel, type NodeInvocationState, type WorkflowRunState } from "@/features/workflow-runtime/redux/workflow-runs.slice";
 import { runIsOver } from "@/features/workflow-runtime/types";
 import { LOOK_ACTIONS, lookActionOf, lookTitle, type LookAction } from "./lookActions";
 
@@ -31,7 +31,9 @@ export const IMPORT_STAGES = [
   { id: "tables", label: "Tables" },
   { id: "columns", label: "Columns" },
   { id: "rows", label: "Rows" },
+  { id: "views", label: "Views" },
   { id: "pages", label: "Pages" },
+  { id: "comments", label: "Comments" },
   { id: "report", label: "Report" },
 ] as const;
 
@@ -59,15 +61,23 @@ export interface ProgressSample {
   detail: string | null;
   current: number | null;
   total: number | null;
+  /**
+   * The run is held, not failing: Notion asked us to slow down, or another import holds the
+   * organization's turn (aidream progress step "waiting"). Said on the active step; the stage
+   * and its count stay where they were.
+   */
+  waiting?: boolean;
 }
 
-/** "rows: Players" → stage 3, "Players". A copy's "Slice 2: …" is all detail. */
-export function readProgressMessage(kind: BackgroundRunKind, message: string | null): Pick<ProgressSample, "stageIndex" | "detail"> {
+/** "rows: Players" → stage 4, "Players". "waiting: Notion asked …" → a hold. A copy's "Slice 2: …" is all detail. */
+export function readProgressMessage(kind: BackgroundRunKind, message: string | null): Pick<ProgressSample, "stageIndex" | "detail" | "waiting"> {
   const text = str(message);
   if (!text) return { stageIndex: null, detail: null };
-  if (kind === "import") {
+  if (kind === "import" || kind === "look") {
     const colon = text.indexOf(":");
     const head = (colon >= 0 ? text.slice(0, colon) : text).trim().toLowerCase();
+    if (head === "waiting") return { stageIndex: null, detail: colon >= 0 ? str(text.slice(colon + 1)) : null, waiting: true };
+    if (kind === "look") return { stageIndex: null, detail: text };
     const index = IMPORT_STAGES.findIndex((stage) => stage.id === head);
     if (index >= 0) return { stageIndex: index, detail: colon >= 0 ? str(text.slice(colon + 1)) : null };
   }
@@ -249,7 +259,15 @@ export function readCopyReport(output: Record<string, unknown> | null): CopyRepo
  * (paused / pausing); "cancelled": the person's own stop, not a failure. The backend never wakes the
  * chat for a park, so the card is the only signal.
  */
-export type BackgroundRunPhase = "opening" | "waiting" | "working" | "needs_you" | "sleeping" | "paused" | "finished" | "stopped" | "cancelled";
+export type BackgroundRunPhase = "opening" | "waiting" | "working" | "needs_you" | "sleeping" | "paused" | "resuming" | "finished" | "stopped" | "cancelled";
+
+/** What a run a release cancelled says while the recovery sweep brings it back. */
+export const RESUMING_WORDS = "Paused by a server update, resuming…";
+
+/** Over for good: a release's cancel is not (the sweep resumes it, lane UI1). */
+function runEnded(run: Pick<WorkflowRunState, "status" | "cancelReason">): boolean {
+  return runIsOver(run.status) && !(run.status === "cancelled" && isShutdownCancel(run.cancelReason));
+}
 
 /** A workflow run with no named stage list: how far through its steps it is. */
 export interface WorkflowReport {
@@ -376,7 +394,7 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
   const sample: ProgressSample | null = progress
     ? { ...readProgressMessage(kind, progress.message), current: progress.current, total: progress.total }
     : null;
-  const over = runIsOver(run.status);
+  const over = runEnded(run);
   const output = node?.output ?? null;
   // A copy that stopped part-way keeps its counts in the failure's details.
   const details = obj(node?.error?.details);
@@ -420,6 +438,7 @@ function wakeAtOf(run: WorkflowRunState): string | null {
 
 function phaseOf(run: WorkflowRunState, progressed: boolean, stepFailed: boolean): BackgroundRunPhase {
   if (!run.statusKnown) return "opening";
+  if (run.status === "cancelled" && isShutdownCancel(run.cancelReason)) return "resuming";
   if (run.status === "cancelled") return "cancelled";
   if (runIsOver(run.status)) return run.status !== "completed" || stepFailed ? "stopped" : "finished";
   if (run.status === "interrupted" && sleepOf(run)) return "sleeping";
@@ -431,7 +450,7 @@ function phaseOf(run: WorkflowRunState, progressed: boolean, stepFailed: boolean
 /** Any agent-started workflow run: generic stages from its steps, the run's own end. */
 function readWorkflowRun(run: WorkflowRunState, empty: BackgroundRunView): BackgroundRunView {
   const { sample, done, latest } = workflowSample(run);
-  const over = runIsOver(run.status);
+  const over = runEnded(run);
   const phase = phaseOf(run, sample != null, false);
   const output = obj(latest?.output);
   return {
@@ -461,6 +480,7 @@ export const STATUS_WORD: Record<BackgroundRunPhase, string> = {
   needs_you: "Waiting on you",
   sleeping: "Waiting",
   paused: "Paused",
+  resuming: "Resuming",
   finished: "Finished",
   stopped: "Stopped",
   cancelled: "Canceled",
@@ -475,6 +495,7 @@ export const STALLED_AFTER_MS = 300_000;
 /** The one quiet line under the bar while a run is not over: failure, stall, or a short quiet note. */
 export function quietNote(view: Pick<BackgroundRunView, "phase" | "readFailure">, quietMs: number, formatQuiet: (ms: number) => string): string {
   if (view.readFailure) return view.readFailure;
+  if (view.phase === "resuming") return RESUMING_WORDS;
   if (view.phase !== "working" || quietMs < QUIET_AFTER_MS) return "";
   if (quietMs >= STALLED_AFTER_MS) return `No progress for ${formatQuiet(quietMs)}`;
   return `Still working · last moved ${formatQuiet(quietMs)} ago`;
@@ -487,3 +508,228 @@ export function whatToDoWhenStopped(kind: BackgroundRunKind): string {
     ? "Run it again; nothing is copied twice."
     : "Run it again to continue; finished rows are kept.";
 }
+
+// ── the whole Notion job, as ONE list of steps (lane UI1) ──────────────────────
+
+/**
+ * A whole-Notion import is one job across up to two runs: the look that previews it (and asks the
+ * ONE question when tables of the person's could be touched), then the import's own run. The chat
+ * shows it as one list of every step from the start — Preview, the choice, then the import's
+ * stages — each waiting, working with its count, done, or skipped with the reason.
+ */
+export const JOB_STEPS = [
+  { id: "preview", label: "Preview" },
+  { id: "choice", label: "Your tables" },
+  ...IMPORT_STAGES,
+] as const;
+
+export type JobStepState = "waiting" | "working" | "needs_you" | "done" | "skipped" | "stopped";
+
+export interface JobStep {
+  id: string;
+  label: string;
+  state: JobStepState;
+  /** "41 of 278" while working; a remembered count once done. */
+  current: number | null;
+  total: number | null;
+  /** One short line: what it is on, the hold ("Notion asked us to slow down"), or why it was skipped. */
+  note: string | null;
+  /** The note is a hold, not progress. */
+  held: boolean;
+}
+
+export interface ChoiceOption {
+  /** The choice's own key from the server ("new" | "fill" | "replace" | "fill_overwrite" | "update"). */
+  key: string;
+  /** What the start is sent: "new", "fill:<table id>", "replace:<table id>" … */
+  value: string;
+}
+
+export interface ChoiceProposal {
+  notionId: string;
+  notionDatabase: string;
+  tableId: string;
+  tableName: string | null;
+  why: string | null;
+  options: ChoiceOption[];
+  /** Why replace is not offered, in the server's words. */
+  replaceRefused: string | null;
+  /** The line shown for letting Notion's values replace filled cells. */
+  overwriteLine: string | null;
+}
+
+export interface ChoiceCard {
+  previewToken: string;
+  proposals: ChoiceProposal[];
+}
+
+/** The ONE card a finished preview (or a start that needs it) answered, with the token a start needs. */
+export function readChoiceCard(output: Record<string, unknown> | null): ChoiceCard | null {
+  const token = str(output?.preview_token);
+  const card = obj(output?.card);
+  if (!token || !card) return null;
+  const proposals: ChoiceProposal[] = [];
+  for (const raw of Array.isArray(card.proposals) ? card.proposals : []) {
+    const p = obj(raw);
+    const notionId = str(p?.notion_id);
+    const tableId = str(p?.table_id);
+    if (!p || !notionId || !tableId) continue;
+    const options: ChoiceOption[] = [{ key: "new", value: "new" }];
+    for (const [key, value] of Object.entries(obj(p.choices) ?? {})) {
+      const sent = str(value);
+      if (sent && key !== "new") options.push({ key, value: sent });
+    }
+    proposals.push({
+      notionId,
+      notionDatabase: str(p.notion_database) ?? "Notion database",
+      tableId,
+      tableName: str(p.table_name),
+      why: str(p.why),
+      options,
+      replaceRefused: str(p.replace_refused),
+      overwriteLine: str(p.overwrite_line),
+    });
+  }
+  return proposals.length > 0 ? { previewToken: token, proposals } : null;
+}
+
+/** The safe default for every proposal: a table of its own beside theirs (nothing of theirs touched). */
+export function defaultChoices(card: ChoiceCard): Record<string, string> {
+  return Object.fromEntries(card.proposals.map((p) => [p.notionId, "new"]));
+}
+
+/** The import run a finished start look began (`import_start` answers the import's `run_id`). */
+export function startedRunOf(output: Record<string, unknown> | null): string | null {
+  if (!output || output.error) return null;
+  return str(output.run_id);
+}
+
+/** Is this run part of a whole-Notion job (a preview, a start, or the import itself)? */
+export function isNotionJob(view: Pick<BackgroundRunView, "kind" | "report">, input: Record<string, unknown> | null): boolean {
+  if (view.kind === "import") return true;
+  const action = view.kind === "look" ? lookActionOf(input) : null;
+  return action === "preview" || action === "import_start";
+}
+
+/** Did the import run carry a whole-workspace plan (so a preview and the choice came before it)? */
+function planOf(input: Record<string, unknown> | null): Record<string, unknown> | null {
+  const raw = input?.onto;
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  try {
+    return obj(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+/** Optional content: a finished import that never reached it and counted none of it skipped it. */
+const OPTIONAL_STAGE_WORDS: Record<string, string> = { files: "file", views: "view", comments: "comment" };
+
+export interface JobInput {
+  /** The look run (preview / start), when the job began with one. */
+  look: BackgroundRunView | null;
+  lookOutput: Record<string, unknown> | null;
+  /** The ONE card, while it waits for an answer. */
+  card: ChoiceCard | null;
+  /** The answer is on its way to the server. */
+  starting: boolean;
+  /** Why the start was refused, in the server's words. */
+  startRefused: string | null;
+  /** The import's own run, once it exists. */
+  run: BackgroundRunView | null;
+  runInput: Record<string, unknown> | null;
+  /** The furthest import stage reached (the ratchet). */
+  stageIndex: number;
+  /** Counts each stage last showed in this session (by stage index). */
+  remembered: Readonly<Record<number, { current: number | null; total: number | null }>>;
+}
+
+function step(id: string, label: string, state: JobStepState, note: string | null = null, current: number | null = null, total: number | null = null, held = false): JobStep {
+  return { id, label, state, note, current, total, held };
+}
+
+/** Every step of the job, in order, each with its live state. Pure. */
+export function notionJobSteps(input: JobInput): JobStep[] {
+  const { look, run, card } = input;
+  const plan = planOf(input.runInput);
+  const out: JobStep[] = [];
+
+  // Preview
+  if (look) {
+    const state: JobStepState = look.phase === "finished" ? "done"
+      : look.phase === "stopped" || look.phase === "cancelled" ? "stopped"
+      : look.phase === "opening" || look.phase === "waiting" ? "waiting" : "working";
+    const held = look.sample?.waiting === true;
+    out.push(step("preview", "Preview", state, state === "stopped" ? look.stoppedBecause : state === "working" ? look.sample?.detail ?? null : null,
+      state === "working" ? look.sample?.current ?? null : null, state === "working" ? look.sample?.total ?? null : null, held));
+  } else {
+    out.push(step("preview", "Preview", run ? (plan?.workspace ? "done" : "skipped") : "waiting", run && !plan?.workspace ? "One page, no preview" : null));
+  }
+
+  // The one choice
+  const fills = Object.keys(obj(plan?.fill) ?? {}).length + Object.keys(obj(plan?.replace) ?? {}).length;
+  if (run) {
+    out.push(step("choice", "Your tables", fills > 0 ? "done" : "skipped",
+      fills > 0 ? `${fills} of yours ${fills === 1 ? "is" : "are"} filled or replaced` : plan?.workspace ? "Nothing of yours is touched" : "Not needed"));
+  } else if (card) {
+    out.push(step("choice", "Your tables", input.starting ? "working" : "needs_you",
+      input.startRefused ?? (input.starting ? "Starting the import" : `${card.proposals.length} of yours match`)));
+  } else if (look?.phase === "finished") {
+    out.push(step("choice", "Your tables", input.starting ? "working" : "skipped", input.starting ? "Starting the import" : input.startRefused ?? "Nothing of yours is touched"));
+  } else {
+    out.push(step("choice", "Your tables", look?.phase === "stopped" ? "skipped" : "waiting", look?.phase === "stopped" ? "The preview stopped" : null));
+  }
+
+  // The import's stages
+  const finished = run?.phase === "finished";
+  const stopped = run?.phase === "stopped" || run?.phase === "cancelled";
+  const at = finished ? IMPORT_STAGES.length : input.stageIndex;
+  const report = run?.report?.kind === "import" ? run.report : null;
+  IMPORT_STAGES.forEach((stage, index) => {
+    const seen = input.remembered[index] ?? null;
+    if (!run || at < 0 || index > at) {
+      // Not reached. A run that is working but has said no stage yet is on its first one.
+      const first = run != null && !finished && !stopped && at < 0 && index === 0 && run.phase === "working";
+      const note = first ? run.sample?.detail ?? null : null;
+      out.push(step(stage.id, stage.label, first ? "working" : "waiting", note, null, null, first && run.sample?.waiting === true));
+      return;
+    }
+    if (index < at) {
+      const word = OPTIONAL_STAGE_WORDS[stage.id];
+      const counted = word && report ? report.counts.some((c) => c.label.toLowerCase().includes(word) && c.count > 0) : true;
+      if (finished && word && !seen && !counted) {
+        out.push(step(stage.id, stage.label, "skipped", `No ${word}s to bring`));
+        return;
+      }
+      out.push(step(stage.id, stage.label, "done", null, seen?.total ?? seen?.current ?? null, null));
+      return;
+    }
+    // index === at: the active stage
+    if (stopped) {
+      out.push(step(stage.id, stage.label, "stopped", run.stoppedBecause, seen?.current ?? null, seen?.total ?? null));
+      return;
+    }
+    const resuming = run.phase === "resuming";
+    const held = resuming || run.sample?.waiting === true || run.phase === "paused" || run.phase === "sleeping";
+    const live = run.sample?.stageIndex === index ? run.sample : null;
+    out.push(step(stage.id, stage.label, run.phase === "needs_you" ? "needs_you" : "working",
+      resuming ? RESUMING_WORDS : held ? run.sample?.detail ?? (run.phase === "paused" ? "Paused" : "Waiting") : live?.detail ?? null,
+      live?.current ?? seen?.current ?? null, live?.total ?? seen?.total ?? null, held));
+  });
+  return out;
+}
+
+/** The finished output of a look run (its one `import` step): the preview's answer, a start's answer. */
+export function lookOutputOf(run: WorkflowRunState | null): Record<string, unknown> | null {
+  if (!run) return null;
+  return nodeInvocation(run, "import")?.output ?? null;
+}
+
+/** The words for one choice key in the ONE question. */
+export const CHOICE_WORDS: Record<string, string> = {
+  new: "New table",
+  fill: "Fill yours",
+  replace: "Replace yours",
+  fill_overwrite: "Fill, Notion wins",
+  update: "Update",
+};

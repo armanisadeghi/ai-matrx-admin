@@ -60,7 +60,7 @@ describe("a card rejoining its run after a refresh", () => {
     ratchet = advanceRatchet(ratchet, view.sample, false);
     // The first painted point is the run's real point: stage 4 (Rows), 200 of 431 into it.
     expect(ratchet.stageIndex).toBe(4);
-    expect(ratchet.fraction).toBeCloseTo((4 + 200 / 431) / 7, 5);
+    expect(ratchet.fraction).toBeCloseTo((4 + 200 / 431) / 9, 5);
 
     // New live activity after the rejoin still only moves the bar forward.
     state = reducer(state, ev(6, { event: "node_progress", node_id: "import", message: "columns: Players", current: 1, total: 4, ts: "2026-10-19T10:01:40Z" }, false));

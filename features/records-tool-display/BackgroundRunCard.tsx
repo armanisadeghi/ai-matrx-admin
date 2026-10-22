@@ -46,6 +46,7 @@ import {
   RATCHET_START,
   STATUS_WORD,
   advanceRatchet,
+  isNotionJob,
   readBackgroundRun,
   whatToDoWhenStopped,
   workflowStages,
@@ -62,6 +63,8 @@ import {
 /** At most this many marks in the stage row; longer paths fold into "+N". */
 const STAGE_STRIP_MAX = 7;
 import { tableHref } from "./readRecordsAnswer";
+import { NotionJobSteps } from "./NotionJobSteps";
+import { useRejoinResumedRun } from "./useRejoinResumedRun";
 
 const BADGE_TONE: Record<BackgroundRunPhase, BadgeTone> = {
   opening: "neutral",
@@ -70,6 +73,7 @@ const BADGE_TONE: Record<BackgroundRunPhase, BadgeTone> = {
   needs_you: "neutral",
   sleeping: "neutral",
   paused: "neutral",
+  resuming: "neutral",
   finished: "success",
   stopped: "destructive",
   cancelled: "neutral",
@@ -82,6 +86,7 @@ const BAR_TONE: Record<BackgroundRunPhase, ProgressTone> = {
   needs_you: "default",
   sleeping: "default",
   paused: "default",
+  resuming: "default",
   finished: "success",
   stopped: "destructive",
   cancelled: "default",
@@ -124,6 +129,8 @@ const WORK_PHASE: Record<BackgroundRunPhase, BackgroundWorkPhase> = {
   needs_you: "needs_you",
   sleeping: "scheduled",
   paused: "needs_you",
+  // a release cancelled it and the sweep resumes it: still working, never gone from the dock (lane UI1)
+  resuming: "working",
   finished: "done",
   stopped: "failed",
   cancelled: "done",
@@ -148,6 +155,9 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
   const run = useAppSelector(selectRunState(runId));
   const openRunWindow = useOpenWorkflowRunWindow();
   const view = readBackgroundRun(run, hint);
+  // A whole-Notion import (its preview, its start, or the import itself) is ONE list of steps (lane UI1).
+  const job = isNotionJob(view, run?.input ?? null);
+  useRejoinResumedRun(runId, view.phase === "resuming");
   const isImport = view.kind === "import";
   const isWorkflow = view.kind === "workflow";
   const isLook = view.kind === "look";
@@ -174,7 +184,9 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
   const elapsedMs = over ? (startedMs != null && endedMs != null ? endedMs - startedMs : null) : startedMs != null ? liveMs : null;
   const quietMs = useElapsedSince(view.phase === "working" ? isoMs(view.lastMovedAt) : null);
 
-  const title = isLook
+  const title = job && isLook
+    ? "Notion import"
+    : isLook
     ? view.report?.kind === "look" ? view.report.title : view.name ?? "Looking at your Notion"
     : isWorkflow
     ? name ? `Workflow · ${name}` : "Workflow run"
@@ -254,6 +266,15 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
         </Button>
       </header>
 
+      {job ? (
+        <NotionJobSteps
+          run={run}
+          runId={runId}
+          view={view}
+          stageIndex={ratchet.stageIndex}
+          renderReport={(done) => (done.report?.kind === "import" ? <ImportReportView report={done.report} /> : null)}
+        />
+      ) : <>
       {isImport || isWorkflow ? (
         <div className="min-h-6">
           {staged ? (
@@ -291,9 +312,11 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
         ) : null}
       </div>
 
+      </>}
+
       {view.phase === "stopped" ? <StoppedNote kind={view.kind} sentence={view.stoppedBecause} /> : null}
-      {view.report?.kind === "look" && view.phase === "finished" ? <LookReportView report={view.report} /> : null}
-      {view.report?.kind === "import" && view.phase === "finished" ? <ImportReportView report={view.report} /> : null}
+      {!job && view.report?.kind === "look" && view.phase === "finished" ? <LookReportView report={view.report} /> : null}
+      {!job && view.report?.kind === "import" && view.phase === "finished" ? <ImportReportView report={view.report} /> : null}
       {view.report?.kind === "copy" && over ? <CopyReportView report={view.report} /> : null}
       {view.report?.kind === "workflow" && view.phase === "finished" ? <WorkflowReportView report={view.report} /> : null}
       </CardContent>

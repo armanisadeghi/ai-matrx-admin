@@ -74,7 +74,7 @@ describe("the progress line", () => {
   it("names the importer's stage and keeps its detail", () => {
     expect(readProgressMessage("import", "reading: FULFILLMENT WORKFLOW")).toEqual({ stageIndex: 0, detail: "FULFILLMENT WORKFLOW" });
     expect(readProgressMessage("import", "columns: Players · Team")).toEqual({ stageIndex: 3, detail: "Players · Team" });
-    expect(readProgressMessage("import", "report: 1")).toEqual({ stageIndex: 6, detail: "1" });
+    expect(readProgressMessage("import", "report: 1")).toEqual({ stageIndex: 8, detail: "1" });
   });
 
   it("the file stage sits between reading and tables, and moves the bar only within its own share", () => {
