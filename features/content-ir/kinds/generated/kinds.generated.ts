@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1693 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1714 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "27e2d25565dc";
+export const KIND_REGISTRY_FINGERPRINT = "d5ba16a4a3b3";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -3846,6 +3846,84 @@ export interface EditError {
    */
   __kind?: string;
   message: string;
+}
+
+/**
+ * * From kind `education_gain_pair`.
+ */
+export interface EducationGainRow {
+  id: string;
+  phase: "baseline" | "post";
+  /**
+   * 0..1.
+   */
+  score: number;
+  __kind?: string;
+  subject: string;
+  takenAt: string;
+  subjectLabel?: string | null;
+}
+
+/**
+ * * From kind `education_spoken_grade`.
+ */
+export interface EducationGradeVerdict {
+  __kind?: string;
+  correct: boolean;
+  partial: boolean;
+  explanation: string;
+  misconception: string | null;
+}
+
+/**
+ * * From kind `education_plan_day`.
+ */
+export interface EducationPlanBlock {
+  id: string;
+  label: string;
+  __kind?: string;
+  day_id: string | null;
+  method: string | null;
+  status: string;
+  version: number;
+  day_date: string;
+  rationale: string | null;
+  target_kind: string;
+  estimated_items: number | null;
+  estimated_minutes: number;
+}
+
+/**
+ * * From kind `education_spoken_grade`.
+ */
+export interface EducationPronunciation {
+  notes: string;
+  __kind?: string;
+  fluency: number;
+  prosody: number;
+  accuracy: number;
+  intelligibility: number;
+}
+
+/**
+ * * From kind `education_practice_scorecard`.
+ */
+export interface EducationPronunciationRollup {
+  __kind?: string;
+  fluency: number;
+  prosody: number;
+  accuracy: number;
+  intelligibility: number;
+}
+
+/**
+ * * From kind `education_spoken_grade`.
+ */
+export interface EducationSpokenRubric {
+  __kind?: string;
+  clarity: number;
+  accuracy: number;
+  completeness: number;
 }
 
 /**
@@ -11781,6 +11859,15 @@ export interface SwipeItem {
    * More label/value lines under the text.
    */
   details?: SwipeDetail[];
+  /**
+   * Ask this card only when an EARLIER card was answered a certain way, e.g. {"item": "q1", "is": "Yes"} or {"item": 2, "is": ["A", "B"]} or {"item": "q3", "is_not": "No"}; combine with {"all": [...]}, {"any": [...]}, {"not": {...}}. "item" is an earlier card's id, its position (1-based) or its exact text; answers are its choices' words (or a direction). Omit for a card always asked.
+   */
+  show_if?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | unknown[] | null;
   /**
    * The direction this item leans to; omit when there is no suggestion.
    */
@@ -29531,6 +29618,22 @@ export interface EducationVoiceTutorOffer {
 }
 
 /**
+ * Week-over-week accuracy.
+ *  *
+ *  * Kind `education_accuracy_trend` (registry v1).
+ */
+export interface EducationAccuracyTrend {
+  weeks: number;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_accuracy_trend";
+  priorPct: number;
+  direction: "improving" | "flat" | "declining";
+  recentPct: number;
+}
+
+/**
  * The learner's active study plan as the screen holds it (``education.study_plan``).
  *  *
  *  * Kind `education_active_plan` (registry v1).
@@ -29582,6 +29685,24 @@ export interface EducationDeckChoice {
 }
 
 /**
+ * One subject's baseline and post measurement.
+ *  *
+ *  * Kind `education_gain_pair` (registry v1).
+ */
+export interface EducationGainPair {
+  post: EducationGainRow;
+  delta: number;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_gain_pair";
+  subject: string;
+  baseline: EducationGainRow;
+  subjectLabel: string;
+  normalizedGain: number | null;
+}
+
+/**
  * What the learner is about to generate on an audio-study or memory-aid screen.
  *  *
  *  * Kind `education_generation_request` (registry v1).
@@ -29614,6 +29735,303 @@ export interface EducationGenerationRequest {
 }
 
 /**
+ * One step of a graded worked solution (``GradeStep``).
+ *  *
+ *  * Kind `education_grade_step` (registry v1).
+ */
+export interface EducationGradeStep {
+  note: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_grade_step";
+  /**
+   * correct, partial or incorrect.
+   */
+  status: string;
+  stepLabel: string;
+}
+
+/**
+ * The same totals for one study mode.
+ *  *
+ *  * Kind `education_mode_stats` (registry v1).
+ */
+export interface EducationModeStats {
+  label: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_mode_stats";
+  dueNow: number;
+  studied: number;
+  itemType: string;
+  learning: number;
+  mastered: number;
+  bestStreak: number;
+  struggling: number;
+  accuracyPct: number | null;
+  totalAttempts: number;
+  correctAttempts: number;
+}
+
+/**
+ * Cross-mode study totals.
+ *  *
+ *  * Kind `education_overall_stats` (registry v1).
+ */
+export interface EducationOverallStats {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_overall_stats";
+  dueNow: number;
+  studied: number;
+  learning: number;
+  mastered: number;
+  bestStreak: number;
+  struggling: number;
+  accuracyPct: number | null;
+  totalAttempts: number;
+  correctAttempts: number;
+}
+
+/**
+ * One day of the active plan with its blocks.
+ *  *
+ *  * Kind `education_plan_day` (registry v1).
+ */
+export interface EducationPlanDay {
+  id: string;
+  date: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_plan_day";
+  blocks: EducationPlanBlock[];
+  rationale: string | null;
+  is_rest_day: boolean;
+  target_minutes: number;
+}
+
+/**
+ * The active plan's block rollup.
+ *  *
+ *  * Kind `education_plan_progress` (registry v1).
+ */
+export interface EducationPlanProgress {
+  done: number;
+  total: number;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_plan_progress";
+  overdue: number;
+  pending: number;
+  skipped: number;
+}
+
+/**
+ * The plan form as the learner has filled it.
+ *  *
+ *  * Kind `education_plan_setup` (registry v1).
+ */
+export interface EducationPlanSetup {
+  title: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_plan_setup";
+  exam_date: string;
+  /**
+   * Weekdays off, 0 = Sunday.
+   */
+  rest_days: number[];
+  daily_minutes: number;
+  daily_item_cap: number | null;
+}
+
+/**
+ * The prompt on screen, without its reference answer or rubric.
+ *  *
+ *  * Kind `education_practice_current_prompt` (registry v1).
+ */
+export interface EducationPracticeCurrentPrompt {
+  id: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_practice_current_prompt";
+  prompt: string;
+  confidence: string;
+  focus_area: string;
+}
+
+/**
+ * One kind of spoken practice the Oral Practice screen offers.
+ *  *
+ *  * Kind `education_practice_mode` (registry v1).
+ */
+export interface EducationPracticeMode {
+  mode: string;
+  label: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_practice_mode";
+  persona: string;
+  tagline: string;
+  focus_label: string;
+  offers_deck_grounding: boolean;
+}
+
+/**
+ * One designed spoken prompt WITH its reference answer and rubric.
+ *  *
+ *  * Kind `education_practice_prompt` (registry v1).
+ */
+export interface EducationPracticePrompt {
+  id: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_practice_prompt";
+  prompt: string;
+  rubric: string;
+  confidence: string;
+  focus_area: string;
+  reference_answer: string;
+}
+
+/**
+ * One graded spoken answer.
+ *  *
+ *  * Kind `education_practice_result` (registry v1).
+ */
+export interface EducationPracticeResult {
+  /**
+   * 0..1.
+   */
+  score: number;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_practice_result";
+  /**
+   * correct, partial, incorrect or skipped.
+   */
+  result: string;
+  missing: string[];
+  prompt_id: string;
+  transcript: string;
+}
+
+/**
+ * The end-of-session rollup the summary screen shows.
+ *  *
+ *  * Kind `education_practice_scorecard` (registry v1).
+ */
+export interface EducationPracticeScorecard {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_practice_scorecard";
+  graded: number;
+  strong: number;
+  answered: number;
+  average_score_pct: number | null;
+  /**
+   * Percent per delivery dimension; only when delivery was scored.
+   */
+  pronunciation_rollup?: EducationPronunciationRollup | null;
+}
+
+/**
+ * The designed spoken session's header.
+ *  *
+ *  * Kind `education_practice_session_plan` (registry v1).
+ */
+export interface EducationPracticeSessionPlan {
+  intro: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_practice_session_plan";
+  prompt_count: number;
+  session_title: string;
+}
+
+/**
+ * The Oral Practice setup form as the learner has filled it.
+ *  *
+ *  * Kind `education_practice_setup` (registry v1).
+ */
+export interface EducationPracticeSetup {
+  mode: string;
+  count: number;
+  focus: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_practice_setup";
+  /**
+   * The grounding deck's id; empty when none is chosen.
+   */
+  deck_id: string;
+  difficulty: string;
+  /**
+   * Material the learner pasted; empty when none.
+   */
+  source_text: string;
+}
+
+/**
+ * One grounded observation from the progress narrator.
+ *  *
+ *  * Kind `education_progress_insight` (registry v1).
+ */
+export interface EducationProgressInsight {
+  title: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_progress_insight";
+  detail: string;
+  severity: "good" | "watch" | "urgent";
+}
+
+/**
+ * One prioritized next action from the progress narrator.
+ *  *
+ *  * Kind `education_progress_recommendation` (registry v1).
+ */
+export interface EducationProgressRecommendation {
+  why: string;
+  topic: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_progress_recommendation";
+  action: string;
+  targetKind: "review" | "weak_area" | "learn" | "quiz" | "practice_test" | null;
+}
+
+/**
+ * The closing review of a study session.
+ *  *
+ *  * Kind `education_session_review` (registry v1).
+ */
+export interface EducationSessionReview {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_session_review";
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+}
+
+/**
  * The open flashcard set's details as the set, study or editor screen holds them.
  *  *
  *  * Kind `education_set_details` (registry v1).
@@ -29629,6 +30047,68 @@ export interface EducationSetDetails {
   difficulty?: string | null;
   visibility?: string | null;
   description?: string | null;
+}
+
+/**
+ * The grade for one spoken answer (``SpokenGrade``).
+ *  *
+ *  * Kind `education_spoken_grade` (registry v1).
+ */
+export interface EducationSpokenGrade {
+  /**
+   * 0..1.
+   */
+  score: number;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_spoken_grade";
+  rubric: EducationSpokenRubric;
+  missing: string[];
+  verdict: EducationGradeVerdict;
+  transcript: string;
+  /**
+   * Delivery scores; null on a content-only drill.
+   */
+  pronunciation: EducationPronunciation | null;
+}
+
+/**
+ * One study goal as the planner ranks it.
+ *  *
+ *  * Kind `education_study_goal` (registry v1).
+ */
+export interface EducationStudyGoal {
+  id: string;
+  title: string;
+  topic: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_study_goal";
+  status: string;
+  days_until: number | null;
+  target_date: string | null;
+  matched_items: number;
+  avg_mastery_pct: number | null;
+  struggling_count: number;
+}
+
+/**
+ * How well the learner knows one topic.
+ *  *
+ *  * Kind `education_topic_stat` (registry v1).
+ */
+export interface EducationTopicStat {
+  count: number;
+  topic: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_topic_stat";
+  answered?: number | null;
+  masteryPct: number;
+  struggling: number;
 }
 
 /**
@@ -58104,7 +58584,7 @@ export interface SwipeCollection {
 /**
  * A deck of items the person answers one at a time by swiping (or the edge buttons, or the keys).
  *  *
- *  * Kind `swipe_deck` (registry v3).
+ *  * Kind `swipe_deck` (registry v4).
  */
 export interface SwipeDeck {
   /**
@@ -66977,10 +67457,31 @@ export type GeneratedKindSlug =
   | "education.study_pack_v2.offer"
   | "education.tutor_message.offer"
   | "education.voice_tutor.offer"
+  | "education_accuracy_trend"
   | "education_active_plan"
   | "education_deck_choice"
+  | "education_gain_pair"
   | "education_generation_request"
+  | "education_grade_step"
+  | "education_mode_stats"
+  | "education_overall_stats"
+  | "education_plan_day"
+  | "education_plan_progress"
+  | "education_plan_setup"
+  | "education_practice_current_prompt"
+  | "education_practice_mode"
+  | "education_practice_prompt"
+  | "education_practice_result"
+  | "education_practice_scorecard"
+  | "education_practice_session_plan"
+  | "education_practice_setup"
+  | "education_progress_insight"
+  | "education_progress_recommendation"
+  | "education_session_review"
   | "education_set_details"
+  | "education_spoken_grade"
+  | "education_study_goal"
+  | "education_topic_stat"
   | "electronics_intake_analysis"
   | "email_candidates"
   | "email_verdict"
@@ -68673,10 +69174,31 @@ export interface KindPayloadBySlug {
   "education.study_pack_v2.offer": EducationStudyPackV2Offer;
   "education.tutor_message.offer": EducationTutorMessageOffer;
   "education.voice_tutor.offer": EducationVoiceTutorOffer;
+  "education_accuracy_trend": EducationAccuracyTrend;
   "education_active_plan": EducationActivePlan;
   "education_deck_choice": EducationDeckChoice;
+  "education_gain_pair": EducationGainPair;
   "education_generation_request": EducationGenerationRequest;
+  "education_grade_step": EducationGradeStep;
+  "education_mode_stats": EducationModeStats;
+  "education_overall_stats": EducationOverallStats;
+  "education_plan_day": EducationPlanDay;
+  "education_plan_progress": EducationPlanProgress;
+  "education_plan_setup": EducationPlanSetup;
+  "education_practice_current_prompt": EducationPracticeCurrentPrompt;
+  "education_practice_mode": EducationPracticeMode;
+  "education_practice_prompt": EducationPracticePrompt;
+  "education_practice_result": EducationPracticeResult;
+  "education_practice_scorecard": EducationPracticeScorecard;
+  "education_practice_session_plan": EducationPracticeSessionPlan;
+  "education_practice_setup": EducationPracticeSetup;
+  "education_progress_insight": EducationProgressInsight;
+  "education_progress_recommendation": EducationProgressRecommendation;
+  "education_session_review": EducationSessionReview;
   "education_set_details": EducationSetDetails;
+  "education_spoken_grade": EducationSpokenGrade;
+  "education_study_goal": EducationStudyGoal;
+  "education_topic_stat": EducationTopicStat;
   "electronics_intake_analysis": ElectronicsIntakeAnalysis;
   "email_candidates": EmailCandidates;
   "email_verdict": EmailVerdict;
@@ -70373,10 +70895,31 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "education.study_pack_v2.offer",
   "education.tutor_message.offer",
   "education.voice_tutor.offer",
+  "education_accuracy_trend",
   "education_active_plan",
   "education_deck_choice",
+  "education_gain_pair",
   "education_generation_request",
+  "education_grade_step",
+  "education_mode_stats",
+  "education_overall_stats",
+  "education_plan_day",
+  "education_plan_progress",
+  "education_plan_setup",
+  "education_practice_current_prompt",
+  "education_practice_mode",
+  "education_practice_prompt",
+  "education_practice_result",
+  "education_practice_scorecard",
+  "education_practice_session_plan",
+  "education_practice_setup",
+  "education_progress_insight",
+  "education_progress_recommendation",
+  "education_session_review",
   "education_set_details",
+  "education_spoken_grade",
+  "education_study_goal",
+  "education_topic_stat",
   "electronics_intake_analysis",
   "email_candidates",
   "email_verdict",
