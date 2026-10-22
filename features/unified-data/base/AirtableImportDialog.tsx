@@ -9,6 +9,7 @@
 import { Button, Field } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState } from "react";
 
+import { countedKind } from "@/features/spaces/io/countedKind";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { createVaultItem } from "@/features/secrets/vault-service";
@@ -97,7 +98,7 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
         <DialogTitle>Bring in an Airtable base</DialogTitle>
         {report ? (
           <div className="flex flex-col gap-2 text-sm" data-airtable-report="">
-            <p>{Object.entries(report.came_over).map(([k, v]) => `${v} ${k}`).join(" · ")}</p>
+            <p>{Object.entries(report.came_over).map(([k, v]) => countedKind(v, k)).join(" · ")}</p>
             {report.came_with_a_difference.length ? <p className="text-xs text-muted-foreground">Came with a difference: {report.came_with_a_difference.length}. {report.came_with_a_difference.slice(0, 3).map((x) => x.item).join("; ")}</p> : null}
             {report.not_carried.length ? <p className="text-xs text-muted-foreground">Not carried: {report.not_carried.map((x) => `${x.kind} (${x.item})`).join("; ")}</p> : null}
             <div className="flex justify-end"><Button variant="primary" onClick={onClose}>Done</Button></div>
