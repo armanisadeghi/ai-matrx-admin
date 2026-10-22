@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0587",
-  "version": 2,
+  "version": 3,
   "title": "Coworking Space",
   "description": "Members and tours, desks and offices, meeting-room credits and front-desk tickets.",
   "forWho": "Coworking operators and shared office managers",
@@ -276,7 +276,7 @@
         "Tannery Row"
       ]
     },
-    "version": 2,
+    "version": 3,
     "tables": [
       {
         "token": "member",
@@ -2369,7 +2369,25 @@
                   "tour_at": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "monthly_fee",
+                  "hours_included",
+                  "hours_used",
+                  "overage",
+                  "overage_fee",
+                  "start_on",
+                  "phone",
+                  "email",
+                  "owner",
+                  "assigned_to",
+                  "cycle_btn",
+                  "take_btn",
+                  "mail_btn",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "memb-next7",
@@ -2384,7 +2402,25 @@
                 },
                 "filters": {
                   "status": "Tour booked"
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "monthly_fee",
+                  "hours_included",
+                  "hours_used",
+                  "overage",
+                  "overage_fee",
+                  "start_on",
+                  "phone",
+                  "email",
+                  "owner",
+                  "assigned_to",
+                  "cycle_btn",
+                  "take_btn",
+                  "mail_btn",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "memb-notice",
@@ -2393,7 +2429,25 @@
                 "icon": "LogOut",
                 "filters": {
                   "status": "Notice given"
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "monthly_fee",
+                  "hours_included",
+                  "hours_used",
+                  "overage",
+                  "overage_fee",
+                  "start_on",
+                  "phone",
+                  "email",
+                  "owner",
+                  "assigned_to",
+                  "cycle_btn",
+                  "take_btn",
+                  "mail_btn",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "memb-mine",
@@ -2402,6 +2456,24 @@
                 "icon": "User",
                 "me": [
                   "assigned_to"
+                ],
+                "hiddenFields": [
+                  "seats",
+                  "monthly_fee",
+                  "hours_included",
+                  "hours_used",
+                  "overage",
+                  "overage_fee",
+                  "start_on",
+                  "phone",
+                  "email",
+                  "owner",
+                  "assigned_to",
+                  "cycle_btn",
+                  "take_btn",
+                  "mail_btn",
+                  "add_booking_btn",
+                  "added_at"
                 ]
               }
             ],
@@ -2469,7 +2541,15 @@
                 "icon": "DoorOpen",
                 "filters": {
                   "status": "Available"
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "price",
+                  "occupant",
+                  "per_seat",
+                  "hours_booked",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "spac-b"
@@ -3125,7 +3205,25 @@
                   "tour_at": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "monthly_fee",
+                  "hours_included",
+                  "hours_used",
+                  "overage",
+                  "overage_fee",
+                  "start_on",
+                  "phone",
+                  "email",
+                  "owner",
+                  "assigned_to",
+                  "cycle_btn",
+                  "take_btn",
+                  "mail_btn",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "l-this-week-s-tours"
@@ -3162,6 +3260,24 @@
                 "icon": "Table",
                 "me": [
                   "assigned_to"
+                ],
+                "hiddenFields": [
+                  "seats",
+                  "monthly_fee",
+                  "hours_included",
+                  "hours_used",
+                  "overage",
+                  "overage_fee",
+                  "start_on",
+                  "phone",
+                  "email",
+                  "owner",
+                  "assigned_to",
+                  "cycle_btn",
+                  "take_btn",
+                  "mail_btn",
+                  "add_booking_btn",
+                  "added_at"
                 ]
               }
             ],
@@ -3240,7 +3356,25 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Notice given"
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "monthly_fee",
+                  "hours_included",
+                  "hours_used",
+                  "overage",
+                  "overage_fee",
+                  "start_on",
+                  "phone",
+                  "email",
+                  "owner",
+                  "assigned_to",
+                  "cycle_btn",
+                  "take_btn",
+                  "mail_btn",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "l-leaving-soon"
@@ -3912,7 +4046,15 @@
                   ]
                 },
                 "id": "space-held-for-a-tour",
-                "icon": "List"
+                "icon": "List",
+                "hiddenFields": [
+                  "seats",
+                  "price",
+                  "occupant",
+                  "per_seat",
+                  "hours_booked",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "space-available"

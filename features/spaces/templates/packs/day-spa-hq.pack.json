@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0514",
-  "version": 9,
+  "version": 10,
   "title": "Day Spa HQ",
   "description": "For day spas: treatment rooms, therapists, gift cards, memberships and retail.",
   "forWho": "Day spas and wellness retreats",
@@ -2446,7 +2446,7 @@
         "Hollis Terrace"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2863,7 +2863,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-w",
@@ -2880,7 +2886,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-n",
@@ -2898,7 +2910,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "pay-b"
@@ -3487,7 +3505,13 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Failed"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l2"
@@ -3566,7 +3590,13 @@
                     "Unused",
                     "Part used"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "balance",
+                  "expires_on",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l6"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0553",
-  "version": 7,
+  "version": 8,
   "title": "Faith Community Operations Hub",
   "description": "For congregations: members, attendance, giving, care requests, rooms and volunteers.",
   "forWho": "Churches, temples, mosques and other faith communities",
@@ -3101,7 +3101,7 @@
         "Kestrel Avenue"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3299,7 +3299,24 @@
                     "Visitor",
                     "Exploring"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "people",
+                  "children",
+                  "groups",
+                  "giving",
+                  "serves",
+                  "joined_on",
+                  "shepherd",
+                  "care_open",
+                  "care_total",
+                  "btn_member",
+                  "btn_claim",
+                  "add_care",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hou-w",
@@ -3316,7 +3333,24 @@
                     "Visitor",
                     "Exploring"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "people",
+                  "children",
+                  "groups",
+                  "giving",
+                  "serves",
+                  "joined_on",
+                  "shepherd",
+                  "care_open",
+                  "care_total",
+                  "btn_member",
+                  "btn_claim",
+                  "add_care",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hou-n",
@@ -3334,7 +3368,24 @@
                     "Visitor",
                     "Exploring"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "people",
+                  "children",
+                  "groups",
+                  "giving",
+                  "serves",
+                  "joined_on",
+                  "shepherd",
+                  "care_open",
+                  "care_total",
+                  "btn_member",
+                  "btn_claim",
+                  "add_care",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hou-m",
@@ -3343,6 +3394,23 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "people",
+                  "children",
+                  "giving",
+                  "serves",
+                  "joined_on",
+                  "follow_up_on",
+                  "shepherd",
+                  "care_open",
+                  "care_total",
+                  "btn_member",
+                  "btn_claim",
+                  "add_care",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4632,7 +4700,24 @@
                     "Visitor",
                     "Exploring"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "people",
+                  "children",
+                  "giving",
+                  "serves",
+                  "joined_on",
+                  "follow_up_on",
+                  "shepherd",
+                  "care_open",
+                  "care_total",
+                  "btn_member",
+                  "btn_claim",
+                  "add_care",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dh-1"

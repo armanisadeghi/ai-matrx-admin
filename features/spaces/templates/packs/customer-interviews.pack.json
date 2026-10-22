@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0361",
-  "version": 7,
+  "version": 8,
   "title": "Customer Interview Notes",
   "description": "Product and success teams: log customer calls with themes, mood and follow-ups.",
   "forWho": "Product and customer success teams",
@@ -809,7 +809,7 @@
         "Piper Cove Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -885,7 +885,21 @@
                         },
                         "filters": {
                           "follow_up": true
-                        }
+                        },
+                        "hiddenFields": [
+                          "age",
+                          "segment",
+                          "stage",
+                          "themes",
+                          "sentiment",
+                          "follow_up",
+                          "recording",
+                          "takeaway",
+                          "logged_at",
+                          "edited_at",
+                          "followed_btn",
+                          "open_recording"
+                        ]
                       },
                       {
                         "id": "v-fw",
@@ -899,7 +913,21 @@
                         },
                         "filters": {
                           "follow_up": true
-                        }
+                        },
+                        "hiddenFields": [
+                          "age",
+                          "segment",
+                          "stage",
+                          "themes",
+                          "sentiment",
+                          "follow_up",
+                          "recording",
+                          "takeaway",
+                          "logged_at",
+                          "edited_at",
+                          "followed_btn",
+                          "open_recording"
+                        ]
                       },
                       {
                         "id": "v-30",
@@ -911,7 +939,21 @@
                             "relative": "past_days",
                             "n": 30
                           }
-                        }
+                        },
+                        "hiddenFields": [
+                          "age",
+                          "stage",
+                          "themes",
+                          "sentiment",
+                          "follow_up",
+                          "follow_up_by",
+                          "recording",
+                          "takeaway",
+                          "logged_at",
+                          "edited_at",
+                          "followed_btn",
+                          "open_recording"
+                        ]
                       }
                     ],
                     "activeViewId": "view-chart"
@@ -1092,7 +1134,21 @@
                 "icon": "Flag",
                 "filters": {
                   "follow_up": true
-                }
+                },
+                "hiddenFields": [
+                  "age",
+                  "stage",
+                  "themes",
+                  "sentiment",
+                  "follow_up",
+                  "follow_up_by",
+                  "recording",
+                  "takeaway",
+                  "logged_at",
+                  "edited_at",
+                  "followed_btn",
+                  "open_recording"
+                ]
               }
             ],
             "activeViewId": "v-t"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0456",
-  "version": 8,
+  "version": 9,
   "title": "Architecture Firm Studio",
   "description": "For architects: projects by phase, fees and hours, drawing sets, RFIs and submittals.",
   "forWho": "Small and mid-sized architecture practices",
@@ -2935,7 +2935,7 @@
         "Quarry Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3213,7 +3213,34 @@
                     "Construction documents",
                     "Permitting"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "fee_basis",
+                  "construction",
+                  "billed_pct",
+                  "hours_budget",
+                  "hours_logged",
+                  "hours_pct",
+                  "starts_on",
+                  "permit_no",
+                  "complete_on",
+                  "handed_over_on",
+                  "days_to_permit",
+                  "rfi_waiting",
+                  "rfi_unclosed",
+                  "subs_waiting",
+                  "sets_issued",
+                  "sets_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_project",
+                  "add_rfi",
+                  "add_submittal",
+                  "add_drawing_set"
+                ]
               },
               {
                 "id": "pro-w",
@@ -3233,7 +3260,34 @@
                     "Construction documents",
                     "Permitting"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "fee_basis",
+                  "construction",
+                  "billed_pct",
+                  "hours_budget",
+                  "hours_logged",
+                  "hours_pct",
+                  "starts_on",
+                  "permit_no",
+                  "complete_on",
+                  "handed_over_on",
+                  "days_to_permit",
+                  "rfi_waiting",
+                  "rfi_unclosed",
+                  "subs_waiting",
+                  "sets_issued",
+                  "sets_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_project",
+                  "add_rfi",
+                  "add_submittal",
+                  "add_drawing_set"
+                ]
               },
               {
                 "id": "pro-n",
@@ -3254,7 +3308,34 @@
                     "Construction documents",
                     "Permitting"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "fee_basis",
+                  "construction",
+                  "billed_pct",
+                  "hours_budget",
+                  "hours_logged",
+                  "hours_pct",
+                  "starts_on",
+                  "permit_no",
+                  "complete_on",
+                  "handed_over_on",
+                  "days_to_permit",
+                  "rfi_waiting",
+                  "rfi_unclosed",
+                  "subs_waiting",
+                  "sets_issued",
+                  "sets_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_project",
+                  "add_rfi",
+                  "add_submittal",
+                  "add_drawing_set"
+                ]
               },
               {
                 "id": "pro-m",
@@ -3263,6 +3344,33 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "fee",
+                  "construction",
+                  "billed_pct",
+                  "hours_budget",
+                  "hours_logged",
+                  "hours_pct",
+                  "starts_on",
+                  "permit_on",
+                  "permit_no",
+                  "complete_on",
+                  "handed_over_on",
+                  "days_to_permit",
+                  "rfi_waiting",
+                  "rfi_unclosed",
+                  "subs_waiting",
+                  "sets_issued",
+                  "sets_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_project",
+                  "add_rfi",
+                  "add_submittal",
+                  "add_drawing_set"
                 ]
               }
             ],
@@ -3350,7 +3458,16 @@
                     "Drafting",
                     "Internal review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sheets",
+                  "issued_on",
+                  "project",
+                  "drafter",
+                  "owner_me",
+                  "added_at",
+                  "btn_release_set"
+                ]
               },
               {
                 "id": "dra-w",
@@ -3368,7 +3485,16 @@
                     "Drafting",
                     "Internal review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sheets",
+                  "issued_on",
+                  "project",
+                  "drafter",
+                  "owner_me",
+                  "added_at",
+                  "btn_release_set"
+                ]
               },
               {
                 "id": "dra-n",
@@ -3387,7 +3513,16 @@
                     "Drafting",
                     "Internal review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sheets",
+                  "issued_on",
+                  "project",
+                  "drafter",
+                  "owner_me",
+                  "added_at",
+                  "btn_release_set"
+                ]
               },
               {
                 "id": "dra-m",
@@ -3396,6 +3531,15 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "sheets",
+                  "issued_on",
+                  "project",
+                  "drafter",
+                  "owner_me",
+                  "added_at",
+                  "btn_release_set"
                 ]
               }
             ],
@@ -3711,7 +3855,12 @@
                   "worked_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "billable",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "tim-c"
@@ -4399,7 +4548,16 @@
                     "Drafting",
                     "Internal review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sheets",
+                  "issued_on",
+                  "project",
+                  "drafter",
+                  "owner_me",
+                  "added_at",
+                  "btn_release_set"
+                ]
               }
             ],
             "activeViewId": "vl2"

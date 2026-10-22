@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0459",
-  "version": 8,
+  "version": 9,
   "title": "Insurance Agency Desk",
   "description": "For insurance agents: policies, carriers, renewals, claims and commission statements.",
   "forWho": "Independent insurance agencies and brokers",
@@ -2475,7 +2475,7 @@
         "Chandler Plaza"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3545,7 +3545,14 @@
                     "Short paid",
                     "Expected"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "carrier",
+                  "expected",
+                  "received",
+                  "difference",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vcm"

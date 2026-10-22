@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0416",
-  "version": 7,
+  "version": 8,
   "title": "General Contractor Projects",
   "description": "For builders and remodelers: jobs, subs, permits, change orders, punch lists and closeout.",
   "forWho": "General contractors, remodelers and project managers",
@@ -2900,7 +2900,7 @@
         "Quarry Road"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3362,7 +3362,17 @@
                 },
                 "filters": {
                   "status": "Proposed"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "days_added",
+                  "decided_on",
+                  "status",
+                  "signed",
+                  "owner",
+                  "approved_btn",
+                  "rejected_btn"
+                ]
               },
               {
                 "id": "vs-over",
@@ -3376,7 +3386,17 @@
                 },
                 "filters": {
                   "status": "Proposed"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "days_added",
+                  "decided_on",
+                  "status",
+                  "signed",
+                  "owner",
+                  "approved_btn",
+                  "rejected_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -3424,6 +3444,16 @@
                 "icon": "List",
                 "me": [
                   "owner"
+                ],
+                "hiddenFields": [
+                  "amount",
+                  "days_added",
+                  "decided_on",
+                  "status",
+                  "signed",
+                  "owner",
+                  "approved_btn",
+                  "rejected_btn"
                 ]
               }
             ],
@@ -4231,7 +4261,17 @@
                 "layout": "list",
                 "filters": {
                   "status": "Proposed"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "days_added",
+                  "decided_on",
+                  "status",
+                  "signed",
+                  "owner",
+                  "approved_btn",
+                  "rejected_btn"
+                ]
               }
             ],
             "activeViewId": "d1"

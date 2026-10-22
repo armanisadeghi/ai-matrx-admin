@@ -51,6 +51,14 @@ describe("zero weight until engaged", () => {
     expect(chat).toEqual(["@ai-matrx/chat/canvas/workspace/side-chat-state"]);
   });
 
+  it("the stand-in doors import only the two tiny registries (no session, no composer)", () => {
+    const chat = staticImports(read("features/shell/frame-host/frameSideChatQueue.ts")).filter((s) => s.startsWith("@ai-matrx/chat"));
+    expect(chat.sort()).toEqual([
+      "@ai-matrx/chat/agents/components/chat/in-place-chat-host",
+      "@ai-matrx/chat/agents/redux/execution-system/instance-resources/remark-sink",
+    ]);
+  });
+
   it("the side chat and the canvas body each arrive through ONE dynamic import", () => {
     const impl = read("features/shell/frame-host/FrameHostImpl.tsx");
     expect(impl).toMatch(/import\("\.\/FrameSideChat"\)/);

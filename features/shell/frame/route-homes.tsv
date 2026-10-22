@@ -573,6 +573,8 @@ route	tree node	how found today	note
 /marketing/[brandId]/identity/media/sources	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/[brandId]/identity/messaging	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/[brandId]/identity/offerings	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
+/marketing/[brandId]/identity/session	BUSINESS › Marketing	linked from the brand page (under menu: Marketing)	brand session: one candidate card at a time
+/marketing/[brandId]/identity/story	BUSINESS › Marketing	linked from the brand identity page (under menu: Marketing)	the owner's story: a few questions answered by voice or typing
 /marketing/[brandId]/identity/strategy	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/[brandId]/identity/voice	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/[brandId]/inbox	BUSINESS › Marketing	opened from a list (under menu: Marketing)	

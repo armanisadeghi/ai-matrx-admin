@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0357",
-  "version": 9,
+  "version": 10,
   "title": "Fundraising CRM",
   "description": "Startup founders: run an investor pipeline with rounds, updates and a cap table.",
   "forWho": "Startup founders",
@@ -2046,7 +2046,7 @@
         "Hollin Wharf"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2128,7 +2128,23 @@
                             "Diligence",
                             "Term sheet"
                           ]
-                        }
+                        },
+                        "hiddenFields": [
+                          "check_min",
+                          "check_max",
+                          "focus",
+                          "intro",
+                          "last_contact",
+                          "next_step",
+                          "probability",
+                          "interaction_count",
+                          "expected",
+                          "round",
+                          "email",
+                          "updated_at",
+                          "passed_btn",
+                          "add_interaction_btn"
+                        ]
                       },
                       {
                         "id": "v-n7",
@@ -2149,7 +2165,23 @@
                             "Diligence",
                             "Term sheet"
                           ]
-                        }
+                        },
+                        "hiddenFields": [
+                          "check_min",
+                          "check_max",
+                          "focus",
+                          "intro",
+                          "last_contact",
+                          "next_step",
+                          "probability",
+                          "interaction_count",
+                          "expected",
+                          "round",
+                          "email",
+                          "updated_at",
+                          "passed_btn",
+                          "add_interaction_btn"
+                        ]
                       },
                       {
                         "id": "v-wk",
@@ -2169,7 +2201,23 @@
                             "Diligence",
                             "Term sheet"
                           ]
-                        }
+                        },
+                        "hiddenFields": [
+                          "check_min",
+                          "check_max",
+                          "focus",
+                          "intro",
+                          "last_contact",
+                          "next_step",
+                          "probability",
+                          "interaction_count",
+                          "expected",
+                          "round",
+                          "email",
+                          "updated_at",
+                          "passed_btn",
+                          "add_interaction_btn"
+                        ]
                       },
                       {
                         "id": "v-mo",
@@ -2180,7 +2228,23 @@
                           "last_contact": {
                             "relative": "this_month"
                           }
-                        }
+                        },
+                        "hiddenFields": [
+                          "check_min",
+                          "check_max",
+                          "focus",
+                          "intro",
+                          "next_step",
+                          "next_step_on",
+                          "probability",
+                          "interaction_count",
+                          "expected",
+                          "round",
+                          "email",
+                          "updated_at",
+                          "passed_btn",
+                          "add_interaction_btn"
+                        ]
                       }
                     ],
                     "activeViewId": "view-chart"

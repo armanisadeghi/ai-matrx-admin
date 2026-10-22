@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0157",
-  "version": 10,
+  "version": 11,
   "title": "SEO Hub",
   "description": "SEO and content teams: research keywords, brief posts and track rankings.",
   "forWho": "SEO and content teams",
@@ -1410,7 +1410,7 @@
         "Switchback Road"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -1544,6 +1544,17 @@
                     "field": "rank",
                     "direction": "asc"
                   }
+                ],
+                "hiddenFields": [
+                  "volume",
+                  "difficulty",
+                  "priority",
+                  "rank",
+                  "rank_change",
+                  "target_url",
+                  "post_count",
+                  "track_btn",
+                  "open_target_url"
                 ]
               },
               {
@@ -1567,7 +1578,18 @@
                     "relative": "past_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "volume",
+                  "difficulty",
+                  "priority",
+                  "rank",
+                  "rank_change",
+                  "target_url",
+                  "post_count",
+                  "track_btn",
+                  "open_target_url"
+                ]
               }
             ],
             "activeViewId": "view-by-priority"
@@ -1704,7 +1726,19 @@
                     "Writing",
                     "Editing"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "length_words",
+                  "published_on",
+                  "writer",
+                  "views",
+                  "comments",
+                  "shares",
+                  "engagement",
+                  "created",
+                  "edited",
+                  "pub_btn"
+                ]
               },
               {
                 "id": "view-post-pub-month",
@@ -1715,7 +1749,19 @@
                   "publish_on": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "length_words",
+                  "published_on",
+                  "writer",
+                  "views",
+                  "comments",
+                  "shares",
+                  "engagement",
+                  "created",
+                  "edited",
+                  "pub_btn"
+                ]
               }
             ],
             "activeViewId": "view-board"

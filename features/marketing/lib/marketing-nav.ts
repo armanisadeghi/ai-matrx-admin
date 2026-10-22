@@ -538,12 +538,16 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
       {
         label: "CMS sites",
         href: "/cms",
+        // The main menu's Publish domain owns this destination (one destination, one domain).
+        navHidden: true,
         description: "Websites you build and publish here.",
         iconName: "Globe",
       },
       {
         label: "HTML pages",
         href: "/cms/html-pages",
+        // The main menu's Publish domain owns this destination (one destination, one domain).
+        navHidden: true,
         description: "Single published HTML pages.",
         iconName: "Code2",
       },
@@ -556,12 +560,16 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
       {
         label: "Podcast studio",
         href: "/podcast/studio",
+        // The main menu's Publish domain owns this destination (one destination, one domain).
+        navHidden: true,
         description: "Make a new podcast episode.",
         iconName: "Mic",
       },
       {
         label: "Artifacts",
         href: "/artifacts",
+        // The main menu's Publish domain owns this destination (one destination, one domain).
+        navHidden: true,
         description: "Pages and files agents made for you.",
         iconName: "Boxes",
       },

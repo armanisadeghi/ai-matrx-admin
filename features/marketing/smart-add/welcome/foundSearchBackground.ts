@@ -79,7 +79,7 @@ async function seedFor(user: User): Promise<LoginSeed> {
  * Start a round from the browser (the shared core, foundSearchStart.ts): a later round on new information, or the
  * retry when the sign-in's server start did not land.
  */
-export async function startFoundSearch(info: FoundSearchInfo = {}): Promise<void> {
+export async function startFoundSearch(info: FoundSearchInfo = {}, options: { asUnstarted?: boolean } = {}): Promise<void> {
   const dispatch = dispatchOf();
   await startFoundSearchWith(
     {
@@ -93,6 +93,7 @@ export async function startFoundSearch(info: FoundSearchInfo = {}): Promise<void
         startSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, { subject, organizationId, sourceFeature: "marketing", inputs }, "Identification could not start."),
     },
     info,
+    options,
   );
 }
 
@@ -150,6 +151,12 @@ export async function checkFoundSearch(): Promise<FoundCheck> {
     (subject) => lookupSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, subject, organizationId, "This session could not be read."),
     user.id,
   );
+  // Started on record, but no run exists (a start that died after the state was written, or a run that was never made):
+  // that is NOT "found nothing". Start it again (idempotent per subject) and keep watching; never settle it as empty.
+  if (runs.length === 0) {
+    await startFoundSearch({}, { asUnstarted: true });
+    return "running";
+  }
   if (runs.some((r) => !TERMINAL.includes(r.status))) return "running";
   const { verdict, seed } = await verdictFor(user, runs);
   const now = new Date().toISOString();

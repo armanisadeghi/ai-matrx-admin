@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0465",
-  "version": 9,
+  "version": 10,
   "title": "Boutique Hotel Desk",
   "description": "For innkeepers: rooms, reservations, housekeeping status, repairs, occupancy and ADR.",
   "forWho": "Boutique hotels, inns and bed and breakfasts",
@@ -2440,7 +2440,7 @@
         "Cobbler's Green"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2714,7 +2714,25 @@
                   "check_in": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "nights",
+                  "guests",
+                  "rate_plan",
+                  "rate",
+                  "total",
+                  "deposit",
+                  "balance",
+                  "requests",
+                  "arrival_time",
+                  "email",
+                  "room",
+                  "host",
+                  "owner_me",
+                  "added_at",
+                  "btn_check_in_guest",
+                  "btn_check_out_guest"
+                ]
               },
               {
                 "id": "res-dep",
@@ -2725,7 +2743,25 @@
                   "check_out": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "nights",
+                  "guests",
+                  "rate_plan",
+                  "rate",
+                  "total",
+                  "deposit",
+                  "balance",
+                  "requests",
+                  "arrival_time",
+                  "email",
+                  "room",
+                  "host",
+                  "owner_me",
+                  "added_at",
+                  "btn_check_in_guest",
+                  "btn_check_out_guest"
+                ]
               },
               {
                 "id": "res-arrtoday",
@@ -2736,7 +2772,25 @@
                   "check_in": {
                     "relative": "today"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "nights",
+                  "guests",
+                  "rate_plan",
+                  "rate",
+                  "total",
+                  "deposit",
+                  "balance",
+                  "requests",
+                  "arrival_time",
+                  "email",
+                  "room",
+                  "host",
+                  "owner_me",
+                  "added_at",
+                  "btn_check_in_guest",
+                  "btn_check_out_guest"
+                ]
               },
               {
                 "id": "res-deptoday",
@@ -2747,7 +2801,25 @@
                   "check_out": {
                     "relative": "today"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "nights",
+                  "guests",
+                  "rate_plan",
+                  "rate",
+                  "total",
+                  "deposit",
+                  "balance",
+                  "requests",
+                  "arrival_time",
+                  "email",
+                  "room",
+                  "host",
+                  "owner_me",
+                  "added_at",
+                  "btn_check_in_guest",
+                  "btn_check_out_guest"
+                ]
               },
               {
                 "id": "res-m",
@@ -2756,6 +2828,24 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "nights",
+                  "guests",
+                  "rate_plan",
+                  "rate",
+                  "total",
+                  "deposit",
+                  "balance",
+                  "requests",
+                  "arrival_time",
+                  "email",
+                  "room",
+                  "host",
+                  "owner_me",
+                  "added_at",
+                  "btn_check_in_guest",
+                  "btn_check_out_guest"
                 ]
               }
             ],
@@ -2844,7 +2934,17 @@
                     "To clean",
                     "Cleaning"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "linens",
+                  "restocked",
+                  "room",
+                  "cleaner",
+                  "owner_me",
+                  "added_at",
+                  "btn_passed_inspection"
+                ]
               },
               {
                 "id": "cle-w",
@@ -2861,7 +2961,17 @@
                     "To clean",
                     "Cleaning"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "linens",
+                  "restocked",
+                  "room",
+                  "cleaner",
+                  "owner_me",
+                  "added_at",
+                  "btn_passed_inspection"
+                ]
               },
               {
                 "id": "cle-n",
@@ -2879,7 +2989,17 @@
                     "To clean",
                     "Cleaning"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "linens",
+                  "restocked",
+                  "room",
+                  "cleaner",
+                  "owner_me",
+                  "added_at",
+                  "btn_passed_inspection"
+                ]
               },
               {
                 "id": "cle-m",
@@ -2888,6 +3008,16 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "minutes",
+                  "linens",
+                  "restocked",
+                  "room",
+                  "cleaner",
+                  "owner_me",
+                  "added_at",
+                  "btn_passed_inspection"
                 ]
               }
             ],
@@ -3274,7 +3404,25 @@
                   "check_in": {
                     "relative": "today"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "nights",
+                  "guests",
+                  "rate_plan",
+                  "rate",
+                  "total",
+                  "deposit",
+                  "balance",
+                  "requests",
+                  "arrival_time",
+                  "email",
+                  "room",
+                  "host",
+                  "owner_me",
+                  "added_at",
+                  "btn_check_in_guest",
+                  "btn_check_out_guest"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -3313,7 +3461,25 @@
                   "check_out": {
                     "relative": "today"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "nights",
+                  "guests",
+                  "rate_plan",
+                  "rate",
+                  "total",
+                  "deposit",
+                  "balance",
+                  "requests",
+                  "arrival_time",
+                  "email",
+                  "room",
+                  "host",
+                  "owner_me",
+                  "added_at",
+                  "btn_check_in_guest",
+                  "btn_check_out_guest"
+                ]
               }
             ],
             "activeViewId": "vl1"
@@ -3404,7 +3570,17 @@
                     "To clean",
                     "Cleaning"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "linens",
+                  "restocked",
+                  "room",
+                  "cleaner",
+                  "owner_me",
+                  "added_at",
+                  "btn_passed_inspection"
+                ]
               }
             ],
             "activeViewId": "vl3"

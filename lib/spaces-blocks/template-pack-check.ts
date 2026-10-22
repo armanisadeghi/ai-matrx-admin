@@ -596,6 +596,9 @@ function checkTokens(blocks: PackBlock[], path: string, w: TokenWorld, say: (at:
           for (const f of cardAmountFields(table.fields, v)) {
             say(`${vat}.hiddenFields`, `"${f.key}" (${f.label ?? f.key}) would show on every ${String(v.layout)} card as a bare amount, and ${f.why}. Add "${f.key}" to hiddenFields; keep an amount on a card only when the card's title says what it is (a cost line, a payout, a quote).`);
           }
+          for (const f of listBareNumberFields(table.fields, v)) {
+            say(`${vat}.hiddenFields`, `"${f.key}" (${f.label ?? f.key}) would show on every list row as a bare ${f.what} with no property name, so the reader cannot place it ("6 · 15 · $31,800.00"). Add "${f.key}" to hiddenFields. A list row reads on its own only with words (a status, a person, a name, a date); once hiddenFields is set every other property shows, so hide the rest you do not want on the row too.`);
+          }
           for (const key of cardStampFields(table.fields, v)) {
             say(`${vat}.hiddenFields`, `"${key}" is a created/edited stamp and would end every ${String(v.layout)} card as a date with no label. Add "${key}" to hiddenFields (the Properties menu can still show it).`);
           }
@@ -638,6 +641,32 @@ export function cardAmountFields(fields: ReadonlyArray<CardField>, view: Record<
     if (money.length > 1) return [{ ...f, why: "the card shows another amount beside it" }];
     if (f.parityType !== "currency") return [{ ...f, why: "it is a figure added up or looked up from other rows" }];
     if (STANDING_AMOUNT.test(String(f.label ?? f.key))) return [{ ...f, why: "it is a standing amount, not this card's own price" }];
+    return [];
+  });
+}
+
+const NUMBER_KINDS = ["number", "integer", "decimal", "currency", "percent"];
+/** A formula that answers in words (a literal as an IF result), not a number. */
+const formulaSaysWords = (f: CardField & { formula?: unknown }) => typeof f.formula === "string" && /,\s*"[^"]+"\s*[,)]/.test(f.formula);
+
+/**
+ * The numbers a LIST row would show that a reader cannot place. A list row (records-ui ListView) draws the title, then
+ * the property values on one line with no property names (the name is only a hover tooltip), and shows every property
+ * not in hiddenFields (with none saved: the first four filled ones). So "Install date passed" reads "6 · 15 · $31,800.00".
+ * A number, amount, percent, count, total, lookup or numeric formula has no words of its own; a status, name, person,
+ * choice or date does. Boards, galleries, calendars and timelines draw the same label-less values (cardAmountFields);
+ * a grid has column headers and a chart/form its own labels, so they are exempt.
+ */
+export function listBareNumberFields(fields: ReadonlyArray<CardField & { formula?: unknown }>, view: Record<string, unknown>): Array<CardField & { what: string }> {
+  if (view.layout !== "list") return [];
+  const rest = fields.slice(1).filter((f) => f.key !== view.groupField && String(f.parityType) !== "button");
+  const hidden = Array.isArray(view.hiddenFields) ? (view.hiddenFields as unknown[]) : null;
+  const shown = hidden ? rest.filter((f) => !hidden.includes(f.key)) : rest.slice(0, 4);
+  return shown.flatMap((f) => {
+    const kind = String(f.parityType);
+    if (NUMBER_KINDS.includes(kind)) return [{ ...f, what: kind === "currency" ? "amount" : "number" }];
+    if (kind === "rollup" || kind === "lookup") return [{ ...f, what: "total or count" }];
+    if (kind === "formula" && !formulaSaysWords(f)) return [{ ...f, what: "figure" }];
     return [];
   });
 }

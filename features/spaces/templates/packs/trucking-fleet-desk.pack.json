@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0571",
-  "version": 7,
+  "version": 8,
   "title": "Trucking Fleet Desk",
   "description": "Small carrier desk: loads and rate per mile, drivers' hours, maintenance, driver files.",
   "forWho": "Small trucking companies and owner-operator fleets",
@@ -2906,7 +2906,7 @@
         "Terminal Road"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3110,7 +3110,25 @@
                     "On a load",
                     "In the shop"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "miles",
+                  "driver",
+                  "loads_active",
+                  "revenue",
+                  "maint_open",
+                  "maint_cost",
+                  "net",
+                  "btn_shop",
+                  "btn_available",
+                  "btn_claim",
+                  "add_maint",
+                  "add_load",
+                  "owner_me",
+                  "revenue_live",
+                  "unbilled",
+                  "added_at"
+                ]
               },
               {
                 "id": "tru-w",
@@ -3128,7 +3146,25 @@
                     "On a load",
                     "In the shop"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "miles",
+                  "driver",
+                  "loads_active",
+                  "revenue",
+                  "maint_open",
+                  "maint_cost",
+                  "net",
+                  "btn_shop",
+                  "btn_available",
+                  "btn_claim",
+                  "add_maint",
+                  "add_load",
+                  "owner_me",
+                  "revenue_live",
+                  "unbilled",
+                  "added_at"
+                ]
               },
               {
                 "id": "tru-n",
@@ -3147,7 +3183,25 @@
                     "On a load",
                     "In the shop"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "miles",
+                  "driver",
+                  "loads_active",
+                  "revenue",
+                  "maint_open",
+                  "maint_cost",
+                  "net",
+                  "btn_shop",
+                  "btn_available",
+                  "btn_claim",
+                  "add_maint",
+                  "add_load",
+                  "owner_me",
+                  "revenue_live",
+                  "unbilled",
+                  "added_at"
+                ]
               },
               {
                 "id": "tru-m",
@@ -3156,6 +3210,24 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "miles",
+                  "driver",
+                  "loads_active",
+                  "revenue",
+                  "maint_open",
+                  "maint_cost",
+                  "net",
+                  "btn_shop",
+                  "btn_available",
+                  "btn_claim",
+                  "add_maint",
+                  "add_load",
+                  "owner_me",
+                  "revenue_live",
+                  "unbilled",
+                  "added_at"
                 ]
               }
             ],
@@ -3640,7 +3712,14 @@
                 "icon": "TriangleAlert",
                 "filters": {
                   "status": "Over a limit"
-                }
+                },
+                "hiddenFields": [
+                  "driving",
+                  "on_duty",
+                  "cycle_used",
+                  "cycle_left",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "hs-t"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0519",
-  "version": 9,
+  "version": 10,
   "title": "Subscription Box Business HQ",
   "description": "For subscription boxes: monthly editions, subscribers, renewals, failed charges, pauses.",
   "forWho": "Subscription box and curated gift businesses",
@@ -3201,7 +3201,7 @@
         "Dovecote Lane"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3673,7 +3673,14 @@
                     "Failed",
                     "Retrying"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "attempts",
+                  "decline",
+                  "added_at"
+                ]
               },
               {
                 "id": "chg-w",
@@ -3687,7 +3694,14 @@
                 },
                 "filters": {
                   "charge_status": "Scheduled"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "attempts",
+                  "decline",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "chg-b"
@@ -4323,7 +4337,14 @@
                     "Failed",
                     "Retrying"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "attempts",
+                  "decline",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "d-l1"

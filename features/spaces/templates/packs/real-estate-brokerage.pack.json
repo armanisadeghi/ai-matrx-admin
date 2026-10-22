@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 9,
+  "version": 10,
   "title": "Real Estate Brokerage",
   "description": "For realtors and brokers: leads, listings, contracts, contingency dates and commissions.",
   "forWho": "Real estate agents, brokers and transaction coordinators",
@@ -2395,7 +2395,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2649,7 +2649,20 @@
                     "Active search",
                     "Under contract"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "preapproved",
+                  "budget",
+                  "phone",
+                  "email",
+                  "source",
+                  "agent",
+                  "decided_on",
+                  "owner",
+                  "active_btn",
+                  "lost_btn",
+                  "take_btn"
+                ]
               },
               {
                 "id": "vs-week",
@@ -2668,7 +2681,20 @@
                     "Active search",
                     "Under contract"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "preapproved",
+                  "budget",
+                  "phone",
+                  "email",
+                  "source",
+                  "agent",
+                  "decided_on",
+                  "owner",
+                  "active_btn",
+                  "lost_btn",
+                  "take_btn"
+                ]
               },
               {
                 "id": "vs-over",
@@ -2687,7 +2713,20 @@
                     "Active search",
                     "Under contract"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "preapproved",
+                  "budget",
+                  "phone",
+                  "email",
+                  "source",
+                  "agent",
+                  "decided_on",
+                  "owner",
+                  "active_btn",
+                  "lost_btn",
+                  "take_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -2745,6 +2784,19 @@
                 "icon": "List",
                 "me": [
                   "owner"
+                ],
+                "hiddenFields": [
+                  "preapproved",
+                  "budget",
+                  "email",
+                  "source",
+                  "agent",
+                  "follow_up_on",
+                  "decided_on",
+                  "owner",
+                  "active_btn",
+                  "lost_btn",
+                  "take_btn"
                 ]
               }
             ],

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0351",
-  "version": 7,
+  "version": 8,
   "title": "Feature Requests",
   "description": "Product teams: collect requests, count votes and customers, and decide what is next.",
   "forWho": "Product and support teams",
@@ -1018,7 +1018,7 @@
         "Alder Lantern Way"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1155,6 +1155,20 @@
                     "field": "submitted_on",
                     "direction": "asc"
                   }
+                ],
+                "hiddenFields": [
+                  "votes",
+                  "customer_count",
+                  "arr_affected",
+                  "demand",
+                  "owner",
+                  "submitted_on",
+                  "submitted_by",
+                  "updated_at",
+                  "details",
+                  "review_btn",
+                  "decline_btn",
+                  "decided_on"
                 ]
               },
               {
@@ -1178,7 +1192,21 @@
                   "submitted_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "votes",
+                  "customer_count",
+                  "arr_affected",
+                  "demand",
+                  "owner",
+                  "submitted_on",
+                  "submitted_by",
+                  "updated_at",
+                  "details",
+                  "review_btn",
+                  "decline_btn",
+                  "decided_on"
+                ]
               },
               {
                 "id": "v-me",
@@ -1187,6 +1215,20 @@
                 "icon": "User",
                 "me": [
                   "submitted_by"
+                ],
+                "hiddenFields": [
+                  "votes",
+                  "customer_count",
+                  "arr_affected",
+                  "demand",
+                  "owner",
+                  "submitted_on",
+                  "submitted_by",
+                  "updated_at",
+                  "details",
+                  "review_btn",
+                  "decline_btn",
+                  "decided_on"
                 ]
               }
             ],
@@ -1270,7 +1312,21 @@
                     "icon": "Ban",
                     "filters": {
                       "status": "Declined"
-                    }
+                    },
+                    "hiddenFields": [
+                      "votes",
+                      "customer_count",
+                      "arr_affected",
+                      "demand",
+                      "owner",
+                      "submitted_on",
+                      "submitted_by",
+                      "updated_at",
+                      "details",
+                      "review_btn",
+                      "decline_btn",
+                      "decided_on"
+                    ]
                   }
                 ],
                 "activeViewId": "v-d"
@@ -1478,7 +1534,21 @@
                 "icon": "Clock",
                 "filters": {
                   "status": "Under review"
-                }
+                },
+                "hiddenFields": [
+                  "votes",
+                  "customer_count",
+                  "arr_affected",
+                  "demand",
+                  "owner",
+                  "submitted_on",
+                  "submitted_by",
+                  "updated_at",
+                  "details",
+                  "review_btn",
+                  "decline_btn",
+                  "decided_on"
+                ]
               }
             ],
             "activeViewId": "v-w"
@@ -1522,7 +1592,21 @@
                     "New",
                     "Under review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "votes",
+                  "customer_count",
+                  "arr_affected",
+                  "demand",
+                  "owner",
+                  "submitted_on",
+                  "submitted_by",
+                  "updated_at",
+                  "details",
+                  "review_btn",
+                  "decline_btn",
+                  "decided_on"
+                ]
               }
             ]
           }

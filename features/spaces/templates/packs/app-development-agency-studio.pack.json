@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0563",
-  "version": 7,
+  "version": 8,
   "title": "App Development Agency Studio",
   "description": "App agency: projects, sprints, change requests, store releases, retainers and bugs.",
   "forWho": "App and software development agencies",
@@ -4064,7 +4064,7 @@
         "Cobbler Way"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -4422,7 +4422,33 @@
                     "Build",
                     "QA"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "budget",
+                  "contract",
+                  "day_rate",
+                  "starts_on",
+                  "lead",
+                  "miles_total",
+                  "miles_done",
+                  "progress",
+                  "bugs_open",
+                  "bugs_critical",
+                  "release_ready",
+                  "changes_value",
+                  "changes_waiting",
+                  "contract_now",
+                  "sprints_done",
+                  "releases_out",
+                  "btn_build",
+                  "btn_qa",
+                  "btn_launched",
+                  "btn_claim",
+                  "add_milestone",
+                  "add_bug",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-w",
@@ -4441,7 +4467,33 @@
                     "Build",
                     "QA"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "budget",
+                  "contract",
+                  "day_rate",
+                  "starts_on",
+                  "lead",
+                  "miles_total",
+                  "miles_done",
+                  "progress",
+                  "bugs_open",
+                  "bugs_critical",
+                  "release_ready",
+                  "changes_value",
+                  "changes_waiting",
+                  "contract_now",
+                  "sprints_done",
+                  "releases_out",
+                  "btn_build",
+                  "btn_qa",
+                  "btn_launched",
+                  "btn_claim",
+                  "add_milestone",
+                  "add_bug",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-n",
@@ -4461,7 +4513,33 @@
                     "Build",
                     "QA"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "budget",
+                  "contract",
+                  "day_rate",
+                  "starts_on",
+                  "lead",
+                  "miles_total",
+                  "miles_done",
+                  "progress",
+                  "bugs_open",
+                  "bugs_critical",
+                  "release_ready",
+                  "changes_value",
+                  "changes_waiting",
+                  "contract_now",
+                  "sprints_done",
+                  "releases_out",
+                  "btn_build",
+                  "btn_qa",
+                  "btn_launched",
+                  "btn_claim",
+                  "add_milestone",
+                  "add_bug",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-m",
@@ -4470,6 +4548,32 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "budget",
+                  "day_rate",
+                  "starts_on",
+                  "launch_on",
+                  "lead",
+                  "miles_total",
+                  "miles_done",
+                  "progress",
+                  "bugs_open",
+                  "bugs_critical",
+                  "release_ready",
+                  "changes_value",
+                  "changes_waiting",
+                  "contract_now",
+                  "sprints_done",
+                  "releases_out",
+                  "btn_build",
+                  "btn_qa",
+                  "btn_launched",
+                  "btn_claim",
+                  "add_milestone",
+                  "add_bug",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -5736,7 +5840,33 @@
                     "Build",
                     "QA"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "budget",
+                  "contract",
+                  "day_rate",
+                  "starts_on",
+                  "lead",
+                  "miles_total",
+                  "miles_done",
+                  "progress",
+                  "bugs_open",
+                  "bugs_critical",
+                  "release_ready",
+                  "changes_value",
+                  "changes_waiting",
+                  "contract_now",
+                  "sprints_done",
+                  "releases_out",
+                  "btn_build",
+                  "btn_qa",
+                  "btn_launched",
+                  "btn_claim",
+                  "add_milestone",
+                  "add_bug",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"
@@ -5961,7 +6091,14 @@
                 "icon": "Repeat",
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "hours",
+                  "used",
+                  "left",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "da-5"

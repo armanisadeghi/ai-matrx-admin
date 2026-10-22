@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0314",
-  "version": 11,
+  "version": 12,
   "title": "Event Planner",
   "description": "Event organisers: guests and RSVPs, vendors, tasks, budget and run of show.",
   "forWho": "Small organisers and event planners",
@@ -2401,7 +2401,7 @@
         "Starling Passage"
       ]
     },
-    "version": 11
+    "version": 12
   },
   "pages": [
     {
@@ -2560,7 +2560,26 @@
                     "Planning",
                     "Confirmed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "days_to",
+                  "budget",
+                  "planner",
+                  "guest_count",
+                  "confirmed",
+                  "reply_pct",
+                  "t_total",
+                  "t_done",
+                  "t_pct",
+                  "v_booked",
+                  "spent",
+                  "left",
+                  "used_pct",
+                  "est_total",
+                  "updated_at",
+                  "add_task_btn",
+                  "add_guest_btn"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -2819,7 +2838,14 @@
                 "icon": "List",
                 "filters": {
                   "paid": false
-                }
+                },
+                "hiddenFields": [
+                  "estimated",
+                  "actual",
+                  "variance",
+                  "paid",
+                  "logged_at"
+                ]
               }
             ],
             "activeViewId": "view-cat"
@@ -3032,7 +3058,11 @@
                 "icon": "List",
                 "filters": {
                   "status": "Quote"
-                }
+                },
+                "hiddenFields": [
+                  "quote",
+                  "book_btn"
+                ]
               }
             ],
             "activeViewId": "view-q"

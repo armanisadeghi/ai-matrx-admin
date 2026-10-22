@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0412",
-  "version": 8,
+  "version": 9,
   "title": "Law Firm Billing and Time",
   "description": "For law firm billing: time, invoices, trust payments, write-downs and collections.",
   "forWho": "Law firm billing staff, office managers and attorneys",
@@ -1894,7 +1894,7 @@
         "Wacker Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2263,7 +2263,19 @@
                     "Part paid",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_amount",
+                  "from_trust",
+                  "balance",
+                  "sent_on",
+                  "paid_on",
+                  "status",
+                  "collector",
+                  "sent_btn",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "vs-over",
@@ -2282,7 +2294,19 @@
                     "Part paid",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_amount",
+                  "from_trust",
+                  "balance",
+                  "sent_on",
+                  "paid_on",
+                  "status",
+                  "collector",
+                  "sent_btn",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -2338,6 +2362,18 @@
                 "icon": "List",
                 "me": [
                   "collector"
+                ],
+                "hiddenFields": [
+                  "amount",
+                  "paid_amount",
+                  "from_trust",
+                  "balance",
+                  "sent_on",
+                  "paid_on",
+                  "status",
+                  "collector",
+                  "sent_btn",
+                  "paid_btn"
                 ]
               }
             ],
@@ -2657,7 +2693,19 @@
                     "Part paid",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_amount",
+                  "from_trust",
+                  "balance",
+                  "sent_on",
+                  "paid_on",
+                  "status",
+                  "collector",
+                  "sent_btn",
+                  "paid_btn"
+                ]
               }
             ],
             "activeViewId": "d1"

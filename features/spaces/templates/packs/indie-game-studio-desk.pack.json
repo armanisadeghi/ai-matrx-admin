@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0578",
-  "version": 2,
+  "version": 3,
   "title": "Indie Game Studio Desk",
   "description": "Milestones, tasks by discipline, bugs, playtests and wishlists for a small game studio.",
   "forWho": "Indie game studios and small game teams",
@@ -2022,7 +2022,7 @@
         "Harborlight Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -3118,7 +3118,20 @@
                     "In progress",
                     "Slipping"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "payment",
+                  "paid",
+                  "wishlists",
+                  "exit_criteria",
+                  "tasks_total",
+                  "tasks_done",
+                  "progress",
+                  "open_bugs",
+                  "hit_btn",
+                  "task_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dl2"

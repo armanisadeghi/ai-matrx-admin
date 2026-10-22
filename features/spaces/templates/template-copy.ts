@@ -33,6 +33,12 @@ export interface TemplateCopy {
 export const copyIsLive = (state: TemplateInstanceRow["state"]) => state === "installed" || state === "installing";
 
 /**
+ * A copy whose removal stopped part way (tab closed mid-count) is RESUMABLE: never stranded. Every copy is exactly one of
+ * installed (live), uninstalling (resumable: "Finish removing" continues the same door), or uninstalled (restorable).
+ */
+export const copyIsResumable = (state: TemplateInstanceRow["state"]) => state === "uninstalling";
+
+/**
  * The template copy `pageId` is the root of, or null for an ordinary page (no install recorded it as its root). Reads
  * the page's organization, asks the records door which install it is the root of, then reads that copy's row.
  */

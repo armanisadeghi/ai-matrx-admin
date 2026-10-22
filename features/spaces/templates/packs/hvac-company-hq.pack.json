@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0500",
-  "version": 9,
+  "version": 10,
   "title": "HVAC Company HQ",
   "description": "For HVAC contractors: service calls, equipment at each home, maintenance plans, parts.",
   "forWho": "HVAC companies and heating and cooling contractors",
@@ -3089,7 +3089,7 @@
       ],
       "notes": "Equipment makes (Arcton, Polarline, Kestrel, Brightwater, Sorrel, Holbeck, Vireo, Wrenfield) are invented."
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3527,7 +3527,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-w",
@@ -3545,7 +3553,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-n",
@@ -3564,7 +3580,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "inv-b"
@@ -4228,7 +4252,15 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Overdue"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l2"
@@ -4268,7 +4300,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l3"

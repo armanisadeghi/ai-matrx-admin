@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0468",
-  "version": 9,
+  "version": 10,
   "title": "Food Truck Operations",
   "description": "For food truck owners: stops, sales, menu food cost, permits, commissary prep, bookings.",
   "forWho": "Food trucks, mobile kitchens and pop-up vendors",
@@ -2424,7 +2424,7 @@
         "Depot Street"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2900,7 +2900,12 @@
                     "To prep",
                     "Prepped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "portions",
+                  "added_at",
+                  "btn_load_it"
+                ]
               },
               {
                 "id": "pre-w",
@@ -2917,7 +2922,12 @@
                     "To prep",
                     "Prepped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "portions",
+                  "added_at",
+                  "btn_load_it"
+                ]
               },
               {
                 "id": "pre-n",
@@ -2935,7 +2945,12 @@
                     "To prep",
                     "Prepped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "portions",
+                  "added_at",
+                  "btn_load_it"
+                ]
               }
             ],
             "activeViewId": "pre-b"
@@ -3031,7 +3046,17 @@
                     "Inquiry",
                     "Quoted"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "quote",
+                  "minimum",
+                  "deposit",
+                  "phone",
+                  "owner",
+                  "added_at",
+                  "btn_lock_it_in"
+                ]
               },
               {
                 "id": "boo-w",
@@ -3048,7 +3073,17 @@
                     "Inquiry",
                     "Quoted"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "quote",
+                  "minimum",
+                  "deposit",
+                  "phone",
+                  "owner",
+                  "added_at",
+                  "btn_lock_it_in"
+                ]
               },
               {
                 "id": "boo-n",
@@ -3066,7 +3101,17 @@
                     "Inquiry",
                     "Quoted"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "quote",
+                  "minimum",
+                  "deposit",
+                  "phone",
+                  "owner",
+                  "added_at",
+                  "btn_lock_it_in"
+                ]
               }
             ],
             "activeViewId": "boo-b"
@@ -3430,7 +3475,12 @@
                     "To prep",
                     "Prepped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "portions",
+                  "added_at",
+                  "btn_load_it"
+                ]
               }
             ],
             "activeViewId": "vl2"
@@ -3591,7 +3641,14 @@
                     "On menu",
                     "Special"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "price",
+                  "cost",
+                  "food_pct",
+                  "per_stop",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vmf"

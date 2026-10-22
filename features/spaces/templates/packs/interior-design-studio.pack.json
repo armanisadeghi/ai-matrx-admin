@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0417",
-  "version": 7,
+  "version": 8,
   "title": "Interior Design Studio",
   "description": "For interior designers: projects by phase, furnishings orders, client approvals and fees.",
   "forWho": "Interior designers and design studios",
@@ -2995,7 +2995,7 @@
         "Wexcombe Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3488,7 +3488,28 @@
                     "Procurement",
                     "Installation"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "budget",
+                  "design_fee",
+                  "markup",
+                  "designer",
+                  "start_on",
+                  "completed_on",
+                  "client_total",
+                  "approved_total",
+                  "trade_total",
+                  "fees_billed",
+                  "fees_due",
+                  "open_approvals",
+                  "late_items",
+                  "item_btn",
+                  "approval_btn",
+                  "inv_btn",
+                  "concept_btn",
+                  "procure_btn",
+                  "done_btn"
+                ]
               },
               {
                 "id": "vs-next30",
@@ -3509,7 +3530,28 @@
                     "Procurement",
                     "Installation"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "budget",
+                  "design_fee",
+                  "markup",
+                  "designer",
+                  "start_on",
+                  "completed_on",
+                  "client_total",
+                  "approved_total",
+                  "trade_total",
+                  "fees_billed",
+                  "fees_due",
+                  "open_approvals",
+                  "late_items",
+                  "item_btn",
+                  "approval_btn",
+                  "inv_btn",
+                  "concept_btn",
+                  "procure_btn",
+                  "done_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -3620,7 +3662,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "sent_on",
+                  "paid_on",
+                  "status",
+                  "sent_btn",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "vs-over",
@@ -3638,7 +3688,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "sent_on",
+                  "paid_on",
+                  "status",
+                  "sent_btn",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "vb",

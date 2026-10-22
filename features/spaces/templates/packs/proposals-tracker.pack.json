@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0160",
-  "version": 9,
+  "version": 10,
   "title": "Proposals Tracker",
   "description": "Agencies and freelancers: track proposals from draft to decision, with line items.",
   "forWho": "Agencies and freelancers",
@@ -1168,7 +1168,7 @@
         "Hollis Mill Road"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1385,7 +1385,22 @@
                     "Viewed",
                     "Negotiating"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "decided_on",
+                  "days_left",
+                  "owner",
+                  "document",
+                  "reason",
+                  "itemized",
+                  "gap",
+                  "created",
+                  "edited",
+                  "won_btn",
+                  "lost_btn",
+                  "open_document"
+                ]
               },
               {
                 "id": "view-proposal-sent-30",
@@ -1397,7 +1412,22 @@
                     "relative": "past_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "decided_on",
+                  "days_left",
+                  "owner",
+                  "document",
+                  "reason",
+                  "itemized",
+                  "gap",
+                  "created",
+                  "edited",
+                  "won_btn",
+                  "lost_btn",
+                  "open_document"
+                ]
               }
             ],
             "activeViewId": "view-board"

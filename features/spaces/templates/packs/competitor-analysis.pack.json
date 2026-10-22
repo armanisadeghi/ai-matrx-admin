@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0355",
-  "version": 7,
+  "version": 8,
   "title": "Competitor Analysis",
   "description": "Product and marketing teams: profile rivals, compare features and track pricing.",
   "forWho": "Product and marketing teams",
@@ -899,7 +899,7 @@
         "Tansy Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1007,7 +1007,17 @@
                   "last_reviewed": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "starting_price",
+                  "segment",
+                  "threat",
+                  "days_since",
+                  "review_flag",
+                  "features_count",
+                  "updated_at",
+                  "open_website"
+                ]
               },
               {
                 "id": "v-rs",
@@ -1072,7 +1082,11 @@
                 "icon": "CircleOff",
                 "filters": {
                   "we_offer": false
-                }
+                },
+                "hiddenFields": [
+                  "we_offer",
+                  "coverage"
+                ]
               }
             ],
             "activeViewId": "v-f"
@@ -1252,7 +1266,11 @@
                 "icon": "CircleOff",
                 "filters": {
                   "we_offer": false
-                }
+                },
+                "hiddenFields": [
+                  "we_offer",
+                  "coverage"
+                ]
               }
             ],
             "activeViewId": "v-gap"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0405",
-  "version": 6,
+  "version": 7,
   "title": "Therapy & Counseling Practice",
   "description": "For therapists and counselors: inquiries, intakes, sessions, notes and statements.",
   "forWho": "Therapists, counselors and group mental health practices",
@@ -2258,7 +2258,7 @@
         "Fremont Avenue"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2737,7 +2737,14 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "sent_on",
+                  "status",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "vs-over",
@@ -2755,7 +2762,14 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "sent_on",
+                  "status",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -3102,7 +3116,14 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "sent_on",
+                  "status",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               }
             ],
             "activeViewId": "d2"

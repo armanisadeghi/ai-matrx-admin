@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0506",
-  "version": 9,
+  "version": 10,
   "title": "Roofing Contractor HQ",
   "description": "For roofing companies: leads, inspections, estimates by the square, crews, claims.",
   "forWho": "Roofing contractors and exterior remodelers",
@@ -2553,7 +2553,7 @@
         "Quarry Hill"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3000,7 +3000,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-w",
@@ -3018,7 +3026,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-n",
@@ -3037,7 +3053,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "inv-b"
@@ -3571,7 +3595,15 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Overdue"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l2"
@@ -3611,7 +3643,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l3"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-  "version": 10,
+  "version": 11,
   "title": "Digital Marketing Agency HQ",
   "description": "For marketing agencies: retainers, scope, hours, campaigns, approvals and monthly reports.",
   "forWho": "Digital marketing agencies and growth studios",
@@ -3168,7 +3168,7 @@
         "Alder Quay"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -3658,7 +3658,18 @@
                     "In progress",
                     "In review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "rounds",
+                  "completed_on",
+                  "estimate",
+                  "campaign",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_done",
+                  "take_btn"
+                ]
               },
               {
                 "id": "del-w",
@@ -3676,7 +3687,18 @@
                     "In progress",
                     "In review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "rounds",
+                  "completed_on",
+                  "estimate",
+                  "campaign",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_done",
+                  "take_btn"
+                ]
               },
               {
                 "id": "del-n",
@@ -3695,7 +3717,18 @@
                     "In progress",
                     "In review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "rounds",
+                  "completed_on",
+                  "estimate",
+                  "campaign",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_done",
+                  "take_btn"
+                ]
               },
               {
                 "id": "del-m",
@@ -3704,6 +3737,17 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "rounds",
+                  "completed_on",
+                  "estimate",
+                  "campaign",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_done",
+                  "take_btn"
                 ]
               }
             ],
@@ -3768,7 +3812,12 @@
                   "worked_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "billable",
+                  "added_at"
+                ]
               },
               {
                 "id": "tim-month",
@@ -3779,7 +3828,12 @@
                   "worked_on": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "billable",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "tim-c"
@@ -4568,7 +4622,18 @@
                     "In progress",
                     "In review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "rounds",
+                  "completed_on",
+                  "estimate",
+                  "campaign",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_done",
+                  "take_btn"
+                ]
               }
             ],
             "activeViewId": "vl0"

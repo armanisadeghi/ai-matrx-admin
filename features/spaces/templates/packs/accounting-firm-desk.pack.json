@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0457",
-  "version": 10,
+  "version": 11,
   "title": "Accounting Firm Desk",
   "description": "For accounting firms: clients, monthly close checklists, tax deadlines, document requests.",
   "forWho": "Bookkeeping, tax and accounting firms",
@@ -2125,7 +2125,7 @@
         "Linden Terrace"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -2300,6 +2300,22 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "fee",
+                  "letter",
+                  "year_end",
+                  "contact_email",
+                  "since",
+                  "owner",
+                  "closes_late",
+                  "requests_waiting",
+                  "open_deadlines",
+                  "owner_me",
+                  "added_at",
+                  "add_close",
+                  "add_request",
+                  "btn_mail"
                 ]
               }
             ],
@@ -2641,7 +2657,14 @@
                     "Requested",
                     "Reminded"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "reminders",
+                  "received_on",
+                  "client",
+                  "added_at",
+                  "btn_log_arrival"
+                ]
               },
               {
                 "id": "req-w",
@@ -2658,7 +2681,14 @@
                     "Requested",
                     "Reminded"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "reminders",
+                  "received_on",
+                  "client",
+                  "added_at",
+                  "btn_log_arrival"
+                ]
               },
               {
                 "id": "req-n",
@@ -2676,7 +2706,14 @@
                     "Requested",
                     "Reminded"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "reminders",
+                  "received_on",
+                  "client",
+                  "added_at",
+                  "btn_log_arrival"
+                ]
               }
             ],
             "activeViewId": "req-b"
@@ -3334,7 +3371,14 @@
                     "Requested",
                     "Reminded"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "reminders",
+                  "received_on",
+                  "client",
+                  "added_at",
+                  "btn_log_arrival"
+                ]
               }
             ],
             "activeViewId": "vl2"

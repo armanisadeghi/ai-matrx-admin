@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0410",
-  "version": 6,
+  "version": 7,
   "title": "Personal Injury Intake and Cases",
   "description": "For injury lawyers: intakes, limitations dates, records, liens, offers and net to client.",
   "forWho": "Personal injury attorneys and case managers",
@@ -2350,7 +2350,7 @@
         "Beale Avenue"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2834,7 +2834,15 @@
                     "Requested",
                     "Received"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "bills",
+                  "status",
+                  "received_on",
+                  "owner",
+                  "requested_btn",
+                  "received_btn"
+                ]
               },
               {
                 "id": "vs-week",
@@ -2852,7 +2860,15 @@
                     "Requested",
                     "Received"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "bills",
+                  "status",
+                  "received_on",
+                  "owner",
+                  "requested_btn",
+                  "received_btn"
+                ]
               },
               {
                 "id": "vs-over",
@@ -2870,7 +2886,15 @@
                     "Requested",
                     "Received"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "bills",
+                  "status",
+                  "received_on",
+                  "owner",
+                  "requested_btn",
+                  "received_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -2905,6 +2929,14 @@
                 "icon": "List",
                 "me": [
                   "owner"
+                ],
+                "hiddenFields": [
+                  "bills",
+                  "follow_up_on",
+                  "received_on",
+                  "owner",
+                  "requested_btn",
+                  "received_btn"
                 ]
               }
             ],
@@ -3187,7 +3219,15 @@
                     "Requested",
                     "Chased"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "bills",
+                  "follow_up_on",
+                  "received_on",
+                  "owner",
+                  "requested_btn",
+                  "received_btn"
+                ]
               }
             ],
             "activeViewId": "d1"

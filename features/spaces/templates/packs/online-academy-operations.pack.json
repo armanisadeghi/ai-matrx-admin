@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0561",
-  "version": 7,
+  "version": 8,
   "title": "Online Academy Operations Desk",
   "description": "Online academy: courses, cohorts, enrollments, completion, refunds and live sessions.",
   "forWho": "Online course academies and cohort-based programs",
@@ -3547,7 +3547,7 @@
         "Pembroke Row"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3739,7 +3739,20 @@
                     "Idea",
                     "In production"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "lessons",
+                  "price",
+                  "refund_window",
+                  "owner",
+                  "cohort_count",
+                  "cohorts_open",
+                  "btn_live",
+                  "btn_claim",
+                  "add_cohort",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cou-w",
@@ -3756,7 +3769,20 @@
                     "Idea",
                     "In production"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "lessons",
+                  "price",
+                  "refund_window",
+                  "owner",
+                  "cohort_count",
+                  "cohorts_open",
+                  "btn_live",
+                  "btn_claim",
+                  "add_cohort",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cou-n",
@@ -3774,7 +3800,20 @@
                     "Idea",
                     "In production"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "lessons",
+                  "price",
+                  "refund_window",
+                  "owner",
+                  "cohort_count",
+                  "cohorts_open",
+                  "btn_live",
+                  "btn_claim",
+                  "add_cohort",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cou-m",
@@ -3783,6 +3822,19 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "lessons",
+                  "price",
+                  "refund_window",
+                  "owner",
+                  "cohort_count",
+                  "cohorts_open",
+                  "btn_live",
+                  "btn_claim",
+                  "add_cohort",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4014,6 +4066,20 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "paid",
+                  "found_us",
+                  "email",
+                  "progress",
+                  "last_active",
+                  "certificate",
+                  "btn_accept",
+                  "btn_complete",
+                  "btn_claim",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4984,7 +5050,21 @@
                 "icon": "List",
                 "filters": {
                   "status": "Applied"
-                }
+                },
+                "hiddenFields": [
+                  "paid",
+                  "found_us",
+                  "email",
+                  "progress",
+                  "last_active",
+                  "certificate",
+                  "btn_accept",
+                  "btn_complete",
+                  "btn_claim",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0161",
-  "version": 9,
+  "version": 10,
   "title": "Partnerships Tracker",
   "description": "Partner and business development teams: partners, milestones and referral revenue share.",
   "forWho": "Business development and partner teams",
@@ -1317,7 +1317,7 @@
         "Embarcadero Mews"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1437,7 +1437,20 @@
                 "icon": "CircleCheck",
                 "filters": {
                   "stage": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "share",
+                  "signed",
+                  "renewal_on",
+                  "referred",
+                  "commission_total",
+                  "referred_month",
+                  "ms_count",
+                  "ms_done",
+                  "ms_pct",
+                  "created",
+                  "open_site"
+                ]
               },
               {
                 "id": "view-all-partners",
@@ -1460,7 +1473,20 @@
                   "renewal_on": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "share",
+                  "site",
+                  "signed",
+                  "referred",
+                  "commission_total",
+                  "referred_month",
+                  "ms_count",
+                  "ms_done",
+                  "ms_pct",
+                  "created",
+                  "open_site"
+                ]
               },
               {
                 "id": "view-partner-renew-over",
@@ -1471,7 +1497,20 @@
                   "renewal_on": {
                     "relative": "before_today"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "share",
+                  "site",
+                  "signed",
+                  "referred",
+                  "commission_total",
+                  "referred_month",
+                  "ms_count",
+                  "ms_done",
+                  "ms_pct",
+                  "created",
+                  "open_site"
+                ]
               }
             ],
             "activeViewId": "view-stage"
@@ -1645,7 +1684,12 @@
                   "happened_on": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "rate",
+                  "commission"
+                ]
               }
             ],
             "activeViewId": "view-revenue-by-partner"

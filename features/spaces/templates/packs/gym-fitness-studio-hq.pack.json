@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0509",
-  "version": 10,
+  "version": 11,
   "title": "Gym and Fitness Studio HQ",
   "description": "For gyms: memberships, freezes, class capacity, PT packages, failed dues.",
   "forWho": "Gyms and boutique fitness studios",
@@ -3620,7 +3620,7 @@
         "Mercer Street"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -4075,7 +4075,17 @@
                 },
                 "filters": {
                   "pkg_status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "sessions_bought",
+                  "sessions_used",
+                  "sessions_left",
+                  "pkg_price",
+                  "bought_on",
+                  "goal",
+                  "renew",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "pt-b"
@@ -4147,7 +4157,16 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "attempts",
+                  "decline",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-w",
@@ -4164,7 +4183,16 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "attempts",
+                  "decline",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-n",
@@ -4182,7 +4210,16 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "attempts",
+                  "decline",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "pay-b"
@@ -4860,7 +4897,16 @@
                 "icon": "TriangleAlert",
                 "filters": {
                   "status": "Failed"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "attempts",
+                  "decline",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "d-l1"
@@ -4906,6 +4952,15 @@
                     "field": "due_on",
                     "direction": "asc"
                   }
+                ],
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "attempts",
+                  "decline",
+                  "method",
+                  "paid_btn",
+                  "added_at"
                 ]
               }
             ],

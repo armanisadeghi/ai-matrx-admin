@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0362",
-  "version": 7,
+  "version": 8,
   "title": "Net Worth Tracker",
   "description": "Individuals: track accounts, holdings and balance snapshots. Tracking only, no advice.",
   "forWho": "Individuals and households",
@@ -1226,7 +1226,7 @@
         "Harrow Glen Drive"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1387,7 +1387,12 @@
                             "relative": "past_days",
                             "n": 7
                           }
-                        }
+                        },
+                        "hiddenFields": [
+                          "balance",
+                          "month_label",
+                          "logged_at"
+                        ]
                       },
                       {
                         "id": "v-r90",
@@ -1843,7 +1848,18 @@
                 "icon": "TrendingDown",
                 "filters": {
                   "klass": "Liability"
-                }
+                },
+                "hiddenFields": [
+                  "current_balance",
+                  "net_effect",
+                  "holdings_value",
+                  "holdings_count",
+                  "not_in_holdings",
+                  "highest_recorded",
+                  "lowest_recorded",
+                  "last_reading",
+                  "updated_at"
+                ]
               }
             ],
             "activeViewId": "v-l"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0460",
-  "version": 10,
+  "version": 11,
   "title": "IT Managed Services Desk",
   "description": "For MSP owners and techs: clients, devices, patching, tickets on SLA and agreements.",
   "forWho": "Managed IT service providers and IT consultancies",
@@ -2520,7 +2520,7 @@
         "Bellamy Street"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -2738,7 +2738,26 @@
                     "Healthy",
                     "At risk"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "fee",
+                  "included_hours",
+                  "contract_start",
+                  "days_to_renewal",
+                  "contact_email",
+                  "owner",
+                  "tickets_waiting",
+                  "device_count",
+                  "needs_attention",
+                  "behind_on_patches",
+                  "billable_hours",
+                  "owner_me",
+                  "added_at",
+                  "add_ticket",
+                  "add_asset",
+                  "btn_mail"
+                ]
               },
               {
                 "id": "cli-w",
@@ -2756,7 +2775,26 @@
                     "Healthy",
                     "At risk"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "fee",
+                  "included_hours",
+                  "contract_start",
+                  "days_to_renewal",
+                  "contact_email",
+                  "owner",
+                  "tickets_waiting",
+                  "device_count",
+                  "needs_attention",
+                  "behind_on_patches",
+                  "billable_hours",
+                  "owner_me",
+                  "added_at",
+                  "add_ticket",
+                  "add_asset",
+                  "btn_mail"
+                ]
               },
               {
                 "id": "cli-n",
@@ -2775,7 +2813,26 @@
                     "Healthy",
                     "At risk"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "fee",
+                  "included_hours",
+                  "contract_start",
+                  "days_to_renewal",
+                  "contact_email",
+                  "owner",
+                  "tickets_waiting",
+                  "device_count",
+                  "needs_attention",
+                  "behind_on_patches",
+                  "billable_hours",
+                  "owner_me",
+                  "added_at",
+                  "add_ticket",
+                  "add_asset",
+                  "btn_mail"
+                ]
               },
               {
                 "id": "cli-m",
@@ -2784,6 +2841,25 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "seats",
+                  "fee",
+                  "included_hours",
+                  "renews_on",
+                  "days_to_renewal",
+                  "contact_email",
+                  "owner",
+                  "tickets_waiting",
+                  "device_count",
+                  "needs_attention",
+                  "behind_on_patches",
+                  "billable_hours",
+                  "owner_me",
+                  "added_at",
+                  "add_ticket",
+                  "add_asset",
+                  "btn_mail"
                 ]
               }
             ],
@@ -3018,7 +3094,23 @@
                     "In progress",
                     "Waiting on client"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "response_target",
+                  "opened_on",
+                  "first_response",
+                  "response_met",
+                  "resolved_on",
+                  "hours",
+                  "billing",
+                  "client",
+                  "asset",
+                  "tech",
+                  "owner_me",
+                  "added_at",
+                  "btn_fix_confirmed",
+                  "take_btn"
+                ]
               },
               {
                 "id": "tic-w",
@@ -3036,7 +3128,23 @@
                     "In progress",
                     "Waiting on client"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "response_target",
+                  "opened_on",
+                  "first_response",
+                  "response_met",
+                  "resolved_on",
+                  "hours",
+                  "billing",
+                  "client",
+                  "asset",
+                  "tech",
+                  "owner_me",
+                  "added_at",
+                  "btn_fix_confirmed",
+                  "take_btn"
+                ]
               },
               {
                 "id": "tic-n",
@@ -3055,7 +3163,23 @@
                     "In progress",
                     "Waiting on client"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "response_target",
+                  "opened_on",
+                  "first_response",
+                  "response_met",
+                  "resolved_on",
+                  "hours",
+                  "billing",
+                  "client",
+                  "asset",
+                  "tech",
+                  "owner_me",
+                  "added_at",
+                  "btn_fix_confirmed",
+                  "take_btn"
+                ]
               },
               {
                 "id": "tic-m",
@@ -3064,6 +3188,22 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "response_target",
+                  "first_response",
+                  "response_met",
+                  "due_on",
+                  "resolved_on",
+                  "hours",
+                  "billing",
+                  "client",
+                  "asset",
+                  "tech",
+                  "owner_me",
+                  "added_at",
+                  "btn_fix_confirmed",
+                  "take_btn"
                 ]
               }
             ],
@@ -3145,7 +3285,15 @@
                 },
                 "filters": {
                   "status": "Scheduled"
-                }
+                },
+                "hiddenFields": [
+                  "devices",
+                  "client",
+                  "tech",
+                  "owner_me",
+                  "added_at",
+                  "btn_job_complete"
+                ]
               },
               {
                 "id": "mai-w",
@@ -3159,7 +3307,15 @@
                 },
                 "filters": {
                   "status": "Scheduled"
-                }
+                },
+                "hiddenFields": [
+                  "devices",
+                  "client",
+                  "tech",
+                  "owner_me",
+                  "added_at",
+                  "btn_job_complete"
+                ]
               },
               {
                 "id": "mai-n",
@@ -3174,7 +3330,15 @@
                 },
                 "filters": {
                   "status": "Scheduled"
-                }
+                },
+                "hiddenFields": [
+                  "devices",
+                  "client",
+                  "tech",
+                  "owner_me",
+                  "added_at",
+                  "btn_job_complete"
+                ]
               },
               {
                 "id": "mai-m",
@@ -3183,6 +3347,14 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "devices",
+                  "client",
+                  "tech",
+                  "owner_me",
+                  "added_at",
+                  "btn_job_complete"
                 ]
               }
             ],
@@ -3407,7 +3579,23 @@
                     "In progress",
                     "Waiting on client"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "response_target",
+                  "opened_on",
+                  "first_response",
+                  "response_met",
+                  "resolved_on",
+                  "hours",
+                  "billing",
+                  "client",
+                  "asset",
+                  "tech",
+                  "owner_me",
+                  "added_at",
+                  "btn_fix_confirmed",
+                  "take_btn"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -3493,7 +3681,26 @@
                     "relative": "next_days",
                     "n": 60
                   }
-                }
+                },
+                "hiddenFields": [
+                  "seats",
+                  "fee",
+                  "included_hours",
+                  "contract_start",
+                  "days_to_renewal",
+                  "contact_email",
+                  "owner",
+                  "tickets_waiting",
+                  "device_count",
+                  "needs_attention",
+                  "behind_on_patches",
+                  "billable_hours",
+                  "owner_me",
+                  "added_at",
+                  "add_ticket",
+                  "add_asset",
+                  "btn_mail"
+                ]
               }
             ],
             "activeViewId": "vl2"

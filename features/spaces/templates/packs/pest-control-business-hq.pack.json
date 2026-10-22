@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0507",
-  "version": 9,
+  "version": 10,
   "title": "Pest Control Business HQ",
   "description": "For pest control operators: service plans, routes, application records, callbacks.",
   "forWho": "Pest control and extermination companies",
@@ -2671,7 +2671,7 @@
         "Plover Street"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3110,7 +3110,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-w",
@@ -3128,7 +3136,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-n",
@@ -3147,7 +3163,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "inv-b"
@@ -3744,7 +3768,15 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Overdue"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l2"
@@ -3784,7 +3816,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l3"

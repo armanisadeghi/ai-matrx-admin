@@ -15,7 +15,7 @@ import { PageMenu } from "../PageMenu";
 const noop = () => undefined;
 const settings = { font: "default", smallText: false, fullWidth: false, locked: false } as const;
 
-async function menu(extra: { removeCopyPending?: boolean; onRemoveCopy?: () => void }) {
+async function menu(extra: { removeCopyPending?: boolean; onRemoveCopy?: () => void; onFinishRemoving?: () => void }) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const root: Root = createRoot(host);
@@ -43,7 +43,8 @@ async function menu(extra: { removeCopyPending?: boolean; onRemoveCopy?: () => v
     (host.querySelector("button") as HTMLButtonElement).click();
   });
   const rows = () => [...document.querySelectorAll('[role="menuitem"]')].filter((r) => r.textContent?.includes("Remove template copy"));
-  return { rows, done: () => act(async () => root.unmount()) };
+  const finishRows = () => [...document.querySelectorAll('[role="menuitem"]')].filter((r) => r.textContent?.includes("Finish removing"));
+  return { rows, finishRows, done: () => act(async () => root.unmount()) };
 }
 
 describe("the ••• menu on a page", () => {
@@ -68,5 +69,15 @@ describe("the ••• menu on a page", () => {
     const plain = await menu({});
     expect(plain.rows()).toHaveLength(0);
     await plain.done();
+  });
+
+  it("an uninstalling copy offers Finish removing (never stranded), and pressing it fires", async () => {
+    const onFinishRemoving = jest.fn();
+    const m = await menu({ onFinishRemoving });
+    expect(m.finishRows()).toHaveLength(1);
+    expect(m.rows()).toHaveLength(0);
+    await act(async () => (m.finishRows()[0] as HTMLElement).click());
+    expect(onFinishRemoving).toHaveBeenCalledTimes(1);
+    await m.done();
   });
 });

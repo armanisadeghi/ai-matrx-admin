@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0575",
-  "version": 2,
+  "version": 3,
   "title": "Freight Brokerage Desk",
   "description": "Quote, cover and track loads, vet carriers, and watch margin per load and per customer.",
   "forWho": "Freight brokers and small brokerage teams",
@@ -2346,7 +2346,7 @@
         "Caddo Mill Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2833,7 +2833,15 @@
                     "Overdue",
                     "Short-paid"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "linehaul",
+                  "accessorials",
+                  "total",
+                  "paid_on",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "invo-w",
@@ -2851,7 +2859,15 @@
                     "Overdue",
                     "Short-paid"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "linehaul",
+                  "accessorials",
+                  "total",
+                  "paid_on",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "invo-n",
@@ -2870,7 +2886,15 @@
                     "Overdue",
                     "Short-paid"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "linehaul",
+                  "accessorials",
+                  "total",
+                  "paid_on",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "invo-b"
@@ -3478,7 +3502,15 @@
                     "Overdue",
                     "Short-paid"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "linehaul",
+                  "accessorials",
+                  "total",
+                  "paid_on",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dl2"

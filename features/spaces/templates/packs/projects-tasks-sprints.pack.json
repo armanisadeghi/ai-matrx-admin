@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0100",
-  "version": 9,
+  "version": 10,
   "title": "Projects, Tasks & Sprints",
   "description": "Product teams that plan by project: tasks, two-week sprints and a live sprint dashboard.",
   "forWho": "Software and product teams working in sprints",
@@ -1525,7 +1525,7 @@
         "Fennimore Court"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1669,7 +1669,25 @@
                     "direction": "asc"
                   }
                 ],
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "sub_total",
+                  "type",
+                  "priority",
+                  "assignee",
+                  "points",
+                  "due_on",
+                  "completed_on",
+                  "pull_request",
+                  "days_left",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "start_btn",
+                  "open_pull_request",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "grid",
@@ -1689,6 +1707,24 @@
                 "layout": "list",
                 "icon": "List",
                 "me": [
+                  "assigned_to"
+                ],
+                "hiddenFields": [
+                  "sub_total",
+                  "type",
+                  "priority",
+                  "assignee",
+                  "points",
+                  "due_on",
+                  "completed_on",
+                  "pull_request",
+                  "days_left",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "start_btn",
+                  "open_pull_request",
+                  "take_btn",
                   "assigned_to"
                 ]
               }
@@ -1990,7 +2026,25 @@
                 "filters": {
                   "status": "Blocked"
                 },
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "sub_total",
+                  "type",
+                  "priority",
+                  "assignee",
+                  "points",
+                  "due_on",
+                  "completed_on",
+                  "pull_request",
+                  "days_left",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "start_btn",
+                  "open_pull_request",
+                  "take_btn",
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -2513,7 +2567,25 @@
                     "Blocked"
                   ]
                 },
-                "id": "view-2"
+                "id": "view-2",
+                "hiddenFields": [
+                  "sub_total",
+                  "type",
+                  "priority",
+                  "assignee",
+                  "points",
+                  "due_on",
+                  "completed_on",
+                  "pull_request",
+                  "days_left",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "start_btn",
+                  "open_pull_request",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "id": "view-task-week",
@@ -2568,7 +2640,25 @@
                     "In progress",
                     "Blocked"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sub_total",
+                  "status",
+                  "type",
+                  "priority",
+                  "assignee",
+                  "points",
+                  "completed_on",
+                  "pull_request",
+                  "days_left",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "start_btn",
+                  "open_pull_request",
+                  "take_btn",
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"

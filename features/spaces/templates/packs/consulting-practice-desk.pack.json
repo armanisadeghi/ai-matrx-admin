@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0458",
-  "version": 10,
+  "version": 11,
   "title": "Consulting Practice Desk",
   "description": "For consultants: proposals, engagements, days sold versus used, deliverables and readouts.",
   "forWho": "Management and operations consulting practices",
@@ -2507,7 +2507,7 @@
         "Halsey Avenue"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -2759,7 +2759,19 @@
                     "Sent",
                     "Negotiating"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "problem",
+                  "chance",
+                  "weighted",
+                  "decided_on",
+                  "client",
+                  "lead",
+                  "added_at",
+                  "btn_mark_won",
+                  "btn_mark_lost"
+                ]
               },
               {
                 "id": "pro-w",
@@ -2777,7 +2789,19 @@
                     "Sent",
                     "Negotiating"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "problem",
+                  "chance",
+                  "weighted",
+                  "decided_on",
+                  "client",
+                  "lead",
+                  "added_at",
+                  "btn_mark_won",
+                  "btn_mark_lost"
+                ]
               },
               {
                 "id": "pro-n",
@@ -2796,7 +2820,19 @@
                     "Sent",
                     "Negotiating"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "problem",
+                  "chance",
+                  "weighted",
+                  "decided_on",
+                  "client",
+                  "lead",
+                  "added_at",
+                  "btn_mark_won",
+                  "btn_mark_lost"
+                ]
               }
             ],
             "activeViewId": "pro-b"
@@ -2905,7 +2941,26 @@
                     "In delivery",
                     "Final readout"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "day_rate",
+                  "days_sold",
+                  "days_logged",
+                  "days_left",
+                  "burn_pct",
+                  "fee_per_day",
+                  "closed_on",
+                  "deliv_total",
+                  "deliv_done",
+                  "deliv_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_engagement",
+                  "add_deliverable"
+                ]
               },
               {
                 "id": "eng-w",
@@ -2923,7 +2978,26 @@
                     "In delivery",
                     "Final readout"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "day_rate",
+                  "days_sold",
+                  "days_logged",
+                  "days_left",
+                  "burn_pct",
+                  "fee_per_day",
+                  "closed_on",
+                  "deliv_total",
+                  "deliv_done",
+                  "deliv_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_engagement",
+                  "add_deliverable"
+                ]
               },
               {
                 "id": "eng-n",
@@ -2942,7 +3016,26 @@
                     "In delivery",
                     "Final readout"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "day_rate",
+                  "days_sold",
+                  "days_logged",
+                  "days_left",
+                  "burn_pct",
+                  "fee_per_day",
+                  "closed_on",
+                  "deliv_total",
+                  "deliv_done",
+                  "deliv_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_engagement",
+                  "add_deliverable"
+                ]
               },
               {
                 "id": "eng-m",
@@ -2951,6 +3044,25 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "fee",
+                  "day_rate",
+                  "days_sold",
+                  "days_logged",
+                  "days_left",
+                  "burn_pct",
+                  "fee_per_day",
+                  "closed_on",
+                  "deliv_total",
+                  "deliv_done",
+                  "deliv_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_engagement",
+                  "add_deliverable"
                 ]
               }
             ],
@@ -3146,7 +3258,12 @@
                   "worked_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "days",
+                  "billable",
+                  "added_at"
+                ]
               },
               {
                 "id": "tim-month",
@@ -3157,7 +3274,12 @@
                   "worked_on": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "days",
+                  "billable",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "tim-c"
@@ -3731,7 +3853,19 @@
                     "Sent",
                     "Negotiating"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "problem",
+                  "chance",
+                  "weighted",
+                  "decided_on",
+                  "client",
+                  "lead",
+                  "added_at",
+                  "btn_mark_won",
+                  "btn_mark_lost"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -3817,7 +3951,26 @@
                     "relative": "next_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "day_rate",
+                  "days_sold",
+                  "days_logged",
+                  "days_left",
+                  "burn_pct",
+                  "fee_per_day",
+                  "closed_on",
+                  "deliv_total",
+                  "deliv_done",
+                  "deliv_open",
+                  "client",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_engagement",
+                  "add_deliverable"
+                ]
               }
             ],
             "activeViewId": "vl2"

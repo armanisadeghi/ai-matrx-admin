@@ -60,6 +60,7 @@ export function PageMenu({
   onDelete,
   onRemoveCopy,
   removeCopyPending,
+  onFinishRemoving,
   onUndo,
   onHistory,
   onExport,
@@ -83,6 +84,8 @@ export function PageMenu({
   onRemoveCopy?: () => void;
   /** The copy lookup (started when the page opened) has not answered: the row shows, loading, instead of arriving late. */
   removeCopyPending?: boolean;
+  /** A removal of this copy stopped part way: "Finish removing" continues the same door (never stranded). */
+  onFinishRemoving?: () => void;
   onUndo: () => void;
   onHistory: () => void;
   /** K1 — opens the Export dialog. */
@@ -167,6 +170,8 @@ export function PageMenu({
         {contentOnly ? null : <Row icon={<Trash2 size={16} />} label="Move to Trash" onClick={act(onDelete)} danger />}
         {contentOnly ? null : removeCopyPending ? (
           <Row icon={<PackageX size={16} />} label="Remove template copy" end={<Loader2 size={14} className="animate-spin" aria-label="Checking" />} loading />
+        ) : onFinishRemoving ? (
+          <Row icon={<PackageX size={16} />} label="Finish removing" onClick={act(onFinishRemoving)} danger />
         ) : onRemoveCopy ? (
           <Row icon={<PackageX size={16} />} label="Remove template copy" onClick={act(onRemoveCopy)} danger />
         ) : null}

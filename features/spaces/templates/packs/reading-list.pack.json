@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0206",
-  "version": 6,
+  "version": 7,
   "title": "Reading List",
   "description": "Readers: a bookshelf with status and ratings, a reading log and genre totals.",
   "forWho": "Readers who like to track",
@@ -1157,7 +1157,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1336,7 +1336,20 @@
                 "icon": "List",
                 "filters": {
                   "status": "Reading"
-                }
+                },
+                "hiddenFields": [
+                  "rating",
+                  "pages",
+                  "pages_read",
+                  "pct_read",
+                  "started_on",
+                  "finished_on",
+                  "review",
+                  "logged_pages",
+                  "minutes_read",
+                  "pages_left",
+                  "added"
+                ]
               }
             ],
             "activeViewId": "view-6"

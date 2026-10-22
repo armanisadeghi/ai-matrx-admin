@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0311",
-  "version": 11,
+  "version": 12,
   "title": "Newsletter Growth & Sponsors",
   "description": "Independent writers: write issues, sell sponsor slots and watch subscriber growth.",
   "forWho": "Independent newsletter writers",
@@ -1666,7 +1666,7 @@
         "Quillfeather Road"
       ]
     },
-    "version": 11
+    "version": 12
   },
   "pages": [
     {
@@ -1825,7 +1825,19 @@
                     "Edit",
                     "Scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "number",
+                  "days_to_send",
+                  "open_rate",
+                  "click_rate",
+                  "ctr_ratio",
+                  "sections",
+                  "sponsor",
+                  "sponsor_rate",
+                  "updated_at",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "v-bs",
@@ -1845,7 +1857,19 @@
                     "Edit",
                     "Scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "number",
+                  "days_to_send",
+                  "open_rate",
+                  "click_rate",
+                  "ctr_ratio",
+                  "sections",
+                  "sponsor",
+                  "sponsor_rate",
+                  "updated_at",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "v-n7",
@@ -1866,7 +1890,19 @@
                     "Edit",
                     "Scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "number",
+                  "days_to_send",
+                  "open_rate",
+                  "click_rate",
+                  "ctr_ratio",
+                  "sections",
+                  "sponsor",
+                  "sponsor_rate",
+                  "updated_at",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "v-s30",
@@ -1881,7 +1917,19 @@
                 },
                 "filters": {
                   "status": "Sent"
-                }
+                },
+                "hiddenFields": [
+                  "number",
+                  "days_to_send",
+                  "open_rate",
+                  "click_rate",
+                  "ctr_ratio",
+                  "sections",
+                  "sponsor",
+                  "sponsor_rate",
+                  "updated_at",
+                  "sent_btn"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -2196,7 +2244,16 @@
                 "icon": "List",
                 "filters": {
                   "status": "Open"
-                }
+                },
+                "hiddenFields": [
+                  "rate",
+                  "issue_count",
+                  "sent_count",
+                  "avg_open",
+                  "slot_value",
+                  "email_btn",
+                  "paid_btn"
+                ]
               }
             ],
             "activeViewId": "view-o"

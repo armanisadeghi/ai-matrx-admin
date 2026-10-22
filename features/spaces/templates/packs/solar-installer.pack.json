@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0583",
-  "version": 2,
+  "version": 3,
   "title": "Solar Installer",
   "description": "Leads to permission to operate: surveys, permits, installs, utility approvals and margin.",
   "forWho": "Residential solar and battery installers",
@@ -277,7 +277,7 @@
         "Juniper Ridge Road"
       ]
     },
-    "version": 2,
+    "version": 3,
     "tables": [
       {
         "token": "customer",
@@ -2834,7 +2834,32 @@
                     "Permit approved",
                     "Install scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "system_kw",
+                  "panels",
+                  "battery",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "prod_factor",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "proj-week",
@@ -2853,7 +2878,32 @@
                     "Permit approved",
                     "Install scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "system_kw",
+                  "panels",
+                  "battery",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "prod_factor",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "proj-next30",
@@ -2873,7 +2923,32 @@
                     "Permit approved",
                     "Install scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "system_kw",
+                  "panels",
+                  "battery",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "prod_factor",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "proj-mine",
@@ -2882,6 +2957,31 @@
                 "icon": "User",
                 "me": [
                   "assigned_to"
+                ],
+                "hiddenFields": [
+                  "system_kw",
+                  "panels",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "prod_factor",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "install_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
                 ]
               }
             ],
@@ -3450,7 +3550,32 @@
                     "Permit approved",
                     "Install scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "system_kw",
+                  "panels",
+                  "battery",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "prod_factor",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "l-slipped-installs"
@@ -3497,7 +3622,32 @@
                     "Permit approved",
                     "Install scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "system_kw",
+                  "panels",
+                  "battery",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "prod_factor",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "l-this-week-s-installs"
@@ -3534,6 +3684,31 @@
                 "icon": "Table",
                 "me": [
                   "assigned_to"
+                ],
+                "hiddenFields": [
+                  "system_kw",
+                  "panels",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "prod_factor",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "install_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
                 ]
               }
             ],
@@ -4234,7 +4409,32 @@
                   ]
                 },
                 "id": "projec-ready-to-schedule",
-                "icon": "List"
+                "icon": "List",
+                "hiddenFields": [
+                  "system_kw",
+                  "panels",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "prod_factor",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "install_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "projec-calendar"

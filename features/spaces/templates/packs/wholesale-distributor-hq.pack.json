@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0518",
-  "version": 9,
+  "version": 10,
   "title": "Wholesale Distributor HQ",
   "description": "For distributors: case stock and best-by dates, POs, routes, invoices and collections.",
   "forWho": "Small wholesale distributors and suppliers",
@@ -3144,7 +3144,7 @@
         "Warehouse Road"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3626,7 +3626,16 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "invoiced_on",
+                  "paid_on",
+                  "method",
+                  "reminders",
+                  "inv_notes",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-w",
@@ -3643,7 +3652,16 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "invoiced_on",
+                  "paid_on",
+                  "method",
+                  "reminders",
+                  "inv_notes",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "inv-b"
@@ -4312,7 +4330,16 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "invoiced_on",
+                  "paid_on",
+                  "method",
+                  "reminders",
+                  "inv_notes",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "d-l1"

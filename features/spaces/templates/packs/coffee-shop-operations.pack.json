@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0467",
-  "version": 9,
+  "version": 10,
   "title": "Coffee Shop Operations",
   "description": "For cafe owners and baristas: drink margins, dial-ins, pars, waste, orders, machine care.",
   "forWho": "Independent coffee shops and cafes",
@@ -2443,7 +2443,7 @@
         "Almond Street"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2732,7 +2732,12 @@
                   "logged_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "value",
+                  "added_at"
+                ]
               },
               {
                 "id": "was-mo",
@@ -2743,7 +2748,12 @@
                   "logged_on": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "value",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "was-c"
@@ -3236,7 +3246,18 @@
                     "relative": "past_days",
                     "n": 3
                   }
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "unit_cost",
+                  "stock_value",
+                  "to_order",
+                  "ordered_on",
+                  "vendor",
+                  "counter",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -3477,6 +3498,14 @@
                     "field": "dialed_on",
                     "direction": "desc"
                   }
+                ],
+                "hiddenFields": [
+                  "dose",
+                  "yield_g",
+                  "ratio",
+                  "seconds",
+                  "barista",
+                  "added_at"
                 ]
               }
             ],

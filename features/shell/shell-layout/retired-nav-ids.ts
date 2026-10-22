@@ -9,6 +9,8 @@
 export const RETIRED_NAV_IDS: Readonly<Record<string, string | null>> = {
   // Marketing pillar key "clients" became "brands" (brands, never clients - Arman, 2026-10-21).
   "marketing.clients.brands": "marketing.brands.brands",
+  // "Matrx Search" (/search/experience) became /search itself - one Google-layout page (owner, 2026-10-21).
+  "web.search-tools": "web.search",
 };
 
 /**

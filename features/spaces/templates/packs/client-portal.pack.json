@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0155",
-  "version": 9,
+  "version": 10,
   "title": "Agency Client Portal",
   "description": "Agencies: a private home page per client with projects, deliverables and invoices.",
   "forWho": "Agencies sharing work with several clients",
@@ -1479,7 +1479,7 @@
         "Moss Lantern Way"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1834,7 +1834,14 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "status",
+                  "days_to_due",
+                  "created",
+                  "paid_btn"
+                ]
               }
             ],
             "activeViewId": "view-all-invoices"

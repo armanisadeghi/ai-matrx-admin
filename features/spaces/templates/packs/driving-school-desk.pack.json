@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0560",
-  "version": 6,
+  "version": 7,
   "title": "Driving School Desk",
   "description": "Driving school desk: learners' permits and hours, lessons, cars, classroom and road tests.",
   "forWho": "Driving schools and driver-education programs",
@@ -2907,7 +2907,7 @@
         "Mesquite Plaza"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3120,7 +3120,31 @@
                     "In lessons",
                     "Test ready"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "age",
+                  "classroom",
+                  "wheel",
+                  "log",
+                  "attempts",
+                  "package",
+                  "email",
+                  "phone",
+                  "hours_needed",
+                  "instructor",
+                  "hours_done",
+                  "hours_left",
+                  "noshows",
+                  "btn_inlessons",
+                  "btn_testready",
+                  "btn_licensed",
+                  "btn_claim",
+                  "add_drive",
+                  "add_test",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "lea-w",
@@ -3138,7 +3162,31 @@
                     "In lessons",
                     "Test ready"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "age",
+                  "classroom",
+                  "wheel",
+                  "log",
+                  "attempts",
+                  "package",
+                  "email",
+                  "phone",
+                  "hours_needed",
+                  "instructor",
+                  "hours_done",
+                  "hours_left",
+                  "noshows",
+                  "btn_inlessons",
+                  "btn_testready",
+                  "btn_licensed",
+                  "btn_claim",
+                  "add_drive",
+                  "add_test",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "lea-n",
@@ -3157,7 +3205,31 @@
                     "In lessons",
                     "Test ready"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "age",
+                  "classroom",
+                  "wheel",
+                  "log",
+                  "attempts",
+                  "package",
+                  "email",
+                  "phone",
+                  "hours_needed",
+                  "instructor",
+                  "hours_done",
+                  "hours_left",
+                  "noshows",
+                  "btn_inlessons",
+                  "btn_testready",
+                  "btn_licensed",
+                  "btn_claim",
+                  "add_drive",
+                  "add_test",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "lea-m",
@@ -3166,6 +3238,30 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "age",
+                  "classroom",
+                  "wheel",
+                  "log",
+                  "attempts",
+                  "email",
+                  "phone",
+                  "next_step_on",
+                  "hours_needed",
+                  "instructor",
+                  "hours_done",
+                  "hours_left",
+                  "noshows",
+                  "btn_inlessons",
+                  "btn_testready",
+                  "btn_licensed",
+                  "btn_claim",
+                  "add_drive",
+                  "add_test",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -3396,7 +3492,16 @@
                     "In service",
                     "In the shop"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "miles",
+                  "inspection_due",
+                  "drives_booked",
+                  "hours_driven",
+                  "btn_shop",
+                  "btn_back",
+                  "added_at"
+                ]
               },
               {
                 "id": "veh-w",
@@ -3413,7 +3518,16 @@
                     "In service",
                     "In the shop"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "miles",
+                  "inspection_due",
+                  "drives_booked",
+                  "hours_driven",
+                  "btn_shop",
+                  "btn_back",
+                  "added_at"
+                ]
               },
               {
                 "id": "veh-n",
@@ -3431,7 +3545,16 @@
                     "In service",
                     "In the shop"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "miles",
+                  "inspection_due",
+                  "drives_booked",
+                  "hours_driven",
+                  "btn_shop",
+                  "btn_back",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "veh-b"
@@ -3518,7 +3641,17 @@
                 },
                 "filters": {
                   "status": "Booked"
-                }
+                },
+                "hiddenFields": [
+                  "errors",
+                  "coach",
+                  "site",
+                  "btn_passed",
+                  "btn_failed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "roa-o",
@@ -3532,7 +3665,17 @@
                 },
                 "filters": {
                   "status": "Booked"
-                }
+                },
+                "hiddenFields": [
+                  "errors",
+                  "coach",
+                  "site",
+                  "btn_passed",
+                  "btn_failed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "roa-w",
@@ -3546,7 +3689,17 @@
                 },
                 "filters": {
                   "status": "Booked"
-                }
+                },
+                "hiddenFields": [
+                  "errors",
+                  "coach",
+                  "site",
+                  "btn_passed",
+                  "btn_failed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "roa-n",
@@ -3561,7 +3714,17 @@
                 },
                 "filters": {
                   "status": "Booked"
-                }
+                },
+                "hiddenFields": [
+                  "errors",
+                  "coach",
+                  "site",
+                  "btn_passed",
+                  "btn_failed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "roa-m",
@@ -3570,6 +3733,16 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "errors",
+                  "coach",
+                  "site",
+                  "btn_passed",
+                  "btn_failed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4223,7 +4396,16 @@
                 },
                 "filters": {
                   "status": "In service"
-                }
+                },
+                "hiddenFields": [
+                  "miles",
+                  "inspection_due",
+                  "drives_booked",
+                  "hours_driven",
+                  "btn_shop",
+                  "btn_back",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl1"
@@ -4265,7 +4447,17 @@
                 },
                 "filters": {
                   "status": "Booked"
-                }
+                },
+                "hiddenFields": [
+                  "errors",
+                  "coach",
+                  "site",
+                  "btn_passed",
+                  "btn_failed",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"

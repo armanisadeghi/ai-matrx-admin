@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0512",
-  "version": 9,
+  "version": 10,
   "title": "Hair Salon HQ",
   "description": "For hair salons: appointments, stylist commission, color formulas, rebooking, retail.",
   "forWho": "Hair salons and stylist teams",
@@ -2552,7 +2552,7 @@
         "Ladybird Lane"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2973,7 +2973,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-w",
@@ -2990,7 +2996,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-n",
@@ -3008,7 +3020,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "pay-b"
@@ -3589,7 +3607,13 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Failed"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l2"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0517",
-  "version": 8,
+  "version": 9,
   "title": "Boutique Clothing Store HQ",
   "description": "For clothing boutiques: sizes and stock, seasonal buys, markdowns, holds, consignment.",
   "forWho": "Independent clothing and accessory boutiques",
@@ -3346,7 +3346,7 @@
         "Willow Passage"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3719,7 +3719,14 @@
                 "icon": "TriangleAlert",
                 "filters": {
                   "size_flag": "Last one"
-                }
+                },
+                "hiddenFields": [
+                  "received",
+                  "on_hand",
+                  "sold_n",
+                  "size_flag",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "sz-t"
