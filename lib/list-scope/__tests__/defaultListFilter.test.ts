@@ -35,7 +35,7 @@ jest.mock("@/lib/scoped-config/sessionKnob", () => ({
 }));
 
 import { defaultListFilter, resolveListScope, setListScopeFallbackReporter } from "../index";
-import { shownToMyOrgsFilter, type ShownToContext } from "../shownTo";
+import { shownToMyOrgsFilter, type ShownToContext } from "@ai-matrx/sharing/core";
 
 const ME = "11111111-1111-4111-8111-111111111111";
 const MATE = "22222222-2222-4222-8222-222222222222";

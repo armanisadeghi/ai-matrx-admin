@@ -3,8 +3,8 @@
  * entity token leaked into a sentence a person reads. It now names the record the way the share
  * dialog title does ("document", "workbook").
  */
-import { accessReasonRows } from "@/features/sharing/format";
-import type { AccessSummary } from "@/features/sharing/service/accessSummary";
+import { accessReasonRows } from "@ai-matrx/sharing/core";
+import type { AccessSummary } from "@ai-matrx/sharing/core";
 
 const summary = {
   entityType: "udt_document",

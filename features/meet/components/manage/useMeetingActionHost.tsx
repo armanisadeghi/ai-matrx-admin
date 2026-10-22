@@ -15,7 +15,7 @@ import {
 } from "@ai-matrx/meet/react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/lib/toast";
-import { useShare } from "@/features/sharing/hooks/useShare";
+import { useShare } from "@ai-matrx/sharing/react";
 import { meetingOrigin } from "@/features/meet/components/invite/MeetingInviteButton";
 import { MeetingInviteDialog } from "@/features/meet/components/invite/MeetingInviteDialog";
 import {

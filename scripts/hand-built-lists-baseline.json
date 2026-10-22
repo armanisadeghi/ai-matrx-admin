@@ -283,7 +283,6 @@
     "features/scraper/parts/HeaderAnalysis.tsx": "pre-existing, migrate to MatrxDataTable",
     "features/scraper/parts/ScraperFloatingWorkspace.tsx": "pre-existing, migrate to MatrxDataTable",
     "features/scraper/parts/ScraperKeywordSearchPanel.tsx": "pre-existing, migrate to ItemRow",
-    "features/sharing/components/PermissionsList.tsx": "pre-existing, migrate to ItemRow",
     "features/sharing/lenses/SharedSheetView.tsx": "pre-existing, migrate to MatrxDataTable",
     "features/sharing/public-view/PublicViewBody.tsx": "pre-existing, migrate to MatrxDataTable",
     "features/skills/components/SkillConfigPicker.tsx": "pre-existing, migrate to MatrxDataTable",

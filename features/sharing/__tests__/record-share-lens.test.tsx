@@ -14,7 +14,7 @@ import {
 import { RecordFieldsView } from "@/features/sharing/lenses/record-fields-view";
 import { resolveShareLens } from "@/features/sharing/lenses/registry";
 import { resolveShareLensMeta } from "@/features/sharing/lenses/metadata";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 
 // The shape public.record_public_view / platform.share_link_children return (taken from a
 // clone run on a real Appointments row: its Confidential label and complaint were not in it).

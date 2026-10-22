@@ -8,7 +8,7 @@ import { requireUserId } from "@/utils/auth/getUserId";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { applyListScope } from "@/lib/list-scope/applyListScope";
 import { defaultListFilter, defaultListScopeFor, type ListScopeQuery } from "@/lib/list-scope";
-import { fetchShownToContext } from "@/lib/list-scope/shownTo";
+import { fetchShownToContext } from "@ai-matrx/sharing/core";
 import type { ListScope } from "@/lib/list-scope/types";
 import type { Database, Json } from "@/types/database.types";
 import type {

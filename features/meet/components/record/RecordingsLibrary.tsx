@@ -48,7 +48,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TextInputDialog } from "@ai-matrx/design-system";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { downloadMediaSource } from "@/features/files/media-client/download";
 import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";

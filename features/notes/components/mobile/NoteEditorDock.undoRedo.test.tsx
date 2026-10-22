@@ -37,7 +37,7 @@ jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: (sel: unknown) => (typeo
 jest.mock("@/hooks/useToastManager", () => ({ useToastManager: () => ({ success: jest.fn() }) }));
 jest.mock("@/features/notes/canvas/noteKnowledgeKind", () => ({ useOpenNoteKnowledgePanel: () => jest.fn() }));
 jest.mock("../../hooks/useNoteIngestStatus", () => ({ useNoteIngestStatus: () => ({ state: "none" }) }));
-jest.mock("@/features/sharing/components/ShareModal", () => ({ ShareModal: () => null }));
+jest.mock("@ai-matrx/sharing/react", () => ({ ShareModal: () => null }));
 jest.mock("@/lib/clipboard/copy-notify", () => ({ copyNotify: jest.fn() }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

@@ -14,7 +14,7 @@
 
 import { supabase } from "@/utils/supabase/client";
 import type { Json } from "@/types/database.types";
-import { parsePermissionLevel, type PermissionLevel } from "./levels";
+import { parsePermissionLevel, type PermissionLevel } from "@ai-matrx/sharing/core";
 
 export type OrgShareStatus = "active" | "pending" | "rejected";
 

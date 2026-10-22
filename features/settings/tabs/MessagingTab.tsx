@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { Bell, BellOff, Monitor, Users, Volume2 } from "lucide-react";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
-import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
+import { SettingsSlider } from "@ai-matrx/design-system/settings";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
+import { SettingsLink } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsReadOnlyValue } from "@ai-matrx/design-system/settings";
 import { useSetting } from "../hooks/useSetting";
 import {
   playNotificationSound,

@@ -19,12 +19,12 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsRow } from "@/components/official/settings/SettingsRow";
-import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsRow } from "@ai-matrx/design-system/settings";
+import { SettingsTextInput } from "@ai-matrx/design-system/settings";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import {

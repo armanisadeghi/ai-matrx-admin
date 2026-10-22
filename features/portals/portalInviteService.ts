@@ -21,7 +21,7 @@
 // WHY NOT `iam.invitations` DIRECTLY: the invitation IS the credential. Reading
 // or writing that table from a browser would put the decision in the client.
 //
-// THE SIBLING IS `features/sharing/outside/outsideShareService.ts` — a table
+// THE SIBLING IS `@ai-matrx/sharing src/core/outsideShareService.ts` — a table
 // share is the same primitive with a different target type, and these two files
 // are deliberately the same shape.
 

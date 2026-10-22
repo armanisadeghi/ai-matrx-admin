@@ -35,7 +35,7 @@ import topicalMapReducer, { mapTreeLoaded } from "../redux/slice";
 import type { TopicalMapKnobs } from "../knobs";
 import { TopicDetailBody } from "./TopicDetailBody";
 
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 if (typeof window.matchMedia !== "function") {
   window.matchMedia = (query: string) =>

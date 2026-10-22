@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
-import { AccessSummaryPanel } from "@/features/sharing/components/AccessSummaryPanel";
+import { AccessSummaryPanel } from "@ai-matrx/sharing/react";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { MediaSourceBlock } from "./useBlockMediaSource";

@@ -39,7 +39,7 @@
 import { ensureEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
 import { sessionKnobPrincipals } from "@/lib/scoped-config/sessionKnob";
 import type { ListScope } from "./types";
-import { fetchShownToContext, shownToMyOrgsFilter } from "./shownTo";
+import { fetchShownToContext, shownToMyOrgsFilter } from "@ai-matrx/sharing/core";
 
 /**
  * The registry's word for where a list lands: exactly the two values

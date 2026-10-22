@@ -46,7 +46,7 @@ describe("mind map node text", () => {
       edges: [],
     };
     const { spec: out } = citeDiagramNodes(spec, chunks);
-    const n = (out.nodes as { label: string; description: string }[])[0]!;
+    const n = (out.nodes as { label: string; description: string; metadata?: unknown }[])[0]!;
     expect(JSON.stringify(n)).not.toMatch(/### Chunk/);
     expect(n.label).toBe("Ribosomes");
     expect(nodeCitationOf(n)).toMatchObject({ sourceId: "pd1:1" });

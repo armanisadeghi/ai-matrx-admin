@@ -2,7 +2,7 @@ jest.mock("@/lib/api/server-api", () =>
   require("@/lib/api/test-support/recordingServerApi").recordingServerApiModule(),
 );
 
-jest.mock("@/utils/permissions/shareLinks", () => ({
+jest.mock("@ai-matrx/sharing/core", () => ({
   shareLinkUrl: (token: string) => `https://www.aimatrx.com/s/${token}`,
 }));
 

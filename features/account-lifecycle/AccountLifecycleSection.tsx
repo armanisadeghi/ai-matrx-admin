@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { performLocalSignOut } from "@/features/shell/auth/useSignOut";
 

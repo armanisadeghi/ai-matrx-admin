@@ -301,7 +301,7 @@ describe.each(cases)(
 
 describe("useShare copy fallback", () => {
   const handler = extractVariableHandler(
-    "features/sharing/hooks/useShare.tsx",
+    "../aidream/apps/shared/sharing/src/react/sheet/useShare.tsx",
     "copy",
   );
 

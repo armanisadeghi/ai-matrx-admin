@@ -11,7 +11,7 @@
  * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import type { ResourceType } from "@/utils/permissions/registry";
+import type { ResourceType } from "@ai-matrx/sharing/core";
 import type { OverlayWire } from "./overlay-types";
 import { appOpener } from "./app-opener";
 

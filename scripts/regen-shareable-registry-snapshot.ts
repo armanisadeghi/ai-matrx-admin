@@ -7,7 +7,7 @@
  *
  * Workflow when adding a new shareable resource type:
  *   1. Apply the DB migration (one INSERT into shareable_resource_registry).
- *   2. Mirror the new row in utils/permissions/registry.ts.
+ *   2. Mirror the new row in @ai-matrx/sharing src/core/registry.ts.
  *   3. Run: pnpm tsx scripts/regen-shareable-registry-snapshot.ts
  *   4. Commit the diff (migration + registry.ts + snapshot.json).
  *   5. Tests will fail in CI if any of the three are out of sync.
@@ -125,7 +125,7 @@ async function main() {
           "is otherwise INVISIBLE (this is exactly how the assessment enum bug\n" +
           "shipped). Fix:\n" +
           "  1. pnpm tsx scripts/regen-shareable-registry-snapshot.ts\n" +
-          "  2. Sync utils/permissions/registry.ts to match the new rows\n" +
+          "  2. Sync @ai-matrx/sharing src/core/registry.ts to match the new rows\n" +
           "  3. pnpm test:unit utils/permissions   (must be green)\n" +
           "  4. Commit the migration + registry.ts + snapshot together\n",
       );

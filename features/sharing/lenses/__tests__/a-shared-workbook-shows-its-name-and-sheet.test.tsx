@@ -6,7 +6,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { resolveShareLens } from "../registry";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

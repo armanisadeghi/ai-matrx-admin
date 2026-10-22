@@ -41,7 +41,7 @@ import { formatDistanceToNow } from "date-fns";
 import {
   getShareableResource,
   type ResourceType,
-} from "@/utils/permissions/registry";
+} from "@ai-matrx/sharing/core";
 import { ArchivedDisclosure } from "@ai-matrx/design-system";
 import { Checkbox } from "@/components/ui/checkbox";
 import {

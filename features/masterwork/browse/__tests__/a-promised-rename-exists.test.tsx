@@ -40,7 +40,7 @@ jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hook
 jest.mock("@/lib/toast", () => ({
   toast: { success: jest.fn(), error: jest.fn() },
 }));
-jest.mock("@/features/sharing/components/ShareModal", () => ({
+jest.mock("@ai-matrx/sharing/react", () => ({
   ShareModal: () => null,
 }));
 jest.mock("@/components/ui/confirm-dialog", () => ({

@@ -15,8 +15,8 @@
 
 import React from "react";
 import { recordToast, toast } from "@/lib/toast";
-import { grantOrgAvailability } from "@/utils/permissions/service";
-import type { ResourceType } from "@/utils/permissions/registry";
+import { grantOrgAvailability } from "@ai-matrx/sharing/core";
+import type { ResourceType } from "@ai-matrx/sharing/core";
 import { listOrgSharedIdsForTable } from "@/utils/permissions/orgModeration";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { useKindItems } from "@/features/scopes/hooks/useKindItems";

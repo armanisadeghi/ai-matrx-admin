@@ -15,7 +15,7 @@ import Link from "@/components/navigation/AppLink";
 
 import { Button } from "@ai-matrx/design-system";
 
-import { myPendingTableInvitations, type MyPendingTableInvitation } from "./outsideShareService";
+import { myPendingTableInvitations, type MyPendingTableInvitation } from "@ai-matrx/sharing/core";
 
 export function usePendingTableInvitation(tableId: string, enabled: boolean) {
   const [found, setFound] = useState<MyPendingTableInvitation | null | undefined>(undefined);

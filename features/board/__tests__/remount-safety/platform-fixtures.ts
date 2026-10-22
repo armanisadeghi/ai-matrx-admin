@@ -155,9 +155,9 @@ export function seedPlatform(): void {
   // Unseeded, both fail, and a failed read is never kept - every wake would ask again.
   seedRpc("knob_defaults", { version: "d1", unchanged: false, defaults: KNOBS });
   seedRpc("knob_snapshot_delta", { etag: "e1", defaults_version: "d1", unchanged: false, overrides: {} });
-  // lib/list-scope/shownTo.ts `ShownToContext`
+  // @ai-matrx/sharing src/core/shownTo.ts `ShownToContext`
   seedRpc("shown_to_context", { [ORGANIZATION.id]: { d: "everyone", t: [PERSON.id] } });
-  // utils/permissions/service.ts — the person owns what the tile shows.
+  // @ai-matrx/sharing src/core/service.ts — the person owns what the tile shows.
   seedRpc("may_manage_sharing", true);
   // features/tasks/redux/taskAssociationsSlice.ts — no task links this record yet.
   seedRpc("get_tasks_for_entity", { tasks: [] });

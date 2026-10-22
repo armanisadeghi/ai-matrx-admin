@@ -10,8 +10,8 @@
  *
  * RED before: `accessSummaryView(...).visibility_label` was the bare setting's label.
  */
-import { accessSummaryView } from "@/features/sharing/format";
-import type { AccessSummary } from "@/features/sharing/service/accessSummary";
+import { accessSummaryView } from "@ai-matrx/sharing/core";
+import type { AccessSummary } from "@ai-matrx/sharing/core";
 
 const BASE: AccessSummary = {
   entityType: "custom_record",

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { useShare, type UseShareResult } from "../useShare";
+import { useShare, type UseShareResult } from "@ai-matrx/sharing/react";
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }

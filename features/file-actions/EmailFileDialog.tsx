@@ -7,8 +7,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { toast } from "@/lib/toast";
-import { getResourceSharePath } from "@/utils/permissions/registry";
-import type { ResourceType } from "@/utils/permissions/types";
+import { getResourceSharePath } from "@ai-matrx/sharing/core";
+import type { ResourceType } from "@ai-matrx/sharing/core";
 
 /** File → Email ▸ "Email this file" (typed addresses) and "Email collaborators" (everyone it is shared with). */
 export function EmailFileDialog({

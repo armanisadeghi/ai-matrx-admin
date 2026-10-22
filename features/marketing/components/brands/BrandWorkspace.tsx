@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandSpokespeople } from "@/features/marketing/photos/BrandSpokespeople";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { BrandAssists } from "@/features/marketing/brand-assists/BrandAssists";
 import { BrandResearchReadiness } from "@/features/marketing/components/brands/BrandResearchReadiness";
@@ -170,7 +171,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { useFocusEditTarget, useIsEditTarget } from "@/features/marketing/lib/useEditTarget";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { DiscoverBrandButton, DiscoverBrandMenuItem } from "@/features/marketing/components/brands/DiscoverBrandButton";
 import { useLiveBrand } from "@/features/marketing/components/brands/useLiveBrand";
 import {
@@ -1050,8 +1051,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   <ShareButton
                     resourceType="web_brand"
                     resourceId={current.id}
-                    resourceName={current.name}
-                    size="icon"
+                    resourceName={current.name} iconOnly
                     showStatus={false}
                   />
                   {/* Fixed minimum width, so the count arriving never resizes the row. */}
@@ -1513,6 +1513,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           {tab === "relationships" ? (
           <>
           <BrandRelationsCard brand={current} canEdit={canEdit} />
+          <BrandSpokespeople brand={current} canEdit={canEdit} />
           <BrandResearchCard
             brandId={current.id}
             brandName={current.name}

@@ -1,11 +1,11 @@
 "use client";
 
 import { Image as ImageIcon } from "lucide-react";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
 import { SettingsModelPicker } from "@/components/official/settings/primitives/SettingsModelPicker";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 import { useSetting } from "../hooks/useSetting";
 import { PreferencesLoadGate } from "@/components/read-state/PreferencesLoadGate";
 

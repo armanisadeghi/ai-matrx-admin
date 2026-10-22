@@ -2,9 +2,9 @@
 
 import { ListTodo } from "lucide-react";
 
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsCheckbox } from "@/components/official/settings/primitives/SettingsCheckbox";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsCheckbox } from "@ai-matrx/design-system/settings";
 import { SettingAnchor } from "@/features/settings/doors/SettingAnchor";
 import { useSmsTaskNotifications } from "@/features/sms/hooks/useSmsTaskNotifications";
 import {

@@ -72654,136 +72654,6 @@
       "detail": "secondary slot: 113 chars, budget 60"
     },
     {
-      "file": "features/sharing/components/AccessSummaryPanel.tsx",
-      "line": 186,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "{ description: }",
-      "chars": 136,
-      "text": "The reachability summary failed to load. This is the error the user is looking at, verbatim — the access answer is UNKNOWN, not private.",
-      "detail": "secondary slot: 136 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/components/AccessSummaryPanel.tsx",
-      "line": 186,
-      "rule": "multi-sentence",
-      "severity": 2,
-      "where": "{ description: }",
-      "chars": 136,
-      "text": "The reachability summary failed to load. This is the error the user is looking at, verbatim — the access answer is UNKNOWN, not private.",
-      "detail": "2 sentences in one secondary slot (max 1)"
-    },
-    {
-      "file": "features/sharing/components/AccessSummaryPanel.tsx",
-      "line": 253,
-      "rule": "over-budget",
-      "severity": 1,
-      "where": "{ description: }",
-      "chars": 231,
-      "text": "Every reason this entity is reachable, exactly as rendered: who can open it, the one-line headline, and each reason row. This is the complete answer to \"who can see this, and why\" — direct grants are only one of the reasons listed.",
-      "detail": "secondary slot: 231 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/components/AccessSummaryPanel.tsx",
-      "line": 253,
-      "rule": "multi-sentence",
-      "severity": 1,
-      "where": "{ description: }",
-      "chars": 231,
-      "text": "Every reason this entity is reachable, exactly as rendered: who can open it, the one-line headline, and each reason row. This is the complete answer to \"who can see this, and why\" — direct grants are only one of the reasons listed.",
-      "detail": "2 sentences in one secondary slot (max 1)"
-    },
-    {
-      "file": "features/sharing/components/AccessSummaryPanel.tsx",
-      "line": 342,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "{ description: }",
-      "chars": 142,
-      "text": "One reason this entity is reachable, as rendered in the access summary. Removing this reason is one of the levers for changing who can see it.",
-      "detail": "secondary slot: 142 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/components/AccessSummaryPanel.tsx",
-      "line": 342,
-      "rule": "multi-sentence",
-      "severity": 2,
-      "where": "{ description: }",
-      "chars": 142,
-      "text": "One reason this entity is reachable, as rendered in the access summary. Removing this reason is one of the levers for changing who can see it.",
-      "detail": "2 sentences in one secondary slot (max 1)"
-    },
-    {
-      "file": "features/sharing/components/AddEveryoneInOrg.tsx",
-      "line": 248,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "<p>",
-      "chars": 79,
-      "text": "Each person below is given access by name. People who join later are not added.",
-      "detail": "secondary slot: 79 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/components/AddEveryoneInOrg.tsx",
-      "line": 248,
-      "rule": "multi-sentence",
-      "severity": 2,
-      "where": "<p>",
-      "chars": 79,
-      "text": "Each person below is given access by name. People who join later are not added.",
-      "detail": "2 sentences in one secondary slot (max 1)"
-    },
-    {
-      "file": "features/sharing/components/ShareLinkPanel.tsx",
-      "line": 166,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "{ description: }",
-      "chars": 64,
-      "text": "Copy this link and send it to the person you want to share with.",
-      "detail": "secondary slot: 64 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/components/ShareLinkPanel.tsx",
-      "line": 410,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "{ description: }",
-      "chars": 69,
-      "text": "Copy the reviewed message below and paste it into your messaging app.",
-      "detail": "secondary slot: 69 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/components/ShareLinkPanel.tsx",
-      "line": 439,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "<p>",
-      "chars": 82,
-      "text": "Share it with specific people or an organization instead — they open it signed in.",
-      "detail": "secondary slot: 82 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/components/ShareModal.tsx",
-      "line": 323,
-      "rule": "over-budget",
-      "severity": 1,
-      "where": "<p>",
-      "chars": 207,
-      "text": "Deciding who else may is what Full access means (View < Comment < Edit < Full access). Ask whoever has it, or an owner of the organization. The Access tab still shows you everyone who can reach this and why.",
-      "detail": "secondary slot: 207 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/components/ShareModal.tsx",
-      "line": 323,
-      "rule": "multi-sentence",
-      "severity": 1,
-      "where": "<p>",
-      "chars": 207,
-      "text": "Deciding who else may is what Full access means (View < Comment < Edit < Full access). Ask whoever has it, or an owner of the organization. The Access tab still shows you everyone who can reach this and why.",
-      "detail": "3 sentences in one secondary slot (max 1)"
-    },
-    {
       "file": "features/sharing/components/TableTransferOffer.tsx",
       "line": 65,
       "rule": "over-budget",
@@ -72802,36 +72672,6 @@
       "chars": 259,
       "text": "… keeps it to the people named on it, so it does not open for the owners and admins of … either. As one of them you can transfer its ownership instead: you say why, … is told and stays on as an editor, and the transfer is kept in the organi",
       "detail": "2 sentences in one secondary slot (max 1)"
-    },
-    {
-      "file": "features/sharing/components/tabs/PublicAccessTab.tsx",
-      "line": 116,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "{ description: }",
-      "chars": 120,
-      "text": "The share-capabilities lookup failed, so the Anyone link tab renders no controls. This is the error on screen, verbatim.",
-      "detail": "secondary slot: 120 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/components/tabs/PublicAccessTab.tsx",
-      "line": 116,
-      "rule": "multi-sentence",
-      "severity": 2,
-      "where": "{ description: }",
-      "chars": 120,
-      "text": "The share-capabilities lookup failed, so the Anyone link tab renders no controls. This is the error on screen, verbatim.",
-      "detail": "2 sentences in one secondary slot (max 1)"
-    },
-    {
-      "file": "features/sharing/components/tabs/ShareWithUserTab.tsx",
-      "line": 433,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "{ description: }",
-      "chars": 114,
-      "text": "A share-with-user attempt that failed, with the error sentence on screen and the live form state that produced it.",
-      "detail": "secondary slot: 114 chars, budget 60"
     },
     {
       "file": "features/sharing/components/TransferTableOwnership.tsx",
@@ -73034,16 +72874,6 @@
       "detail": "2 sentences in one secondary slot (max 1)"
     },
     {
-      "file": "features/sharing/outside/OutsideSharePanel.tsx",
-      "line": 388,
-      "rule": "over-budget",
-      "severity": 1,
-      "where": "{ description: }",
-      "chars": 223,
-      "text": "They lose … immediately — anything they have open refuses the next time it asks — and, because this table is the only reason they can reach this organization at all, they lose that too. You can invite them again afterwards.",
-      "detail": "consequence slot: 223 chars, budget 140"
-    },
-    {
       "file": "features/sharing/outside/PendingTableInvitation.tsx",
       "line": 48,
       "rule": "over-budget",
@@ -73142,26 +72972,6 @@
       "chars": 147,
       "text": "This is the only time it will show. Copy what you need now — it is already deleted from our side, and it will not come back if you leave or reload.",
       "detail": "2 sentences in one secondary slot (max 1)"
-    },
-    {
-      "file": "features/sharing/secure/SecureLinkPanel.tsx",
-      "line": 212,
-      "rule": "over-budget",
-      "severity": 1,
-      "where": "<p>",
-      "chars": 107,
-      "text": "They get a link that opens once, and a code on a separate channel. No account needed. The link works for ….",
-      "detail": "secondary slot: 107 chars, budget 60"
-    },
-    {
-      "file": "features/sharing/secure/SecureLinkPanel.tsx",
-      "line": 212,
-      "rule": "multi-sentence",
-      "severity": 1,
-      "where": "<p>",
-      "chars": 107,
-      "text": "They get a link that opens once, and a code on a separate channel. No account needed. The link works for ….",
-      "detail": "3 sentences in one secondary slot (max 1)"
     },
     {
       "file": "features/shell/auth/useSignOut.ts",

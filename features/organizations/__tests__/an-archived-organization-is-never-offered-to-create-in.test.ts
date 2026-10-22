@@ -25,7 +25,6 @@ describe("create pickers never offer an archived organization", () => {
     for (const f of [
       "features/projects/components/ProjectFormCore.tsx",
       "features/projects/components/ProjectImportJsonPanel.tsx",
-      "features/sharing/components/AddEveryoneInOrg.tsx",
     ]) {
       const src = readFileSync(join(root, f), "utf8");
       expect(src).toContain("useOrganizationsToCreateIn()");

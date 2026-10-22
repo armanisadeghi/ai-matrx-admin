@@ -5,7 +5,7 @@
  * WHY A LEXER AND NOT TWO REGEXES. Every guard that asks "does this file NAME X in code?" strips comments
  * first, and the old way — `/\/\*[\s\S]*?\*\//` then `//.*$` — reads a `/*` inside a STRING (a glob like
  * "**\/*.ts", a cron "*\/5", a path) as the start of a comment and blanks real code until the next `*\/`.
- * `utils/permissions/registry.ts` lost ~700 lines to it, so `tableName: "udt_datasets"` was invisible to
+ * `@ai-matrx/sharing src/core/registry.ts` lost ~700 lines to it, so `tableName: "udt_datasets"` was invisible to
  * check:old-system-unreachable: a guard that cannot see is a false green. This walks the text once,
  * knowing strings (single, double, template with `${}` nesting), regex literals, and comments.
  *

@@ -27,11 +27,11 @@ import { createRoot } from "react-dom/client";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-import { PermissionsList } from "@/features/sharing/components/PermissionsList";
+import { PermissionsList } from "@ai-matrx/sharing/react";
 import {
   NO_GRANTS_HEADLINE,
   NO_GRANTS_YET_HEADLINE,
-} from "@/features/sharing/format";
+} from "@ai-matrx/sharing/core";
 
 function draw(node: React.ReactElement) {
   const host = document.createElement("div");

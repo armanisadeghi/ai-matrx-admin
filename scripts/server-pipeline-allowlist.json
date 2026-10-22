@@ -49,10 +49,6 @@
       "rules": ["url-fetch"],
       "reason": "pending: the fetch injected into @ai-matrx/files carries its own organization-admission gate and body sniff; move onto the core transport (createMatrxTransport) in the files package."
     },
-    "features/sharing/components/ShareModal.tsx": {
-      "rules": ["url-fetch"],
-      "reason": "Not the Python server: builds a share link on the app's own origin and calls a Next /api/sharing route."
-    },
     "features/window-panels/windows/ShareModalWindow.tsx": {
       "rules": ["url-fetch"],
       "reason": "Not the Python server: builds a share link on the app's own origin and calls a Next /api/sharing route."

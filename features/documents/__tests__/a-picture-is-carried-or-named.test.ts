@@ -12,7 +12,7 @@ jest.mock("@/features/files/handler/utils/python-base", () => ({
   pythonShareUrl: (t: string) => `https://files.example/share/${t}`,
   shareChildFileUrls: (t: string, id: string) => ({ inline: `https://files.example/share/${t}/files/${id}` }),
 }));
-jest.mock("@/utils/permissions/shareLinks", () => ({ createShareLink: jest.fn() }));
+jest.mock("@ai-matrx/sharing/core", () => ({ createShareLink: jest.fn() }));
 
 import { googleImageNote, googleReadyMarkdown } from "@/features/google-workspace/linked/doc-images";
 

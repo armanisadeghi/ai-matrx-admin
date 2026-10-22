@@ -1,10 +1,10 @@
 "use client";
 
 import { Globe } from "lucide-react";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
 import { useSetting, useSettingReset } from "../hooks/useSetting";
 import { LANGUAGE_OPTIONS } from "../agent-writable-settings";
 import { readDeviceTimeZone, isValidTimeZone } from "@/lib/time/personTimeZone";

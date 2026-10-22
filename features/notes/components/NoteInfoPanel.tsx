@@ -43,7 +43,7 @@ import { computeNoteStats, formatStatNumber } from "../utils/noteStats";
 import { NoteContextSection } from "./NoteContextSection";
 import { HomeChip } from "../homes/HomePicker";
 import { notesEditorManifest } from "@/features/surfaces/manifests/notes-editor.manifest";
-import { AccessSummaryPanel } from "@/features/sharing/components/AccessSummaryPanel";
+import { AccessSummaryPanel } from "@ai-matrx/sharing/react";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { surfaceValueLabels } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import { LinkedRecordsSection } from "@/features/scopes/components/linked-records/LinkedRecordsSection";

@@ -6,7 +6,7 @@ import { createDynamicRouteMetadata } from "@/utils/route-metadata";
 import { TemplateReadFailure } from "@/features/message-templates/components/TemplateReadFailure";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { TemplateViewPage } from "@/features/message-templates/components/TemplateViewPage";
-import { publicLaneSelect } from "@/utils/permissions/publicLane";
+import { publicLaneSelect } from "@ai-matrx/sharing/core";
 import type { MessageTemplateDB } from "@/features/message-templates/types/message-templates-db";
 
 interface PageProps {

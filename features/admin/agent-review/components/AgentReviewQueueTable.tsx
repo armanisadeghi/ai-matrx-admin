@@ -38,7 +38,7 @@ import {
   reviewSearchText,
 } from "@/features/admin/agent-review/row-text";
 import { matchesTableSearch } from "@ai-matrx/design-system/data-table/filter-engine";
-import { useShare } from "@/features/sharing/hooks/useShare";
+import { useShare } from "@ai-matrx/sharing/react";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectDisplayName, selectUserId } from "@/lib/redux/selectors/userSelectors";

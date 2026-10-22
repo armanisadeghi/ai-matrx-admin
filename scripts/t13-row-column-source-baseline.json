@@ -523,8 +523,6 @@
   "types/canvas-social.ts": 1,
   "types/content-blocks-db.ts": 2,
   "utils/permissions/__tests__/service.visibility.test.ts": 2,
-  "utils/permissions/publicLane.ts": 5,
-  "utils/permissions/registry.ts": 8,
   "utils/supabase/server-tools-service.ts": 1
  }
 }

@@ -3,16 +3,16 @@
 import { useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useIsOwner, useSharing } from "@/utils/permissions/hooks";
-import { PermissionsList } from "@/features/sharing/components/PermissionsList";
-import { ShareWithUserTab } from "@/features/sharing/components/tabs/ShareWithUserTab";
-import { OrgAvailabilityNote } from "@/features/sharing/components/OrgAvailabilityNote";
-import { WhoCanSeeThis } from "@/features/sharing/components/WhoCanSeeThis";
-import { PublicAccessTab } from "@/features/sharing/components/tabs/PublicAccessTab";
+import { useIsOwner, useSharing } from "@ai-matrx/sharing/react";
+import { PermissionsList } from "@ai-matrx/sharing/react";
+import { ShareWithUserTab } from "@ai-matrx/sharing/react";
+import { OrgAvailabilityNote } from "@ai-matrx/sharing/react";
+import { WhoCanSeeThis } from "@ai-matrx/sharing/react";
+import { PublicAccessTab } from "@ai-matrx/sharing/react";
 import {
   AccessSummaryPanel,
   type AccessSummaryState,
-} from "@/features/sharing/components/AccessSummaryPanel";
+} from "@ai-matrx/sharing/react";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
@@ -28,7 +28,7 @@ import {
   type AccessNotice,
   type AccessPanelView,
   type SharingCopyContext,
-} from "@/features/sharing/format";
+} from "@ai-matrx/sharing/core";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 /**

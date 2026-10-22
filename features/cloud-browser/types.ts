@@ -16,7 +16,7 @@
  */
 
 import type { components } from "@ai-matrx/api/types";
-import type { PermissionLevel } from "@/utils/permissions/types";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
 
 // ── S1 §2 enums ──────────────────────────────────────────────────────────────
 

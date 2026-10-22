@@ -1,8 +1,8 @@
 "use client";
 
 import ShareModalWindow from "@/features/window-panels/windows/ShareModalWindow";
-import { getShareableResource } from "@/utils/permissions/registry";
-import type { ResourceType } from "@/utils/permissions/types";
+import { getShareableResource } from "@ai-matrx/sharing/core";
+import type { ResourceType } from "@ai-matrx/sharing/core";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {

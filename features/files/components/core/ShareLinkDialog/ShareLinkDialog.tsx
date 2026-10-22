@@ -19,7 +19,7 @@ import { useCallback, useState } from "react";
 import { Check, Copy, ExternalLink, Link, Loader2, Trash2 } from "lucide-react";
 import { extractErrorMessage } from "@/utils/errors";
 import { pythonShareUrl } from "@/features/files/handler/utils/python-base";
-import { shareLinkUrl } from "@/utils/permissions/shareLinks";
+import { shareLinkUrl } from "@ai-matrx/sharing/core";
 import {
   Dialog,
   DialogContent,

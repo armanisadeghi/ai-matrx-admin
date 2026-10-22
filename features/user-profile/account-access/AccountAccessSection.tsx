@@ -6,8 +6,8 @@ import { KeyRound, LogOut, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsReadOnlyValue } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { readAccountAccess, requestEmailChange, signOutOtherSessions, type AccountAccessState } from "./accountAccess";
 
 import { Spinner } from "@/components/ui/loaders/Spinner";

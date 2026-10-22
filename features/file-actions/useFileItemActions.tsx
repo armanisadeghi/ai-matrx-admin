@@ -10,7 +10,7 @@ import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { MatrxTableMenuSection } from "@ai-matrx/design-system/data-table";
 import { promptRename } from "./FileMenuItems";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { MoveToProjectDialog } from "./MoveToProjectDialog";
 
 import { useAppSelector } from "@/lib/redux/hooks";

@@ -20,7 +20,7 @@ import {
 import * as pythonClient from "@/lib/python-client";
 import * as serverApiModule from "@/lib/api/server-api";
 import * as supabaseClient from "@/utils/supabase/client";
-import * as shareLinks from "@/utils/permissions/shareLinks";
+import * as shareLinks from "@ai-matrx/sharing/core";
 import * as toastModule from "@/lib/toast";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import {
@@ -28,8 +28,8 @@ import {
   selectProjectId,
   selectTaskId,
 } from "@/lib/redux/slices/appContextSlice";
-import type { ResourceType } from "@/utils/permissions/registry";
-import type { PermissionLevel } from "@/utils/permissions/types";
+import type { ResourceType } from "@ai-matrx/sharing/core";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
 
 // org-filter: write-target the files engine files uploads in the organization the person works in
 type AppContextState = Parameters<typeof selectOrganizationId>[0];

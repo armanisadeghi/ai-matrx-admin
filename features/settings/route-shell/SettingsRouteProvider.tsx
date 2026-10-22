@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { SettingsDesignProvider } from "@/components/official/settings/SettingsDesignProvider";
+import { SettingsDesignProvider } from "@ai-matrx/design-system/settings";
 import { UniversalSettingsProvider } from "@/features/settings/universal/UniversalSettingsContext";
 import { isUserSettingsPath } from "./settings-route-path";
 

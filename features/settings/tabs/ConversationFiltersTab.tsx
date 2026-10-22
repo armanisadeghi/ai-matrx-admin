@@ -13,13 +13,13 @@
  */
 
 import { Filter, ListFilter, RotateCcw } from "lucide-react";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsMultiSelect } from "@/components/official/settings/primitives/SettingsMultiSelect";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import type { SettingsOption } from "@/components/official/settings/types";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsMultiSelect } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
+import type { SettingsOption } from "@ai-matrx/design-system/settings";
 import { useSetting } from "../hooks/useSetting";
 import type { ConversationFilterSurfacePref } from "@/lib/redux/preferences/userPreferencesSlice";
 import {

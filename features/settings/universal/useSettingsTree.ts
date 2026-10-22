@@ -8,7 +8,7 @@
 // the SAME ids. A settings surface that built its own list would be the second
 // surface this campaign exists to prevent.
 
-import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
+import type { SettingsTreeNode } from "@ai-matrx/design-system/settings";
 import { findTab, getTabTreeNodes } from "../registry";
 import type { SettingsTabDef } from "../types";
 import { buildConfigTreeNodes, configTabDef, isConfigTabId } from "./configTree";

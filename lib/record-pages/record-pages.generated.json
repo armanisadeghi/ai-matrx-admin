@@ -6689,10 +6689,6 @@
    "file": "features/settings/components/SettingsShellOverlay.tsx",
    "pending": true
   },
-  "window:features/sharing/components/ShareModal.tsx": {
-   "file": "features/sharing/components/ShareModal.tsx",
-   "pending": true
-  },
   "window:features/templates/components/SaveTemplateDialog.tsx": {
    "file": "features/templates/components/SaveTemplateDialog.tsx",
    "pending": true

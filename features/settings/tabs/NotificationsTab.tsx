@@ -21,8 +21,8 @@ import {
 import { ResetTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { SearchInput, InfoHint } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 import { toast } from "@/lib/toast";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import {

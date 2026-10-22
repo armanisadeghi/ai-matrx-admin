@@ -11,6 +11,10 @@
  * variants grid after generating.
  */
 
+import { InlineMediaRef } from "@ai-matrx/media/react";
+import { getFile } from "@/features/files/api/files";
+import { fileIdToMediaRef } from "@/features/files/redux/converters";
+import { useSubjectPhotos } from "@/features/marketing/photos/SubjectPhotosDialog";
 import { ReferencePlayer } from "./ReferencePlayer";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -46,7 +50,7 @@ import {
 } from "../../video/clone";
 import { useReferencePost, useRunningAnalysis, useVideoStructure, videoKeys } from "../../video/hooks";
 import { attachReferenceVideo, createVideoProject, deleteVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
-import { useBrandOfferings, useFileUrls, useOfferingFacts, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
+import { contentHashOf, useBrandOfferings, useFileUrls, useOfferingFacts, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
 import { parseBriefDraft, serializeBriefDraft } from "../../video/brief-draft";
 import { brandNameIn, hookPrefill as hookPrefillFor } from "../../video/hook-brand";
@@ -415,6 +419,34 @@ function BriefPanel({
   const scriptText = script ?? referenceScript;
   const noSpeech = words.data?.status === "no_speech";
   const offering = offerings.data?.find((o) => o.key === productKey) ?? null;
+  // The offering's saved photos (brand library): all are used unless the person unticks some; an uploaded photo wins.
+  const offeringPhotos = useSubjectPhotos(
+    { brandId, organizationId, kind: "offering", id: offering?.offeringId ?? "" },
+    Boolean(offering?.offeringId),
+  ).data ?? [];
+  const [droppedPhotos, setDroppedPhotos] = useState<string[]>([]);
+  const keptPhotos = offeringPhotos.filter((p) => !droppedPhotos.includes(p.fileId));
+  const keptKey = keptPhotos.map((p) => p.fileId).join(",");
+  const [pickedFiles, setPickedFiles] = useState<{ key: string; files: BriefFile[] } | null>(null);
+  useEffect(() => {
+    if (!offering?.offeringId || droppedPhotos.length === 0 || keptPhotos.length === 0) return;
+    let live = true;
+    void Promise.all(
+      keptPhotos.map(async (p) => {
+        const { data } = await getFile(p.fileId);
+        const hash = contentHashOf(data.checksum);
+        return hash ? ({ fileId: p.fileId, contentHash: hash } as BriefFile) : null;
+      }),
+    ).then((files) => {
+      if (live) setPickedFiles({ key: keptKey, files: files.filter((f): f is BriefFile => f !== null) });
+    });
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keptKey, droppedPhotos.length, offering?.offeringId]);
+  const chosenPhotoFiles =
+    droppedPhotos.length > 0 && pickedFiles?.key === keptKey && pickedFiles.files.length ? pickedFiles.files.slice(0, 4) : null;
   const product = offering ? offering.name : productName.trim();
   // The saved details of the chosen product start the two labels; typing replaces them. Nothing typed = the saved text.
   const facts = useOfferingFacts(offering?.offeringId ?? null);
@@ -506,7 +538,7 @@ function BriefPanel({
             ...(offering?.offeringId ? { offeringId: offering.offeringId } : {}),
             ...(aboutValue.trim() ? { description: cutText(aboutValue.trim(), 600) } : {}),
             ...(priceValue.trim() ? { price: cutText(priceValue.trim(), 60) } : {}),
-            ...(productImage ? { images: [productImage] } : {}),
+            ...(productImage ? { images: [productImage] } : chosenPhotoFiles ? { images: chosenPhotoFiles } : {}),
           },
         }
       : {}),
@@ -662,6 +694,7 @@ function BriefPanel({
             value={productKey}
             onValueChange={(v) => {
               setProductKey(v);
+              setDroppedPhotos([]);
               setAboutText(null);
               setPriceText(null);
             }}
@@ -683,12 +716,33 @@ function BriefPanel({
             onChange={(e) => setAboutText(e.target.value)}
           />
           <Field aria-label="Price" placeholder="Price" value={priceValue} maxLength={60} disabled={busy} onChange={(e) => setPriceText(e.target.value)} />
+          {offeringPhotos.length > 0 && !productImage ? (
+            <div className="flex flex-wrap items-center gap-2" data-offering-photo-picker>
+              {offeringPhotos.map((p, i) => {
+                const on = !droppedPhotos.includes(p.fileId);
+                return (
+                  <button
+                    key={p.fileId}
+                    type="button"
+                    aria-pressed={on}
+                    aria-label={`${on ? "Use" : "Skip"} photo ${i + 1}`}
+                    disabled={busy || (on && keptPhotos.length === 1)}
+                    onClick={() => setDroppedPhotos((d) => (on ? [...d, p.fileId] : d.filter((x) => x !== p.fileId)))}
+                    className={`relative size-14 overflow-hidden rounded-md border ${on ? "border-primary" : "border-border opacity-40"}`}
+                  >
+                    <InlineMediaRef ref={fileIdToMediaRef(p.fileId)} size="fill" fit="cover" rounded="none" fallback="icon" errorFallback="icon" alt="" className="absolute inset-0 h-full w-full" />
+                  </button>
+                );
+              })}
+              <span className="type-meta text-muted-foreground">Photos from {offering?.name}. Tap to skip one</span>
+            </div>
+          ) : null}
           <div className="flex items-center gap-2">
             <FilePickButton accept="image/*" icon={<ImagePlus />} disabled={busy} onFiles={(f) => void upload(f, "product")}>
               {productImage ? "Replace photo" : "Product photo"}
             </FilePickButton>
             {uploading === "product" ? <span className="type-meta text-muted-foreground">Uploading…</span> : null}
-            {productImage ? <Badge tone="success">Photo added</Badge> : <span className="type-meta text-muted-foreground">None: one is generated</span>}
+            {productImage ? <Badge tone="success">Photo added</Badge> : offeringPhotos.length ? null : <span className="type-meta text-muted-foreground">None: one is generated</span>}
           </div>
         </div>
       </Row>
