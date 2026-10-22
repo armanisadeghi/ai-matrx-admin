@@ -122,6 +122,7 @@ route	tree node	how found today	note
 /camera/admin	Productivity › Media	in-page link under menu: Media › Camera	camera (tree also lists camera under Capture)
 /camera/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /capture/needs-you	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Needs You	
+/chart/[slug]	Not in the app frame › Share links	opened from a link someone sent (published from /agents/org-chart)	published org chart, public
 /chat	YOURS › Chat › Chats	unreachable: old address that redirects (owner's cleanup list)	
 /chat/[conversationId]	YOURS › Chat › Chats	opened from a record link	
 /chat/a/[agentId]	YOURS › Chat › Chats	opened from a record link	

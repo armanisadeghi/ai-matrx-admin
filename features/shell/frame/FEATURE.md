@@ -29,10 +29,12 @@ together. Linear is the visual reference. It is built beside the old shell and i
   the ask bar. `?side_chat=open|closed` opens the page with the side chat in that state.
   "Hairline | Fade" switches the header's lower edge for the owner's comparison.
 - `AppFrame.tsx`: the frame. Holds the forms, the variants, the drawer and the companion.
-- `AppGrid.tsx`: the 9-dot product grid, Google-tight (owner, 2026-10-20): a 320px popover,
-  3 columns of 80px cells (32px glyph, one-line 12px name), the favorites (up to 9) in a
+- `AppGrid.tsx`: the 9-dot product grid, Google-tight (owner, 2026-10-20): a 26rem popover that
+  never scrolls at common heights (owner, 2026-10-22): 5 columns of 72px cells, 60px under a
+  760px screen, 6 columns under 600px (`gridLayout`); the body may use all the room under the
+  button, so only a very short screen scrolls. The favorites (up to 9) in a
   rounded card, then every other product ONCE in family order, with no heading rows; "Edit
-  favorites" sits under the grid. Grid A is the owner's pick (2026-10-21; B and C are gone). A
+  grid" sits under the grid. Grid A is the owner's pick (2026-10-21; B and C are gone). A
   search field tops the popover (focus on open): it filters tiles as you type by name,
   section and page, Enter opens the first match, ArrowDown enters the tiles, Esc clears then
   closes. A tile always opens its product in a new tab; the grid is one Tab stop and arrow
@@ -42,8 +44,12 @@ together. Linear is the visual reference. It is built beside the old shell and i
   a palette that finds any product or page by name or synonym and goes there; results are
   grouped under the product's mark. Hotkey Cmd/Ctrl+Shift+K (Cmd+K is the knowledge bar's,
   Cmd+/ the classic menu search's). Enter goes (`onGoTo`, else the location), Cmd+Enter opens a
-  new tab. The index (from `route-homes.generated.ts`, never the flows) and the palette load on
-  first open. The ranking is `searchEngine.ts`, shared with the classic "Search menu". Host
+  new tab. The index covers every page with a home row: products and sidebar rows from
+  `route-homes.generated.ts`, plus `go-to-pages.generated.ts` (every concrete page in
+  `route-homes.tsv`, titled from its flow title or its last segment; account-menu pages under
+  "App menu"; dynamic, plumbing and to-be-deleted pages left out). Both are built by
+  `pnpm frame:route-homes`; the go-to file is imported only by the palette, so it and the index
+  load on first open. The ranking is `searchEngine.ts`, shared with the classic "Search menu". Host
   menus merge in through `goToEntries`. The phone header has no icon of its own (its search
   tool is the host's); the drawer carries it.
 - `FrameSidebar.tsx`: the product's own menu. Every row is a real link (`href`, defaulting to
@@ -134,7 +140,9 @@ in `frame-host/frameProductSidebar.tsx`, most specific first:
    tiny and eager; FrameHostImpl provides the slot around the page body only, so windows never
    claim it). In the frame the content is portalled into the column; in classic it renders in place.
    Users: Notes (route instance, `config.frameSidebar`), Files `PageShell`, Messages, Agent connections,
-   Spaces (`SpacesWorkspace`; Cmd+\ stays the frame's), org project settings. Every such route is
+   Spaces (`SpacesWorkspace`; Cmd+\ stays the frame's), org project settings, HR (`HrFrameSidebar`,
+   mounted by the /hr layout: HR's whole module list with the current section's tabs under it; the
+   header switcher draws only in classic). Every such route is
    declared ONCE in `FRAME_PAGE_SIDEBAR_ROUTES` (frameSidebarSlot.tsx, with its owner file; a test
    holds the two in step): there the frame reserves its sidebar body with a quiet `RegionSkeleton`
    until the page claims it, so the route rows never flash first. The reserve ends on the first claim
@@ -148,7 +156,8 @@ in `frame-host/frameProductSidebar.tsx`, most specific first:
 When 1 or 2 fills the body, the product's route-table rows stay as a compact strip ABOVE it
 (`data-mf-region="product-rows"`, the frame's own one-line rows, the current one selected), only
 when the product has a row beyond the current one; more than four fold to the first three plus the
-current one behind a "N more" toggle. So Chat's Voice / Talk, Agent Messenger and Imported AI chats
+current one behind a "N more" toggle. A declared row marked `wholeMenu` (HR) IS the product's whole menu: no strip
+(`sidebarProductRows={false}`), so the same menu never shows twice. So Chat's Voice / Talk, Agent Messenger and Imported AI chats
 stay one click away on /chat.
 
 Inventory and open list: `common-docs/projects/app-frame/SIDEBARS.md`. Test:
@@ -320,6 +329,37 @@ removes it on the first `requestAnimationFrame`; it is not a second mount.
 
 ## Change log
 
+- 2026-10-22 (adversarial review of the live frame): footer History and Help draw only when the
+  host passes a handler (the live host passes none — no page-history or help target exists in
+  classic either; no shared save-status source exists, so the status slot stays empty). A loaded
+  canvas brings its own pane header (tabs, Expand, Close on the canvas store), so the frame draws
+  its canvas title row only around the lab placeholder — one close, one full screen. Pages add
+  their own "…" items through the page-header channel (`useDeclareFrameActions`; host merges them
+  before Copy link / Open in new tab): RecordPageHeader's Actions menu goes there, and on a phone
+  EntityModeHeader's other modes and actions go there instead of a second "…". Phone: a
+  product's home (or one of its sidebar rows) shows the menu button; Back only deeper
+  (`phoneCanGoBack`). The header star favorites the RECORD when the page declared one through the
+  current-record primitive (`kind:id`, the same favorite PinButton writes; no new declare
+  channel), else the page; an unsaved `/new` address has no star. Side chat uses the Chat
+  product's icon (`CHAT_PRODUCT_ICON`), never the reserved Agents glyph. The error fallback's
+  classic link keeps the query (`classicLayoutHref`). The grid's button reads "Edit grid". Kill
+  switch tested: knob `false` → classic; a read that does not answer keeps the person's choice
+  (fail-open by design); the middleware's cookie write is `rememberFrameChoice`.
+
+- 2026-10-22: Go to finds every page with a home row (`go-to-pages.generated.ts`, lazy): "timesheet"
+  finds /hr/time/timesheets. ONE crumb derivation in the frame: a page without a declared trail
+  gets the address-derived trail (`useDerivedTrail`, the same one page-top templates declare),
+  drawn through `frameHostCrumbs` → `pageTrailCrumbs`; the route table's `derivedCrumbs` is gone
+  (the route table now only picks the product and sidebar row). Classic keeps `deriveTrail`
+  unchanged — it was already the source, so nothing in classic moved. App grid fits without
+  scrolling (`gridLayout`). Big items are the person's own first six grid favorites
+  (`bigItemProducts`; `BIG_ITEM_IDS` deleted); the default order of `DEFAULT_GRID_FAVORITES` puts
+  the default big items first. `every-page-has-a-home` has its own advisory release-gate row.
+
+- 2026-10-22: HR's one menu. In the frame HR's whole module list (`resolveHrNav`, via `useHrNav`)
+  is the sidebar through the kind-B door, the current module's section tabs under it; no header
+  switcher, no body tab strip, no product-rows strip (`wholeMenu`). Classic unchanged. Tests
+  `features/hr/shared/__tests__/hr-menu-in-frame.test.tsx` + product-sidebar-in-frame.
 - 2026-10-22: Product sidebars round 2. The product's other rows stay as a strip above a module
   menu or page sidebar; declared kind-B routes reserve the body with a skeleton (no row flash);
   Spaces and org project settings migrated; the Notes filter row is the `@container/list` its org

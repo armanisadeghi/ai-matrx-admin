@@ -77,7 +77,9 @@ describe("the app grid's favorites persist", () => {
     click(document.querySelector('[aria-label="All products"]')!);
     await settle();
     expect(saved(store)).toBeNull();
-    expect(cardNames()).toEqual(["Chat", "Memory", "Workspace", "Docs", "Drive", "Data", "CRM", "Intelligence", "Meet"]);
+    // The default order is the product's opinion (its first six are also the default big items).
+    const name = (id: string) => PRODUCTS.find((p) => p.id === id)!.name;
+    expect(cardNames()).toEqual(DEFAULT_GRID_FAVORITES.map(name));
     expect(DEFAULT_GRID_FAVORITES).toHaveLength(9);
     unmount();
   });
@@ -117,7 +119,7 @@ describe("edit mode", () => {
     click(byLabel("Remove Meet from favorites"));
     click(byLabel("Remove Drive from favorites"));
     click(byLabel("Add HR to favorites"));
-    expect(saved(store)).toEqual(["chat", "memory", "workspace", "docs", "data", "crm", "intelligence", "hr"]);
+    expect(saved(store)).toEqual([...DEFAULT_GRID_FAVORITES.filter((id) => id !== "meet" && id !== "drive"), "hr"]);
     unmount();
   });
 
@@ -137,11 +139,13 @@ describe("edit mode", () => {
     await openAndEdit();
     expect(byLabel("Move Chat earlier").disabled).toBe(true);
     expect(byLabel("Move Meet later").disabled).toBe(true);
-    click(byLabel("Move Chat later"));
-    expect(saved(store)!.slice(0, 3)).toEqual(["memory", "chat", "workspace"]);
-    click(byLabel("Move Workspace earlier"));
-    expect(saved(store)!.slice(0, 3)).toEqual(["memory", "workspace", "chat"]);
-    expect(cardNames().slice(0, 3)).toEqual(["Memory", "Workspace", "Chat"]);
+    const [first, second, third] = DEFAULT_GRID_FAVORITES;
+    const name = (id: string) => PRODUCTS.find((p) => p.id === id)!.name;
+    click(byLabel(`Move ${name(first)} later`));
+    expect(saved(store)!.slice(0, 3)).toEqual([second, first, third]);
+    click(byLabel(`Move ${name(third)} earlier`));
+    expect(saved(store)!.slice(0, 3)).toEqual([second, third, first]);
+    expect(cardNames().slice(0, 3)).toEqual([second, third, first].map(name));
     unmount();
   });
 
