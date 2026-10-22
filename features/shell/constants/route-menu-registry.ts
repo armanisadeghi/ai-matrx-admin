@@ -24,6 +24,7 @@ import { CANVAS_WORKSPACE_MENU_PATTERN } from "./canvas-chrome-routes";
 import {
   loadAdminRouteSidebarMenu,
   loadAgentRunSidebarMenu,
+  loadChatConversationSidebarMenu,
   loadChatSidebarMenu,
   loadCodeSidebarMenu,
   loadImagesSidebarMenu,
@@ -115,7 +116,7 @@ export const routeMenuRegistry: RouteMenuEntry[] = [
     label: "Chats",
     layout: "panel",
     ownsSidebarTop: true,
-    importFn: loadChatSidebarMenu,
+    importFn: loadChatConversationSidebarMenu,
   },
   {
     pathPattern: /^\/staff(?:\/|$)/,
