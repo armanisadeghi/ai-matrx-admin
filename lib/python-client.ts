@@ -87,6 +87,7 @@ import { waitForOrganizationAdmission } from "@/lib/api/organization-admission";
 import type { RootState } from "@/lib/redux/store";
 import { extractErrorMessage } from "@/utils/errors";
 import { getCachedFingerprint, getFingerprint } from "@/lib/services/fingerprint-service";
+import { ensureGuestIdentity, isGuestChallengeRefusalBody } from "@/lib/guest/turnstile";
 import { logApiTarget } from "@/lib/api/log-api-target";
 import {
   configuredFilesServiceUrl,
@@ -556,6 +557,10 @@ export async function buildHeaders(
     });
   }
 
+  // A signed-out write may mint the visitor: mint it ONCE first (single flight, human check only when the
+  // server asks — lib/guest/turnstile.ts). Reads never mint, so they never wait.
+  if (!token && fingerprint && !isReadMethod(method)) await ensureGuestIdentity();
+
   const requestId = opts.requestId ?? newRequestId();
   let headers: Record<string, string> = {
     "X-Request-Id": requestId,
@@ -661,14 +666,26 @@ export async function requestRaw(
   try {
     const built = await buildHeaders(opts, false, method);
     requestId = built.requestId;
-    const response = await sendMatrxRequest(url, {
-      ...init,
-      headers: {
-        ...built.headers,
-        ...init.headers,
-      },
-      signal: opts.signal ?? init.signal,
-    });
+    const send = () =>
+      sendMatrxRequest(url, {
+        ...init,
+        headers: {
+          ...built.headers,
+          ...init.headers,
+        },
+        signal: opts.signal ?? init.signal,
+      });
+    let response = await send();
+    // A NEW visitor refused for want of a passing human check (403 guest_challenge_failed, before any
+    // handler ran, so nothing started): mint the visitor once more, then retry ONCE.
+    if (
+      response.status === 403 &&
+      !built.headers.Authorization &&
+      isGuestChallengeRefusalBody(await response.clone().json().catch(() => null)) &&
+      (await ensureGuestIdentity({ fresh: true }))
+    ) {
+      response = await send();
+    }
     if (!response.ok) {
       const error = await parseHttpError(response.clone());
       if (opts.allowHttpError) {

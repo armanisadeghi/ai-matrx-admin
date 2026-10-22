@@ -189,6 +189,7 @@ same query through the `attempt` nonce.
 
 ## Change log
 
+- `2026-10-22` — One query = one free count: the web search result carries `followUpToken`; `useTopStories` sends it back as `follow_up_token`, so Top stories spends no second visitor search (common-docs FREE-ALLOWANCE.md §3b). Guard: `__tests__/top-stories-spends-no-second-free-search.test.ts`.
 - `2026-10-17` — Third-party services lane L12d. `/search` now renders the one
   `SearchExperience` (the plan's F1 — the older Brave-only `SearchWorkspace`,
   `SearchBox` and `useKindSearch` are deleted). Three catalog tabs added: Deep,

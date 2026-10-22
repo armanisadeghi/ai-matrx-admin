@@ -137,13 +137,7 @@ export {
 import type { paths, components } from "@ai-matrx/api/types";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import {
-  guestChallengeToken,
-  heldGuestChallengeToken,
-  isGuestChallengeRefusalBody,
-  primeGuestChallenge,
-  TURNSTILE_HEADER,
-} from "@/lib/guest/turnstile";
+import { ensureGuestIdentity, isGuestChallengeRefusalBody } from "@/lib/guest/turnstile";
 
 // ============================================================================
 // SECTION 1 — UTILITY TYPE HELPERS
@@ -504,9 +498,7 @@ export function resolveAuth(state: RootState): ResolvedAuth {
 
   if (fingerprintId) {
     headers["X-Fingerprint-ID"] = fingerprintId;
-    // the human check a NEW visitor's mint needs (lib/guest/turnstile.ts; primed before dispatch)
-    const challenge = heldGuestChallengeToken();
-    if (challenge) headers[TURNSTILE_HEADER] = challenge;
+    // no human-check token here: a new visitor is minted ONCE before dispatch (ensureGuestIdentity)
     return { mode: "guest", headers };
   }
 
@@ -816,7 +808,9 @@ export function callApi<
   return async (_dispatch, getState) => {
     // ── Step 1: Wait for auth ─────────────────────────────────────────────
     await waitForAuthReady(getState);
-    if (!selectAccessToken(getState())) await primeGuestChallenge();
+    // A signed-out write may mint the visitor: mint it ONCE first, with the human check only when the
+    // server asks for one (lib/guest/turnstile.ts). Reads never mint, so they never wait.
+    if (!selectAccessToken(getState()) && !isReadMethod(config.method)) await ensureGuestIdentity();
 
     const state = getState();
 
@@ -1010,14 +1004,13 @@ export function callApi<
       );
       let result = await execute(headers);
       // A NEW visitor refused for want of a passing human check (403 guest_challenge_failed, before
-      // any handler ran, so nothing was started): retried ONCE with a fresh token.
+      // any handler ran, so nothing was started): the visitor is minted once more, then retried ONCE.
       if (
         isGuestLane &&
         result.error?.status === 403 &&
         isGuestChallengeRefusalBody(result.error.serverDetail)
       ) {
-        const fresh = await guestChallengeToken({ fresh: true });
-        if (fresh) result = await execute({ ...headers, [TURNSTILE_HEADER]: fresh });
+        if (await ensureGuestIdentity({ fresh: true })) result = await execute(headers);
       }
       if (isPaidAi) {
         // The server's usage refusal → a person gets `over` + the limit
