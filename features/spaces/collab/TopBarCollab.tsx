@@ -9,7 +9,7 @@
 
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
-import { Link2, UserPlus } from "lucide-react";
+import { Link2, Share2, UserPlus } from "lucide-react";
 import { useState } from "react";
 
 import { ShareModal } from "@ai-matrx/sharing/react";
@@ -69,9 +69,8 @@ export function ShareMenu({ spaceId, title, onCopyLink }: { spaceId: string; tit
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button type="button" className="spaces-topbar-text-button">
-            Share
-          </button>
+          {/* Share is always the glyph alone (Arman, 2026-10-22). */}
+          <Button variant="quiet" icon={<Share2 />} aria-label="Share" title="Share" />
         </PopoverTrigger>
         <PopoverContent /* sizing: fixed — a fixed-measure panel on purpose; its rows truncate inside the box */ surface="solid" align="end" className="w-[360px] p-2">
           <Tabs

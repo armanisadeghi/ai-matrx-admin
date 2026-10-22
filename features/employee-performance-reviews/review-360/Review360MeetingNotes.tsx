@@ -144,7 +144,7 @@ export function Review360MeetingNotes({
           Save
         </Button>
         {state.view?.shared ? null : (
-          <Button variant="primary" icon={<Share2 />} disabled={busy || (!state.view && !draft)} onClick={() => void save(true)}>
+          <Button data-share-label="form commit: publishes the saved notes to the reviewee" variant="primary" icon={<Share2 />} disabled={busy || (!state.view && !draft)} onClick={() => void save(true)}>
             Share
           </Button>
         )}

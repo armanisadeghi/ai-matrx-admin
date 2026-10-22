@@ -2423,7 +2423,7 @@ function RulebookDetailPageInstance({ rulebookId }: { rulebookId: string }) {
                 <ShareButton
                   resourceType="rulebook"
                   resourceId={rulebook.id}
-                  resourceName={rulebook.name} iconOnly
+                  resourceName={rulebook.name}
                   variant="quiet"
                   showStatus={false}
                 />

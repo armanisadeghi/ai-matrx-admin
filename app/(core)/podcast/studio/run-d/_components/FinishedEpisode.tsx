@@ -75,9 +75,7 @@ export function FinishedEpisode({ state }: { state: PodcastRunState }) {
                   </Link>
                 </Button>
               )}
-              <Button icon={<Share2 />} type="submit" variant="outline">
-                Share
-              </Button>
+              <Button icon={<Share2 />} type="submit" variant="outline" aria-label="Share" title="Share" />
               {state.audioUrl && (
                 <Button
                   icon={<Download />}

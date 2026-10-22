@@ -89,7 +89,8 @@ export function ShareButton() {
   }
 
   if (!link) {
-    return <Button variant="outline" disabled={busy} icon={<Share2 className="h-4 w-4" />} onClick={() => void share()}>Share</Button>;
+    // Share is always the glyph alone (Arman, 2026-10-22); the word rides the tooltip and the name.
+    return <Button variant="outline" disabled={busy} icon={<Share2 />} onClick={() => void share()} aria-label="Share" title="Share" />;
   }
   return (
     <>

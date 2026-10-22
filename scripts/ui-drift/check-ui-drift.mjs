@@ -27,6 +27,7 @@
  *                            (`bg-[#0af]`, a `#rrggbb` in a style prop) instead of a semantic token.
  *   spinner-outside-spinner  `animate-spin` outside a spinner/loader component.
  *   styled-raw-button        a raw `<button>` carrying visual classes (a hand-rolled control).
+ *   labelled-share           a Button whose only text is "Share" — Share is the glyph alone (Arman, 2026-10-22).
  *   legacy-root-button       `Button` imported from the package ROOT under its own name — the old cva
  *                            Button (36px default, shadcn sizes) beside 28px controls. Only the
  *                            `Button as SurfaceButton` alias (a card/tile/hero, not a control) is allowed
@@ -146,6 +147,10 @@ export const RULES = {
   "legacy-root-button": {
     title: "legacy package-root Button",
     fix: "Import Button from @/components/ui/button (THE 28px control: variant primary|outline|quiet|danger, icon=, aria-label for icon-only, no size). A card/tile/hero that is not a control imports `Button as SurfaceButton` from the package root.",
+  },
+  "labelled-share": {
+    title: "Share button showing the word",
+    fix: "Share is always the 28px glyph alone (Arman, 2026-10-22): use ShareButton from features/sharing, or icon={<Share2 />} with aria-label=\"Share\" and no text. The word shows only in a labelled action-sheet row (ShareButton inMenuRow) or a form's commit button that names its reason in data-share-label=\"…\".",
   },
   "hand-rolled-overlay": {
     title: "hand-written scrim, dialog or tablist",
@@ -437,6 +442,10 @@ export function scanSource(file, text) {
       const open = ts.isJsxElement(node) ? node.openingElement : node;
       const tag = open.tagName.getText();
       const attrs = open.attributes.properties;
+      // THE SHARE LAW (Arman, 2026-10-22): Share is the glyph alone, never the word on a button.
+      if (ts.isJsxElement(node) && /(^b|B)utton$/.test(tag) && !attr(attrs, "data-share-label") && node.children.map((c) => (ts.isJsxText(c) ? c.text : "\u0000")).join("").trim() === "Share") {
+        add("labelled-share", open, `<${tag}>Share</${tag}>`);
+      }
       const classAttr = attr(attrs, "className");
       let toks = [];
       if (classAttr && classAttr.initializer) {
@@ -744,7 +753,7 @@ import { SegmentedControl, Button as OldButton } from "@ai-matrx/design-system";
 export function Bad() {
   return (
     <Card>
-      <Button className="h-7 text-xs">Save</Button>
+      <Button className="h-7 text-xs">Save</Button><Button>Share</Button>
       <span className="text-[11px]">meta</span>
       <small className="type-caption text-muted-foreground">caption</small>
       <span className="bg-blue-500 text-white">tag</span>
@@ -831,6 +840,7 @@ const PLANTED_SITES = [
   "primitive-visual-class :: <TabsList> bg-muted rounded-lg",
   "hand-built-segmented :: SegmentedControl from the package root",
   "legacy-root-button :: Button as OldButton from the package root",
+  "labelled-share :: <Button>Share</Button>",
   "hand-built-segmented :: <div> bg-muted inline-flex p-0.5 rounded-md",
 ];
 

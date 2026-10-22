@@ -1051,7 +1051,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   <ShareButton
                     resourceType="web_brand"
                     resourceId={current.id}
-                    resourceName={current.name} iconOnly
+                    resourceName={current.name}
                     showStatus={false}
                   />
                   {/* Fixed minimum width, so the count arriving never resizes the row. */}

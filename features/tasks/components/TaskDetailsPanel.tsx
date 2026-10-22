@@ -470,7 +470,7 @@ export default function TaskDetailsPanel({
       <ShareButton
         resourceType="task"
         resourceId={task.id}
-        resourceName={task.title} iconOnly
+        resourceName={task.title}
         variant="quiet"
       />
 

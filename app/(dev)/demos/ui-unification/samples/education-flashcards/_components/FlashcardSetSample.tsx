@@ -1269,7 +1269,7 @@ export function FlashcardSetSample({
                         resourceId={setId}
                         resourceName={data.set.name}
                         organizationId={data.set.organization_id}
-                        showStatus={false} iconOnly
+                        showStatus={false}
                         variant="quiet"
                       />
                     </span>
@@ -1849,7 +1849,7 @@ export function FlashcardSetSample({
                           resourceId={setId}
                           resourceName={data.set.name}
                           organizationId={data.set.organization_id}
-                          showStatus={false} className="justify-start"
+                          showStatus={false} inMenuRow className="justify-start"
                         /></span>
                       )}
                       {chatHref && (

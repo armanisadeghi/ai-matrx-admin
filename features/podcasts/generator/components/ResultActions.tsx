@@ -153,12 +153,12 @@ export function ResultActions({
         <Button
           icon={<Share2 />}
           variant="outline"
+          aria-label="Share"
+          title="Share"
           onClick={() =>
             share({ title, url: absoluteUrl ?? undefined })
           }
-        >
-          Share
-        </Button>
+        />
         {/* Blog post + show notes live in the EpisodeContentStudio panel below
             (real generate/preview/publish) — not duplicated here. */}
       </div>

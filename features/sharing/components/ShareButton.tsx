@@ -21,8 +21,13 @@ interface ShareButtonProps {
   isOwner?: boolean;
   /** A tone of THE control Button — the same 28px box as every action beside it. */
   variant?: "primary" | "outline" | "quiet";
-  /** The glyph alone (a 28px circle); the label rides the tooltip and aria-label. */
-  iconOnly?: boolean;
+  /**
+   * THE ONLY TIME THE WORD SHOWS (Arman, 2026-10-22: "The share icon CAN ONLY EVER BE AN ICON").
+   * Share is always the 28px glyph, label in the tooltip and aria-label. `inMenuRow` is for a
+   * vertical list where every action is a labelled row (a phone's action sheet), where a lone
+   * glyph would break the column — never a toolbar or header.
+   */
+  inMenuRow?: boolean;
   showStatus?: boolean;
   /** Placement only (width, flex, margin) — the control owns its look. */
   className?: string;
@@ -53,7 +58,7 @@ export function ShareButton({
   resourceName,
   isOwner,
   variant = "outline",
-  iconOnly = false,
+  inMenuRow = false,
   showStatus = true,
   className,
   organizationId,
@@ -111,7 +116,7 @@ export function ShareButton({
   // THE control Button (28px, locked) — the legacy package-root Button rendered
   // a 36px box here, a size bigger than every action in the same header row.
   const title = state ? `${label} · ${state}` : label;
-  const button = iconOnly ? (
+  const button = !inMenuRow ? (
     <Button
       variant={variant}
       icon={<Icon />}
@@ -138,7 +143,7 @@ export function ShareButton({
 
   return (
     <>
-      {iconOnly ? (
+      {!inMenuRow ? (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>{button}</TooltipTrigger>

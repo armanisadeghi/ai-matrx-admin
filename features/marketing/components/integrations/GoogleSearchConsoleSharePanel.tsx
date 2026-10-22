@@ -133,6 +133,7 @@ export function GoogleSearchConsoleSharePanel({
           </SelectContent>
         </Select>
         <Button
+          data-share-label="form commit: grants the chosen person or group"
           icon={share.isPending ? <Loader2 className="animate-spin" /> : <Share2 />}
           variant="outline"
           disabled={!choice || share.isPending}
