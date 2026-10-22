@@ -91,10 +91,11 @@ begin
   values (v_org, 'organization', v_org, c_admin, 'owner',  'active'),
          (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value)
-  values ('custom','system_enabled','organization', v_org, v_org, 'true'),
-         -- VIS-19: this organization shares deliberately. Without it Dana would see
-         -- everything by default and "she was shared this one record" would prove nothing.
-         ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"');
+  values ('custom','system_enabled','organization', v_org, v_org, 'true');
+         -- (FIX-HISTSUITES 2026-10-21) The `custom/member_default_visibility = shared_only` row
+         -- that stood here is gone: access ladder T-17 retired that setting on 2026-10-03 — "no
+         -- setting changes who may open a record" — so it locked nothing and only made 6g/6h
+         -- assert a wall that no longer exists (same class as asof_green, 909a76a137).
   insert into custom.record (organization_id, table_id, data)
   values (v_org, null, jsonb_build_object('name','Home')) returning id into v_home;
 
@@ -102,6 +103,16 @@ begin
   -- PART 0 — TAKE THE SEAT AND PROVE IT.
   -- ══════════════════════════════════════════════════════════════════════════
   perform set_config('role', 'authenticated', true);
+  -- 🚨 THE SEAT IS A BROWSER (lane FIX-HISTSUITES, 2026-10-21). Since CHAIR-DOORS-2 E
+  -- (matrx-frontend ae0a20649d, 2026-10-02: "who wrote a row is read off the channel, never
+  -- claimed") a write is a PERSON's only on the PostgREST channel, which `request.headers` marks
+  -- (`platform.is_client_channel`); the same claims without it are the server acting as her and
+  -- are stamped `system`. This suite used to take the role and the claims but not the channel,
+  -- so the admin's own price change read "system" and 2d failed for a reason that was not about
+  -- history. The campaign-test system name is a server declaration too, so it is cleared here.
+  perform set_config('request.headers', '{"origin":"https://www.aimatrx.com"}', true);
+  perform set_config('app.actor_system', '', true);
+  perform set_config('app.actor_tier', '', true);
   if current_user <> 'authenticated' then
     raise exception '0: this suite did not take the seat — current_user is %', current_user;
   end if;
@@ -239,7 +250,7 @@ begin
   -- STATEMENTS so that a compound verb's mark cannot leak onto the writes that follow it.
   insert into hs_ctx(k, v) values
     ('org', v_org::text), ('tbl', v_tbl::text), ('job', v_job::text),
-    ('formrec', v_formrec::text),
+    ('formrec', v_formrec::text), ('home', v_home::text),
     -- `v_boss` is `current_user` AT BLOCK START, and from block 2 onwards that is already
     -- `authenticated` — `set local role` lasts for the whole transaction. So the connected
     -- role's real name travels with the ids, or a later block's "step out" steps nowhere.
@@ -325,6 +336,7 @@ begin
   select v::uuid into v_formrec from hs_ctx where k = 'formrec';
   select v::uuid into v_mig     from hs_ctx where k = 'mig';
   select v      into v_boss     from hs_ctx where k = 'boss';
+  select v::uuid into v_home    from hs_ctx where k = 'home';
   select * into r from custom.record_history(v_org, v_job) limit 1;
   if r.operation <> 'merge' then
     raise exception '4a: the merge''s version is called "%" in the timeline', r.operation;
@@ -400,20 +412,26 @@ begin
     raise exception '6f: a VIEWER restored one value';
   exception when sqlstate '42501' then null;
   end;
-  -- AND THE CONTROL: a record nobody shared with her is not even visible.
-  -- `custom.my_level` REFUSES rather than answering null about a record she may not open —
-  -- which is right: "null" and "you may not ask" are different facts and only one of them
-  -- keeps the record's existence to itself.
-  begin
-    perform custom.my_level(v_org, v_dup);
-    raise exception '6g: Dana was told her level on a record nobody shared with her';
-  exception when sqlstate '42501' then null;
-  end;
-  select count(*) into v_n from custom.field_history(v_org, v_tbl, 'price');
-  if v_n > 4 then
-    raise exception '6h: Dana sees % price changes across the table — she was shared ONE record', v_n;
+  -- AND THE AGREEMENT (re-pointed by FIX-HISTSUITES, 2026-10-21). This used to assert that a
+  -- record nobody shared with Dana was invisible to her, under the retired `shared_only`
+  -- setting. Since access ladder T-17 (2026-10-03) membership opens every Organization row and
+  -- no setting locks it, so the history doors must answer her exactly what the record read
+  -- answers: the duplicate opens for her, her level on it is the one `my_level` names, and her
+  -- column history is the table's whole column history — never a wall of the history doors' own.
+  if custom.read_record(v_org, v_dup, false) is null then
+    raise exception '6g: custom.read_record does not open the duplicate job for Dana, a member of its organization';
   end if;
-  raise notice '6d-h PASSED — viewer: restore, preview and single-value restore all refused; the record nobody shared is absent; her column history is % rows, not the table''s.', v_n;
+  if custom.my_level(v_org, v_dup) is null then
+    raise exception '6g: custom.read_record opens the duplicate for Dana but my_level names no level on it';
+  end if;
+  select count(*) into v_n from custom.field_history(v_org, v_tbl, 'price');
+  perform set_config('request.jwt.claims', c_admin_j, true);
+  select count(*) into v_v from custom.field_history(v_org, v_tbl, 'price');
+  perform set_config('request.jwt.claims', c_dana_j, true);
+  if v_n <> v_v then
+    raise exception '6h: Dana sees % price changes across the table and the admin %, although the record read opens every row for both', v_n, v_v;
+  end if;
+  raise notice '6d-h PASSED — viewer: restore, preview and single-value restore all refused; the duplicate opens for her as a member and her column history is the table''s % rows, as the record read says.', v_n;
 
   -- ══════════════════════════════════════════════════════════════════════════
   -- PART 7 — DANA AT EDITOR: SHE PUTS THE PRICE BACK, AND IT IS A NEW VERSION.
@@ -522,7 +540,24 @@ begin
   -- ══════════════════════════════════════════════════════════════════════════
   -- PART 10 — A MENTION THAT WOULD BE A DEAD END IS REFUSED, BY NAME.
   -- ══════════════════════════════════════════════════════════════════════════
+  -- (FIX-HISTSUITES 2026-10-21) The record mentioned here used to be the duplicate job, which
+  -- only the retired `shared_only` setting kept from Dana; since access ladder T-17 a member
+  -- opens it. The record a member really cannot open today is a row of a CONFIDENTIAL Table
+  -- that does not name her, so the mention is asked about one. Making a Table Confidential is
+  -- the Arman-approved server door no browser reaches: that one call steps out and says so.
   perform set_config('request.jwt.claims', c_admin_j, true);
+  v_rule := custom.table_declare(v_org, jsonb_build_object(
+    'name','Owner Notes','slug','owner_notes','type','entity',
+    'label_singular','Owner Note','label_plural','Owner Notes','title_field','ntitle',
+    'display','list','weight','light','ordered',false,'row_order','sorted',
+    'default_sort','[]'::jsonb,'agent_writable',false,'retention_days',365,
+    'fields', jsonb_build_array(jsonb_build_object('name','ntitle')),
+    'parent_id', v_home::text));
+  v_dup := custom.record_write(v_org, v_rule, jsonb_build_object('ntitle','Lease renewal terms'));
+  perform set_config('role', v_boss, true);
+  perform custom.set_table_confidential_arman_explicitly_approved(v_rule, '[]'::jsonb,
+    'campaign-test/histscreens_green: owner notes are read by their maker only', current_date, true);
+  perform set_config('role', 'authenticated', true);
   begin
     perform custom.comment_write(v_org, v_dup, 'Have a look at this one', '{}'::jsonb, null, array[c_dana]);
     raise exception '10a: somebody was mentioned on a record they cannot open';
