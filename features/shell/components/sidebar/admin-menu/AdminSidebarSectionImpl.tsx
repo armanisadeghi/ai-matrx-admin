@@ -3,7 +3,8 @@
 // AdminSidebarSectionImpl — the body of the admin block in the desktop sidebar
 // footer. Loaded ONLY through AdminSidebarSection (the admin gate + the one
 // dynamic edge), so a non-admin downloads none of these toggles and runs none
-// of these effects. Never import this file anywhere else.
+// of these effects. Never import this file anywhere else. The app frame's admin
+// menu (features/shell/frame-host/FrameAdminMenu) renders it through that gate too.
 //
 // Contains:
 //   - Admin Launchpad (the one door into administration; opens a new tab so the current work stays)

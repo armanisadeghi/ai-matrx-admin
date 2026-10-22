@@ -31,7 +31,11 @@ Element.prototype.scrollIntoView ??= function scrollIntoView() {};
 const variants: Record<string, string | undefined> = {};
 
 jest.mock("next/navigation", () => ({ useRouter: () => ({ push: jest.fn() }) }));
-jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: (select: (s: unknown) => unknown) => select({}) }));
+// The admin boolean the frame's admin icon reads (selectIsAdminPerson); a member unless a case sets it.
+const mockAuth = { isAdmin: false };
+jest.mock("@/lib/redux/hooks", () => ({
+  useAppSelector: (select: (s: unknown) => unknown) => select({ userAuth: mockAuth }),
+}));
 jest.mock("@/features/shell/shell-layout/useResolvedShellLayout", () => ({
   selectShellLook: () => "meet-matrx",
   selectShellAccent: () => ({ hex: "#7c3aed" }),
@@ -162,6 +166,7 @@ afterEach(() => {
   act(() => root.unmount());
   host.remove();
   document.body.innerHTML = "";
+  mockAuth.isAdmin = false;
 });
 
 describe("FrameChrome fills every frame slot with the live chrome", () => {
@@ -228,7 +233,7 @@ describe("the phone set is the live set as data", () => {
     const { useFramePhoneTools } = await import("../FrameChrome");
     let tools: { id: string; label: string; phone?: string }[] = [];
     function Probe() {
-      tools = useFramePhoneTools(true, () => {});
+      tools = useFramePhoneTools(true, () => {}, () => {});
       return null;
     }
     host = document.createElement("div");
@@ -237,5 +242,41 @@ describe("the phone set is the live set as data", () => {
     expect(tools.map((t) => t.id)).toEqual(["search", "intelligence", "messages", "notifications", "custom-d1", "assists"]);
     expect(tools.filter((t) => t.phone === "show").map((t) => t.id)).toEqual(["search"]);
     expect(tools.find((t) => t.id === "assists")!.label).toBe("Assists (2)");
+  });
+});
+
+describe("the admin icon (Arman, 2026-10-22: one icon leads to every admin option)", () => {
+  it("a member's header has no admin icon; an admin's has ONE, after the control set", () => {
+    mount({ form: "desktop" });
+    expect(q('[aria-label="Admin tools"]')).toBeNull();
+    act(() => root.unmount());
+    host.remove();
+
+    mockAuth.isAdmin = true;
+    mount({ form: "desktop" });
+    const group = q('header [data-mf-region="header-tools"]')!;
+    const labels = [...group.querySelectorAll("button")].map((b) => b.getAttribute("aria-label"));
+    expect(labels).toEqual(["Search", "Intelligence", "Messages", "Notifications", "Admin tools", "Side chat", "Canvas"]);
+  });
+
+  it("on a phone the admin item is the last '…' item, for admins only", async () => {
+    const { useFramePhoneTools } = await import("../FrameChrome");
+    const openAdmin = jest.fn();
+    let tools: { id: string; label: string; onSelect?: () => void }[] = [];
+    function Probe() {
+      tools = useFramePhoneTools(true, () => {}, openAdmin);
+      return null;
+    }
+    host = document.createElement("div");
+    root = createRoot(host);
+    act(() => root.render(<Probe />));
+    expect(tools.some((t) => t.id === "admin")).toBe(false);
+
+    mockAuth.isAdmin = true;
+    act(() => root.render(<Probe key="admin" />));
+    expect(tools.at(-1)!.id).toBe("admin");
+    expect(tools.at(-1)!.label).toBe("Admin tools");
+    tools.at(-1)!.onSelect!();
+    expect(openAdmin).toHaveBeenCalledTimes(1);
   });
 });

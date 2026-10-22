@@ -7,9 +7,11 @@
 //
 //   headerTools    THE HEADER CONTROL SET (`headerControls` — Search, Intelligence, Messages,
 //                  Notifications, the person's own header buttons through `ShellHeaderButtons`).
-//                  Canvas is dropped: the frame owns its canvas and side chat toggles.
+//                  Canvas is dropped: the frame owns its canvas and side chat toggles. For an
+//                  admin, ONE admin icon (`FrameAdminMenu`) opens the classic sidebar footer's
+//                  admin block and Windows control, the same components, loaded on first open.
 //   phoneTools     the same set as data for the phone header ("…" items; Search stays visible),
-//                  from the same hooks HeaderPhoneOverflow uses.
+//                  from the same hooks HeaderPhoneOverflow uses; the admin item opens a sheet.
 //   sidebarFooter  THE ACCOUNT RAIL: `ShellSettingsMenu`, `ShellOrgSwitcher` (the one active
 //                  organization control), and the person's menu (`UserMenuPanel`, whose Sign Out
 //                  is `useSignOut` through `SignOutMenuItem`) — the `frame` variants draw
@@ -58,6 +60,14 @@ import { useNotificationsToggle } from "@/features/notifications/canvas/notifica
 import { openAssistsInbox, useAssistsInboxCount } from "@/features/assists/mobileInbox";
 import { ASSISTS_MANAGER_HREF } from "@/features/assists/constants";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import {
+  FRAME_ADMIN_MENU_LABEL,
+  FrameAdminIcon,
+  FrameAdminMenu,
+  FrameAdminMenuContent,
+  keepOpenForWindowManager,
+  useFrameAdminGate,
+} from "./FrameAdminMenu";
 
 /** The profile menu's close checkbox inside the frame (AppShell's is `shell-user-menu`). */
 export const FRAME_USER_MENU_ID = "frame-user-menu";
@@ -72,7 +82,8 @@ export type FrameChromeProps = Omit<AppFrameProps, ChromeSlots> & {
 /** The frame with the live shell's chrome in its slots. */
 export function FrameChrome({ userData, isAuthenticated, ...frame }: FrameChromeProps) {
   const [agentsOpen, setAgentsOpen] = useState(false);
-  const phoneTools = useFramePhoneTools(isAuthenticated, () => setAgentsOpen(true));
+  const [adminOpen, setAdminOpen] = useState(false);
+  const phoneTools = useFramePhoneTools(isAuthenticated, () => setAgentsOpen(true), () => setAdminOpen(true));
   const appearance = useFrameAppearance();
   return (
     <>
@@ -94,6 +105,19 @@ export function FrameChrome({ userData, isAuthenticated, ...frame }: FrameChrome
           </div>
         </DrawerContent>
       </Drawer>
+      {/* Phone: the admin item opens the same admin tools the header icon does, in a sheet. */}
+      <Drawer open={adminOpen} onOpenChange={setAdminOpen}>
+        <DrawerContent
+          className="bg-textured pb-safe max-h-[85dvh]"
+          onPointerDownOutside={keepOpenForWindowManager}
+          onInteractOutside={keepOpenForWindowManager}
+        >
+          <DrawerHeader className="px-3 py-2 text-left">
+            <DrawerTitle className="text-base">{FRAME_ADMIN_MENU_LABEL}</DrawerTitle>
+          </DrawerHeader>
+          <div className="overflow-y-auto px-2 pb-4">{adminOpen ? <FrameAdminMenuContent /> : null}</div>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }
@@ -108,13 +132,23 @@ export function useFrameAppearance(): FrameAppearance {
   };
 }
 
-/** The header's right group: the live control set and the person's own buttons, canvas excluded. */
+/** The header's right group: the live control set, the person's own buttons (canvas excluded), the admin icon. */
 export function FrameHeaderTools({ isAuthenticated }: { isAuthenticated: boolean }) {
-  return <ShellHeaderButtons controls={{ ...headerControls(isAuthenticated), canvas: null }} />;
+  return (
+    <>
+      <ShellHeaderButtons controls={{ ...headerControls(isAuthenticated), canvas: null }} />
+      <FrameAdminMenu />
+    </>
+  );
 }
 
 /** The same set on a phone, as the frame's data: Search stays in the header, the rest are "…" items. */
-export function useFramePhoneTools(isAuthenticated: boolean, openAgents: () => void): FrameHeaderTool[] {
+export function useFramePhoneTools(
+  isAuthenticated: boolean,
+  openAgents: () => void,
+  openAdmin: () => void,
+): FrameHeaderTool[] {
+  const showAdmin = useFrameAdminGate();
   const openSearch = useOpenBarOrGate(isAuthenticated);
   const openAuthGate = useOpenAuthGateDialog();
   const messages = useMessagesToggle();
@@ -168,6 +202,7 @@ export function useFramePhoneTools(isAuthenticated: boolean, openAgents: () => v
     icon: Lightbulb,
     onSelect: () => (assists > 0 ? openAssistsInbox() : openFromNotice(ASSISTS_MANAGER_HREF)),
   });
+  if (showAdmin) tools.push({ id: "admin", label: FRAME_ADMIN_MENU_LABEL, icon: FrameAdminIcon, onSelect: openAdmin });
   return tools;
 }
 

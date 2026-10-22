@@ -10,6 +10,7 @@
 // which is why this island exists — the parent Sidebar is a Server Component.
 
 import dynamic from "next/dynamic";
+import type { WindowMenuPlacement } from "@/features/window-panels/components/SidebarWindowToggle";
 
 const SidebarWindowToggle = dynamic(
   () => import("@/features/window-panels/components/SidebarWindowToggle"),
@@ -30,6 +31,7 @@ const SidebarWindowToggle = dynamic(
   },
 );
 
-export default function SidebarWindowToggleIsland() {
-  return <SidebarWindowToggle />;
+/** `placement="trigger"` when the trigger sits in a header menu (the app frame's admin menu). */
+export default function SidebarWindowToggleIsland({ placement }: { placement?: WindowMenuPlacement } = {}) {
+  return <SidebarWindowToggle placement={placement} />;
 }

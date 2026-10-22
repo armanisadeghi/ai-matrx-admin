@@ -341,6 +341,13 @@ removes it on the first `requestAnimationFrame`; it is not a second mount.
 
 ## Change log
 
+- 2026-10-22 (admin icon, Arman: "only a single icon that then leads me to the other admin options"):
+  `frame-host/FrameAdminMenu.tsx` puts ONE admin icon (ShieldCheck, gate `selectIsAdminPerson` as the
+  classic footer) at the end of `headerTools`; while open it renders the classic footer's own front
+  doors: `AdminSidebarSection` (→ Admin Launchpad, Builder, Watch AI, Error Inspector, Creator Hub, Debug
+  mode, server switch + admin indicator) and `SidebarWindowToggleIsland placement="trigger"` (Windows). Phone: an "Admin tools" "…" item opens the same body in a
+  sheet. Labels shown by `[data-matrx-frame-admin-menu]` in legacy-contracts.css. Tests
+  `__tests__/frame-admin-menu.test.tsx` + two cases in `frame-chrome.test.tsx`.
 - 2026-10-22 (every crumb is a door, Arman): crumbs above the page are always real links (`resolvePageTrail`
   in `frame-host/framePageHeader.ts`; pageless levels never drawn); every level opens `CrumbDoor.tsx` —
   products (icon), places (first level), siblings (records) — searchable, the products door opens new tabs

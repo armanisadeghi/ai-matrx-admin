@@ -68,7 +68,15 @@ const STATE_LABEL: Record<WindowState, string> = {
 
 /** Every tab shares this height (Dupes, the tallest, needs ~700px). */
 const POPOVER_HEIGHT_PX = 720;
-export default function SidebarWindowToggle() {
+
+/**
+ * Where the menu opens. `side` (the classic sidebar footer): to the trigger's right, bottom-aligned.
+ * `trigger` (a header menu or sheet, e.g. the app frame's admin menu): right-aligned to the trigger,
+ * below it when there is more room below, else above it.
+ */
+export type WindowMenuPlacement = "side" | "trigger";
+
+export default function SidebarWindowToggle({ placement = "side" }: { placement?: WindowMenuPlacement } = {}) {
   const dispatch = useAppDispatch();
   const hidden = useAppSelector(selectWindowsHidden);
   const allMinimized = useAppSelector(selectAllMinimized);
@@ -86,7 +94,11 @@ export default function SidebarWindowToggle() {
   const [layoutPrimary, setLayoutPrimary] = useState<"horizontal" | "vertical">(
     "vertical",
   );
-  const [pos, setPos] = useState({ x: 0, bottom: 0, maxHeight: 0 });
+  const [pos, setPos] = useState<{ left?: number; right?: number; top?: number; bottom?: number; maxHeight: number }>({
+    left: 0,
+    bottom: 0,
+    maxHeight: 0,
+  });
   const [mounted, setMounted] = useState(false);
   // Left-stack layouts cover the sidebar Windows icon — surface a floating
   // rescue control so Layout controls stay reachable.
@@ -106,12 +118,23 @@ export default function SidebarWindowToggle() {
   const measure = useCallback(() => {
     if (!triggerRef.current) return;
     const r = triggerRef.current.getBoundingClientRect();
+    if (placement === "trigger") {
+      const right = Math.max(8, window.innerWidth - r.right);
+      const roomBelow = window.innerHeight - r.bottom - 16;
+      const roomAbove = r.top - 16;
+      setPos(
+        roomBelow >= roomAbove
+          ? { right, top: r.bottom + 8, maxHeight: Math.max(0, roomBelow) }
+          : { right, bottom: window.innerHeight - r.top + 8, maxHeight: Math.max(0, roomAbove) },
+      );
+      return;
+    }
     setPos({
-      x: r.right + 8,
+      left: r.right + 8,
       bottom: window.innerHeight - r.bottom,
       maxHeight: Math.max(0, r.bottom - 8),
     });
-  }, []);
+  }, [placement]);
 
   const recomputeTriggerCovered = useCallback(() => {
     const el = triggerRef.current;
@@ -253,14 +276,18 @@ export default function SidebarWindowToggle() {
           <div
             ref={menuRef}
             role="menu"
+            // Lets a host popover or sheet holding the trigger stay open while this menu is used.
+            data-window-manager-menu=""
             className={cn(
-              "fixed z-[10000] flex flex-col",
-              "w-[440px] rounded-xl overflow-hidden",
+              "fixed z-[10000] flex flex-col pointer-events-auto",
+              "w-[440px] max-w-[calc(100vw-16px)] rounded-xl overflow-hidden",
               "bg-card/97 backdrop-blur-xl border border-blue-300 dark:border-blue-700 shadow-2xl",
               "py-1 text-sm",
             )}
             style={{
-              left: pos.x,
+              left: pos.left,
+              right: pos.right,
+              top: pos.top,
               bottom: pos.bottom,
               // One height for every tab, so switching tabs never resizes the popover:
               // a little taller than Dupes (the tallest tab), capped to the room above.

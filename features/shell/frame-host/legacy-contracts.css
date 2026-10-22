@@ -62,3 +62,19 @@ body:has(> matrx-header-ghost.shell-header-center) #frame-header-center > [data-
 [data-matrx-frame-host] [data-mf-region="product-nav"] .shell-nav-external {
   opacity: 0.6;
 }
+
+/* The app frame's admin menu (FrameAdminMenuBody) holds the classic sidebar footer's admin rows
+   as they are. Their labels and trailing badges show only under the classic expanded-sidebar
+   checkbox, which the frame has none of, so inside the menu they show as in an expanded footer.
+   The menu is portaled to the body, outside the frame host root, so it is scoped by its own marker. */
+[data-matrx-frame-admin-menu] .shell-nav-label {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+[data-matrx-frame-admin-menu] .shell-nav-item {
+  padding: 0.25rem 0.5rem;
+}
+[data-matrx-frame-admin-menu] .shell-tactile:hover {
+  transform: none;
+}
