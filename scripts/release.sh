@@ -1058,7 +1058,7 @@ fi
 # range, the @ai-matrx packages that changed (NEW flagged) and the app's lab:graph bill delta.
 # Report only: it always returns, never fails anything (scripts/build-time-watch.mjs).
 if ! $NO_WATCH; then
-    ( cd "$REPO_ROOT" && timeout 900 node scripts/build-time-watch.mjs --release "$RELEASE_SHA" --findings "$CHECKS_JSON" ) \
+    ( cd "$REPO_ROOT" && $(command -v timeout >/dev/null 2>&1 && echo "timeout 900") node scripts/build-time-watch.mjs --release "$RELEASE_SHA" --findings "$CHECKS_JSON" ) \
         >>"${RELEASE_LOG_FILE:-/dev/null}" 2>&1 || true
 fi
 # Declared typed tables (missing / archived / drifted / unmarked / past a 10k size step): Arman's

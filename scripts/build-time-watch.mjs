@@ -45,6 +45,8 @@ const ARGS = process.argv.slice(2);
 const arg = (name, dflt = null) => (ARGS.includes(name) ? ARGS[ARGS.indexOf(name) + 1] : dflt);
 const SLOW_FACTOR = 1.25;
 const BASELINE_N = 20;
+// …and at least this many minutes over: a 3-min satellite compile swings ±1 min on Vercel alone.
+const SLOW_FLOOR_MIN = 1;
 
 /* ── Vercel ─────────────────────────────────────────────────────────────────────────────────── */
 
@@ -226,7 +228,7 @@ export function judge(builds) {
     const baseline = green.length >= 5 ? +median(green).toFixed(2) : null;
     const prev = older.find((x) => x.sha && x.sha !== b.sha) ?? null;
     const reasons = [];
-    if (b.compileMin != null && baseline != null && b.compileMin > baseline * SLOW_FACTOR) {
+    if (b.compileMin != null && baseline != null && b.compileMin > baseline * SLOW_FACTOR && b.compileMin - baseline >= SLOW_FLOOR_MIN) {
       reasons.push(`compile ${b.compileMin} min is ${Math.round((b.compileMin / baseline - 1) * 100)}% above the ${green.length}-build median ${baseline} min`);
     }
     if (b.errorClass === "parse" || b.errorClass === "conflict-marker") reasons.push(`build ERROR: ${b.errorClass}${b.errorLine ? ` — ${b.errorLine}` : ""}`);
