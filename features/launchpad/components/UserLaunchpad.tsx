@@ -192,6 +192,15 @@ export default function UserLaunchpad({ serverLaunchpads }: { serverLaunchpads?:
   );
 }
 
+/**
+ * The area grids fill by the width the page actually has (the sidebar open or closed), never by the window: a
+ * tile carries its icon, name and two buttons (pin, add to my menu), so it gets at least this much room and
+ * the name is never cut to one letter (custom-experience audit #11, 1440px with the sidebar open).
+ */
+export const APP_TILE_GRID = "grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))]";
+export const FOLDER_CARD_GRID = "grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))]";
+export const RESULT_CARD_GRID = "grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))]";
+
 function BrowseSection({ onShowAll }: { onShowAll: (label: string) => void }) {
   const { apps, folders } = partitionLaunchpadGroups(USER_LAUNCHPAD_GROUPS);
 
@@ -207,7 +216,7 @@ function BrowseSection({ onShowAll }: { onShowAll: (label: string) => void }) {
       </div>
 
       {apps.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <div data-launchpad-area-grid="apps" className={cn("grid gap-3", APP_TILE_GRID)}>
           {apps.map((group) => (
             <LaunchpadAppTile key={group.id} group={group} />
           ))}
@@ -222,7 +231,8 @@ function BrowseSection({ onShowAll }: { onShowAll: (label: string) => void }) {
         return (
           <div
             key={rank}
-            className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+            data-launchpad-area-grid="folders"
+            className={cn("grid items-start gap-3", FOLDER_CARD_GRID)}
           >
             {band.map((group) => (
               <LaunchpadFolderCard
@@ -281,7 +291,7 @@ function SearchResults({
           Every result opens in a new tab.
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <div data-launchpad-area-grid="results" className={cn("grid gap-2", RESULT_CARD_GRID)}>
         {results.map((destination) => (
           <LaunchpadDestinationCard
             key={`${destination.groupLabel}:${destination.href}`}
