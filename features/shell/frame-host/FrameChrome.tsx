@@ -65,6 +65,7 @@ import {
   FrameAdminIcon,
   FrameAdminMenu,
   FrameAdminMenuContent,
+  FrameBuilderRecorder,
   keepOpenForWindowManager,
   useFrameAdminGate,
 } from "./FrameAdminMenu";
@@ -94,6 +95,7 @@ export function FrameChrome({ userData, isAuthenticated, ...frame }: FrameChrome
         sidebarFooter={<FrameSidebarFooter userData={userData} isAuthenticated={isAuthenticated} />}
         appearance={appearance}
       />
+      <FrameBuilderRecorder />
       {/* Phone: Intelligence opens the page's agents panel in a sheet, as HeaderPhoneOverflow does. */}
       <Drawer open={agentsOpen} onOpenChange={setAgentsOpen}>
         <DrawerContent className="bg-textured pb-safe max-h-[85dvh]">

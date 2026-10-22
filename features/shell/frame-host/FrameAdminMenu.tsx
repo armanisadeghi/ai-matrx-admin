@@ -14,14 +14,33 @@
 // opens it — downloads none of the admin tools.
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { ShieldCheck } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useIsMounted } from "@ai-matrx/kit/hooks";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
+import { selectBuilderRecording } from "@/features/builder-panel/hooks/useBuilderRecording";
 import AdminSidebarSection from "@/features/shell/components/sidebar/admin-menu/AdminSidebarSection";
 import SidebarWindowToggleIsland from "@/features/shell/components/sidebar/SidebarWindowToggleIsland";
+
+// The Builder's recorder alone (renders nothing). One edge, loaded only behind the gate below.
+const BuilderRecorder = dynamic(() => import("@/features/builder-panel/components/BuilderRecorder"), {
+  ssr: false,
+  loading: () => null,
+});
+
+/**
+ * Keeps the Builder recording while the admin menu is closed (the classic footer's Builder button is
+ * always mounted; the frame's is not). Same gate as classic: an admin debugger with debug mode on —
+ * anyone else loads nothing.
+ */
+export function FrameBuilderRecorder() {
+  const recording = useAppSelector(selectBuilderRecording);
+  const mounted = useIsMounted();
+  return mounted && recording ? <BuilderRecorder /> : null;
+}
 
 export const FRAME_ADMIN_MENU_LABEL = "Admin tools";
 export const FrameAdminIcon = ShieldCheck;

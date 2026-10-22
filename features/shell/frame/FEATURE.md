@@ -468,6 +468,8 @@ removes it on the first `requestAnimationFrame`; it is not a second mount.
   siblings) and icon-only top levels; the side chat's door moves to the header; the frame reads
   the `side_chat` link with no chat import (guard + parity test); the header edge A/B.
 
+- 2026-10-22: The frame keeps the Builder recording with its admin menu closed. `FrameBuilderRecorder` (in `FrameChrome`) lazily mounts `BuilderRecorder` (the Builder's `useBuilderRecording` hook, no button; classic uses the same hook) only for an admin with debug mode on; others load nothing.
+
 - 2026-10-20 (round 4):
   - The wide form (1600px and wider) and the width rules; playground widths Fit, 2560 and 1920.
   - The side chat and the canvas are the frame's, loaded on first engagement only; the side
