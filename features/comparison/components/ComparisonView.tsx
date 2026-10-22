@@ -71,7 +71,7 @@ export function ComparisonView({ result, factsHref, actions, onPick, onConfirm }
           <Trophy className="h-3.5 w-3.5 text-primary" aria-hidden />
           {result.kind_label}
         </div>
-        <h1 className={cn("truncate text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl", leader && "col-start-2")} title={title}>
+        <h1 className={cn("text-balance break-words text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl", leader && "col-start-2")} title={title}>
           {title}
         </h1>
         {reading ? (
