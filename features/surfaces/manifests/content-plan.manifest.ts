@@ -391,6 +391,8 @@ export const contentPlanManifest: SurfaceManifest = {
   description:
     "Content Plan workspace — the editable plan.node tree, briefs, keywords, topics, and E-E-A-T entities for one managed website.",
   label: "Content Plan",
+  situation:
+    "They are in the Content Plan for {site_domain|a website not chosen yet}, on the {view} view: the tree of planned pages ({node_total|no} pages) with briefs, keywords, topics and the people and sources behind the content. Open page in the plan: {selected_node.label|none}.",
   readiness: "partial",
   readinessNote:
     "Runtime emitter live (workbench getScope over loaded query data); child surfaces (list/setup/entities/node) refine per view; plan_architect and eeat_curator have default agents bound; write targets are mirrored to DB.",

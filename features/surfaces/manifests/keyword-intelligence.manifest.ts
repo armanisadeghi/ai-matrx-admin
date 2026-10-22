@@ -225,6 +225,8 @@ export const keywordIntelligenceManifest: SurfaceManifest = {
   description:
     "",
   label: "Keyword Intelligence",
+  situation:
+    "They have the Keyword Intelligence window open on the keyword \"{phrase|none chosen yet}\": its demand, cost, what it means for this site and its related keywords are in your context. They can switch to another keyword or pick keywords from it.",
   overlayId: "keywordWindow",
   readiness: "partial",
   readinessNote:

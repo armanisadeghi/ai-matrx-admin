@@ -44,6 +44,8 @@ function build(args: {
   local: string;
   label: string;
   description: string;
+  /** The moment in words, rendered by the server each turn (blanks fill from values). */
+  situation: string;
   intro: string;
   groups: SurfaceValueGroup[];
   values: SurfaceValue[];
@@ -60,6 +62,7 @@ function build(args: {
     executionMode: "python-stream",
     label: args.label,
     description: args.description,
+    situation: args.situation,
     urlPattern: `/marketing/[brandId]/socials/${args.local.replace("marketing-social-", "")}`,
     briefValues: args.briefValues,
     readiness: "partial",
@@ -105,6 +108,8 @@ export const SOCIAL_OUTLIERS_TOOLS = {
 export const marketingSocialOutliersManifest = build({
   local: "marketing-social-outliers",
   label: "Social outliers",
+  situation:
+    "They are on {brand_name|the brand}'s Outliers page: posts that beat their creator's usual views, {outlier_count|no} under the current filters out of {post_count|an unknown number of} posts. They can change the filters, open a post, save or remove a watchlist, and mark posts seen or dismissed.",
   description: "Posts that beat their creator's own usual result, across the brand's tracked accounts.",
   briefValues: ["outliers_loaded", "brand_name", "outlier_count", "filters"],
   readinessNote:
@@ -207,6 +212,8 @@ export const SOCIAL_KPIS_TOOLS = { setView: "social_kpis_set_view" } as const;
 export const marketingSocialKpisManifest = build({
   local: "marketing-social-kpis",
   label: "Social KPIs",
+  situation:
+    "They are on {brand_name|the brand}'s social KPIs, on the {view|trend} section: {goal_count|no} goals against current numbers, follower trends and a benchmark against tracked accounts. They can add, change or delete goals.",
   description: "The brand's social goals against current numbers, follower trends and a benchmark against tracked accounts.",
   briefValues: ["kpis_loaded", "brand_name", "goal_count", "view"],
   readinessNote:
@@ -292,6 +299,8 @@ export const SOCIAL_SWIPE_TOOLS = {
 export const marketingSocialSwipeManifest = build({
   local: "marketing-social-swipe",
   label: "Swipe file",
+  situation:
+    "They are in {brand_name|the brand}'s swipe file: posts and ads saved for inspiration in collections, {item_count|no} shown under the current filters. They can filter, open an item, make a new collection, and update collections and items.",
   description: "The posts and ads saved for inspiration, in collections.",
   briefValues: ["swipe_loaded", "brand_name", "item_count", "collections"],
   readinessNote:
@@ -398,6 +407,8 @@ export const SOCIAL_ADS_TOOLS = { setFilters: "social_ads_set_filters", search: 
 export const marketingSocialAdsManifest = build({
   local: "marketing-social-ads",
   label: "Ad library",
+  situation:
+    "They are in {brand_name|the brand}'s ad library, on the {section|search} section: searching the public ad libraries (Meta, TikTok, Google, LinkedIn) and following advertisers. {result_count|No} ads are shown; they can search, filter the results and follow or unfollow advertisers.",
   description: "Search the public ad libraries (Meta, TikTok, Google, LinkedIn) and follow advertisers.",
   briefValues: ["ads_loaded", "brand_name", "section", "result_count"],
   readinessNote:

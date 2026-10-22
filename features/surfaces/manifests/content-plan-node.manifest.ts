@@ -623,6 +623,8 @@ export const contentPlanNodeManifest: SurfaceManifest = {
   description:
     "The open plan-node editor panel: one planned page's draft-overlaid fields; first read/write surface (writeTargets).",
   label: "Content Plan Node",
+  situation:
+    "They have one planned page open in the editor: \"{node_label}\" ({node_type}), route {node_route|not saved yet}, primary keyword {node_primary_keyword|none}. On the real site it is {node_page_state}; next step: {node_page_next_step}. Unsaved edits: {has_unsaved_edits}. They can edit it, save, build, write or publish the page.",
   readiness: "partial",
   readinessNote:
     "Emitter + live structural/content write handlers are wired in NodePanel; the page-backed SEO plan is read-only in this surface and edited by the canonical SeoPlanEditor; brief_writer is bound.",

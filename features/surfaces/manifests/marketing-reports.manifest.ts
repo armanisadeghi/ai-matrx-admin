@@ -199,6 +199,8 @@ export const marketingReportsManifest: SurfaceManifest = {
   readinessNote:
     "Manifest, route mapping, canonical GSC emitters, traffic-class evidence, and printable report are wired; live agent binding verification remains.",
   label: MARKETING_REPORTS_LABEL,
+  situation:
+    "They are in Marketing Reports, on the Search Console report for {selected_site.name|no website chosen yet} (report {report_status}): the last 28 days against the 28 before, with plain-language findings, traffic classes, top searches and top pages. They can pick another website and share or print the report.",
   urlPattern: "/marketing/reports*",
   intro: `<surface_intro>You are reading a shareable Search Console report. Lead with its plain-language findings, then cite the exact report period and evidence. Traffic classes are canonical business-value rulings: never reclassify a keyword from its text, never hide mismatch or unclassified traffic, and never invent conversion or GA4 data this report does not load.</surface_intro>`,
   groups,

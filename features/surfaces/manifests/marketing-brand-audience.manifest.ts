@@ -138,6 +138,8 @@ export const marketingBrandAudienceManifest: SurfaceManifest = {
   description:
     "The brand audience room — the named personas the brand sells to, with their goals, pain points, objections and channels.",
   label: "Brand Audience",
+  situation:
+    "They are in the brand's Audience room: {audience_persona_count|the} named personas the brand sells to, each with goals, pain points, objections and channels. They can add or edit a persona in the editor.",
   urlPattern: "/marketing/[brandId]/identity/audience",
   inheritsFrom: "matrx-user/marketing-brand",
   readiness: "partial",

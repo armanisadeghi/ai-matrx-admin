@@ -135,6 +135,8 @@ export const marketingBrandClaimsManifest: SurfaceManifest = {
   description:
     "The brand claims room — approved claims, forbidden claims and required disclaimers.",
   label: "Brand Claims",
+  situation:
+    "They are in the brand's Claims room: statements the brand may make word for word, statements it must never make, and required disclaimers. They can add, change or remove items in any of the three lists.",
   urlPattern: "/marketing/[brandId]/identity/claims",
   inheritsFrom: "matrx-user/marketing-brand",
   readiness: "partial",

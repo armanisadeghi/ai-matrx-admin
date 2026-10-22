@@ -332,6 +332,8 @@ export const keywordResearchManifest: SurfaceManifest = {
   description:
     "",
   label: "Keyword Research Workbench",
+  situation:
+    "They are on the Keyword Research workbench, which is not tied to any website: {keywords_total} keywords listed for \"{library_search|everything}\". The research run is {run_status} (last keyword: {run_primary_keyword|none}). Runs cost money; they can filter the library, scope it to a run's cluster and stage a keyword.",
   urlPattern: "/marketing/keyword-research",
   readiness: "partial",
   readinessNote:

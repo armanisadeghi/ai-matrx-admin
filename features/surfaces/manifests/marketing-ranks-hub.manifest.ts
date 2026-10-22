@@ -95,6 +95,8 @@ export const marketingRanksHubManifest: SurfaceManifest = {
   readinessNote:
     "Declared, emitted (CrossSiteRanksHub provider), routed, and synced; the live non-matching-name binding + Matrx-vs-matrix verification has not been run yet.",
   label: "Marketing Rank Tracking Hub",
+  situation:
+    "They are on the cross-site rank tracking page: every tracked keyword across the brands and websites they can see, with {history_window_days} days of history per row. It is read-only; each row links to its website's rank tracking.",
   urlPattern: "/marketing/ranks",
   intro: `<surface_intro>
 You are on the cross-site rank tracking hub: every keyword (and AI-answer prompt) tracked across EVERY brand and site the user can see, in one portfolio table. No single brand or site is in focus — this is the "where does the whole portfolio stand" view, and its job is triage: which sites moved, which declined, which targets are stale or never checked.

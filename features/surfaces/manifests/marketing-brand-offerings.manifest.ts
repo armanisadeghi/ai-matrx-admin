@@ -219,6 +219,8 @@ export const marketingBrandOfferingsManifest: SurfaceManifest = {
   description:
     "The brand offerings room — the tree of what the brand sells and charges, plus (with a website) what the site offers and what each offering is worth.",
   label: "Brand Offerings",
+  situation:
+    "They are in the brand's Offerings room: the tree of what the brand sells ({offerings_count|an unknown number of} offerings), shown for the website {offerings_site.domain|none chosen}. They can add, edit, move or stop an offering, set what it is worth and whether this website offers it.",
   urlPattern: "/marketing/[brandId]/identity/offerings",
   inheritsFrom: "matrx-user/marketing-brand",
   readiness: "partial",

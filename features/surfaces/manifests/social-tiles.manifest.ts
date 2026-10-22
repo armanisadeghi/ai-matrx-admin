@@ -44,6 +44,8 @@ function manifest(args: {
   local: string;
   label: string;
   description: string;
+  /** The moment in words, rendered by the server each turn (blanks fill from values). */
+  situation: string;
   intro: string;
   groups: SurfaceValueGroup[];
   values: SurfaceValue[];
@@ -58,6 +60,7 @@ function manifest(args: {
     executionMode: "python-stream",
     label: args.label,
     description: args.description,
+    situation: args.situation,
     briefValues: args.briefValues,
     readiness: "partial",
     readinessNote:
@@ -83,6 +86,8 @@ export const SOCIAL_POST_CLIENT_TOOLS = {
 export const socialPostManifest = manifest({
   local: "social-post",
   label: "Social post",
+  situation:
+    "They have a social post open on their board: a {platform|social} {format|post} by @{handle|(unknown)}, opening with \"{hook_line|(not loaded yet)}\"; transcript: {transcript_status|unknown}. Its caption, numbers and outlier score are in your context. They can get the transcript, break the post down or save it to a swipe file.",
   description: "One public social post: its caption, hook, transcript, metrics and outlier score.",
   briefValues: ["post_loaded", "platform", "handle", "hook_line"],
   intro: `<surface_intro>
@@ -178,6 +183,8 @@ export const SOCIAL_PROFILE_CLIENT_TOOLS = { openAccount: "social_profile_open_a
 export const socialProfileManifest = manifest({
   local: "social-profile",
   label: "Social profile",
+  situation:
+    "They have a social account open on their board: @{handle|(unknown)} on {platform|a social platform} ({display_name|name not loaded}), with {follower_count|an unknown number of} followers. Its bio and best-performing posts are in your context.",
   description: "One public social account with its audience numbers and its top outlier posts.",
   briefValues: ["profile_loaded", "platform", "handle", "follower_count"],
   intro: `<surface_intro>
@@ -231,6 +238,8 @@ export const SOCIAL_OUTLIER_FEED_SURFACE_NAME = "matrx-user/social-outlier-feed"
 export const socialOutlierFeedManifest = manifest({
   local: "social-outlier-feed",
   label: "Outlier feed",
+  situation:
+    "They have an outlier feed on their board: {post_count|no} posts that beat their own account's usual views. The first five open with: {top_hooks|(not loaded yet)}.",
   description: "A live list of the posts that beat their own account's baseline.",
   briefValues: ["feed_loaded", "post_count", "top_hooks"],
   intro: `<surface_intro>
@@ -261,6 +270,8 @@ export const SOCIAL_AD_SURFACE_NAME = "matrx-user/social-ad";
 export const socialAdManifest = manifest({
   local: "social-ad",
   label: "Social ad",
+  situation:
+    "They have an ad open on their board: {advertiser_name|an advertiser}'s ad from the {library|ad} library, headline \"{headline|none}\", button \"{cta|none}\", still running: {running|unknown}. Its copy and landing page are in your context.",
   description: "One ad from an ad library: copy, call to action, landing page and how long it ran.",
   briefValues: ["ad_loaded", "advertiser_name", "headline"],
   intro: `<surface_intro>
@@ -305,6 +316,8 @@ export const SOCIAL_SWIPE_SURFACE_NAME = "matrx-user/social-swipe-collection";
 export const socialSwipeCollectionManifest = manifest({
   local: "social-swipe-collection",
   label: "Swipe collection",
+  situation:
+    "They have the swipe collection \"{name|(not loaded yet)}\" open on their board: {description|no description given}. It holds posts, ads and profiles saved for reference.",
   description: "A saved group of posts, ads and profiles an organization keeps for reference.",
   briefValues: ["collection_loaded", "name"],
   intro: `<surface_intro>

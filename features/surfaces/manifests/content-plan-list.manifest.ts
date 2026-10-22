@@ -80,6 +80,8 @@ export const contentPlanListManifest: SurfaceManifest = {
   description:
     "Content Plan front door: every visible site with its plan aggregates (pages, statuses, keyword coverage).",
   label: "Content Plan Sites",
+  situation:
+    "They are on the Content Plan front door: {site_total|their} websites, each with its plan totals (pages, statuses, keyword coverage). They can open one website's plan.",
   readiness: "partial",
   readinessNote:
     "Emitter wired in PlanSitesList; CMS-link column state not yet declared.",

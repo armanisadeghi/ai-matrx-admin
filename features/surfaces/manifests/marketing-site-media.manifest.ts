@@ -146,6 +146,8 @@ export const marketingSiteMediaManifest: SurfaceManifest = {
   description:
     "Site media command center — crawled inventory, brand library, research images, AI generation orders, media standards.",
   label: "Site Media Workspace",
+  situation:
+    "They are on the website's media workspace on the {media_view} view: images found by crawling, the brand library, research images, AI image orders and the website's image standards. They can edit the image standards' slots and notes.",
   urlPattern: "/marketing/[brandId]/websites/[siteId]/media",
   inheritsFrom: "matrx-user/marketing-site",
   readiness: "partial",

@@ -199,6 +199,8 @@ export const adminGrowthLoopManifest: SurfaceManifest = {
   readinessNote:
     "Emitter wired in GrowthLoopCanvasInner and matches the component's real state (the static overview + click selection), but not yet live-checked against the DB (no ui_surface row exists — the orchestrator seeds it) and never bound to a test agent for the Matrx-vs-matrix verification.",
   label: "Growth Loop Map",
+  situation:
+    "They are on the admin Growth Loop map: the stages of the growth pipeline and the connections between them, with {open_gap_count} open gaps, {blocker_count} of them blockers. Selected stage: {selected_stage_id|none}; selected connection: {selected_edge_id|none}. The selection's details and gaps are in your context.",
   urlPattern: "/administration/knowledge/growth-loop",
   intro: `<surface_intro>
 You are on the admin Growth Loop map: the twelve-stage pipeline (Research through Write-back) scored on THE THREE PIPES — code, human, and AI — per stage and per connection between stages. loop_score / open_gap_count / blocker_count / blockers_summary give the whole-map health; stages_summary and edges_summary list every node and arrow the canvas renders. The data itself is static (hand-maintained in loop-map.ts, not fetched) — the only thing that changes per view is which single stage or arrow the user has clicked. selection_kind tells you whether that is a stage, a connection, or nothing; selected_stage_detail / selected_edge_detail carry the full record for whichever one is selected, and selection_gaps lists the gaps sitting on it.
