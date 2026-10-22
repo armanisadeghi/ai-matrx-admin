@@ -30,7 +30,7 @@
  */
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Camera,
   ChevronDown,

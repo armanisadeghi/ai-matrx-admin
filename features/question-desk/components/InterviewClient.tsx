@@ -39,7 +39,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { ProTextareaElement } from "@/components/official/ProTextarea";
 import { useAppSelector } from "@/lib/redux/hooks";

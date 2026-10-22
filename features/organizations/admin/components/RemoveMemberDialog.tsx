@@ -17,7 +17,7 @@
  * member's resources instead of implying they can be moved.
  */
 import React, { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";

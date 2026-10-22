@@ -13,7 +13,7 @@
 // the grace period ends (planned ~mid-August 2026). A "temporary" banner with
 // no removal date is how a banner becomes permanent.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowLeft, Rows3, X } from "lucide-react";
 import { useSetting } from "@/features/settings/hooks/useSetting";
 

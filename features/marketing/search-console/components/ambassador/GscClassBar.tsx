@@ -24,7 +24,7 @@
  * `GSC_TRAFFIC_CLASSES`. Nothing here re-derives a class or re-aggregates a fact.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Search } from "lucide-react";
 import { cn } from "@/styles/themes/utils";

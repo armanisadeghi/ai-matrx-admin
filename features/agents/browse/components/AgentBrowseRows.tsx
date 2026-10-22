@@ -9,7 +9,7 @@
 // tags | updated | kebab. Whole-row click opens AgentActionModal (classic
 // chooser). Name is plain text so it does not navigate away.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Star, Archive, MoreVertical } from "lucide-react";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";

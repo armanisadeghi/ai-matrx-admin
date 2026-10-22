@@ -9,7 +9,7 @@
 // reads every card. Everything shown is the card `custom.templates` answers — the template's own
 // invented business, never anyone's rows.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import type { ReactNode } from "react";
 
 import { SpaceTemplateCover, SpaceTemplateIcon } from "@/features/spaces/public/SpaceTemplateIcon";

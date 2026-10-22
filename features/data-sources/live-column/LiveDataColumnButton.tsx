@@ -9,7 +9,7 @@
  */
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Database } from "lucide-react";
 import { useFields, useRecordsClient } from "@ai-matrx/records/react";
 import { Button, OptionCombobox, Select } from "@ai-matrx/design-system/controls";

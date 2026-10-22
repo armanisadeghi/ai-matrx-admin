@@ -26,7 +26,7 @@
  */
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 

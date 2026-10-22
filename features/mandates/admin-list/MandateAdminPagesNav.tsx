@@ -8,7 +8,7 @@
 // inline on wide screens; everything else lives in the More menu, beside the
 // grade legend. New mandate is the one primary action.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Activity,
   AlertTriangle,

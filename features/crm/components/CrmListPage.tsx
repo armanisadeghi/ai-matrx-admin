@@ -16,7 +16,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useEffect, useRef, useState } from "react";
 import { UntrustedCount } from "@ai-matrx/design-system";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { dismissRecordToasts, recordToast, toast } from "@/lib/toast";
 import { toastDoor } from "@/components/official/entity-ref/toastDoor";

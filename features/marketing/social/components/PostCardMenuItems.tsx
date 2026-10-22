@@ -7,7 +7,7 @@
  * Mounted only while the menu is open, so a grid of cards costs nothing.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Bookmark, Clapperboard, FileText, Layers, ScanSearch, UserRound } from "lucide-react";
 
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";

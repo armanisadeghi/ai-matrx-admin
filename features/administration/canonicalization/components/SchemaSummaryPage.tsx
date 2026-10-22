@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Copy } from "lucide-react";
 import {
   MatrxDataTable,

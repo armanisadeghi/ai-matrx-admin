@@ -30,7 +30,7 @@ import {
   Settings2,
   ShieldCheck,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import {

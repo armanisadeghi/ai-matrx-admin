@@ -30,7 +30,7 @@ import { writeSyncedCell } from "@/features/unified-data/connect-database/servic
 import { extractErrorMessage } from "@/utils/errors";
 import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
 import { useRecordsDataSource, type RecordsDataSource } from "./recordsDataSource";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { personActor, tableRightsAt } from "@ai-matrx/records-ui/helpers";
 import type { AgentBuildAsk, OpenRecordsAsk, RecordsUiHost, TableAskRequest } from "@ai-matrx/records-ui";

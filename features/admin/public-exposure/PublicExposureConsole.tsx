@@ -36,7 +36,7 @@ import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@ai-matrx/design-system";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/utils/supabase/client";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import {
   classifyExposures,

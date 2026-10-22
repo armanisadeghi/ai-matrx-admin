@@ -25,7 +25,7 @@
 // `useSpaceBuild` (mandate `spaces.build`). Mandates are launched by key; this file writes no instruction.
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { Check, CircleDashed, CircleX } from "lucide-react";
 import { supabaseDataSource } from "@ai-matrx/records/core";

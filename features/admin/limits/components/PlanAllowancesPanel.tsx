@@ -39,7 +39,7 @@
 
 import { InfoHint } from "@/components/official/InfoHint";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Loader2, Plus, X } from "lucide-react";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { Badge } from "@/components/ui/badge";

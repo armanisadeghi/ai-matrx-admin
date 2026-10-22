@@ -15,7 +15,7 @@
  * link), and a second origin line under them would be noise.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink, Library } from "lucide-react";
 import {
   sampleLibraryOrigin,

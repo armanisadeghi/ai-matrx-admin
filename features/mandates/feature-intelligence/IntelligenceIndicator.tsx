@@ -14,7 +14,7 @@
 
 import { useEffect, useState } from "react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { usePathname } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";

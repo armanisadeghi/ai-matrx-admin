@@ -13,7 +13,7 @@ import { refreshStoreRead } from "@/lib/redux/slices/storeReadsSlice";
 import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Archive,
   ArrowRight,

@@ -15,7 +15,7 @@
 // The table stays — `useListViewPrefs` remembers the choice per user, and an
 // older learner with 400 items still gets sorting and filtering.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { BookOpen, CalendarClock, Clock, MoreHorizontal } from "lucide-react";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";

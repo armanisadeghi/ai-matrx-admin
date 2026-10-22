@@ -56,7 +56,7 @@ import { useEntityScopes } from "@/features/scopes/hooks/useEntityScopes";
 import { ContextStatusButton } from "@/features/scopes/components/context-assignment/ContextStatusButton";
 import { ContextSummaryChips } from "@/features/scopes/components/context-assignment/ContextSummaryChips";
 import { useSetRowScopes } from "@/features/scopes/hooks/useRowScopes";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 export interface FileInfoTabProps {
   fileId: string;

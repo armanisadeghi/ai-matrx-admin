@@ -27,7 +27,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  */
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   CircleHelp,

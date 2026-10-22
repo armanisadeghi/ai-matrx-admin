@@ -28,7 +28,7 @@
  */
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { resolveEntityDoors } from "./doors";
 
 export interface ToastDoorOptions {

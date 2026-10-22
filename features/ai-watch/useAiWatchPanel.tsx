@@ -37,7 +37,7 @@ import { useFollowedReadError, useFollowedRunSummaries, useResolvedFollowed } fr
 import { useUserRequestChanges } from "./useUserRequestChanges";
 import { useFollowedWork } from "./followed-work";
 import { RunTestReplaysStrip } from "@/features/ai-test-mode/RunTestReplaysStrip";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Eye, Send, Wrench } from "lucide-react";
 import { formatCost } from "@ai-matrx/kit/format";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";

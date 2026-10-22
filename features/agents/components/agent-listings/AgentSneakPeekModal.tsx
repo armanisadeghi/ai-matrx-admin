@@ -5,7 +5,7 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,

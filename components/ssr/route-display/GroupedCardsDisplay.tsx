@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { ChevronRight, FolderOpen } from "lucide-react";
 import { getRouteLabel } from "@/utils/route-discovery/shared";

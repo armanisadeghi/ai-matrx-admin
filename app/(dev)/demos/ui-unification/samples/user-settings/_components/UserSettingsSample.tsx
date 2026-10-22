@@ -14,7 +14,7 @@
  */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Mail, Settings, Type } from "lucide-react";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { getTabTree } from "@/features/settings/registry";

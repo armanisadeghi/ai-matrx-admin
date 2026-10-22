@@ -36,7 +36,7 @@ import {
   ShieldOff,
   Square,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Popover,
   PopoverContent,

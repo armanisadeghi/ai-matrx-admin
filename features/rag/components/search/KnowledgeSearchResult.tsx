@@ -9,7 +9,7 @@
  */
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { citationHrefFor, type RagSearchHit } from "@/features/rag/api/search";

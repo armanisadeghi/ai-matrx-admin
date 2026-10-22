@@ -19,7 +19,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowUpCircle,

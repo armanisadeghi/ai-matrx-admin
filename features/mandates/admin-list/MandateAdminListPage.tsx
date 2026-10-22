@@ -20,7 +20,7 @@
 // whole query lives in the URL, so Back restores scope, search, filters and sort.
 
 import { useEffect, useRef } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { ArrowUpCircle, BrainCircuit, Loader2, Trash2 } from "lucide-react";
 import { Button as ControlButton, Select } from "@ai-matrx/design-system/controls";

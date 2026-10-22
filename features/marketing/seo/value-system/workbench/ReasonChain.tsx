@@ -12,7 +12,7 @@
  * other empty chain screams as the data defect it is.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   AlertTriangle,
   CircleHelp,

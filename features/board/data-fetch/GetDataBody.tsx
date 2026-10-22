@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Database, DownloadCloud } from "lucide-react";
 import {
   Badge,

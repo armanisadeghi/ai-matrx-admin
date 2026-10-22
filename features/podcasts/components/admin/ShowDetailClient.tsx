@@ -29,7 +29,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import NextLink from "next/link";
+import NextLink from "@/components/navigation/AppLink";
 import { ShowForm } from "./PodcastForm";
 import { podcastService } from "../../service";
 import type { PcShow, PcEpisodeWithShow } from "../../types";

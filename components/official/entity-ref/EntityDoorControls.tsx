@@ -62,7 +62,7 @@
  */
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowUpRight, ExternalLink, Lightbulb } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { openResourcePeek } from "@/features/organizations/peek/resourcePeekStore";

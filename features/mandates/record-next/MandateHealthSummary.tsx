@@ -10,7 +10,7 @@
 // list 2026-09-26: "a tab that says nothing").
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { StatusToken } from "@ai-matrx/design-system/controls";

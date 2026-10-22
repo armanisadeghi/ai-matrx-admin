@@ -15,7 +15,7 @@
 
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Check, Loader2, Search, ShieldAlert, Wand2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";

@@ -1,7 +1,7 @@
 "use client";
 
 import { guardedUpdate } from "@ai-matrx/data/db";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 
 import {

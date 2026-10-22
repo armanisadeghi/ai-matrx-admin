@@ -20,7 +20,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { CircleAlert, ExternalLink, Loader2 } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";

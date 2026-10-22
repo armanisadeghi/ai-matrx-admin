@@ -17,7 +17,7 @@
 
 import { useState } from "react";
 import { Columns3, Plus, Search } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

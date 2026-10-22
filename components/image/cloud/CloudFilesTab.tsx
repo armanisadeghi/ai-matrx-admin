@@ -26,7 +26,7 @@ import {
   ImageIcon,
   ExternalLink,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

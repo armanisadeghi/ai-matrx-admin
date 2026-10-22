@@ -14,7 +14,7 @@
 
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowRight, Lightbulb, Network } from "lucide-react";
 import { isLowConfidence } from "@/features/kg-suggestions/constants";
 import { useEffect } from "react";

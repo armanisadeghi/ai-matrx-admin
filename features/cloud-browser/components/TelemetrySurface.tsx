@@ -18,7 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { HouseWifi } from "lucide-react";
 import { formatFileSize, type CostUnit } from "@ai-matrx/kit/format";
 import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";

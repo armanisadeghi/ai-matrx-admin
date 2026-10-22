@@ -24,7 +24,7 @@
 
 import { TapTargetCopyButton } from "@ai-matrx/design-system/tap-target";
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { AlertTriangle, CircleCheck, CircleDot, Loader2, RefreshCw } from "lucide-react";
 
 import { MatrxDataTable, MatrxDetailGrid, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";

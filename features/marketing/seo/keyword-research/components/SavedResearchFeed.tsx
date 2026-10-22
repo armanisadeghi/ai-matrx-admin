@@ -14,7 +14,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { listKeywordsWithMarketByPhrases } from "@/features/marketing/seo/keyword-research/data/queries";

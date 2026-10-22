@@ -24,7 +24,7 @@
 //     text, inline media for a file — never a JSON dump.
 
 import { useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink, FlaskConical, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

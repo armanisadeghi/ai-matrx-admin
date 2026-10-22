@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { ADMIN_SKILLS_SURFACE_NAME, createAdminSkillsScope } from "@/features/surfaces/manifests/admin-skills.manifest";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   ArrowLeft,
   CheckCircle2,

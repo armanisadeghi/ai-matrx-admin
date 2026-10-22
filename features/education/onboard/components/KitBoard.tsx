@@ -14,7 +14,7 @@
 // spinner, and nothing claims work that has not happened.
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   AlertCircle,
   ArrowRight,

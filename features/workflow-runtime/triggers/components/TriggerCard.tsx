@@ -21,7 +21,7 @@ import {
   Play,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Switch } from "@/components/ui/switch";

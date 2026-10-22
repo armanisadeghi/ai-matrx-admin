@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Building2 } from "lucide-react";
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
 

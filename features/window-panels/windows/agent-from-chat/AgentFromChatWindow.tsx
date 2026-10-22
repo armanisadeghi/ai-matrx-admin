@@ -10,7 +10,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // importer, opened with this chat already selected. Client: `features/agents/from-chat/service.ts`.
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Layers, MessagesSquare } from "lucide-react";
 

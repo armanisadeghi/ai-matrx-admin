@@ -12,7 +12,7 @@
  */
 
 import { useMemo, useState, useTransition, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { Copy, ExternalLink, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

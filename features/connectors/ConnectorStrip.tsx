@@ -14,7 +14,7 @@
 //  - Exactly the connectors supplied by the host stay visible, whether they
 //    are connected or not. A final More door opens the complete live set.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Check, Ellipsis } from "lucide-react";
 import {
   Tooltip,

@@ -15,7 +15,7 @@
  * (open / new tab / peek) come from `EntityRef`, never from here.
  */
 
-import NextLink from "next/link";
+import NextLink from "@/components/navigation/AppLink";
 import { Globe } from "lucide-react";
 import { podcastPublicHref } from "../../utils";
 

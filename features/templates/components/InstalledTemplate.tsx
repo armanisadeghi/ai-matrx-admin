@@ -14,7 +14,7 @@
 // Moved from the retired kits installed page (Kits → Template merge, 2026-10-05). It reads only the
 // install's answer (`made`, `show`) and the copied agents' own variable definitions.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, BookOpen, Database, Eye, Play, Table2 } from "lucide-react";

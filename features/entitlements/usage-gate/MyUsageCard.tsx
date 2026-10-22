@@ -9,7 +9,7 @@
 // background (a page read, never on an AI request's path).
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useSurfaceScopeContribution } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { ArrowUpRight, Infinity as InfinityIcon, RotateCw } from "lucide-react";
 import { pointsToUsd } from "@ai-matrx/kit/format";

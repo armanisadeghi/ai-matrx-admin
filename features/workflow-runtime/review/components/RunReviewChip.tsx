@@ -7,7 +7,7 @@
 // door to the workflow's review page. A failed read says so, with Retry.
 
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useSearchParams } from "next/navigation";
 import { Flag } from "lucide-react";
 

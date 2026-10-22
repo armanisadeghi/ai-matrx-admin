@@ -70,7 +70,7 @@ import {
   ShieldCheck,
   Unlink,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { toast } from "@/lib/toast-service";
 import { cn } from "@/lib/utils";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";

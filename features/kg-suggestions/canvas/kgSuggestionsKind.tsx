@@ -9,7 +9,7 @@
  */
 
 import { ArrowUpRight, Lightbulb } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { defineCanvasKind, type AnyCanvasKind, type CanvasKindProps } from "@ai-matrx/canvas/react";
 import { useToolOpener } from "@/features/canvas/host/toolCanvas";
 

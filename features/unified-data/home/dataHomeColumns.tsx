@@ -6,7 +6,7 @@
 // Owner · Access, with Changed by, Details and Link one click away in the column picker. Every
 // column sorts and filters over the whole in-hand set (dataHomeService.ts reads the same ids).
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useSyncExternalStore } from "react";
 import {
   Bell,

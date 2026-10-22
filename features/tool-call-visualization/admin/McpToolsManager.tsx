@@ -74,7 +74,7 @@ import {
   sourceKindLabel,
 } from "./mcp-tools/source-kind-badge";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { AiToolRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import {

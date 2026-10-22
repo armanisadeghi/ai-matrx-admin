@@ -5,7 +5,7 @@
 
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { xmlElement, xmlList, xmlText } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
 import { useRouter } from "next/navigation";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

@@ -5,7 +5,7 @@
 // under a one-row admin strip with the way back. Mounted under
 // /administration/** so every read carries the admin lane.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowLeft } from "lucide-react";
 import { MeetingDetail } from "@/features/meet/components/manage/MeetingDetail";
 

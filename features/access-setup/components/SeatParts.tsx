@@ -2,7 +2,7 @@
 
 // Shared pieces of the People involved panels: a person row and the parts a seat sees.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Pencil, Undo2, UserMinus } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { getInitials } from "@ai-matrx/kit/format";

@@ -9,7 +9,7 @@
 // material" and "All my material". Renders nothing without a study context,
 // so the standalone tutor is unchanged.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { BookOpen, FileText, Library } from "lucide-react";
 import { Chip } from "@ai-matrx/design-system/controls";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";

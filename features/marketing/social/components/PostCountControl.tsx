@@ -2,7 +2,7 @@
 
 /** "How many posts" beside the thing that fetches: the remembered choice. One control, every account-fetch surface. */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Badge, Select, type SelectOption } from "@ai-matrx/design-system/controls";
 
 import {

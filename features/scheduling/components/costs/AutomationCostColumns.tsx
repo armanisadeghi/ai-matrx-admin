@@ -14,7 +14,7 @@ import { notReadyHit } from "@/features/scheduling/service/automationReadiness";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { RunApprovalCell } from "@/features/admin/spend-approvals/RunApprovalCell";
 import { approvalStatusSync } from "@/features/admin/spend-approvals/spendApprovals";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
 import {

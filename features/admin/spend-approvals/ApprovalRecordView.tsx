@@ -10,7 +10,7 @@
  * rows are merged away (`billing.run_approval_subject_uq`), so a link to the subject never dies.
  * An old link to a merged row lands here with `?replaced=<id>` and says so.
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Hammer, ScrollText } from "lucide-react";

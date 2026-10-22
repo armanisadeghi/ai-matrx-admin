@@ -33,7 +33,7 @@ import {
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { toast } from "@/lib/toast-service";
 import { cn } from "@/lib/utils";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { FlaskConical } from "lucide-react";
 import { EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import {

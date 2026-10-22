@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";

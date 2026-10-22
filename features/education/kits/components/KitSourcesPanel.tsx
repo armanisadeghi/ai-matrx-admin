@@ -13,7 +13,7 @@
 // #1, and the page moves to the kit's new address.
 
 import { useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { FileText, Plus, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";

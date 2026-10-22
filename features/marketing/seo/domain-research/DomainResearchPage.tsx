@@ -16,7 +16,7 @@
 // It is one more place: the competitor workspace and backlinks link here; it
 // replaces nothing.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition, type FormEvent, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";

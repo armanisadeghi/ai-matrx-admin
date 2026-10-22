@@ -14,7 +14,7 @@ import {
   Settings,
   ChevronRight,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { aiModelService } from "../service";
 import type { AiModel, ModelUsageResult } from "../types";
 import { ModelSettingsReviewDialog } from "./ModelSettingsReviewDialog";

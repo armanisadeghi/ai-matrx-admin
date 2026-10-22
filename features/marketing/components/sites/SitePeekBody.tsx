@@ -24,7 +24,7 @@
  */
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SuspenseLoader } from "@ai-matrx/design-system";

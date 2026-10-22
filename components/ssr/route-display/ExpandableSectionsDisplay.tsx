@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { ChevronRight, ArrowRight, FolderClosed, FolderOpen } from "lucide-react";
 import { getRouteLabel } from "@/utils/route-discovery/shared";

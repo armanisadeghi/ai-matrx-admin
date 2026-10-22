@@ -5,7 +5,7 @@
 // with each review's own People involved one click away (access-setup PLAN §5b).
 
 import { useEffect } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Check, ShieldCheck, Users } from "lucide-react";
 import { Badge, Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 

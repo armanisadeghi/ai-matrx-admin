@@ -7,7 +7,7 @@
  * any row carrying the eight metric fields qualifies.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowUpRight } from "lucide-react";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ClassChip } from "@/features/marketing/search-console/components/insights/ClassChip";

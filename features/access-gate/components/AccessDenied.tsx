@@ -26,7 +26,7 @@
  * `AccessDeniedView` at its own call site; it does not fork this file.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {

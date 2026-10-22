@@ -7,7 +7,7 @@
  * preserve native new-tab behavior.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Settings } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import { useAppDispatch } from "@/lib/redux/hooks";

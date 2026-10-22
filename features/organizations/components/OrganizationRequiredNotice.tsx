@@ -40,7 +40,7 @@ import {
 } from "@/features/organizations/useOrganizationRequired";
 import { Button } from "@ai-matrx/design-system";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 // The recogniser's ONE home is `lib/organizations/organizationRequiredError`.
 // It is re-exported here because this component and that predicate are always

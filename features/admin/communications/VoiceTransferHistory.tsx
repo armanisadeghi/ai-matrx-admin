@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { VoiceTransferReceipt } from "./VoiceTransferReceipt";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { InfoHint } from "@/components/official/InfoHint";

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight, ChevronDown, LayoutGrid, Link2, Loader2 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { toast } from "@/lib/toast";
 import { toastDoor } from "@/components/official/entity-ref/toastDoor";

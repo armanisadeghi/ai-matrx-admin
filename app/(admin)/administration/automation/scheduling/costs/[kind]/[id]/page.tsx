@@ -3,7 +3,7 @@
 // every run with cost, turns, models and the conversation / workflow run.
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { use } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

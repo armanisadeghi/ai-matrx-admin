@@ -12,7 +12,7 @@ import {
   Library,
   Save,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Button } from "@ai-matrx/design-system";
 import { WrenchTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { cn } from "@/styles/themes/utils";

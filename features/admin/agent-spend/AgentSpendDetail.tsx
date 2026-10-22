@@ -6,7 +6,7 @@
  * seat="admin": every organization; seat="org": that organization only.
  */
 import { displayId } from "@ai-matrx/design-system";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Badge, Button, SegmentedControl } from "@ai-matrx/design-system/controls";
