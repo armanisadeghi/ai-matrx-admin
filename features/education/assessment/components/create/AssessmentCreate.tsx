@@ -77,12 +77,9 @@ import { KIND_CONFIG, type KindConfig } from "../kindConfig";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-<<<<<<< HEAD
 
 /** Decks stay pickable here (per screen — the global Use existing list is the nine approved kinds). */
 const QUIZ_EXTRA_KINDS = ["fc_set"] as const;
-=======
->>>>>>> origin/main
 
 const FIELD = "text-base"; // 16px+ prevents iOS zoom-on-focus
 
@@ -491,7 +488,6 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
               deliveries={FLASHCARD_SOURCE_DELIVERIES}
               extraKinds={QUIZ_EXTRA_KINDS}
             />
-<<<<<<< HEAD
             {stoppedRun?.whileSaving ? (
               // The save had been sent and may have landed: never redo it blind.
               <RunStoppedNotice
@@ -511,8 +507,6 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
                 onDismiss={tabRun.dismiss}
               />
             ) : null}
-=======
->>>>>>> origin/main
             {styleDraft.didRestore ? (
               <WizardDraftRestored
                 what="your style and details"
