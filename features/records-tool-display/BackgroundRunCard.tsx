@@ -215,14 +215,21 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
         onClick={() => setOpened(true)}
         aria-expanded={false}
         aria-label={`${title}, ${STATUS_WORD[view.phase]}`}
-        className="flex w-full max-w-2xl items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-left transition-colors hover:bg-accent/40"
+        data-background-run-line=""
+        className="flex h-6 w-full max-w-2xl items-center gap-1 rounded-sm text-left text-sm leading-6 transition-colors hover:bg-muted/40"
       >
-        <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
-        <Icon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
-        <span className="type-secondary min-w-0 flex-1 truncate text-foreground">{title}</span>
+        {/* Folded = one transcript line like the tool lines around it (Arman, 2026-10-22): the
+            glyph on the message's left edge, no box, chevron only in the right-hand slot. */}
+        <span className="flex h-6 w-5 shrink-0 items-center justify-center" aria-hidden>
+          <Icon className="size-4 text-muted-foreground" />
+        </span>
+        <span className="min-w-0 flex-1 truncate text-muted-foreground">{title}</span>
         <Badge tone={BADGE_TONE[view.phase]}>{STATUS_WORD[view.phase]}</Badge>
         <span className="type-meta w-14 shrink-0 text-right tabular-nums text-muted-foreground">
           {elapsedMs != null && elapsedMs >= 1_000 ? formatElapsed(elapsedMs) : ""}
+        </span>
+        <span className="flex h-6 w-4 shrink-0 items-center justify-center text-muted-foreground" aria-hidden>
+          <ChevronRight className="size-3.5" />
         </span>
       </button>
     );

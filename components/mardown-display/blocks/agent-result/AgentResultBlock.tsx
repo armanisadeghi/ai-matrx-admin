@@ -176,6 +176,7 @@ function RunDetail({ facts }: { facts: AgentRunFacts }) {
   return (
     <div className="mt-2 border-t border-border/50 pt-1.5">
       <DisclosureHeader
+        chevron="end"
         className="w-full"
         open={open}
         onClick={() => setOpen((value) => !value)}
