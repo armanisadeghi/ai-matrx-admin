@@ -130,19 +130,25 @@ it("removing every pin leaves Pinned empty: the starting set comes back only for
   const store = makeStore();
   markLoaded(store);
   const starting = [{ id: "/chat", label: "Chat", href: "/chat" }];
-  let api!: ReturnType<typeof useFramePins>;
   function StartHost() {
-    api = useFramePins("/crm/people", "People", starting as never);
-    return <ul>{api.pins.map((p) => <li key={p.id}>{p.label}</li>)}</ul>;
+    const { pins, savePins } = useFramePins("/crm/people", "People", starting as never);
+    return (
+      <div>
+        <button data-testid="add" onClick={() => savePins([...pins, { id: "/x", label: "X", href: "/x" } as never])} />
+        <button data-testid="clear" onClick={() => savePins([])} />
+        <ul>{pins.map((p) => <li key={p.id}>{p.label}</li>)}</ul>
+      </div>
+    );
   }
+  const press = (id: string) => act(() => host.querySelector<HTMLButtonElement>(`[data-testid="${id}"]`)!.click());
   host = document.createElement("div");
   document.body.appendChild(host);
   root = createRoot(host);
   act(() => root.render(<Provider store={store}><StartHost /></Provider>));
   expect(rows()).toEqual(["Chat"]);
-  act(() => api.savePins([...api.pins, { id: "/x", label: "X", href: "/x" } as never]));
+  press("add");
   expect(rows()).toContain("X");
-  act(() => api.savePins([]));
+  press("clear");
   expect(rows()).toEqual([]);
   unmount();
 });
