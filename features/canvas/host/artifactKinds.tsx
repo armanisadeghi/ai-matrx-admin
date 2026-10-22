@@ -67,7 +67,7 @@ import {
   type CanvasContent,
   titleToString,
   type CanvasContentType,
-} from "@/features/canvas/canvasContent";
+} from "@ai-matrx/rich-content/utils/canvasContent";
 import { canvasContentHasSource } from "@/features/canvas/core/canvasSource";
 import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { artifactPrinterFor } from "@/features/canvas/output/canvasOutputPorts";

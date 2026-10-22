@@ -53,14 +53,21 @@ export function siteIsTheirs({ host, name, items, facts, decisions }: SiteTheirs
     }
   }
 
-  // Their own accounts: proven at sign-in (seeded "yes") or confirmed since.
+  return accountSites(items, decisions).some((i) => websiteHost(i.url ?? i.value) === site);
+}
+
+/**
+ * The websites their own accounts link to: a website finding read off the profile of an account that is theirs
+ * (proven at sign-in, or confirmed: picked under "Which one is you?"). That profile is them, so the site it names is
+ * their site (smart-add VISION Part 29). Answered "no" never comes back.
+ */
+export function accountSites(items: readonly EvidenceItem[], decisions: Record<string, Decision>): EvidenceItem[] {
   const accounts = new Set(items.filter((i) => i.field === "social" && isOurs(decisions[i.key])).map((i) => bareUrl(i.url ?? i.value)));
-  if (!accounts.size) return false;
-  return items.some(
+  if (!accounts.size) return [];
+  return items.filter(
     (i) =>
       i.field === "website" &&
       decisions[i.key] !== "no" &&
-      websiteHost(i.url ?? i.value) === site &&
       (i.source.kind === "social_profile" || i.source.kind === "link_in_bio") &&
       Boolean(i.source.url) &&
       accounts.has(bareUrl(i.source.url as string)),

@@ -1,9 +1,9 @@
 import type { ErrorInfo, ReactNode } from "react";
-import { captureRichContentRenderError } from "@ai-matrx/rich-content/utils/lifted/captureReactError";
+import { captureRichContentRenderError } from "@ai-matrx/rich-content/host/captureReactError";
 import { notifyChunkLoadError } from "@ai-matrx/kit/chunk-load-recovery";
 import { MarkdownErrorBoundary } from "@ai-matrx/rich-content/display/chat-markdown/internal-handlers/MarkdownErrorBoundary";
 
-jest.mock("@ai-matrx/rich-content/utils/lifted/captureReactError", () => ({
+jest.mock("@ai-matrx/rich-content/host/captureReactError", () => ({
   captureRichContentRenderError: jest.fn(),
 }));
 

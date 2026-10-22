@@ -19,7 +19,7 @@ import {
   resolveCanvasSource,
   resolveCanvasSourceFromData,
 } from "../canvasSource";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 
 describe("a live pane is never offered a Source view", () => {
   it.each([

@@ -30,7 +30,7 @@ import {
 } from "@/features/cloud-computer/service";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectRun } from "../redux/selectors";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import type { CloudBrowserRun } from "../types";
 
 export interface OpenCloudBrowserCanvasOptions {

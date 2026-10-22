@@ -11,7 +11,7 @@ import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
 import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
-import type { ArtifactDebugTrace, CanvasContent } from "@/features/canvas/canvasContent";
+import type { ArtifactDebugTrace, CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import { cn } from "@/lib/utils";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

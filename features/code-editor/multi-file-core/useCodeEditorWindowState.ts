@@ -26,7 +26,7 @@ import type { CodeFile } from "@/features/code-editor/multi-file-core/types";
 import {
   mapLanguageForMonaco,
   monacoModelPath,
-} from "@/features/code-editor/config/languages";
+} from "@ai-matrx/rich-content/utils/languages";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   loadCodeFilesFull,

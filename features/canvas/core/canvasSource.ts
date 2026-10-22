@@ -29,7 +29,7 @@
 import {
   NON_PERSISTABLE_CANVAS_TYPES,
   type CanvasContent,
-} from "@/features/canvas/canvasContent";
+} from "@ai-matrx/rich-content/utils/canvasContent";
 import {
   artifactContentToMarkdown,
   kindValueToMarkdown,

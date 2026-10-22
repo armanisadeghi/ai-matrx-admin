@@ -23,7 +23,7 @@ import { useMemo, useState } from "react";
 import { Lightbulb, PanelTop } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { ScrollFade } from "@/components/ui/scroll-fade";
+import { ScrollFade } from "@ai-matrx/design-system";
 import { cn } from "@/styles/themes/utils";
 import {
   humanLines,

@@ -28,3 +28,34 @@ export function writeTypedName(subject: string, name: string): void {
     // not stored: a reload asks once more
   }
 }
+
+/** What the picked "Which one is you?" card showed (its place and company), kept per welcome subject: the card's
+ *  source rows are later replaced by richer reads of the same accounts, so a reload could no longer redraw it. */
+export interface PickedCard {
+  place: string | null;
+  company: string | null;
+}
+
+const picked = defineClientKeyFamily({
+  id: "welcome.picked-card",
+  area: "local",
+  kind: "draft",
+  reason: "The place and company the sign-up welcome card a person picked showed; a reload keeps them as their answer.",
+});
+
+export function readPickedCard(subject: string): PickedCard | null {
+  try {
+    const v = picked.getJSON<PickedCard>(subject);
+    return v && typeof v === "object" ? { place: v.place ?? null, company: v.company ?? null } : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writePickedCard(subject: string, card: PickedCard): void {
+  try {
+    picked.setJSON(subject, card);
+  } catch {
+    // not stored: a reload redraws it from the accounts (welcomeVerdict pickedCardFacts)
+  }
+}

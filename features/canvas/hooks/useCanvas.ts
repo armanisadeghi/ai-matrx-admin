@@ -1,6 +1,6 @@
 "use client";
 
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import { useArtifactCanvasActions, type ArtifactCanvasActions } from "@/features/canvas/host/useArtifactCanvas";
 
 export interface CanvasOpener {

@@ -216,3 +216,24 @@ export interface WelcomeDone {
   paidHost: string | null;
   test: boolean;
 }
+
+/**
+ * "None of these" started a new round: until it settles, the window shows the people waiting state (never a found view
+ * for nobody; live 2026-10-21). `from` is the anchor run the narrowing replaced (undefined: no narrowing yet).
+ */
+export function narrowWaiting({
+  from,
+  current,
+  anchorDone,
+  anchored,
+  failed,
+}: {
+  from: string | null | undefined;
+  current: string | null;
+  anchorDone: boolean;
+  anchored: boolean;
+  failed: boolean;
+}): boolean {
+  if (from === undefined || anchored || failed) return false;
+  return current === from || !anchorDone;
+}

@@ -1,0 +1,516 @@
+{
+ "searched_name": "Mike Little",
+ "run_id": "6c7f17cc-2611-417a-bf76-cc786b763a17",
+ "node": "person_anchor_extract",
+ "evidence": [
+  {
+   "key": "social:linkedin:mglittle",
+   "url": "https://www.linkedin.com/in/mglittle",
+   "hits": [
+    {
+     "rank": 4,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Mike Little",
+   "value": "https://www.linkedin.com/in/mglittle",
+   "anchor": {
+    "kind": "account",
+    "score": 4.2,
+    "reasons": [
+     "named exactly \"Mike Little\"",
+     "found by 1 result, best rank 4",
+     "a personal LinkedIn profile"
+    ],
+    "bio_line": "Over the past 20 years, I\u2019ve had the opportunity to work closely with founders, CEOs\u2026",
+    "location": "Atlanta, Georgia, United States",
+    "followers": 13076,
+    "display_name": "Mike Little",
+    "person_profile": true
+   },
+   "handle": "mglittle",
+   "source": {
+    "url": "https://www.linkedin.com/in/mglittle",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "linkedin profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:linkedin:handle:mglittle"
+   ],
+   "snippet": "\u201cFirst class. Those two words probably best describe Mike Little and the team at CarterBaldwin. Throughout all their interactions, they treat clients and candidates with a first-class touch by staying engaged and qualifying all the variables for the right fit: both ways. \u201cFirst class. Those two words probably best describe Mike Little and the team at CarterBaldwin. Throughout all their interaction",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": null,
+   "followers": 13076,
+   "image_url": "https://media.licdn.com/dms/image/v2/D4E03AQHyCBf-wlpvAQ/profile-displayphoto-scale_200_200/B4EZx3AiggGYAY-/0/1771523156427?e=2147483647&v=beta&t=ZhvcAVz65JqZqDSauhB8NdvTn9J4bl5QUp_Ew855-S8",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "cc7dc813-e6db-49d7-848a-60d74077a760",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:linkedin:mike-little-a0216911",
+   "url": "https://www.linkedin.com/in/mike-little-a0216911",
+   "hits": [
+    {
+     "rank": 5,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Mike Little",
+   "value": "https://www.linkedin.com/in/mike-little-a0216911",
+   "anchor": {
+    "kind": "account",
+    "score": 4.1,
+    "reasons": [
+     "named exactly \"Mike Little\"",
+     "found by 1 result, best rank 5",
+     "a personal LinkedIn profile"
+    ],
+    "location": "Cary, North Carolina, United States",
+    "followers": 468,
+    "display_name": "Mike Little",
+    "person_profile": true
+   },
+   "handle": "mike-little-a0216911",
+   "source": {
+    "url": "https://www.linkedin.com/in/mike-little-a0216911",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "linkedin profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:linkedin:handle:mike-little-a0216911"
+   ],
+   "snippet": "Vice President at Poythress Commercial Contractors, Inc. \u00b7 Experience: Poythress Commercial Contractors, Inc. \u00b7 Location: Cary \u00b7 373 connections on LinkedIn. View Mike Little\u2019s profile on LinkedIn, a professional community of 1 billion members. We\u2019re unlocking community knowledge in a new way. Experts add insights directly into each article, started with the help of AI. Explore More \u00b7 Scottsdale, ",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": null,
+   "followers": 468,
+   "image_url": "https://static.licdn.com/aero-v1/sc/h/bgaqk7x4ntjz0wg67d8u723eb",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "6eb65233-36f4-4546-9789-16c31dc3772d",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:linkedin:mlittle99",
+   "url": "https://www.linkedin.com/in/mlittle99",
+   "hits": [
+    {
+     "rank": 10,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Mike Little",
+   "value": "https://www.linkedin.com/in/mlittle99",
+   "anchor": {
+    "kind": "account",
+    "score": 3.6,
+    "reasons": [
+     "named exactly \"Mike Little\"",
+     "found by 1 result, best rank 10",
+     "a personal LinkedIn profile"
+    ],
+    "bio_line": "* **** **** ** ***** ********** ********* **** ** *** ** **** ******** *** ******** ** ***** ******* ********* ****** ***** ********** ********* ******* *******",
+    "location": "Covington, Kentucky, United States",
+    "followers": 1283,
+    "display_name": "Mike Little",
+    "person_profile": true
+   },
+   "handle": "mlittle99",
+   "source": {
+    "url": "https://www.linkedin.com/in/mlittle99",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "linkedin profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:linkedin:handle:mlittle99"
+   ],
+   "snippet": "In summary, Mike Little is an outstanding Customer Success Manager who brings immense value to any team he works with. His ability to understand and support his clients, combined with his proactive risk management, strong relationship-building ... In summary, Mike Little is an outstanding Customer Success Manager who brings immense value to any team he works with. His ability to understand and sup",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": null,
+   "followers": 1283,
+   "image_url": "https://media.licdn.com/dms/image/v2/D4E03AQF9mh2pDUhf1Q/profile-displayphoto-scale_200_200/B4EZyaIznOKcAY-/0/1772112526755?e=2147483647&v=beta&t=iUUWXFAYT4UQSIty3b7EDFaIZ8S9pro4XxtKAsYtc-I",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "042951d5-e76a-4c0e-9178-626f7ef68022",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:linkedin:mike-little-07056689",
+   "url": "https://www.linkedin.com/in/mike-little-07056689",
+   "hits": [
+    {
+     "rank": 1,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "mike Little",
+   "value": "https://www.linkedin.com/in/mike-little-07056689",
+   "anchor": {
+    "kind": "account",
+    "score": 4.5,
+    "reasons": [
+     "named exactly \"Mike Little\"",
+     "found by 1 result, best rank 1",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "mike-little-07056689",
+   "source": {
+    "url": "https://www.linkedin.com/in/mike-little-07056689",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 1 for \"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "Experience: TSR Lighting \u00b7 Location: St Paul \u00b7 40 connections on LinkedIn. View mike Little\u2019s profile on LinkedIn, a professional community of 1 billion members. We\u2019re unlocking community knowledge in a new way. Experts add insights directly into each article, started with the help of AI. Explore More ... Don\u2019t have the app? Get it in the Microsoft Store. Open the app \u00b7 mike can introduce you to 2",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "named exactly \"Mike Little\"",
+    "found by 1 result, best rank 1",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:linkedin:mike-little-56951148",
+   "url": "https://www.linkedin.com/in/mike-little-56951148",
+   "hits": [
+    {
+     "rank": 2,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Mike Little",
+   "value": "https://www.linkedin.com/in/mike-little-56951148",
+   "anchor": {
+    "kind": "account",
+    "score": 4.4,
+    "reasons": [
+     "named exactly \"Mike Little\"",
+     "found by 1 result, best rank 2",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "mike-little-56951148",
+   "source": {
+    "url": "https://www.linkedin.com/in/mike-little-56951148",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 2 for \"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "After many successful years of working for General Contractors in upper management and in\u2026 \u00b7 Experience: LITTCO \u00b7 Education: Benedictine University \u00b7 Location: West Palm Beach \u00b7 500+ connections on LinkedIn. View Mike Little\u2019s profile on LinkedIn, a professional community of 1 billion members. After many successful years of working for General Contractors in upper management and in\u2026 \u00b7 Experience:",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "named exactly \"Mike Little\"",
+    "found by 1 result, best rank 2",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:linkedin:mike-little",
+   "url": "https://www.linkedin.com/in/mike-little",
+   "hits": [
+    {
+     "rank": 7,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Mike Little",
+   "value": "https://www.linkedin.com/in/mike-little",
+   "anchor": {
+    "kind": "account",
+    "score": 3.9,
+    "reasons": [
+     "named exactly \"Mike Little\"",
+     "found by 1 result, best rank 7",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "mike-little",
+   "source": {
+    "url": "https://www.linkedin.com/in/mike-little",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 7 for \"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "Mike Little liked this \u00b7 Yesterday was a dream come true! I had the opportunity to visit People Inc.\u2019s Birmingham office, home of Southern Living Magazine, while representing the inaugural staff of Druid Magazine! I was geeking out over the massive prop room, test kitchens, photo/video studios and editorial offices that looked straight out of my favorite 90s movies. Mike Little liked this \u00b7 Yester",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "named exactly \"Mike Little\"",
+    "found by 1 result, best rank 7",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:linkedin:michaelwlittle",
+   "url": "https://www.linkedin.com/in/michaelwlittle",
+   "hits": [
+    {
+     "rank": 8,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Michael Little",
+   "value": "https://www.linkedin.com/in/michaelwlittle",
+   "anchor": {
+    "kind": "account",
+    "score": 3.3,
+    "reasons": [
+     "names \"Mike Little\"",
+     "found by 1 result, best rank 8",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "michaelwlittle",
+   "source": {
+    "url": "https://www.linkedin.com/in/michaelwlittle",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 8 for \"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "For decades, Dayton Precision Aerospace has built a reputation for excellence in the design and machining of critical aerospace components. That experience now strengthens FC Precision\u2019s expanded capabilities, which include CNC-machined flight control parts, high-precision engine components, custom fixtures, and ensuring compliance with GE S-1000 standards and AS9100D certifications. Experienced S",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "names \"Mike Little\"",
+    "found by 1 result, best rank 8",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:linkedin:mike-little-p-e-9018ba14",
+   "url": "https://www.linkedin.com/in/mike-little-p-e-9018ba14",
+   "hits": [
+    {
+     "rank": 9,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Mike Little, P.E.",
+   "value": "https://www.linkedin.com/in/mike-little-p-e-9018ba14",
+   "anchor": {
+    "kind": "account",
+    "score": 3.2,
+    "reasons": [
+     "names \"Mike Little\"",
+     "found by 1 result, best rank 9",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "mike-little-p-e-9018ba14",
+   "source": {
+    "url": "https://www.linkedin.com/in/mike-little-p-e-9018ba14",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 9 for \"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "Experience: American Electric Power \u00b7 Location: Groveport \u00b7 69 connections on LinkedIn. View Mike Little, P.E.\u2019s profile on LinkedIn, a professional community of 1 billion members. We\u2019re unlocking community knowledge in a new way. Experts add insights directly into each article, started with the help of AI. Explore More \u00b7 Project Engineer at Atlas Geotechnical \u00b7 Ballwin, MO \u00b7 1 other named Mike Li",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "names \"Mike Little\"",
+    "found by 1 result, best rank 9",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:linkedin:michael-little-495b5147",
+   "url": "https://www.linkedin.com/in/michael-little-495b5147",
+   "hits": [
+    {
+     "rank": 3,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Michael Little",
+   "value": "https://www.linkedin.com/in/michael-little-495b5147",
+   "anchor": {
+    "kind": "account",
+    "score": 1.3,
+    "reasons": [
+     "found by 1 result, best rank 3",
+     "a personal LinkedIn profile"
+    ],
+    "person_profile": true
+   },
+   "handle": "michael-little-495b5147",
+   "source": {
+    "url": "https://www.linkedin.com/in/michael-little-495b5147",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 3 for \"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "Industrial Electrician - Burlington, ON - Indeed.com ... Tired of dealing with: \u274c High prices \u274c Long lead times \u274c Poor customer service \u274c Fixtures that fail when you need them most Stop stressing \u2014 LED In Action is here to help. The secret to long-lasting LED lighting is found in the quality of the components within the fixtures. Our LED light fixtures have less than a 1% failure rate which means",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "found by 1 result, best rank 3",
+    "a personal LinkedIn profile"
+   ]
+  },
+  {
+   "key": "social:youtube:ucksa7cupn68khtpxl-y741q",
+   "url": "https://m.youtube.com/channel/UCkSA7cUPn68kHTPxl-Y741Q",
+   "hits": [
+    {
+     "rank": 6,
+     "query": "\"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Michael Little",
+   "value": "https://m.youtube.com/channel/UCkSA7cUPn68kHTPxl-Y741Q",
+   "anchor": {
+    "kind": "account",
+    "score": 0.5,
+    "reasons": [
+     "found by 1 result, best rank 6"
+    ],
+    "person_profile": false
+   },
+   "handle": "ucksa7cupn68khtpxl-y741q",
+   "source": {
+    "url": "https://m.youtube.com/channel/UCkSA7cUPn68kHTPxl-Y741Q",
+    "kind": "web_search",
+    "node": "person_anchor_extract",
+    "where": "web result 6 for \"Mike Little\" \"fixtures.aimatrx.com\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [],
+   "snippet": "Share your videos with friends, family, and the world",
+   "platform": "youtube",
+   "verified": null,
+   "certainty": "possible",
+   "followers": null,
+   "image_url": null,
+   "site_kind": null,
+   "confidence": 0.4,
+   "profile_id": null,
+   "raw_results": [],
+   "certainty_reasons": [
+    "found by 1 result, best rank 6"
+   ]
+  }
+ ]
+}

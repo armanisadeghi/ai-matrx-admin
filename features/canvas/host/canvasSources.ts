@@ -20,7 +20,7 @@ import {
   type CanvasState,
 } from "@ai-matrx/canvas";
 import { useOptionalCanvas, useOptionalCanvasState } from "@ai-matrx/canvas/react";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import { contentOf, readArtifactItemData } from "./artifactItem";
 import { openArtifactContent } from "./useArtifactCanvas";
 

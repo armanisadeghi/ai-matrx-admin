@@ -25,7 +25,7 @@
 import { useState } from "react";
 import { reportCanvasOpenDrop } from "@/features/canvas/openRequest";
 import { useCanvasOpenGuard } from "./useCanvasOpenGuard";
-import type { CanvasContentType } from "@/features/canvas/canvasContent";
+import type { CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 import { useArtifactCanvasActions } from "@/features/canvas/host/useArtifactCanvas";
 import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";

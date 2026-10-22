@@ -23,7 +23,7 @@ import { useOpenSmartCodeEditorWindow } from "@/features/overlays/definitions/sm
 import {
   mapLanguageForMonaco,
   getMonacoFileExtension,
-} from "@/features/code-editor/config/languages";
+} from "@ai-matrx/rich-content/utils/languages";
 import { downloadFile } from "@ai-matrx/kit/download";
 
 type AIModalConfig = {

@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { artifactTitleRepeatsCard, isPlaceholderArtifactTitle } from "./artifact-own-title";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { useCanvasOpenGuard } from "@/features/canvas/hooks/useCanvasOpenGuard";
-import type { CanvasContentType } from "@/features/canvas/canvasContent";
+import type { CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 import { resolveCanvasType } from "@/features/canvas/artifact-types/artifact-type-registry";
 import {
   ArtifactRender,

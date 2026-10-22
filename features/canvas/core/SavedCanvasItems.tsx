@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getCanvasTypeLabel } from "@/features/canvas/canvasContent";
+import { getCanvasTypeLabel } from "@ai-matrx/rich-content/utils/canvasContent";
 import { SavedCanvasItemCard } from "@/features/canvas/core/SavedCanvasItemCard";
 import { SavedCanvasItemsGrid } from "@/features/canvas/core/SavedCanvasItemsGrid";
 import type { CanvasItemSummary } from "@/features/canvas/services/canvasItemsService";

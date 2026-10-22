@@ -6,7 +6,7 @@
  */
 
 import { loader } from "@monaco-editor/react";
-import { registerJsonMonacoThemes } from "./syntax-themes";
+import { registerJsonMonacoThemes } from "@ai-matrx/rich-content/utils/syntax-themes";
 import { getAllTypeDefinitions } from "./type-definitions";
 
 /**

@@ -18,7 +18,7 @@
  * block attaches inline. Neither ever becomes user_input.
  */
 
-import type { CanvasContentType } from "@/features/canvas/canvasContent";
+import type { CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 import type { RenderedArtifactRepresentation } from "@ai-matrx/chat/agents/types/instance.types";
 import {
   readableText,

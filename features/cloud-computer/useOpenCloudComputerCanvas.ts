@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 
 /**
  * The Computer tab's canvas identity — ONE per person, never per chat. A person

@@ -11,7 +11,7 @@ import {
   parseDiagramJSON,
   type DiagramData,
 } from "@ai-matrx/rich-content/display/blocks/diagram/parseDiagramJSON";
-import type { CanvasContentType } from "@/features/canvas/canvasContent";
+import type { CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 import type { ListScopeKind } from "@/lib/list-scope/types";
 
 /** The canvas_items.type value that makes a row a map. */

@@ -1,5 +1,24 @@
-import { JOHANNA_KLOMANN, KEHINDE_WILEY, NICOLE_LONG, ROCHELLE_MOULTON } from "../fixtures/anchorFixtures";
-import { cleanLine, handleKey, LINE_MAX, normName, peopleGroups, placeOf, sameNameCandidates } from "../peopleGroups";
+import {
+  JOHANNA_KLOMANN,
+  KEHINDE_WILEY,
+  MIKE_LITTLE,
+  NICOLE_LONG,
+  ROCHELLE_MOULTON,
+  THOMAS_FRANK,
+  THOMAS_FRANK_PHOTO_GROUPS,
+} from "../fixtures/anchorFixtures";
+import {
+  cleanLine,
+  displayName,
+  handleKey,
+  isMaskedText,
+  LINE_MAX,
+  MAX_PEOPLE,
+  normName,
+  peopleGroups,
+  placeOf,
+  sameNameCandidates,
+} from "../peopleGroups";
 
 const accountKeys = (p: { accounts: { key: string }[] }) => p.accounts.map((a) => a.key).sort();
 
@@ -105,5 +124,64 @@ describe("peopleGroups helpers", () => {
     expect(placeOf("Decatur, Georgia, United States")).toBe("Decatur, Georgia");
     expect(placeOf("Palm Springs")).toBe("Palm Springs");
     expect(placeOf(null)).toBeNull();
+  });
+});
+
+describe("sign-up welcome final review defects (2026-10-21, real runs)", () => {
+  it("D1 Thomas Frank: the same photo on LinkedIn, Instagram and YouTube is ONE person", () => {
+    const { people } = peopleGroups(THOMAS_FRANK.items, THOMAS_FRANK.searchedName, MAX_PEOPLE, THOMAS_FRANK_PHOTO_GROUPS);
+    const him = people.find((p) => p.accounts.some((a) => a.key === "social:linkedin:tomfrankly"));
+    expect(accountKeys(him!)).toEqual(["social:instagram:tomfrankly", "social:linkedin:tomfrankly", "social:youtube:thomasfrank"]);
+    // The London namesake stays apart: two people, not three.
+    expect(people).toHaveLength(2);
+    // The most specific place of the merged person, never a bare country.
+    expect(him!.place).toBe("Des Moines, Iowa");
+    expect(him!.company).toBe("Flylighter");
+  });
+
+  it("D1 one photo URL served twice (query string aside) is one person, without the server", () => {
+    const [a, b] = THOMAS_FRANK.items.filter((i) => i.key === "social:instagram:tomfrankly" || i.key === "social:youtube:thomasfrank");
+    const same = { ...b, image_url: `${(a.image_url ?? "").split("?")[0]}?size=200` };
+    const { people } = peopleGroups([a, same], "Thomas Frank");
+    expect(people).toHaveLength(1);
+  });
+
+  it("D1 a platform's stock picture never merges two people", () => {
+    const stock = "https://static.licdn.com/aero-v1/sc/h/bgaqk7x4ntjz0wg67d8u723eb";
+    const items = MIKE_LITTLE.items.filter((i) => i.key === "social:linkedin:mglittle" || i.key === "social:linkedin:mike-little-a0216911");
+    const { people } = peopleGroups(items.map((i) => ({ ...i, image_url: stock })), "Mike Little");
+    expect(people).toHaveLength(2);
+  });
+
+  it("D1 a bare country is no shared place: two 'United States' people stay apart", () => {
+    const yt = THOMAS_FRANK.items.find((i) => i.key === "social:youtube:thomasfrank")!;
+    const other = { ...yt, key: "social:tiktok:someoneelse", handle: "someoneelse", platform: "tiktok", image_url: null, profile_id: null, same_as: [] };
+    expect(peopleGroups([yt, other], "Thomas Frank").people).toHaveLength(2);
+  });
+
+  it("D2 a masked headline (LinkedIn's asterisks) is never a line", () => {
+    const { people } = peopleGroups(THOMAS_FRANK.items, THOMAS_FRANK.searchedName, MAX_PEOPLE, THOMAS_FRANK_PHOTO_GROUPS);
+    for (const p of people) expect(p.line ?? "").not.toMatch(/\*{3}/);
+    expect(cleanLine("********* ** *** ******** ************ *** ***")).toBeNull();
+    expect(cleanLine("* **** **** ** ***** ********** *********")).toBeNull();
+    expect(isMaskedText("A 5* hotel review")).toBe(false);
+  });
+
+  it("D8 casing: the card being searched shows the sign-up name's casing", () => {
+    const all = peopleGroups(MIKE_LITTLE.items, "Mike Little", 10);
+    for (const p of all.people) expect(p.name).toBe("Mike Little");
+    // A lower-case sign-up name never lowers a properly cased source.
+    const lower = peopleGroups(MIKE_LITTLE.items, "mike little", 10);
+    expect(lower.people.every((p) => p.name === "Mike Little")).toBe(true);
+    expect(displayName("danah boyd", "danah boyd")).toBe("Danah Boyd");
+    expect(displayName("Mike Little", "mike Little")).toBe("Mike Little");
+    expect(displayName("mike little", "DJ McCoy")).toBe("DJ McCoy");
+  });
+
+  it("D3 picked facts: Mike Little's card place and Thomas Frank's company", () => {
+    const mike = peopleGroups(MIKE_LITTLE.items, "Mike Little").people.find((p) => p.accounts.some((a) => a.key === "social:linkedin:mglittle"))!;
+    expect(mike.place).toBe("Atlanta, Georgia");
+    // A bio sentence is the card's line, never a company.
+    expect(mike.company).toBeNull();
   });
 });

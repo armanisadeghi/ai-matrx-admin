@@ -37,9 +37,24 @@ interface ImageGroupWire {
   keys: string[];
 }
 
-interface ImageGroupsWire {
+export interface ImageGroupsWire {
   groups: ImageGroupWire[];
   fingerprints: Record<string, ImageFingerprint>;
+}
+
+/** One image the server fingerprints: its evidence key and where its bytes are (a stored profile photo, else the URL). */
+export interface ImageGroupsRef {
+  key: string;
+  url: string | null;
+  profile_id: string | null;
+  platform: string | null;
+  where: string | null;
+}
+
+/** The ONE call to the image groups endpoint (aidream image_groups.py): near-identical pictures, grouped. */
+export async function postImageGroups(images: readonly ImageGroupsRef[]): Promise<ImageGroupsWire> {
+  const { data } = await postJson<ImageGroupsWire>("/brand-intake/images/groups", { images });
+  return data;
 }
 
 /** One tile: the best source first, then every other source of the same picture. */
@@ -71,8 +86,8 @@ export function useLogoGroups(logos: EvidenceItem[], separated: ReadonlySet<stri
     let live = true;
     // Wait until the set has been still for a moment, then ask once for that set.
     const timer = setTimeout(() => {
-      postJson<ImageGroupsWire>("/brand-intake/images/groups", { images })
-        .then(({ data }) => {
+      postImageGroups(images as ImageGroupsRef[])
+        .then((data) => {
           if (live) setWire({ request, data });
         })
         .catch((err: unknown) => {

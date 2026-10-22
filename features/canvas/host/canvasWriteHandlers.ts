@@ -33,7 +33,7 @@ import type {
   SurfaceWriteHandlerEntry,
   SurfaceWriteHandlers,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { titleToString, type CanvasContent } from "@/features/canvas/canvasContent";
+import { titleToString, type CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import {
   canvasItemRecord,
   type CanvasItemRecord,

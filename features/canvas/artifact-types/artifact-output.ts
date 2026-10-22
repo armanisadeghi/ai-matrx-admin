@@ -12,7 +12,7 @@
  */
 
 import type { CanvasKind, CanvasKindSurface } from "@ai-matrx/canvas/react";
-import type { CanvasContentType } from "@/features/canvas/canvasContent";
+import type { CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 import { printPublishedPage } from "@/features/canvas/output/printPage";
 import { contentOf, readArtifactItemData } from "@/features/canvas/host/artifactItem";
 import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";

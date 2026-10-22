@@ -8,7 +8,7 @@ jest.mock("@/features/canvas/output/printPage", () => ({ printPublishedPage: jes
 import { ARTIFACT_ATTACH, artifactAttachOptions, artifactBody, attachArtifactToChat } from "../artifactAttach";
 import { renderedArtifactContextEntry } from "@ai-matrx/chat/agents/utils/renderedArtifactContext";
 import type { RenderedArtifactSource } from "@ai-matrx/chat/agents/utils/renderedArtifactContext";
-import type { CanvasContentType } from "@/features/canvas/canvasContent";
+import type { CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 
 const attachSpy = jest.fn(async (..._args: unknown[]) => true);
 jest.mock("@ai-matrx/chat/agents/components/inputs/resources/useAttachRenderedArtifact", () => ({
