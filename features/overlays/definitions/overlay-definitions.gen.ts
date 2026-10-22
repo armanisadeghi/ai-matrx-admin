@@ -72,6 +72,7 @@ export { contentEditorWorkspaceWindowOverlay } from "./contentEditorWorkspaceWin
 export { contextAssignmentOverlay } from "./contextAssignment.definition";
 export { contextItemsWindowOverlay } from "./contextItemsWindow.definition";
 export { contextSwitcherWindowOverlay } from "./contextSwitcherWindow.definition";
+export { conversationRenameDialogOverlay } from "./conversationRenameDialog.definition";
 export { convertToShapeWindowOverlay } from "./convertToShapeWindow.definition";
 export { copySubsetWindowOverlay } from "./copySubsetWindow.definition";
 export { createBrandWindowOverlay } from "./createBrandWindow.definition";
@@ -231,6 +232,7 @@ export { userPreferencesOverlay } from "./userPreferences.definition";
 export { userPreferencesWindowOverlay } from "./userPreferencesWindow.definition";
 export { userSearchWindowOverlay } from "./userSearchWindow.definition";
 export { userTableWindowOverlay } from "./userTableWindow.definition";
+export { valuePromptsDialogOverlay } from "./valuePromptsDialog.definition";
 export { voicePadOverlay } from "./voicePad.definition";
 export { voicePadAdvancedOverlay } from "./voicePadAdvanced.definition";
 export { waitingRunsWindowOverlay } from "./waitingRunsWindow.definition";
