@@ -1,9 +1,18 @@
 const ack = jest.fn();
 const clear = jest.fn();
-jest.mock("@ai-matrx/summon/window", () => ({
-  ackOverlaySurfaceRender: (id: string) => ack(id),
-  clearOverlaySurfaceRender: (id: string) => clear(id),
-}));
+// The package now exports the hook (it owns ack on open, clear on close); mirror it.
+jest.mock("@ai-matrx/summon/window", () => {
+  const { useEffect } = jest.requireActual<typeof import("react")>("react");
+  return {
+    useOverlaySurfaceRenderAck: (id: string, active: boolean) => {
+      useEffect(() => {
+        if (!active) return undefined;
+        ack(id);
+        return () => clear(id);
+      }, [id, active]);
+    },
+  };
+});
 jest.mock("./SourceReview", () => ({ SourceReview: () => null }));
 
 import { createSourceRef, createSourceSet } from "@ai-matrx/agents/sources";
