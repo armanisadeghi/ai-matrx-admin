@@ -19,6 +19,7 @@ export type UsageBasis =
   | "megapixel_output"
   | "video_unit_output"
   | "audio_unit_output"
+  | "audio_second_output"
   | "video_second_output"
   | "minute"
   | "character_input"
@@ -77,6 +78,14 @@ export const USAGE_BASIS_OPTIONS: readonly UsageBasisOption[] = [
     billedField: "output_price",
     priceLabel: "$ / generated track",
     description: "Music generation: one generated track = 1 unit whatever its length. output_price is $/track.",
+  },
+  {
+    value: "audio_second_output",
+    label: "Per second (music)",
+    billedField: "output_price",
+    priceLabel: "$ / second of audio",
+    description:
+      "Music billed by generated seconds (ElevenLabs Eleven Music: $0.15 / minute = $0.0025 / second). output_price is $/second — the server records the seconds.",
   },
   {
     value: "video_second_output",
