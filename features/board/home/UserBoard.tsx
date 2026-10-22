@@ -1029,7 +1029,15 @@ export function UserBoard({
               <>
                 <CreationLayer onCreate={onCreate} />
                 <SelectionToolbar sections={toolbarSections} />
-                <ToolBar tools={preset?.toolbar} leading={<AddMenu types={withBrandAssets(addableTypes, designBrand.brandId)} more={withBrandAssets(moreTypes, designBrand.brandId)} onStartNew={startNew} onBringIn={bringIn} onCanvasText={addCanvasText} />} />
+                <ToolBar
+                  tools={preset?.toolbar}
+                  leading={
+                    <>
+                      <AddMenu types={withBrandAssets(addableTypes, designBrand.brandId)} more={withBrandAssets(moreTypes, designBrand.brandId)} onStartNew={startNew} onBringIn={bringIn} onCanvasText={addCanvasText} />
+                      {tokenTables.length > 0 && boardId && !guest && <DesignBoardBrandChip brandId={designBrand.brandId} onChange={(id) => void designBrand.set(id)} />}
+                    </>
+                  }
+                />
                 <div
                   data-board-chrome
                   className="absolute right-4 top-4 z-30 flex items-center gap-0.5 rounded-lg border border-border bg-card/95 p-1 shadow-md backdrop-blur"
@@ -1094,7 +1102,6 @@ export function UserBoard({
                     </span>
                   </div>
                 )}
-                {tokenTables.length > 0 && boardId && !guest && <DesignBoardBrandChip brandId={designBrand.brandId} onChange={(id) => void designBrand.set(id)} />}
                 <PenStyleBar />
                 {layoutMode !== "page" && <ZoomHud />}
                 {layoutMode !== "page" && <Minimap />}
