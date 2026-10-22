@@ -675,7 +675,7 @@ export function GeneratorForm({
                       <span className="text-xs text-muted-foreground">Reading…</span>
                     )}
                     {sourcePreview.truncated && (
-                      <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs text-amber-700 dark:text-amber-300">
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                         Cut to its chosen size
                       </span>
                     )}

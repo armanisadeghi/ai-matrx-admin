@@ -49,7 +49,9 @@ export function useResolvedSourceText(
 ): ResolvedSourceText {
   const { enabled = true, targetModelId } = options;
   const setRef = useRef(set);
-  setRef.current = set;
+  useEffect(() => {
+    setRef.current = set;
+  });
 
   const landing = set.sources.some((s) => s.status === "pending" || s.status === "resolving");
   const anyReady = set.sources.some((s) => s.status === "ready" && s.draft.ref);
@@ -72,12 +74,8 @@ export function useResolvedSourceText(
   }>({ key: "", text: "", edited: false, loading: false, error: null, resolved: null });
 
   useEffect(() => {
-    if (!key) {
-      setState({ key: "", text: "", edited: false, loading: false, error: null, resolved: null });
-      return;
-    }
+    if (!key) return;
     let alive = true;
-    setState((s) => ({ ...s, key, loading: true, error: null }));
     setRef.current
       .resolve({ targetModelId })
       .then((resolved) => {
@@ -99,21 +97,22 @@ export function useResolvedSourceText(
       alive = false;
     };
     // `key` is the whole input: the settled picks as the server will read them.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  const readable = state.resolved?.sources.filter((s) => s.text.trim()) ?? [];
+  // No settled picks: nothing is shown, whatever an earlier read left behind.
+  const current = key !== "" && state.key === key;
+  const readable = current ? (state.resolved?.sources.filter((s) => s.text.trim()) ?? []) : [];
   return {
-    text: state.text,
+    text: current ? state.text : "",
     setText: (next) => setState((s) => ({ ...s, text: next, edited: true })),
-    edited: state.edited,
-    loading: Boolean(key) && (state.loading || state.key !== key),
-    error: state.error,
+    edited: current && state.edited,
+    loading: key !== "" && !current,
+    error: current ? state.error : null,
     truncated: readable.some((s) => s.truncated),
-    droppedNotes: (state.resolved?.dropped ?? []).map(
+    droppedNotes: (current ? (state.resolved?.dropped ?? []) : []).map(
       (d) => d.detail ?? `One source was left out (${d.reason.replace("_", " ")}).`,
     ),
     labels: readable.map((s) => s.label),
-    resolved: state.resolved,
+    resolved: current ? state.resolved : null,
   };
 }
