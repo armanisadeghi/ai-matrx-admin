@@ -553,6 +553,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const scraperManifest: SurfaceManifest = {
   surfaceName: "matrx-user/scraper",
+  situation:
+    "They are in the web scraper, in {scrape_mode} mode. The page in view is {scraped_title|none yet} ({scraped_url|no address}); {result_count} pages have been scraped this session and {search_hit_count} search results wait unscraped. The page's text is in your context. They can run a scrape or search and change the engine, limits and selected result.",
   inheritsFrom: "matrx-default/web",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
