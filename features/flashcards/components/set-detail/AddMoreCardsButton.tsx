@@ -29,7 +29,6 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { createSourceRef } from "@ai-matrx/agents/sources";
 import { ClampedNumberInput, Chip, ChipSet } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
-import { Button as SurfaceButton } from "@ai-matrx/design-system";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import { newBatchId } from "@/features/education/convert/steering";
@@ -165,7 +164,7 @@ export function AddMoreCardsButton({
   setId: string;
   /** The trigger's words; the deck page's action bar uses "Add". */
   label?: string;
-  variant?: "outline" | "default";
+  variant?: "outline" | "primary";
   /** The deck's name — what the new cards' sections are titled after. */
   deckName?: string;
   /** The deck's OWN organization — new cards, the agent run and lineage file under it, never the active org. */
@@ -212,10 +211,10 @@ export function AddMoreCardsButton({
   }, [stoppedCount, stoppedWhileSaving, open, toastId]);
   return (
     <>
-      <SurfaceButton
+      <Button
         type="button"
         variant={variant}
-        size="sm"
+        icon={<Plus />}
         onClick={() => {
           if (stopped && !stopped.whileSaving) openRedo(false);
           else {
@@ -226,11 +225,9 @@ export function AddMoreCardsButton({
             setOpen(true);
           }
         }}
-        className="gap-1.5"
       >
-        <Plus className="h-3.5 w-3.5" />
         {label}
-      </SurfaceButton>
+      </Button>
       {open ? (
         <AddMoreCardsDialog
           setId={setId}

@@ -1456,7 +1456,7 @@ export function DeckDetailView({
                   <div className="ml-2">
                     <AddMoreCardsButton
                       label="Add"
-                      variant="default"
+                      variant="primary"
                       setId={setId}
                       existingCards={data.cards.map((c) => ({ front: c.front, back: c.back }))}
                       deckName={data.set.name}
@@ -1550,7 +1550,7 @@ export function DeckDetailView({
                   <div className="ml-auto">
                     <AddMoreCardsButton
                       label="Add"
-                      variant="default"
+                      variant="primary"
                       setId={setId}
                       existingCards={data.cards.map((c) => ({ front: c.front, back: c.back }))}
                       deckName={data.set.name}

@@ -1380,7 +1380,7 @@ export function FlashcardSetSample({
                     <span className="uk-adopt contents">
                       <AddMoreCardsButton
                         label="Add"
-                        variant="default"
+                        variant="primary"
                         setId={setId}
                         existingCards={data.cards.map((c) => ({ front: c.front, back: c.back }))}
                         deckName={data.set.name}
