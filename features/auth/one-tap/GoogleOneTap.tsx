@@ -12,6 +12,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { googleIdentityOriginRegistrable } from "@/providers/google-provider/googleIdentityReadiness";
 
 // The prompt's machinery (claims cache, fingerprint, Google's script loader, the sign-in action,
 // toasts) loads through ONE import() after the page is idle, so a marketing page's first load
@@ -36,7 +37,8 @@ export function GoogleOneTap({ autoSelect, context = "use", landing, skipPrefixe
 
   useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!clientId || skipped) return undefined;
+    // A preview address can never be a registered Google origin; the sign-in buttons remain.
+    if (!clientId || skipped || !googleIdentityOriginRegistrable(window.location.hostname)) return undefined;
     // React's dev double-mount cancels the first pass; the second one prompts.
     let cancelled = false;
 

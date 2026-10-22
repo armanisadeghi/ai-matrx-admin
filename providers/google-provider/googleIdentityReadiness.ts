@@ -50,3 +50,24 @@ export const GOOGLE_STATUS_DASHBOARD_URL =
 export function isGoogleIdentityUnavailable(error: string | null): boolean {
   return error === GOOGLE_IDENTITY_UNAVAILABLE_MESSAGE;
 }
+
+/**
+ * GOOGLE REFUSES EVERY ORIGIN IT WAS NOT TOLD ABOUT, AND IT TAKES NO WILDCARDS.
+ *
+ * The in-page Google flows (One Tap, the product-connection token and code
+ * clients, the Picker) all run under the browser client `NEXT_PUBLIC_GOOGLE_CLIENT_ID`,
+ * and Google checks the page's origin against that client's "Authorized
+ * JavaScript origins" — an exact list, no `*`. Every Vercel deployment gets its
+ * own `*.vercel.app` address, so a preview can never be on that list: Google
+ * answers `Error 400: origin_mismatch` in a popup (2026-10-22). Supabase's
+ * redirect sign-in (the Google button) does not have this limit — its allow
+ * list carries `https://*-armani-sadeghis-projects.vercel.app/**` — so on a
+ * preview the in-page flows stay quiet and the buttons do the work.
+ */
+export function googleIdentityOriginRegistrable(hostname: string): boolean {
+  return !hostname.endsWith(".vercel.app");
+}
+
+/** What a Google connection says on an address Google can never accept. */
+export const GOOGLE_IDENTITY_PREVIEW_ORIGIN_MESSAGE =
+  "Google connections don't work on preview addresses. Open this page on aimatrx.com.";

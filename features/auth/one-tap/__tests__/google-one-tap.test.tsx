@@ -33,6 +33,12 @@ jest.mock("@/providers/google-provider/googleIdentityId", () => ({
   },
 }));
 
+let mockHostname = "www.aimatrx.com";
+jest.mock("@/providers/google-provider/googleIdentityReadiness", () => {
+  const actual = jest.requireActual("@/providers/google-provider/googleIdentityReadiness");
+  return { ...actual, googleIdentityOriginRegistrable: () => actual.googleIdentityOriginRegistrable(mockHostname) };
+});
+
 const land = jest.fn();
 jest.mock("../landAfterSignIn", () => ({ landAfterSignIn: (...args: unknown[]) => land(...(args as [])) }));
 
@@ -59,6 +65,7 @@ beforeEach(() => {
   land.mockClear();
   claimsUser = null;
   mockPathname = "/pricing";
+  mockHostname = "www.aimatrx.com";
 });
 
 it("prompts a signed-out visitor with FedCM, the knob's auto-select and a hashed nonce", async () => {
@@ -126,4 +133,12 @@ it("a failed sign-in turns auto-select off so it cannot fail again on every load
   expect(disableAutoSelect).toHaveBeenCalledTimes(1);
   expect(land).not.toHaveBeenCalled();
   act(() => root.unmount());
+});
+
+it("stays quiet on a Vercel preview address, which Google can never accept as an origin", async () => {
+  mockHostname = "ai-matrx-8msnu39mu-armani-sadeghis-projects.vercel.app";
+  const root = await mount({ autoSelect: true });
+  expect(initialize).not.toHaveBeenCalled();
+  expect(prompt).not.toHaveBeenCalled();
+  await act(async () => root.unmount());
 });

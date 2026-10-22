@@ -32,6 +32,8 @@ import {
   GOOGLE_IDENTITY_READY_TIMEOUT_MS,
   GOOGLE_IDENTITY_SCRIPT_SRC,
   GOOGLE_IDENTITY_UNAVAILABLE_MESSAGE,
+  GOOGLE_IDENTITY_PREVIEW_ORIGIN_MESSAGE,
+  googleIdentityOriginRegistrable,
 } from "./googleIdentityReadiness";
 import type { GoogleIdNamespace } from "./googleIdentityId";
 
@@ -306,6 +308,13 @@ export default function GoogleAPIProvider({
    */
   useEffect(() => {
     if (!clientId) {
+      return;
+    }
+    // Google would answer every window here with origin_mismatch; say so instead of opening one.
+    if (!googleIdentityOriginRegistrable(window.location.hostname)) {
+      setIsGoogleLoaded(false);
+      setIsInitializing(false);
+      setError(GOOGLE_IDENTITY_PREVIEW_ORIGIN_MESSAGE);
       return;
     }
 
