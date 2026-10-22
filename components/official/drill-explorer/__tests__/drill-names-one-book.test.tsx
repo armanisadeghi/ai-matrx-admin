@@ -24,7 +24,7 @@ jest.mock("@/lib/redux/hooks", () => ({
 }));
 // The chat package reads these hooks through its own module (P3): one double covers both.
 jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hooks"));
-jest.mock("@/components/cost/costUnit", () => ({ selectCostUnit: () => "points", selectCanToggleCostUnit: () => true }));
+jest.mock("@/components/cost/costUnit", () => ({ selectCostUnit: () => "points", selectCanToggleCostUnit: () => true, isAdminSurfacePath: () => true }));
 // the points rate is the billing.points_per_usd knob (subscribed since lane DRILL-CLOSE); pinned here
 jest.mock("@/components/cost/pointsRate.client", () => ({ usePointsRate: () => 20_000 }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: () => "87a6e699-3622-4869-8843-d0867456c0dd" }));

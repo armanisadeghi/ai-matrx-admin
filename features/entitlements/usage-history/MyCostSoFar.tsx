@@ -10,6 +10,7 @@
  * to the cent with points beside; everyone else reads points (20,000 points = $1).
  */
 
+import { AdminOnly } from "@/components/cost/AdminOnlyTag";
 import Link from "@/components/navigation/AppLink";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -58,7 +59,8 @@ function Money({ usd, points, big }: { usd: number | null; points: number; big?:
   if (d.primary === "points") return <span className="tabular-nums">{formatPoints(points)}</span>;
   return (
     <span className="tabular-nums">
-      {formatSpendUsd(d.usd)} <span className={big ? "text-xs text-muted-foreground" : "text-[0.7em] text-muted-foreground"}>{formatPoints(points)}</span>
+      {formatPoints(points)}{" "}
+      <AdminOnly className={big ? "text-xs" : "text-[0.7em]"}>{formatSpendUsd(d.usd)}</AdminOnly>
     </span>
   );
 }

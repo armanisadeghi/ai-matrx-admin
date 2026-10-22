@@ -19,8 +19,6 @@
 import { supabase } from "@/utils/supabase/client";
 import { schedulerDb } from "@/utils/supabase/schedulerDb";
 import { pgErrorToError } from "@ai-matrx/data";
-import { formatAdminUsd } from "@/components/cost/formatAdminCost";
-import { currentSeesDollars } from "@/components/cost/costUnit";
 import {
   fetchGuardrailsFor,
   type GuardrailPause,
@@ -294,21 +292,20 @@ export function automationFlags(row: AutomationCostRow): AutomationFlag[] {
       severity: "critical",
     });
   }
-  // Users (an organization admin included) get the flag without a dollar figure.
-  const dollars = currentSeesDollars();
+  // Flags carry no dollar figure: plain text cannot wear the "Admin only" tag.
   if ((row.avg_run_cost ?? 0) > L.runCostUsd) {
     flags.push({
       id: "avg_run_over_limit",
-      label: dollars ? `Avg run > ${formatAdminUsd(L.runCostUsd, { digits: "whole" })}` : "Avg run over the limit",
-      detail: dollars ? `Average run costs ${formatAdminUsd(row.avg_run_cost ?? 0)}` : "Average run costs more than the per-run limit",
+      label: "Avg run over the limit",
+      detail: "Average run costs more than the per-run limit",
       severity: "critical",
     });
   }
   if ((row.max_run_cost ?? 0) > L.runCostUsd) {
     flags.push({
       id: "run_over_limit",
-      label: dollars ? `A run > ${formatAdminUsd(L.runCostUsd, { digits: "whole" })}` : "A run over the limit",
-      detail: dollars ? `Most expensive run cost ${formatAdminUsd(row.max_run_cost ?? 0)}` : "The most expensive run cost more than the per-run limit",
+      label: "A run over the limit",
+      detail: "The most expensive run cost more than the per-run limit",
       severity: "warning",
     });
   }

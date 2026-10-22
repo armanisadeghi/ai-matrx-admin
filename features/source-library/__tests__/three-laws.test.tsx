@@ -316,6 +316,15 @@ describe("A · nothing is spent before a person has seen what it costs", () => {
         });
         await flush();
 
+        // The price sits behind the Cost door: not printed until the person opens it.
+        expect(document.body.textContent ?? "").not.toContain("43,200");
+        const door = Array.from(document.querySelectorAll("button")).find((b) => (b.textContent ?? "").trim() === "Cost");
+        expect(door).toBeTruthy();
+        await act(async () => {
+            door!.click();
+            await Promise.resolve();
+        });
+        await flush();
         const text = document.body.textContent ?? "";
         expect(text).toContain("7"); // free_count
         expect(text).toContain("3"); // paid_count
@@ -335,7 +344,7 @@ describe("A · nothing is spent before a person has seen what it costs", () => {
         await flush();
 
         const start = Array.from(document.querySelectorAll("button")).find((button) =>
-            (button.textContent ?? "").toLowerCase().includes("spend up to"),
+            (button.textContent ?? "").toLowerCase().includes("spend and start"),
         );
         expect(start).toBeTruthy();
         await act(async () => {

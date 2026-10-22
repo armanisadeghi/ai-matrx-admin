@@ -29,9 +29,8 @@ import { Button } from "@/components/ui/button";
 import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { cn } from "@/lib/utils";
-import { formatFileSize, pointsToUsd, type CostUnit } from "@ai-matrx/kit/format";
-import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { formatFileSize, pointsToUsd, type CostUnit, formatCost } from "@ai-matrx/kit/format";
+import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
 import { isMicroUsd, isPoints, MICRO_USD_PER_USD } from "@/features/admin/limits/types";
 import {
   fetchPlanStatus,
@@ -92,7 +91,9 @@ function DimensionRow({ d }: { d: PlanDimension }) {
   // future change to how "unlimited" or "not measured" is decided.
   // `limit === null` is the single meaning of unlimited (explicit flag OR no
   // ceiling); `used === null` is "billing does not count this", never zero.
-  const { unit, rate: costRate } = useCostDisplay();
+  const { unit: rawUnit, rate: costRate } = useCostDisplay();
+  // Bare dollars only on the admin site, only for a system admin.
+  const unit: CostUnit = useSeesDollars() ? rawUnit : "points";
   const limit = d.unlimited ? null : d.limit;
   const used = d.used;
   const pct =

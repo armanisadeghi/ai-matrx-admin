@@ -12,7 +12,7 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import {
   AUTOMATION_COST_WINDOW_DAYS,
@@ -31,7 +31,6 @@ export function TriggerRunsTable({
   seat: "admin" | "org";
   orgSlug?: string;
 }) {
-  const { format } = useCostDisplay();
   const [runs, setRuns] = useState<AutomationRunCost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +64,7 @@ export function TriggerRunsTable({
       filter: "number",
       width: 100,
       cell: (r) => (
-        <span className={`tabular-nums text-xs ${r.cost > 1 ? "font-semibold text-red-600" : ""}`}>{format(r.cost)}</span>
+        <span className={r.cost > 1 ? "text-red-600" : ""}><CostDoor usd={r.cost} iconOnly /></span>
       ),
     },
     {

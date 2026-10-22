@@ -41,8 +41,8 @@ import {
   automationCostColumns,
 } from "./AutomationCostColumns";
 import { AdminPoints, AdminUsd, CostFigures, UsdOnly } from "@/components/cost/AdminCost";
-import { formatAdminUsd } from "@/components/cost/formatAdminCost";
-import { currentSeesDollars } from "@/components/cost/costUnit";
+import { formatCost } from "@ai-matrx/kit/format";
+import { currentPointsRate } from "@/components/cost/pointsRate";
 import { formatCount } from "@ai-matrx/kit/format";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
 import { AutomationLimitsSection } from "@/features/scheduling/components/limits/AutomationLimitsSection";
@@ -246,7 +246,7 @@ export function AutomationRunsTable({
             `Run: ${r.run_id}`,
             `When: ${r.run_at}`,
             `Status: ${r.status ?? "unknown"}`,
-            currentSeesDollars() ? `Cost: ${formatAdminUsd(r.cost)}` : null,
+            `Cost: ${formatCost(r.cost, { unit: "points", rate: currentPointsRate() })}`,
             `Turns: ${r.turns}`,
             r.models.length ? `Models: ${r.models.join(", ")}` : null,
             r.mandates.length ? `Jobs: ${r.mandates.join(", ")}` : null,

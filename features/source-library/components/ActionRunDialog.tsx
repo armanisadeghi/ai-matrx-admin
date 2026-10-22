@@ -20,7 +20,7 @@
  * not a text box for a uuid.
  */
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { useCallback, useEffect, useState } from "react";
 import { Gauge, Captions, CircleAlert, Clock, Loader2, TriangleAlert } from "lucide-react";
 import {
@@ -128,7 +128,6 @@ function missingParamNoun(
 }
 
 export function ActionRunDialog(props: ActionRunDialogProps) {
-    const { format: costText } = useCostDisplay();
     const {
         open,
         action,
@@ -334,9 +333,17 @@ export function ActionRunDialog(props: ActionRunDialogProps) {
                                 <Row
                                     label="Cost"
                                     value={
-                                        paid
-                                            ? `${costText(estimate.cost.paid_cost_estimate)} (between ${costText(estimate.cost.paid_cost_low)} and ${costText(estimate.cost.paid_cost_high)})`
-                                            : "From captions only"
+                                        paid ? (
+                                            <CostDoor
+                                                rows={[
+                                                    { label: "Estimate", usd: estimate.cost.paid_cost_estimate },
+                                                    { label: "Low", usd: estimate.cost.paid_cost_low },
+                                                    { label: "High", usd: estimate.cost.paid_cost_high },
+                                                ]}
+                                            />
+                                        ) : (
+                                            "From captions only"
+                                        )
                                     }
                                     hint={speakMediaNouns(estimate.cost.basis, vocabulary)}
                                     strong
@@ -508,7 +515,7 @@ export function ActionRunDialog(props: ActionRunDialogProps) {
                         disabled={waiting || blocked || submitting}
                     >
                         {paid
-                            ? `Spend up to ${costText(estimate?.cost.paid_cost_high ?? 0)} and start`
+                            ? "Spend and start"
                             : // D11 (jobs-bar cold-walk-12): lowercasing the whole label
                               // turned a proper name mid-sentence into ugly, wrong
                               // casing ("Start send to a masterwork rulebook"). The
@@ -532,7 +539,7 @@ function Row({
 }: {
     icon?: React.ReactNode;
     label: string;
-    value: string;
+    value: React.ReactNode;
     hint?: string;
     strong?: boolean;
 }) {
