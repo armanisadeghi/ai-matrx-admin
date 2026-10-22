@@ -1667,6 +1667,8 @@ function MandateProvisionPanel({ row }: { row: MandateRow }) {
             <ProvisionOfferList
               values={offer.values}
               pinnedContext={pinnedContext}
+              proof={offer.proof}
+              placements={offer.placements}
             />
           </>
         ) : (

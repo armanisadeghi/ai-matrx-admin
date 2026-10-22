@@ -15,6 +15,12 @@
 import { createClient } from "@/utils/supabase/client";
 import { parseOfferedValues, type OfferedValue } from "./provision-shapes";
 import { mandateProvisions } from "@/lib/supabase/mandateStorage";
+import {
+  parsePlacements,
+  parseProvisionProof,
+  type ProvisionProof,
+  type ValuePlacement,
+} from "./provision-proof";
 
 export type {
   BindingWave1Fields,
@@ -48,6 +54,15 @@ export interface ProvisionOffer {
   isEnabled: boolean;
   /** Exact declaring module/path recorded by the provision synchronizer. */
   codePath: string | null;
+  /** The latest proof run (`mandate.provision.proof`): what each value really was. Null = never proven. */
+  proof?: ProvisionProof | null;
+  /** name → the package (`group`) and condition (`source`) each value declares. */
+  placements?: Record<string, ValuePlacement>;
+}
+
+/** `proof` is newer than the generated row type; read it without widening the row. */
+function proofOf(row: object): ProvisionProof | null {
+  return parseProvisionProof((row as { proof?: unknown }).proof);
 }
 
 /** Names of offered values a Holder receives only through a map entry
@@ -103,6 +118,8 @@ export async function fetchProvision(
         mappingOnly: mappingOnlyNames(data.offered_values),
         isEnabled: data.is_enabled,
         codePath: data.code_path,
+        proof: proofOf(data),
+        placements: parsePlacements(data.offered_values),
       }
     : null;
   provisionCache.set(provisionKey, { at: Date.now(), value });
@@ -166,6 +183,8 @@ export async function fetchProvisions(
         mappingOnly: mappingOnlyNames(row.offered_values),
         isEnabled: row.is_enabled,
         codePath: row.code_path,
+        proof: proofOf(row),
+        placements: parsePlacements(row.offered_values),
       };
       seen.add(row.provision_key);
       provisionCache.set(row.provision_key, { at, value: offer });
