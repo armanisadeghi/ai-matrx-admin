@@ -418,7 +418,8 @@ for (let attempt = 1; attempt <= 2; attempt++) {
   if (d.stale && repair && !restarted) {
     // A restart under someone else's held run is exactly what holds exist to stop.
     const others = otherHoldsNow();
-    if (others.length) {
+    // ...unless the stale code already fails for everyone (the watchdog's own rule): then holds protect nothing.
+    if (others.length && !d.brokenForAll) {
       notReady(`the preview serves code from before a package install, and another run holds it (${others.join(", ")}); it restarts when that run ends`);
     }
     say("repair: restarting the preview so it serves the installed packages");

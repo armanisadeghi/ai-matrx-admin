@@ -56,6 +56,19 @@ export async function diagnoseBuildError(text, ROOT) {
     if (first) out.lines.push(`error: ${first.trim()}`);
   }
 
+  // STALE, proven by the disk: the server runs a module from an @ai-matrx package version whose
+  // .pnpm folder is gone (an install moved it, e.g. chat 0.8.300 → 0.8.303). Turbopack then says
+  // "the module factory is not available" on every route, for every session, so it is broken for all.
+  const goneDir = text.match(/node_modules\/\.pnpm\/(@ai-matrx\+([\w.-]+?)@([^_/\s]+)[^/\s]*)\/node_modules\/[^\s]+[^\n]*module factory is not available/);
+  if (goneDir && !existsSync(join(ROOT, "node_modules", ".pnpm", goneDir[1]))) {
+    out.stale = true;
+    out.brokenForAll = true;
+    out.lines.push(
+      `diagnosis: STALE SERVER — it still runs @ai-matrx/${goneDir[2]} ${goneDir[3]}, which is no longer installed; every page fails for everyone until it restarts`,
+    );
+    return out;
+  }
+
   // STALE vs CODE: does the INSTALLED package satisfy the file's @ai-matrx imports right now?
   if (file && existsSync(join(ROOT, file))) {
     try {
