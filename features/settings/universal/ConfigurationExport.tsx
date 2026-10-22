@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
-import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
+import { openClipboardFallback } from "@ai-matrx/kit/clipboard-fallback-opener";
 import { extractErrorMessage } from "@/utils/errors";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { formatKnobValue } from "@/lib/scoped-config/ladder";
@@ -46,7 +46,7 @@ async function copyConfiguration(text: string, title: string) {
     copyNotify(`${title} copied.`, "success");
     return;
   }
-  showManualCopy({ text, title, description: "Your browser blocked the clipboard; copy it from here." });
+  void openClipboardFallback(text, { title, description: "Your browser blocked the clipboard; copy it from here." });
 }
 
 export function ConfigurationExport(props: {

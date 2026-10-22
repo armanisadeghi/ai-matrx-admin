@@ -60,7 +60,6 @@ export { captureInspectorWindowOverlay } from "./captureInspectorWindow.definiti
 export { changeReviewWindowOverlay } from "./changeReviewWindow.definition";
 export { characterCounterWindowOverlay } from "./characterCounterWindow.definition";
 export { chatDebugWindowOverlay } from "./chatDebugWindow.definition";
-export { clipboardFallbackDialogOverlay } from "./clipboardFallbackDialog.definition";
 export { cloudBrowserWindowOverlay } from "./cloudBrowserWindow.definition";
 export { cloudFilesPickerOverlay } from "./cloudFilesPicker.definition";
 export { cloudFilesWindowOverlay } from "./cloudFilesWindow.definition";

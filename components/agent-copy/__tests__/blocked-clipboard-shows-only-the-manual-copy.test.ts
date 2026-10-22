@@ -10,15 +10,15 @@
  * Break guarded: the copy primitive reporting a failure it already handed to
  * the person. The double replaces only the browser clipboard (the dependency).
  */
-jest.mock("@/components/dialogs/clipboard-fallback/manualCopyOpener", () => ({
-  showManualCopy: jest.fn(),
+jest.mock("@ai-matrx/kit/clipboard-fallback-opener", () => ({
+  openClipboardFallback: jest.fn(),
 }));
 jest.mock("@/lib/toast", () => ({
   toast: { error: jest.fn(), info: jest.fn(), success: jest.fn() },
 }));
 
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
-import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
+import { openClipboardFallback } from "@ai-matrx/kit/clipboard-fallback-opener";
 import { toast } from "@/lib/toast";
 
 const ANSWER = "Okafor upright: crate code PX-3318, two-person carry, ground floor only.";
@@ -37,7 +37,7 @@ function denyClipboard() {
 }
 
 beforeEach(() => {
-  jest.mocked(showManualCopy).mockClear();
+  jest.mocked(openClipboardFallback).mockClear();
   jest.mocked(toast.error).mockClear();
   denyClipboard();
 });
@@ -46,7 +46,7 @@ describe("a blocked clipboard", () => {
   it("opens the manual copy with the answer and raises no error toast", async () => {
     const onError = jest.fn();
     expect(await copyContent(ANSWER, { onError })).toBe(false);
-    expect(jest.mocked(showManualCopy).mock.calls).toEqual([[{ text: ANSWER }]]);
+    expect(jest.mocked(openClipboardFallback).mock.calls).toEqual([[ANSWER, {}]]);
     expect(toast.error).not.toHaveBeenCalled();
     expect(onError).not.toHaveBeenCalled();
   });
@@ -57,7 +57,7 @@ describe("a blocked clipboard", () => {
     const crate: Record<string, unknown> = { code: "PX-3318" };
     crate.self = crate;
     expect(await copyContent(crate, { onError })).toBe(false);
-    expect(showManualCopy).not.toHaveBeenCalled();
+    expect(openClipboardFallback).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledTimes(1);
   });
 });

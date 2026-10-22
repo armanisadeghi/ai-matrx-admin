@@ -71,6 +71,10 @@ timestamp: 2026-08-30
     release queues the matching fix in every consuming repo at once (THE CATCH-UP RULE).
 18. **Cleanups never tighten working code.** Removing a copy or a leak keeps every existing export
     path and its behaviour; a new guard starts green on today's tree.
+19. **One build standard** (`projects/package-build-architecture/PLAN.md`): ESM split once per side,
+    `check-ships-once` + `check-reexport-order` in `build`, server-safe entries import sibling
+    subpaths only. Guard `apps/shared/scripts/check-package-standard.mjs` (shrink-only allowlist)
+    refuses the author's commit; at release it only annotates (nothing stops a triggered release).
 <!-- rules:stamp-end -->
 
 **Invocation: `/new-package <name or capability>`.** Use for: a NEW `@ai-matrx/*` package,

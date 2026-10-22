@@ -16,7 +16,7 @@
 
 import { Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Workflow } from "lucide-react";
+import { Copy, Workflow } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { pushAppHref } from "@/lib/deployment/navigate";
@@ -25,7 +25,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { useMandateSystemSeat } from "@/features/mandates/admin/useMandateSystemSeat";
-import { PromoteToSystemMandateButton } from "@/features/mandates/admin/mandate-actions";
+import { usePromoteToSystemMandate } from "@/features/mandates/admin/mandate-actions";
 import { useStartMandateWorkflow } from "@ai-matrx/chat/mandates/useStartMandateWorkflow";
 import {
   SurfaceRuntimeProvider,
@@ -52,8 +52,9 @@ import { useCandidateCount } from "./useCandidateCount";
 import { readMandateAddress } from "@/features/mandates/mandate-address";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { useRecordTitle } from "@/lib/record-title/record-title";
-import { MandateVisibilityControl } from "./MandateVisibilityControl";
-import { MandateStatusControl } from "@/features/mandates/status/MandateStatusControl";
+import { useMandateShareAction } from "./MandateVisibilityControl";
+import { useMandateStatusActions } from "@/features/mandates/status/MandateStatusControl";
+import { MandateStatusBadge } from "@/features/mandates/status/MandateStatusBadge";
 import { mandateStatusOfRow } from "@/features/mandates/status/mandate-status";
 import { seatCanManageMandate } from "@/features/mandates/status/can-manage";
 
@@ -169,12 +170,13 @@ function MandateRecordPageInner({
             activeTab={activeTab}
             onTabChange={onTabChange}
             listHref={listHref}
-            renderChrome={({ name, data, exportMenu, refresh }) => (
+            renderChrome={({ name, data, exportSession, openExport, refresh }) => (
               <>
                 <RecordHeader
                   name={name}
                   data={data}
-                  exportMenu={exportMenu}
+                  exportSession={exportSession}
+                  openExport={openExport}
                   refresh={refresh}
                   backHref={backHref}
                   level={level}
@@ -219,7 +221,8 @@ export function recordCanRemove(
 function RecordHeader({
   name,
   data,
-  exportMenu,
+  exportSession,
+  openExport,
   refresh,
   backHref,
   level,
@@ -232,7 +235,9 @@ function RecordHeader({
 }: {
   name: string;
   data: MandateWorkspaceData;
-  exportMenu: React.ReactNode;
+  /** The export with no trigger of its own (mounted here; the "Copy or export" action opens it). */
+  exportSession: React.ReactNode;
+  openExport: () => void;
   refresh: () => void;
   backHref: string;
   level: RecordLevel;
@@ -260,44 +265,32 @@ function RecordHeader({
     Boolean(userId) &&
     data.mandate.created_by === userId;
 
+  const status = mandateStatusOfRow(data.mandate, data.bindings);
+  // THE STATUS is the badge beside the name; changing it (Enable, Disable, Archive — the soft
+  // removal — and a draft's Set a Mandate Holder) is part of the page's ONE action list, so the
+  // line, its Actions menu, the frame's "…" and the phone sheet all carry the same rows.
+  const statusActions = useMandateStatusActions({
+    mandateId: data.mandate.id,
+    name,
+    status,
+    // The system seat may change a SYSTEM mandate's status from here
+    // (admin feature "mandate.system-seat").
+    canManage: canRemove || systemSeat,
+    systemSeat,
+    onSetHolder: readOnly ? undefined : () => onTabChange("holder"),
+    onChanged: (next) => (next === "archived" ? pushAppHref(router, listHref) : refresh()),
+  });
+  const share = useMandateShareAction(data.mandate, refresh);
+  const promote = usePromoteToSystemMandate(data.mandate, refresh);
+
   return (
+    <>
+    {exportSession}
+    {share.dialog}
     <EntityModeHeader
       backHref={backHref}
       entityLabel={name}
-      right={
-        <div className="flex items-center gap-1">
-          {/* THE STATUS — big, color-coded, and the ONE control for a seat
-              that may change it: Enable, Disable and Archive (the soft
-              removal) all live in its menu. A separate red "Remove" and a
-              body "Enabled" switch used to repeat it (UX punch list
-              2026-09-26). */}
-          <MandateStatusControl
-            mandateId={data.mandate.id}
-            name={name}
-            status={mandateStatusOfRow(data.mandate, data.bindings)}
-            // The system seat may change a SYSTEM mandate's status from here
-            // (admin feature "mandate.system-seat").
-            canManage={canRemove || systemSeat}
-            systemSeat={systemSeat}
-            onSetHolder={readOnly ? undefined : () => onTabChange("holder")}
-            onChanged={(next) =>
-              next === "archived" ? pushAppHref(router, listHref) : refresh()
-            }
-            className="mr-1"
-          />
-          {canShare ? (
-            <MandateVisibilityControl mandate={data.mandate} onChanged={refresh} />
-          ) : null}
-          {exportMenu}
-          {level === "system" &&
-          data.mandate.organization_id !== SYSTEM_ORGANIZATION_ID ? (
-            <PromoteToSystemMandateButton
-              mandate={data.mandate}
-              onPromoted={refresh}
-            />
-          ) : null}
-        </div>
-      }
+      entityStatus={<MandateStatusBadge status={status} size="lg" />}
       actions={[
         // Workflow parity: a job is filled by an agent OR a workflow — both
         // start here. "New agent" opens the protected Create Agent body; a
@@ -328,7 +321,13 @@ function RecordHeader({
                   }),
               },
             ]),
+        ...(canShare ? [share.action] : []),
+        { label: "Copy or export", icon: Copy, placement: "menu" as const, onPress: openExport },
+        ...(level === "system" && promote.action ? [promote.action] : []),
+        ...statusActions,
       ]}
     />
+    {promote.refusal}
+    </>
   );
 }

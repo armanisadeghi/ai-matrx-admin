@@ -20,7 +20,7 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
+import { openClipboardFallback } from "@ai-matrx/kit/clipboard-fallback-opener";
 import { useCallback, useMemo } from "react";
 import {
   useAppDispatch,
@@ -170,7 +170,7 @@ export function useFolderActions(folderId: string): FolderActionHandlers {
     const url = `${origin}/s/${token}`;
     if (await copyText(url)) return url;
     // The link exists; a clipboard refusal must not lose it.
-    showManualCopy({ text: url, title: "Copy the share link" });
+    void openClipboardFallback(url, { title: "Copy the share link" });
     return null;
   }, [copyText, dispatch, folderId, isVirtual, store]);
 

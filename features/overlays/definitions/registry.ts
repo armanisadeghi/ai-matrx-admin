@@ -130,7 +130,6 @@ export const APP_OVERLAYS = [
   d.homePickerDialogOverlay,
   d.tagPickerDialogOverlay,
   d.shareWithPeopleDialogOverlay,
-  d.clipboardFallbackDialogOverlay,
   d.smartAddHelperWindowOverlay,
   d.filePreviewWindowOverlay,
   d.flashcardItemWindowOverlay,

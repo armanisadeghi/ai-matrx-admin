@@ -6,12 +6,10 @@
  */
 import { ICommandService, IResourceLoaderService, IUndoRedoService, IUniverInstanceService, type Univer } from "@univerjs/core";
 import { IDefinedNamesService } from "@univerjs/engine-formula";
-import { IEditorBridgeService, SelectionMoveType, SheetsSelectionsService } from "@univerjs/preset-sheets-core";
+import { SelectionMoveType, SheetsSelectionsService } from "@univerjs/preset-sheets-core";
 import { SheetsFilterService } from "@univerjs/preset-sheets-filter";
 import type { AwarenessState, OpOfflineState, OpSessionIncident } from "@ai-matrx/data/realtime/collab";
 import {
-  editorBridgeCell,
-  filterServiceRange,
   startWorkbookOtRoom,
   univerSheetsOtPort,
   type SheetsCommandService,
@@ -23,7 +21,7 @@ import {
 
 import { toast } from "@/components/ui/use-toast";
 import { showOfflineNotice } from "@/lib/collab/offlineNotice";
-import { notSharedNotice, resyncedNotice } from "@/lib/collab/seat-notices";
+import { notSharedNotice } from "@/lib/collab/seat-notices";
 
 /** What a co-editing notice says, in plain words (our toast). */
 export function showWorkbookCollabNotice(n: SheetsOtNotice): void {
@@ -54,9 +52,6 @@ export function showWorkbookCollabNotice(n: SheetsOtNotice): void {
       return;
     case "not_live":
       toast({ title: "Reconnecting", description: "Your last change was made while reconnecting and was not kept." });
-      return;
-    case "resynced":
-      toast(resyncedNotice());
       return;
   }
 }
@@ -103,15 +98,13 @@ export async function startWorkbookOrderedRoom(a: WorkbookOrderedRoomArgs): Prom
     saveUnit: (unitId) => loader.saveUnit(unitId),
     undoRedo: () => undo,
     // Univer's filter grows its own range under a value written below it (no mutation): the port sends that growth
-    // and keeps a peer's write from growing it again here (office C5e). The package's one reader keeps `rangeType`.
-    filterRange: filterServiceRange(() => injector.get(SheetsFilterService)),
-    // the cell an open cell editor is on: a peer's write to that cell waits until it closes, so it never splices into
-    // what the person is typing (office COLLAB-DESIGN §26.1)
-    cellEditor: () => {
+    // and keeps a peer's write from growing it again here (office C5e)
+    filterRange: (unitId, subUnitId) => {
       try {
-        return editorBridgeCell(injector.get(IEditorBridgeService))();
+        const r = injector.get(SheetsFilterService).getFilterModel(unitId, subUnitId)?.getRange();
+        return r ? { startRow: r.startRow, endRow: r.endRow, startColumn: r.startColumn, endColumn: r.endColumn } : null;
       } catch {
-        return null; // no sheets-ui editor bridge (yet)
+        return null; // no filter plugin on this editor
       }
     },
     // a peer's row/column change carries this seat's selection along, never past the sheet's edge

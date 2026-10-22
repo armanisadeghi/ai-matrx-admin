@@ -12,14 +12,14 @@
 import "./host-types";
 import { configureContextMenuHost } from "@ai-matrx/context-menu/engine";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
+import { openClipboardFallback } from "@ai-matrx/kit/clipboard-fallback-opener";
 import { LISTENING_HOME_SURFACE } from "@/features/audio/service/listeningConfig";
 import { selectAllContentBlocksArray } from "@/features/agent-connections/redux/skl/content-block-compat";
 import type { RootState } from "@/lib/redux/store";
 
 configureContextMenuHost({
   confirm,
-  showManualCopy,
+  showManualCopy: (o) => void openClipboardFallback(o.text, { title: o.title, description: o.description }),
   listeningHomeSurface: LISTENING_HOME_SURFACE,
   selectRenderDefinitions: (state) => selectAllContentBlocksArray(state as RootState),
   loadOnOpen: () => import("./on-open").then((m) => m.onOpenMembers),

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
-import { ContentTransferMenu } from "@ai-matrx/alchemy/react";
+import { ContentTransferMenu, type ContentTransferController } from "@ai-matrx/alchemy/react";
 import { directSource, normalizeTransferJson, type Json, type Source } from "@ai-matrx/alchemy/operate";
 import { contractOfMandate, goalOfMandate } from "@/lib/supabase/mandateStorage";
 import { resolveMandateGoal } from "../goal";
@@ -104,8 +104,10 @@ function source(id: string, label: string, getPayload: () => Json | string): Sou
 }
 
 export function MandateAlchemy({
-  data, activeTab, tabs, homeName, buildTab,
+  data, activeTab, tabs, homeName, buildTab, controllerRef,
 }: {
+  /** A host-owned command (a header action) opens the export: the menu mounts with no trigger of its own. */
+  controllerRef?: React.Ref<ContentTransferController>;
   data: MandateWorkspaceData;
   activeTab: MandateWorkspaceTab;
   tabs: readonly MandateWorkspaceTab[];
@@ -151,5 +153,9 @@ export function MandateAlchemy({
       { id: "core-xml", label: "Core XML", source: source(`mandate:${key}:core-xml`, "Mandate definition core (XML)", () => xml(coreSource(), "mandate")) },
     ] : []),
   ];
-  return <div className="ml-auto"><ContentTransferMenu label="Current tab" triggerVariant="transparent" triggerSize="compact" source={source(`mandate:${key}:tab:${activeTab}`, "Current mandate tab", current)} variants={variants} /></div>;
+  const primary = source(`mandate:${key}:tab:${activeTab}`, "Current mandate tab", current);
+  if (controllerRef) {
+    return <ContentTransferMenu label="Current tab" triggerHidden controllerRef={controllerRef} source={primary} variants={variants} />;
+  }
+  return <div className="ml-auto"><ContentTransferMenu label="Current tab" triggerVariant="transparent" triggerSize="compact" source={primary} variants={variants} /></div>;
 }

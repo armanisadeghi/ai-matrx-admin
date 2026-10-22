@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { CircleAlert, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { SearchInput } from "@ai-matrx/agents/catalog/react";
+import { CatalogSearchField } from "@ai-matrx/agents/catalog/react";
 import type { RightPanel } from "@ai-matrx/agents/catalog/react";
 import type { WorkflowListRecord, WorkflowTab } from "../types";
 import type {
@@ -94,7 +94,7 @@ export function WorkflowListContent({
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0 px-2 pb-1 pt-2">
-        <SearchInput
+        <CatalogSearchField
           ref={inputRef}
           value={controls.searchTerm}
           onChange={controls.setSearchTerm}

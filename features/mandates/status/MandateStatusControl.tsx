@@ -34,6 +34,7 @@ import {
 } from "@/features/mandates/admin/service";
 import type { StatusBadgeSize } from "@/components/official/status-badge/StatusBadge";
 import { cn } from "@/lib/utils";
+import type { EntityHeaderAction } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { MandateStatusBadge } from "./MandateStatusBadge";
 import { MANDATE_STATUS_META, type MandateStatus } from "./mandate-status";
 
@@ -65,63 +66,11 @@ export function MandateStatusControl({
   size = "lg",
   className,
 }: MandateStatusControlProps) {
-  const [busy, setBusy] = useState(false);
+  const { busy, setEnabled, archive } = useMandateStatusChange({ mandateId, name, onChanged, systemSeat });
 
   if (!canManage || status === "archived") {
     return <MandateStatusBadge status={status} size={size} className={className} />;
   }
-
-  const setEnabled = async (enabled: boolean) => {
-    if (!enabled) {
-      const ok = await confirm({
-        title: `Disable ${name}?`,
-        description:
-          "Asking for this job is refused for everyone until it is enabled again. Settings and bindings are kept.",
-        confirmLabel: "Disable",
-        variant: "destructive",
-      });
-      if (!ok) return;
-    }
-    setBusy(true);
-    try {
-      await updateMandateDefinition(
-        mandateId,
-        { is_enabled: enabled },
-        { systemSeat },
-      );
-      toast.success(`${name} ${enabled ? "enabled" : "disabled"}.`);
-      onChanged?.(enabled ? "active" : "disabled");
-    } catch (error) {
-      toast.error(
-        `Could not ${enabled ? "enable" : "disable"} ${name}: ${
-          errorSentence(error)
-        }`,
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const archive = async () => {
-    const ok = await confirm({
-      title: `Archive ${name}?`,
-      description:
-        "It leaves every list with its bindings, notes and test cases, and asking for it is refused. You can restore from Trash.",
-      confirmLabel: "Archive",
-      variant: "destructive",
-    });
-    if (!ok) return;
-    setBusy(true);
-    try {
-      await softDeleteMandate(mandateId, { systemSeat });
-      toast.success(`${name} archived. Restore it from Trash.`);
-      onChanged?.("archived");
-    } catch (error) {
-      toast.error(errorSentence(error));
-    } finally {
-      setBusy(false);
-    }
-  };
 
   return (
     <DropdownMenu>
@@ -183,4 +132,95 @@ export function MandateStatusControl({
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+/** Enable / Disable / Archive — the writes behind the status menu AND the record header's actions. */
+export function useMandateStatusChange({
+  mandateId,
+  name,
+  onChanged,
+  systemSeat = false,
+}: Pick<MandateStatusControlProps, "mandateId" | "name" | "onChanged" | "systemSeat">) {
+  const [busy, setBusy] = useState(false);
+
+  const setEnabled = async (enabled: boolean) => {
+    if (!enabled) {
+      const ok = await confirm({
+        title: `Disable ${name}?`,
+        description:
+          "Asking for this job is refused for everyone until it is enabled again. Settings and bindings are kept.",
+        confirmLabel: "Disable",
+        variant: "destructive",
+      });
+      if (!ok) return;
+    }
+    setBusy(true);
+    try {
+      await updateMandateDefinition(
+        mandateId,
+        { is_enabled: enabled },
+        { systemSeat },
+      );
+      toast.success(`${name} ${enabled ? "enabled" : "disabled"}.`);
+      onChanged?.(enabled ? "active" : "disabled");
+    } catch (error) {
+      toast.error(
+        `Could not ${enabled ? "enable" : "disable"} ${name}: ${
+          errorSentence(error)
+        }`,
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const archive = async () => {
+    const ok = await confirm({
+      title: `Archive ${name}?`,
+      description:
+        "It leaves every list with its bindings, notes and test cases, and asking for it is refused. You can restore from Trash.",
+      confirmLabel: "Archive",
+      variant: "destructive",
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      await softDeleteMandate(mandateId, { systemSeat });
+      toast.success(`${name} archived. Restore it from Trash.`);
+      onChanged?.("archived");
+    } catch (error) {
+      toast.error(errorSentence(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return { busy, setEnabled, archive };
+}
+
+/**
+ * The status changes as a page's declared actions (placement "menu": the line's Actions menu, the
+ * frame's "…", the phone ⋮ sheet) — the record header shows the status as a badge (`entityStatus`)
+ * and lists these, never a control in `right=`. Same rows, same order as the status menu.
+ */
+export function useMandateStatusActions({
+  mandateId,
+  name,
+  status,
+  canManage,
+  onSetHolder,
+  onChanged,
+  systemSeat = false,
+}: Omit<MandateStatusControlProps, "size" | "className">): EntityHeaderAction[] {
+  const { busy, setEnabled, archive } = useMandateStatusChange({ mandateId, name, onChanged, systemSeat });
+  if (!canManage || status === "archived") return [];
+  return [
+    ...(status === "draft" && onSetHolder
+      ? [{ label: "Set a Mandate Holder", icon: UserCog, placement: "menu" as const, disabled: busy, onPress: onSetHolder }]
+      : []),
+    status === "disabled"
+      ? { label: "Enable", icon: CircleCheck, placement: "menu" as const, disabled: busy, onPress: () => void setEnabled(true) }
+      : { label: "Disable", icon: CircleOff, placement: "menu" as const, disabled: busy, onPress: () => void setEnabled(false) },
+    { label: "Archive", icon: Archive, placement: "menu" as const, disabled: busy, onPress: () => void archive() },
+  ];
 }

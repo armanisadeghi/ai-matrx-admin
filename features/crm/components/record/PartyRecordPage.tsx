@@ -32,7 +32,7 @@ import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { HostedRecordBar, type HostedRecordRef } from "@/features/shell/host-chrome/RecordHostChrome";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
-import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
+import { openClipboardFallback } from "@ai-matrx/kit/clipboard-fallback-opener";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Button } from "@/components/ui/button";
 import { AssociationCard } from "@ai-matrx/associations/react";
@@ -216,8 +216,7 @@ export function PartyRecordPage({ partyId, initialHeading, embedded = false, onN
     if (!(await copyText(url, "Link copied"))) {
       // A blocked clipboard never ends in a dead toast: the link is put in
       // front of the person, selected, so they can still copy it.
-      showManualCopy({
-        text: url,
+      void openClipboardFallback(url, {
         title: "Copy this link",
         description: "Your browser blocked the clipboard. The link is selected — press Ctrl+C (⌘C on a Mac) to copy it.",
       });

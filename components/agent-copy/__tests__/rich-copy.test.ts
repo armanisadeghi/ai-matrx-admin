@@ -4,7 +4,7 @@
 // THE rich-content copy: which bytes each flavor writes.
 
 jest.mock("@/lib/scoped-config/sessionKnob", () => ({ getSessionKnob: jest.fn(() => undefined) }));
-jest.mock("@/components/dialogs/clipboard-fallback/manualCopyOpener", () => ({ showManualCopy: jest.fn() }));
+jest.mock("@ai-matrx/kit/clipboard-fallback-opener", () => ({ openClipboardFallback: jest.fn() }));
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), info: jest.fn(), error: jest.fn() } }));
 jest.mock("@ai-matrx/print/markdown", () => ({
   removeThinkingContent: (s: string) => s.replace(/<thinking>[\s\S]*?<\/thinking>\n?/g, ""),

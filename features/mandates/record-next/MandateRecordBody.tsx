@@ -86,6 +86,7 @@ import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { useMandateHolder } from "@ai-matrx/chat/mandates/useMandateHolder";
 import { MANDATE_WORKSPACE_SURFACE_NAME } from "@/features/surfaces/manifests/mandate-workspace.manifest";
 import { normalizeTransferJson } from "@ai-matrx/alchemy/operate";
+import type { ContentTransferController } from "@ai-matrx/alchemy/react";
 import {
   useMandateAlchemyTabCapture,
   MandateAlchemy,
@@ -148,6 +149,10 @@ export interface MandateRecordChrome {
   data: MandateWorkspaceData;
   /** The "copy / export this tab" menu — the host places it. */
   exportMenu: ReactNode;
+  /** The same export with no trigger of its own: a host that lists it as a header action mounts this and calls `openExport`. */
+  exportSession: ReactNode;
+  /** Open the export workspace (for a header action). */
+  openExport: () => void;
   /** Re-read the record after a host action changed it. */
   refresh: () => void;
 }
@@ -217,6 +222,7 @@ function OneMandateRecordBody({
   readOnly = false,
   systemOnly = false,
 }: MandateRecordBodyProps) {
+  const exportController = useRef<ContentTransferController>(null);
   useEffect(() => {
     const openHolder = () => onTabChange("holder");
     window.addEventListener("matrx:open-mandate-pin", openHolder);
@@ -376,30 +382,29 @@ function OneMandateRecordBody({
         : activeTab;
   // The export's scope is the mandate's HOME, never the viewer (mandate-home.ts).
   const orgName = nameOfOrg(data.mandate.organization_id ?? "");
-  const exportMenu = (
-    <MandateAlchemy
-      data={data}
-      activeTab={exportTab}
-      tabs={tabIds}
-      homeName={orgName}
-      buildTab={(tab): MandateAlchemyCapture =>
-        tab === "definition"
-          ? {
-              status: "ready",
-              savedOnly: true,
-              data: {
-                saved_definition: buildMandateDefinitionCore(data, orgName),
-                pins: normalizeTransferJson(data.pins),
-                pinned_context: data.pinnedContext,
-              },
-            }
-          : {
-              status: "error",
-              message: "This tab has not finished publishing its saved data.",
-            }
-      }
-    />
-  );
+  const exportProps = {
+    data,
+    activeTab: exportTab,
+    tabs: tabIds,
+    homeName: orgName,
+    buildTab: (tab: MandateWorkspaceTab): MandateAlchemyCapture =>
+      tab === "definition"
+        ? {
+            status: "ready",
+            savedOnly: true,
+            data: {
+              saved_definition: buildMandateDefinitionCore(data, orgName),
+              pins: normalizeTransferJson(data.pins),
+              pinned_context: data.pinnedContext,
+            },
+          }
+        : {
+            status: "error",
+            message: "This tab has not finished publishing its saved data.",
+          },
+  };
+  const exportMenu = <MandateAlchemy {...exportProps} />;
+  const exportSession = <MandateAlchemy {...exportProps} controllerRef={exportController} />;
 
   return (
     <>
@@ -409,6 +414,8 @@ function OneMandateRecordBody({
         name: mandateDisplayName(storedMandateKey(data.mandate.mandate_key), data.mandate.label),
         data,
         exportMenu,
+        exportSession,
+        openExport: () => void exportController.current?.preparePrimary(),
         refresh,
       })}
       <MandateCoverageAlert

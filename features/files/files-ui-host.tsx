@@ -59,6 +59,6 @@ export const filesUiHost: FilesUiHost = {
   ),
   copyNotify,
   showManualCopy: (options) => {
-    void import("@/components/dialogs/clipboard-fallback/manualCopyOpener").then((m) => m.showManualCopy(options));
+    void import("@ai-matrx/kit/clipboard-fallback-opener").then((m) => m.openClipboardFallback(options.text, { title: options.title, description: options.description }));
   },
 };

@@ -1,5 +1,5 @@
-jest.mock("@/features/overlays/requestOverlay", () => ({ requestOverlay: jest.fn(() => Promise.resolve()) }));
-import { requestOverlay } from "@/features/overlays/requestOverlay";
+jest.mock("@ai-matrx/kit/clipboard-fallback-opener", () => ({ openClipboardFallback: jest.fn(() => Promise.resolve()) }));
+import { openClipboardFallback } from "@ai-matrx/kit/clipboard-fallback-opener";
 import { copyReferenceFence } from "@/features/matrx-envelope/referenceClipboard";
 
 describe("copyReferenceFence", () => {
@@ -22,6 +22,6 @@ describe("copyReferenceFence", () => {
 
     const fence = '```matrx\n{"__kind":"directive_v1_reference_agent"}\n```';
     await expect(copyReferenceFence(fence)).resolves.toBe(false);
-    expect(requestOverlay).toHaveBeenCalledWith("clipboardFallbackDialog", { text: fence }, { cancel: undefined });
+    expect(openClipboardFallback).toHaveBeenCalledWith(fence, {});
   });
 });

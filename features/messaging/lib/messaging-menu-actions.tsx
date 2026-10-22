@@ -12,7 +12,7 @@
  * agents (the overlay hazard the context-menu-v3 skill names).
  *
  * 🚨 NO NEW WRITE PATH LIVES HERE. Copy routes through the ONE clipboard
- * primitive (`copyContent` → `showManualCopy` when the browser blocks it);
+ * primitive (`copyContent` → `openClipboardFallback` when the browser blocks it);
  * "reply" hands the text to the composer the surface already owns; navigation
  * uses the same `/messages/:id` route the rows already link to. There is no
  * conversation write path anywhere in the repo (see
@@ -39,7 +39,7 @@ import {
 
 import { toast } from "@/lib/toast";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
-import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
+import { openClipboardFallback } from "@ai-matrx/kit/clipboard-fallback-opener";
 import { summarizeMatrxText } from "@/features/matrx-envelope/referenceText";
 import type {
   ContextMenuEntityRef,
@@ -155,7 +155,7 @@ async function copyOrShow(text: string, label: string, title: string) {
   await copyContent(text, {
     formatJson: false,
     onSuccess: () => toast.success(label),
-    onError: () => showManualCopy({ text, title }),
+    onError: () => void openClipboardFallback(text, { title }),
   });
 }
 

@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
-import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
+import { openClipboardFallback } from "@ai-matrx/kit/clipboard-fallback-opener";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
 import type {
@@ -160,7 +160,7 @@ export function useWarRoomThreadMenuSection(
       // A blocked clipboard is not a failed copy — the ONE fallback puts the
       // link in front of the user to copy by hand.
       onError: () =>
-        showManualCopy({ text: url, title: "Copy the thread link" }),
+        void openClipboardFallback(url, { title: "Copy the thread link" }),
     });
   };
 

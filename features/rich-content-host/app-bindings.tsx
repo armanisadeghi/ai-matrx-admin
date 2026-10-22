@@ -58,7 +58,7 @@ import { useMicField } from "@/features/audio/hooks/useMicField";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
 import { fileUrls } from "@/features/files/handler/utils/python-base";
 import { kindCanonicalExample, searchKindDefinitions } from "./kind-picker-data";
-import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
+import { openClipboardFallback } from "@ai-matrx/kit/clipboard-fallback-opener";
 import { useAlchemyDisclosure } from "@/components/agent-copy/useAlchemyDisclosure";
 import { contentSourceKey, sameContentSource, useRegistryMenuSource } from "@ai-matrx/context-menu/react";
 import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
@@ -93,7 +93,7 @@ const SmallCodeEditor = dynamic(() => import("@/features/code-editor/components/
 const never = () => false;
 
 configureRichContent({
-  showManualCopy,
+  showManualCopy: (o) => void openClipboardFallback(o.text, { title: o.title, description: o.description }),
   readSessionKnob: (knob) => getSessionKnob(knob as never),
   loadHtmlToMarkdown: () =>
     Promise.all([

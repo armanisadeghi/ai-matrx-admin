@@ -21,28 +21,22 @@ jest.mock("@ai-matrx/office/univer/collab", () => {
     startWorkbookOtRoom: async () => ({ stop() {} }),
   };
 });
-jest.mock("@univerjs/core", () => ({
-  ICommandService: "ICommandService",
-  IResourceLoaderService: "IResourceLoaderService",
-  IUndoRedoService: "IUndoRedoService",
-  IUniverInstanceService: "IUniverInstanceService",
-}));
-jest.mock("@univerjs/engine-formula", () => ({ IDefinedNamesService: "IDefinedNamesService" }));
-jest.mock("@univerjs/preset-sheets-core", () => ({
-  IEditorBridgeService: "IEditorBridgeService",
-  SelectionMoveType: { ONLY_SET: 0 },
-  SheetsSelectionsService: "SheetsSelectionsService",
-}));
-jest.mock("@univerjs/preset-sheets-filter", () => ({ SheetsFilterService: "SheetsFilterService" }));
+// the filter preset's UI half needs a canvas (Path2D) jsdom lacks: the seat only uses its service token
+jest.mock("@univerjs/preset-sheets-filter", () => ({ SheetsFilterService: class SheetsFilterService {} }));
 const toast = jest.fn();
 jest.mock("@/components/ui/use-toast", () => ({ toast: (...a: unknown[]) => toast(...a) }));
 
+import { IEditorBridgeService } from "@univerjs/preset-sheets-core";
+import { SheetsFilterService } from "@univerjs/preset-sheets-filter";
+
 import { showWorkbookCollabNotice, startWorkbookOrderedRoom } from "../collab/workbookOrderedRoom";
 
-function univerWith(services: Record<string, unknown>) {
-  const get = (token: string) => {
-    if (!(token in services)) throw new Error(`no ${token}`);
-    return services[token];
+/** An editor whose injector answers only the services given (every other service is a stand-in object). */
+function univerWith(services: Map<unknown, unknown>) {
+  const get = (token: unknown) => {
+    if (services.has(token)) return services.get(token);
+    if (token === IEditorBridgeService || token === SheetsFilterService) throw new Error("not registered");
+    return {};
   };
   return { __getInjector: () => ({ get }) } as never;
 }
@@ -62,23 +56,23 @@ describe("the workbook seat's port", () => {
   it("lends the open cell editor's cell, and null when the editor is closed or missing", async () => {
     let visible = true;
     const bridge = { isVisible: () => ({ visible }), getEditLocation: () => ({ sheetId: "s1", row: 20, column: 1 }) };
-    await startWorkbookOrderedRoom(args(univerWith({ IEditorBridgeService: bridge })));
+    await startWorkbookOrderedRoom(args(univerWith(new Map([[IEditorBridgeService, bridge]]))));
     expect(captured.port?.cellEditor?.()).toEqual({ sheetId: "s1", row: 20, col: 1 });
     visible = false;
     expect(captured.port?.cellEditor?.()).toBeNull();
 
-    await startWorkbookOrderedRoom(args(univerWith({})));
+    await startWorkbookOrderedRoom(args(univerWith(new Map())));
     expect(captured.port?.cellEditor?.()).toBeNull(); // no editor bridge: never throws into the room
   });
 
   it("reads a filter range with its rangeType (the package's one reader)", async () => {
     const range = { startRow: 4, endRow: 9, startColumn: 1, endColumn: 3, rangeType: 0 };
     const filters = { getFilterModel: (u: string, s: string) => (u === "unit" && s === "s1" ? { getRange: () => range } : null) };
-    await startWorkbookOrderedRoom(args(univerWith({ SheetsFilterService: filters })));
+    await startWorkbookOrderedRoom(args(univerWith(new Map([[SheetsFilterService, filters]]))));
     expect(captured.port?.filterRange?.("unit", "s1")).toEqual(range);
     expect(captured.port?.filterRange?.("unit", "s2")).toBeNull();
 
-    await startWorkbookOrderedRoom(args(univerWith({})));
+    await startWorkbookOrderedRoom(args(univerWith(new Map())));
     expect(captured.port?.filterRange?.("unit", "s1")).toBeNull(); // no filter plugin
   });
 });
