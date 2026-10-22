@@ -94,7 +94,7 @@ export default function CameraPage() {
       />
 
       <NonEditableContextMenu
-        sourceFeature="camera"
+        sourceFeature="files"
         surfaceName={SURFACE_NAME}
         menuVersion={2}
         getApplicationScope={getScope}
