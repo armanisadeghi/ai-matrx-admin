@@ -25,7 +25,7 @@
 import { useState, type ReactNode } from "react";
 import { Loader2, X } from "lucide-react";
 import { TextInputDialog } from "@ai-matrx/design-system";
-import { Button, DateField, Select } from "@ai-matrx/design-system/controls";
+import { Button, DateField, Select, Textarea } from "@ai-matrx/design-system/controls";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
@@ -72,14 +72,16 @@ export function EntityBulkActions<TRow>({
     confirmLabel: string;
     variant: "default" | "destructive";
     value: string;
-    resolve: (value: string | null) => void;
+    /** Typed alongside the value when the same confirm also asks a reason. */
+    reason: string;
+    resolve: (picked: { value: string; reason: string } | null) => void;
   } | null>(null);
   const askValue = (
     question: EntityBulkActionConfirm & { ask: EntityBulkAsk },
     confirmLabel: string,
     variant: "default" | "destructive",
   ) =>
-    new Promise<string | null>((resolve) =>
+    new Promise<{ value: string; reason: string } | null>((resolve) =>
       setAskingValue({
         question,
         confirmLabel,
@@ -88,6 +90,7 @@ export function EntityBulkActions<TRow>({
           question.ask.kind === "date"
             ? question.ask.defaultValue
             : (question.ask.defaultValue ?? question.ask.options[0]?.value ?? ""),
+        reason: "",
         resolve,
       }),
     );
@@ -102,13 +105,15 @@ export function EntityBulkActions<TRow>({
     const question = action.confirm?.(target) ?? null;
     const input: EntityBulkActionInput = {};
     if (question?.ask) {
-      const value = await askValue(
+      // A confirm may ask a value AND a reason: one dialog, both fields, both reach `run`.
+      const picked = await askValue(
         { ...question, ask: question.ask },
         question.confirmLabel ?? action.label,
         question.variant ?? (action.variant === "destructive" ? "destructive" : "default"),
       );
-      if (value === null) return;
-      input.value = value;
+      if (picked === null) return;
+      input.value = picked.value;
+      if (question.reason) input.reason = picked.reason.trim();
     } else if (question?.reason) {
       const reason = await askReason(question, question.confirmLabel ?? action.label);
       if (reason === null) return;
@@ -234,8 +239,9 @@ export function EntityBulkActions<TRow>({
         <BulkAskDialog
           asking={askingValue}
           onChange={(value) => setAskingValue({ ...askingValue, value })}
-          onClose={(value) => {
-            askingValue.resolve(value);
+          onReason={(reason) => setAskingValue({ ...askingValue, reason })}
+          onClose={(picked) => {
+            askingValue.resolve(picked);
             setAskingValue(null);
           }}
         />
@@ -248,6 +254,7 @@ export function EntityBulkActions<TRow>({
 function BulkAskDialog({
   asking,
   onChange,
+  onReason,
   onClose,
 }: {
   asking: {
@@ -255,11 +262,14 @@ function BulkAskDialog({
     confirmLabel: string;
     variant: "default" | "destructive";
     value: string;
+    reason: string;
   };
   onChange: (value: string) => void;
-  onClose: (value: string | null) => void;
+  onReason: (reason: string) => void;
+  onClose: (picked: { value: string; reason: string } | null) => void;
 }) {
-  const { ask } = asking.question;
+  const { ask, reason } = asking.question;
+  const reasonMissing = !!reason && !reason.optional && asking.reason.trim() === "";
   const hint =
     ask.kind === "date"
       ? !asking.value
@@ -279,9 +289,10 @@ function BulkAskDialog({
       variant={asking.variant}
       confirmLabel={asking.confirmLabel}
       cancelLabel="Cancel"
-      confirmDisabled={hint !== null}
-      onConfirm={() => onClose(asking.value)}
+      confirmDisabled={hint !== null || reasonMissing}
+      onConfirm={() => onClose({ value: asking.value, reason: asking.reason })}
       content={
+        <div className="flex flex-col gap-3">
         <label className="flex flex-col gap-1 text-sm" data-entity-bulk-ask={ask.kind}>
           <span className="type-secondary text-muted-foreground">{ask.label}</span>
           {ask.kind === "date" ? (
@@ -304,6 +315,18 @@ function BulkAskDialog({
           )}
           {hint && asking.value ? <span className="type-secondary text-muted-foreground">{hint}</span> : null}
         </label>
+        {reason ? (
+          <label className="flex flex-col gap-1 text-sm" data-entity-bulk-reason>
+            <span className="type-secondary text-muted-foreground">{reason.placeholder}</span>
+            <Textarea
+              aria-label={reason.placeholder}
+              value={asking.reason}
+              rows={3}
+              onChange={(event) => onReason(event.target.value)}
+            />
+          </label>
+        ) : null}
+        </div>
       }
     />
   );

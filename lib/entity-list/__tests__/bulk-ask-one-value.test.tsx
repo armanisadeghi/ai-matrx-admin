@@ -145,4 +145,32 @@ describe("bulk confirm asks one value", () => {
     await click(confirmButton());
     expect(run).toHaveBeenCalledWith(target, { value: "done" });
   });
+  it("a confirm that asks a choice AND a reason shows both in one dialog and sends both", async () => {
+    const run = jest.fn(async () => ({}));
+    await mount({
+      id: "set-level",
+      label: "Set level",
+      confirm: () => ({
+        title: "Set level for 2 accounts?",
+        description: "Each account moves to the level you pick.",
+        ask: { kind: "choice", label: "Level", options: [{ value: "a", label: "A" }, { value: "b", label: "B" }], defaultValue: "a" },
+        reason: { placeholder: "Reason (recorded in the admin history)" },
+      }),
+      run,
+    });
+    await click(document.querySelector('[data-entity-bulk-action="set-level"]'));
+    const box = document.querySelector<HTMLTextAreaElement>("[data-entity-bulk-reason] textarea");
+    expect(box).not.toBeNull();
+    expect(document.querySelector('[data-entity-bulk-ask="choice"]')).not.toBeNull();
+    // An empty reason blocks Confirm.
+    expect(confirmButton()?.disabled).toBe(true);
+    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!;
+    await act(async () => {
+      setter.call(box, "  Cleaning up  ");
+      box!.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(confirmButton()?.disabled).toBe(false);
+    await click(confirmButton());
+    expect(run).toHaveBeenCalledWith(target, { value: "a", reason: "Cleaning up" });
+  });
 });

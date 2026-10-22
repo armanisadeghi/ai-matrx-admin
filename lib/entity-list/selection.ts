@@ -152,7 +152,8 @@ export interface EntityBulkActionConfirm {
   /**
    * ASK ONE VALUE FOR THE WHOLE SELECTION (2026-10-21, the bulk twin rule). The confirm shows one
    * date or one choice under its sentence; the picked value reaches `run` as `input.value`, once,
-   * for every row ("Approve until …", "Set status to …"). Never a browser dialog.
+   * for every row ("Approve until …", "Set status to …"). Never a browser dialog. Combinable with
+   * `reason`: one dialog shows the field and the reason box, and `run` gets both.
    */
   ask?: EntityBulkAsk;
 }
