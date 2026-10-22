@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request, { params }: { params: Promise<{ formId: string }> }) {
   const { formId } = await params;
-  const form = await request.formData();
+  const form = await request.formData().catch(() => new FormData()); // not a form post → treated as an empty one, never a 500
   const kept = new URLSearchParams(typeof form.get("query") === "string" ? String(form.get("query")) : "");
   kept.delete("wrong");
   const back = (wrong: boolean) => {
