@@ -128,6 +128,7 @@ export const OVERLAY_META_INDEX: readonly OverlayMetaRow[] = [
   { id: "providerReferenceWindow", label: "Provider Reference", instance: "single", window: { windowId: "provider-reference-window", mobile: "fullscreen" } },
   { id: "sandboxGateDialog", label: "Sandbox unavailable", instance: "single" },
   { id: "valuePromptsDialog", label: "Values needed", instance: "single" },
+  { id: "packageDiffDialog", label: "Compare", instance: "multi" },
   { id: "conversationRenameDialog", label: "Rename conversation", instance: "single" },
   { id: "uploadGuardDialog", label: "Duplicate files", instance: "single" },
   { id: "cloudFilesPicker", label: "Choose from your files", instance: "single" },

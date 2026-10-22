@@ -122,6 +122,7 @@ export const APP_OVERLAYS = [
   d.providerReferenceWindowOverlay,
   d.sandboxGateDialogOverlay,
   d.valuePromptsDialogOverlay,
+  d.packageDiffDialogOverlay,
   d.conversationRenameDialogOverlay,
   d.uploadGuardDialogOverlay,
   d.cloudFilesPickerOverlay,
