@@ -188,7 +188,7 @@ describe("the adversarial review's queries (ADVERSARIAL-3 D5)", () => {
     ["contractor", /contractor/i, 1],
     ["restaurant", /restaurant/i, 1],
     ["trucking", /trucking/i, 1],
-    ["logistics", /trucking|warehouse|logistic/i, 3],
+    ["logistics", /trucking|warehouse|freight|courier|logistic/i, 3],
   ];
   it.each(CASES)("%s finds %s in its first %i", (q, meant, top) => {
     expect(titles(q).slice(0, top).some((t) => meant.test(t))).toBe(true);
@@ -212,5 +212,38 @@ describe("templateResultCount (the gallery's count beside a search)", () => {
     const shown = searchTemplates(FACES, "design system", (f) => f).length;
     expect(templateResultCount("design system", shown, FACES.length)).toBe(`${shown} of ${FACES.length}`);
     expect(templateResultCount("   ", FACES.length, FACES.length)).toBe(String(FACES.length));
+  });
+});
+
+/**
+ * Generic business words ("company", "office", "agency", "hq"...) never outrank the meaningful word: "logistics company"
+ * ranked Plumbing Company HQ first because "company" sits in its title. Each query names the template that must be
+ * in the first three answers; the generic word alone still answers (the last test).
+ */
+describe("generic business words rank below the meaningful word", () => {
+  const CASES: Array<[query: string, meant: RegExp]> = [
+    ["logistics company", /trucking|warehouse|freight|courier/i],
+    ["dental office", /dental/i],
+    ["law firm intake", /law firm|injury intake/i],
+    ["plumbing business", /plumbing/i],
+    ["small bakery", /restaurant|catering|coffee|brewery|food/i],
+    ["marketing agency", /marketing/i],
+    ["yoga studio", /yoga/i],
+    ["property management company", /^property management/i],
+    ["church volunteers", /faith community|volunteer program/i],
+    ["SaaS roadmap", /saas startup|roadmap/i],
+  ];
+  it.each(CASES)("%s finds %s in its first three", (q, meant) => {
+    expect(titles(q).slice(0, 3).some((t) => meant.test(t))).toBe(true);
+  });
+
+  it("'logistics company' does not lead with a card that only says company", () => {
+    expect(titles("logistics company")[0]).not.toMatch(/plumbing/i);
+  });
+
+  it("a generic word typed alone still answers", () => {
+    expect(titles("company").length).toBeGreaterThan(0);
+    const faces = [{ title: "Plumbing Company HQ" }, { title: "Freight desk", description: "logistics" }];
+    expect(searchTemplates(faces, "logistics company", (f) => f).map((f) => f.title)[0]).toBe("Freight desk");
   });
 });
