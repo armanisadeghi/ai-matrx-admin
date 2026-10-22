@@ -18,7 +18,10 @@ export async function readFrameMode(who: { isAuthenticated: boolean; isAdmin: bo
     ...who,
   });
   if (mode !== "frame") return mode;
-  // Not answered (a failed read) keeps the person's choice; only an explicit `false` turns it off.
+  // THE KILL SWITCH IS FAIL-OPEN BY DESIGN: only an explicit `false` turns the frame off. A read
+  // that does not answer (the knob RPC failed, the row is missing → undefined) keeps the person's
+  // own choice, so a knob outage never yanks an admin's layout mid-session; the failed read is
+  // already logged by readEffectiveKnobOnServer. Tested: __tests__/frame-mode-server.test.ts.
   const enabled = await readEffectiveKnobOnServer(FRAME_KILL_SWITCH_KNOB);
   return enabled === false ? "classic" : "frame";
 }

@@ -58,3 +58,22 @@ export function pickFrameMode(input: {
   if (rollout === "everyone") return input.cookie === FRAME_OFF ? "classic" : "frame";
   return "classic";
 }
+
+/** The cookie jar half the middleware needs (NextResponse.cookies fits it). */
+export interface FrameCookieJar {
+  set: (name: string, value: string, options: { path: string; maxAge: number; sameSite: "lax"; secure: boolean }) => unknown;
+  delete: (name: string) => unknown;
+}
+
+/**
+ * The middleware's write of the remembered choice for one request: `?frame=new` sets the cookie
+ * (a year, whole site), `?frame=classic` clears it, anything else (absent, a typo) leaves it alone.
+ */
+export function rememberFrameChoice(url: { search: string; protocol: string }, jar: FrameCookieJar): void {
+  const choice = frameParam(url.search);
+  if (choice === FRAME_ON) {
+    jar.set(FRAME_COOKIE, FRAME_ON, { path: "/", maxAge: FRAME_COOKIE_MAX_AGE_S, sameSite: "lax", secure: url.protocol === "https:" });
+  } else if (choice === FRAME_OFF) {
+    jar.delete(FRAME_COOKIE);
+  }
+}
