@@ -22,14 +22,14 @@ import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 const ORG_GROUP: SurfaceValueGroup = {
   key: "module_organization",
   label: "Organization",
-  sortOrder: 900,
+  sortOrder: 800,
   description: "The organization the person is working in.",
 };
 
 const HR_GROUP: SurfaceValueGroup = {
   key: "module_hr",
   label: "Employer",
-  sortOrder: 910,
+  sortOrder: 810,
   description: "The employer HR is resolved to for this person.",
 };
 
@@ -41,7 +41,7 @@ const ORG_VALUES: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 36,
-    sortOrder: 900,
+    sortOrder: 800,
     group: ORG_GROUP.key,
   },
   {
@@ -51,7 +51,7 @@ const ORG_VALUES: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 40,
-    sortOrder: 901,
+    sortOrder: 801,
     group: ORG_GROUP.key,
   },
 ];
@@ -64,7 +64,7 @@ const HR_VALUES: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 10,
-    sortOrder: 910,
+    sortOrder: 810,
     group: HR_GROUP.key,
   },
   {
@@ -74,7 +74,7 @@ const HR_VALUES: SurfaceValue[] = [
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 120,
-    sortOrder: 911,
+    sortOrder: 811,
     group: HR_GROUP.key,
   },
   {
@@ -84,7 +84,7 @@ const HR_VALUES: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 40,
-    sortOrder: 912,
+    sortOrder: 812,
     group: HR_GROUP.key,
   },
   {
@@ -94,7 +94,7 @@ const HR_VALUES: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 12,
-    sortOrder: 913,
+    sortOrder: 813,
     group: HR_GROUP.key,
   },
 ];
