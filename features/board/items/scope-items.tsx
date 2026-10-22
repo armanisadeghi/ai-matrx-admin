@@ -171,6 +171,7 @@ function ScopeRecordBody({ id, source, title, onSource }: ItemBodyProps & { id: 
         typeParam={scope.scope_type_id}
         scopeParam={scope.id}
         canManage={role ? canManageSettings(role) : false}
+        density="tile"
       />
     </div>
   );

@@ -681,6 +681,8 @@ export function DeckDetailView({
   // The card view rides the URL so a reload or a shared link keeps it.
   const searchParams = useSearchParams();
   const [embeddedView, setEmbeddedView] = useState<DeckView>("overview");
+  // Embedded (tile) only: the deck's secondary sections fold behind one More.
+  const [moreOpen, setMoreOpen] = useState(false);
   const view = embedded ? embeddedView : asDeckView(searchParams.get("view"));
   const changeView = (next: DeckView) => {
     if (embedded) {
@@ -1573,6 +1575,25 @@ export function DeckDetailView({
               )}
             </div>
 
+            {/* In a tile (embedded) the deck is Study + the cards; everything
+                else a full page shows — mastery, learning gain, the AI
+                power-ups, lineage — folds behind this ONE More toggle. A full
+                page (not embedded) never folds. */}
+            {embedded && !deckEmpty && (
+              <div className="mt-3">
+                <Button
+                  variant="quiet"
+                  data-deck-more-toggle=""
+                  aria-expanded={moreOpen}
+                  onClick={() => setMoreOpen((v) => !v)}
+                  icon={<ChevronDown className={cn("transition-transform", moreOpen && "rotate-180")} />}
+                >
+                  {moreOpen ? "Less" : "More"}
+                </Button>
+              </div>
+            )}
+            {embedded && !moreOpen ? null : (
+              <>
             {/* Deck mastery — where you stand across the whole deck. */}
             {!deckEmpty && (
               <div className="mt-5 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
@@ -1671,6 +1692,8 @@ export function DeckDetailView({
                 refreshKey={lineageKey}
               />
             </div>
+              </>
+            )}
 
             {/* Audio overview (Phase 7 — podcast-from-deck). On a phone the
                 page shows only the player and running jobs (the buttons live
