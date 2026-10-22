@@ -48,7 +48,8 @@ export type BrandRoom =
   | "voice"
   | "research"
   | "competitors"
-  | "audience";
+  | "audience"
+  | "story";
 
 export interface BrandKindCopy {
   /** "Company" / "Person" — the choice on Add brand. */
@@ -176,6 +177,7 @@ export const BRAND_KIND_COPY: Record<BrandKind, BrandKindCopy> = {
           "How this brand actually writes, measured from its real writing. Every pitch, reply, subject line and statement in its name is checked against it.",
       },
       research: { name: "Research", description: "Website, socials, top posts and speaking style." },
+      story: { name: "Your story", description: "A few questions, answered out loud or typed." },
       competitors: {
         name: "Competitors",
         description: "Rivals by website and social account, and how they compare.",
@@ -226,6 +228,7 @@ export const BRAND_KIND_COPY: Record<BrandKind, BrandKindCopy> = {
       claims: { name: "Claims", description: "Approved and forbidden claims, with disclaimers." },
       voice: { name: "Voice", description: "Their own voice, measured from their posts and talks." },
       research: { name: "Research", description: "Their accounts, top posts and speaking style." },
+      story: { name: "Your story", description: "A few questions, answered out loud or typed." },
       competitors: { name: "Peers", description: "Peer creators by account, and how they compare." },
       audience: { name: "Audience", description: "Their followers, as named audience segments." },
     },

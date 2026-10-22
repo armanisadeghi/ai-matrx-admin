@@ -420,6 +420,7 @@ export function MarketingBrandCrumb() {
       ],
       ["competitors", marketingRoutes.brandCompetitors(brand.seg)],
       ["audience", `${identityPath}/audience`],
+      ["story", `${identityPath}/story`],
     ];
     const roomOptions: CrumbOption[] = roomHrefs.map(([room, href]) => ({
       label: roomCopy[room].name,

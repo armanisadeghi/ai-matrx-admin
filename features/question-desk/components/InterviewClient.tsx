@@ -72,17 +72,50 @@ import { ReviewTriage } from "./ReviewTriage";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { browserAdminLaneOpen } from "@/utils/supabase/adminLane";
 import { identityBannerText } from "../identityBanner";
+// Every seat gets the editorial face, not only the admin route.
+import "../question-desk.css";
+
+/**
+ * WHERE THE INTERVIEW IS ANSWERED. The desk is one shared answer bar with more
+ * than one seat: the admin Question Desk (decisions an agent filed) and member
+ * routes such as a brand owner's story sitting (`/marketing/<brand>/identity/story`).
+ * The database decides who may answer (the respondent's grant, or the person
+ * who opened the interview); the seat only decides where "back" goes and which
+ * ways of answering the questions take.
+ */
+export interface InterviewSeat {
+  backHref: string;
+  backLabel: string;
+  /**
+   * `decision`: the full bar (recommendation, skip, hand back, words, table).
+   * `story`: open questions answered in the person's own words, typed or
+   * spoken, one per screen — no recommendation, skip, hand back or table.
+   */
+  answering: "decision" | "story";
+  /** Fired once when the last question of the queue has an answer. */
+  onAllAnswered?: () => void;
+}
+
+export const QUESTION_DESK_SEAT: InterviewSeat = {
+  backHref: "/administration/question-desk",
+  backLabel: "All interviews",
+  answering: "decision",
+};
 
 export interface InterviewClientProps {
   interviewId: string;
   /** `?q=<slug>` from the notification deep link — opens that question. */
   initialSlug?: string;
+  /** Defaults to the admin Question Desk. */
+  seat?: InterviewSeat;
 }
 
 export function InterviewClient({
   interviewId,
   initialSlug,
+  seat = QUESTION_DESK_SEAT,
 }: InterviewClientProps) {
+  const story = seat.answering === "story";
   const userId = useAppSelector(selectUserId);
   const userEmail = useAppSelector(selectUserEmail);
   const knobs = useQuestionDeskKnobs();
@@ -179,7 +212,9 @@ export function InterviewClient({
   const resolvedView: "one" | "table" | null =
     knobs.state !== "ready" || loading
       ? null
-      : (view ??
+      : story
+        ? "one"
+        : (view ??
         (askQuestions.length === 0 && reviewQuestions.length > 0
           ? "table"
           : knobs.defaultView));
@@ -193,6 +228,16 @@ export function InterviewClient({
     const firstOpen = queue.find((q) => !isAnswered(q));
     setCurrentId((bySlug ?? firstOpen ?? queue[0]).id);
   }, [currentId, queue, initialSlug]);
+
+  // A story sitting ends when its last question has an answer: the seat is told
+  // once (it starts the work that reads the answers), never on every render.
+  const allDoneFired = useRef(false);
+  const queueDone = !loading && queue.length > 0 && queue.every(isAnswered);
+  useEffect(() => {
+    if (!queueDone || allDoneFired.current || !seat.onAllAnswered) return;
+    allDoneFired.current = true;
+    seat.onAllAnswered();
+  }, [queueDone, seat]);
 
   const current = useMemo(
     () => queue.find((q) => q.id === currentId) ?? null,
@@ -511,6 +556,10 @@ export function InterviewClient({
         return;
       }
 
+      // A story seat has no recommendation, skip, hand back or table: those
+      // keys are not ours there (their buttons are absent too).
+      if (story && ["1", "2", "3", "t"].includes(event.key.toLowerCase())) return;
+
       switch (event.key.toLowerCase()) {
         case "1":
           if (current?.recommendation) {
@@ -584,6 +633,7 @@ export function InterviewClient({
     undo,
     undoTarget,
     resolvedView,
+    story,
   ]);
 
   // ---- render ------------------------------------------------------------
@@ -649,11 +699,11 @@ export function InterviewClient({
 
       <main className="min-w-0 flex-1 px-5 pt-7 pb-56 lg:px-10 lg:pt-11">
         <Link
-          href="/administration/question-desk"
+          href={seat.backHref}
           className="mb-5 inline-flex items-center gap-1.5 rounded font-mono text-[10.5px] tracking-wide text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <ArrowLeft className="size-3" aria-hidden />
-          All interviews
+          {seat.backLabel}
         </Link>
 
         {identityMismatch ? (
@@ -682,7 +732,7 @@ export function InterviewClient({
                   busyId={busyId}
                   undoRowId={undoTarget?.row.id ?? null}
                   onUndo={() => void undo()}
-                  stopHref="/administration/question-desk"
+                  stopHref={seat.backHref}
                   onConfirm={(q) =>
                     void record(q, "confirm", null, "keystroke", {
                       fromTable: true,
@@ -769,7 +819,8 @@ export function InterviewClient({
               interviewId={interviewId}
               questionId={current.id}
               questionTitle={current.title}
-              hasRecommendation={!!current.recommendation}
+              answering={seat.answering}
+              hasRecommendation={!story && !!current.recommendation}
               skipShipsRecommendation={knobs.skipShipsRecommendation}
               writing={writing}
               draftText={draft.text}
@@ -809,7 +860,7 @@ export function InterviewClient({
               That is all of them.
             </h2>
             <p className="mx-auto mt-2 max-w-[46ch] text-[14.5px] text-muted-foreground">
-              Every question in this interview has an answer on the record.
+              Every answer is on the record.
             </p>
           </div>
         ) : (
@@ -818,8 +869,7 @@ export function InterviewClient({
               Nothing to ask here yet.
             </h2>
             <p className="mt-2 max-w-[52ch] text-[14.5px] text-muted-foreground">
-              This interview holds no questions. The desk files them as it
-              researches; they appear here the moment it does, without a reload.
+              Questions appear here the moment they are filed.
             </p>
           </div>
         )}
