@@ -70,8 +70,6 @@ export const hrMyTimeOffManifest: SurfaceManifest = {
   description: "The person's own leave balances and requests, and the request form (/hr/me/time-off).",
   label: "HR My time off",
   urlPattern: "/hr/me/time-off",
-  readiness: "partial",
-  readinessNote: "W2 2026-10-22: values emitted by MyTimeOffSurface; request form fill wired. Live probe owed.",
   intro: `<surface_intro>
 The person's own time off. Quote balances from time_off_balances (bookable_now is what they can book today); never compute a balance yourself.
 To help them ask for time off, use time_off_request_draft; the page previews it and they press Submit. Never say a request was made until it appears in time_off_requests.

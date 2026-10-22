@@ -441,9 +441,6 @@ export const dataTablesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Tables and spreadsheet views",
-  readiness: "partial",
-  readinessNote:
-    "Emitter + write handler: RecordStoreTableSurface over the one table page (UnifiedTableBody) — /data/[tableId] and every host that mounts it (table window, chat view-table modal, canvas table, Quick Data, Board tile), enabled with the merged grid (data_tables.merged_grid knob, platform default On). The merged grid reports cell / block / ticked rows / rows on screen through onGridContext; one confirmed cell write, or the table's description, goes through @ai-matrx/records. full_table_json has no Locate target: the grid renders only the current page. Partial until surface certification runs. The /data home emits nothing by design (no authored table state).",
   label: "Data Tables",
   urlPattern: "/data/[tableId]",
   intro: `<surface_intro>

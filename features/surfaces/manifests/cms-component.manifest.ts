@@ -384,7 +384,6 @@ export const cmsComponentManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "CMS shared component editor — header/footer/sidebar/CTA HTML+CSS",
-  readiness: "verified",
   label: "CMS Component",
   urlPattern: "/cms/[siteId]/components",
   intro: `<surface_intro>

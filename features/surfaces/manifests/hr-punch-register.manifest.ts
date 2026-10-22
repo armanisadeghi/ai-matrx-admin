@@ -25,7 +25,6 @@ export const hrPunchRegisterManifest = hrPageSurface({
   urlPattern: "/hr/time/punches",
   situation:
     "They are on the punch register for {punch_scope.who|the employer}: {punch_total|no} punches. Corrections are made through the page's correction dialog.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by PunchRegister; read-only by design. Live probe owed.",
   intro: `<surface_intro>
 The punch register: every punch recorded, voided ones included, each with who recorded it (actor) and how (source). punches is this page, newest first. Correcting, adding or voiding a punch is done in the correction dialog with a reason, by the person; explain it, never claim it is done.
 </surface_intro>`,

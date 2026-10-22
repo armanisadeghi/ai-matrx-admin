@@ -186,7 +186,6 @@ export const listManagerManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "List management overlay",
-  readiness: "verified",
   overlayId: "listManagerWindow",
   label: "List Manager",
   intro: `<surface_intro>

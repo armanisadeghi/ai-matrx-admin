@@ -43,18 +43,6 @@ export const RECORD_SIBLINGS: Readonly<Record<string, SiblingsLoader>> = {
     const rows = await fetchNoteListItems();
     return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.label || "Untitled note" }));
   },
-  "crm-outreach-list": async () => {
-    // The Outreach lists page's own read (mine + my organizations), newest first.
-    const [{ fetchOutreachLists }, { supabase }] = await Promise.all([
-      import("@/features/crm/outreach-lists/service"),
-      import("@/utils/supabase/client"),
-    ]);
-    const { data } = await supabase.auth.getSession();
-    const userId = data.session?.user.id;
-    if (!userId) return [];
-    const rows = await fetchOutreachLists({ userId });
-    return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.name || "Untitled list" }));
-  },
 };
 
 /** The address for a sibling: the current address with the record's segment swapped. */

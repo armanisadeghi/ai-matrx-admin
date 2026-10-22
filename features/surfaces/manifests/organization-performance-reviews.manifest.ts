@@ -617,9 +617,6 @@ export const organizationPerformanceReviewsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "A 360 review respondent's own half: the review form they fill in and submit (/hr/performance/respond/[trackId]).",
-  readiness: "partial",
-  readinessNote:
-    "Re-pointed 2026-10-22 (W2 hr-b) to its one live mount, /hr/performance/respond/[trackId]; writes refused on a submitted half. Values, handlers, copy controls and demo mount unchanged; real-agent writeback and browser certification pending.",
   label: "360 review form",
   urlPattern: "/hr/performance/respond/[trackId]",
   intro: `<surface_intro>

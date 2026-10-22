@@ -178,9 +178,6 @@ export const marketingSiteKeywordsManifest: SurfaceManifest = {
     "They are on the organic keyword performance for {site_domain}: searches it actually earned over the last 28 days from Search Console (Bing connected: {bing_connected}), {matching_queries_total|no} matching their filters. They can add keywords to the library, set a keyword's traffic class and attach keywords to pages.",
   urlPattern: "/marketing/[brandId]/seo/[siteId]/keywords",
   inheritsFrom: "matrx-user/marketing-site",
-  readiness: "verified",
-  readinessNote:
-    "Registered (registry.ts + route-to-surface.ts) and live-agent verified end-to-end, including all three write targets (apply, decline, undeclared-target refusal).",
   intro: `<surface_intro>
 Read brand_context and site_context first — they tell you whose site this is and what it sells.
 You are on the organic keyword performance workspace for ONE managed website: the search queries it has ACTUALLY earned impressions and clicks for, as persisted from Google Search Console and Bing Webmaster over a rolling 28-day window, enriched with stored keyword-market metrics (volume, CPC, competition) and the site's own keyword workflow status.

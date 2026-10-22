@@ -114,9 +114,6 @@ function moduleSurface(
     executionMode: "python-stream",
     label,
     description: `The ${label} module: what is true on every page, window and admin page in ${label}.`,
-    readiness: "partial",
-    readinessNote:
-      "Module level (surface declarations W1, 2026-10-22). Values come from shell state; no page of its own.",
     taxonomyNode: slug,
     situation:
       extra?.situation ?? `{user.name|The person} is in AI Matrx › ${label}, ${doing}${ORG_CLAUSE}`,
@@ -176,8 +173,6 @@ export const publicWebModuleManifest: SurfaceManifest = {
   executionMode: "python-stream",
   label: "Public Web",
   description: "The Public Web module: the logged-out AI Matrx site.",
-  readiness: "partial",
-  readinessNote: "Module level (surface declarations W1, 2026-10-22). No signed-in person, so no values.",
   taxonomyNode: "public-web",
   situation: "A visitor who is not signed in is on the public AI Matrx site.",
   groups: [],

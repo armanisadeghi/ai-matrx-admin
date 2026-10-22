@@ -228,9 +228,6 @@ export const marketingBrandKnowledgeManifest: SurfaceManifest = {
     "They are in the brand's Knowledge room for this website: a ladder of discovery steps from business model and ideal customer to offerings, their worth and guidelines. Next step to run: {discovery_next_step|none left}; running now: {discovery_running_step|nothing}. They can accept or reject its {discovery_proposal_counts.total|no} waiting proposals.",
   urlPattern: "/marketing/[brandId]/identity/knowledge",
   inheritsFrom: "matrx-user/marketing-site",
-  readiness: "partial",
-  readinessNote:
-    "Rung state and results, the pending discovery proposals (read from the approval queue's own cache entry), the running rung, and one write target (ruling a pending proposal through the queue's own decision writer) are declared and emitted and synced to the DB mirror (2026-10-18). The Run / Re-run buttons are deliberately not agent-writable (they start paid AI jobs), and proposals that must be read in their own card (guideline documents) are left to the person. The running rung is only what this tab started; a run started elsewhere shows only as a step status. No live binding run yet.",
   intro: `<surface_intro>
 You are on a brand's Knowledge room: the Business Discovery Ladder for one of its websites (site_name, site_root_url and brand_context arrive from the parent). AI reads the site's own crawled pages cold and proposes, rung by rung: business model, ideal customer, money map, offerings, offering values, proposed setup, then a business guidelines draft.
 Start with discovery_steps and discovery_next_step to see how far the ladder has climbed. Each discovery_* result is a proposal for the owner to read and rule, not established truth. A rung that is absent has not run.

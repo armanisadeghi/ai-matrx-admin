@@ -702,9 +702,6 @@ export const adminProofRunsManifest: SurfaceManifest = {
   description:
     "Administrator proof checks, provider spending controls, streamed proof receipts and recent history. Scenario drafts test an existing mandate using engineered inputs; registering this page does not authorize a native job to inherit page context. Loaded data, pending reads, failures and selected run receipts remain distinct.",
   urlPattern: "/administration/compute/proof-runs",
-  readiness: "partial",
-  readinessNote:
-    "Complete live scope and canonical menu authored; browser behavior, helper isolation and independent certification remain to be verified.",
   guide: "features/surfaces/guides/proof-runs.md",
   intro: `<surface_intro>Read page_overview first to describe this page without lookups. Scenario authored data uses create_scenarios, update_scenarios, delete_scenarios and scenario_draft; these use the editor's own save/remove paths. Generic data/context tools are not an alternative. View targets select a check/mode, search history and open existing receipts or scenario editors; NO target executes a proof, changes a cost ceiling, or schedules work. Native scenario jobs receive only their engineered input, never ambient page context. Administrator proof checks, provider spending controls, streamed proof receipts and recent history. Scenario drafts test an existing mandate using engineered inputs; registering this page does not authorize a native job to inherit page context. Loaded data, pending reads, failures and selected run receipts remain distinct.</surface_intro>`,
   groups,

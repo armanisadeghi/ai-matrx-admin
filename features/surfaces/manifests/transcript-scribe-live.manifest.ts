@@ -377,9 +377,6 @@ export const transcriptScribeLiveManifest: SurfaceManifest = {
   systemNotes: [],
   description:
     "Scribe session screen — Live tab. xAI Realtime voice agent talking against the working document. Browser↔model direct WebSocket; bypasses the Python streaming backend.",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + SurfaceRuntimeProvider emitter landed; registry.ts entry and DB manifest sync pending. No route mapping is possible — this is a TAB inside /transcripts/scribe/:sessionId, so route resolution correctly keeps returning the studio surface.",
   label: "Scribe Live",
   urlPattern: "/transcripts/scribe/:sessionId",
   intro: `<surface_intro>

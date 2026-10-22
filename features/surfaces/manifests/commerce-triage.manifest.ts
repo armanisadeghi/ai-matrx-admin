@@ -82,8 +82,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMMERCE_TRIAGE_SURFACE_NAME,
   situation:
     "They are triaging captured assets in the warehouse (page: {queue_load_status}): asset {queue_position|—} of {queue_count|0}, which the AI put in the {ai_bucket|no} bucket. You can decide its value bucket.",

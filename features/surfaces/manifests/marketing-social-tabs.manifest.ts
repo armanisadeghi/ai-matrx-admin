@@ -51,7 +51,6 @@ function build(args: {
   values: SurfaceValue[];
   briefValues: string[];
   clientTools: SurfaceClientTool[];
-  readinessNote: string;
   writeTargets?: SurfaceWriteTarget[];
 }): SurfaceManifest {
   return {
@@ -65,8 +64,6 @@ function build(args: {
     situation: args.situation,
     urlPattern: `/marketing/[brandId]/socials/${args.local.replace("marketing-social-", "")}`,
     briefValues: args.briefValues,
-    readiness: "partial",
-    readinessNote: args.readinessNote,
     intro: args.intro,
     groups: [BRAND_GROUP, ...args.groups],
     values: mergeBaselineValues(pickBaseline("selection", "context"), [...BRAND_VALUES, ...args.values]),
@@ -112,8 +109,6 @@ export const marketingSocialOutliersManifest = build({
     "They are on {brand_name|the brand}'s Outliers page: posts that beat their creator's usual views, {outlier_count|no} under the current filters out of {post_count|an unknown number of} posts. They can change the filters, open a post, save or remove a watchlist, and mark posts seen or dismissed.",
   description: "Posts that beat their creator's own usual result, across the brand's tracked accounts.",
   briefValues: ["outliers_loaded", "brand_name", "outlier_count", "filters"],
-  readinessNote:
-    "Values, view tools, watchlist tools and update_outliers (mark seen / dismiss / restore). Every person action has an agent twin.",
   intro: `<surface_intro>
 You are on the brand's Outliers page: posts whose views beat the creator's own median, best first. Check outliers_loaded first.
 outlier_list is the condensed feed (read it first); outliers holds every row. multiple is views as a multiple of that creator's median; a post with no multiple has no baseline yet (the creator needs 11+ posts). filters is what the person has set: use ${SOCIAL_OUTLIERS_TOOLS.setFilters} to change the window, minimum multiple, platform, role, format, sort or the Cards / Table view. ${SOCIAL_OUTLIERS_TOOLS.openPost} opens a post's panel. ${SOCIAL_OUTLIERS_TOOLS.saveWatchlist} saves the current filters as a named watchlist and ${SOCIAL_OUTLIERS_TOOLS.removeWatchlist} archives the selected one; both need the person's approval. update_outliers marks posts seen or dismissed (seen also restores a dismissed one) on the selected watchlist; the person approves it on a card.
@@ -216,8 +211,6 @@ export const marketingSocialKpisManifest = build({
     "They are on {brand_name|the brand}'s social KPIs, on the {view|trend} section: {goal_count|no} goals against current numbers, follower trends and a benchmark against tracked accounts. They can add, change or delete goals.",
   description: "The brand's social goals against current numbers, follower trends and a benchmark against tracked accounts.",
   briefValues: ["kpis_loaded", "brand_name", "goal_count", "view"],
-  readinessNote:
-    "Values, the view tool and create_goals / update_goals / delete_goals through the dialog's own save (baseline and start date derived exactly as New goal does). Every person action has an agent twin.",
   intro: `<surface_intro>
 You are on the brand's KPIs page: goals with current-versus-target, a follower trend per own account, and a benchmark of own accounts against tracked ones. Check kpis_loaded first.
 goals is each goal with current, target, progress and status (achieved, on_track, behind, no_data, paused). own_trends has each own account's follower points; benchmark has one row per tracked account. A null number means not measured, never zero. view says which section the person sees; ${SOCIAL_KPIS_TOOLS.setView} switches it (trend, benchmark, own).
@@ -303,8 +296,6 @@ export const marketingSocialSwipeManifest = build({
     "They are in {brand_name|the brand}'s swipe file: posts and ads saved for inspiration in collections, {item_count|no} shown under the current filters. They can filter, open an item, make a new collection, and update collections and items.",
   description: "The posts and ads saved for inspiration, in collections.",
   briefValues: ["swipe_loaded", "brand_name", "item_count", "collections"],
-  readinessNote:
-    "Values, filter and open tools, New collection, create_swipe_links (Save link), update_swipe_collections (rename / archive / restore) and update_swipe_items (note and tags). Every person action has an agent twin except removing an item from a collection and transcribing.",
   intro: `<surface_intro>
 You are on the brand's Swipe file: posts and ads the team saved, grouped in collections. Check swipe_loaded first.
 collections lists each collection with its item count; scope says which one is open (all = All saved). item_list is the condensed items shown under the current filters; items holds every row. ${SOCIAL_SWIPE_TOOLS.setFilters} changes the search, type, platform, tag and collection shown; ${SOCIAL_SWIPE_TOOLS.openItem} opens one item's note/tags sheet; ${SOCIAL_SWIPE_TOOLS.newCollection} creates a collection for this brand and needs approval.
@@ -411,8 +402,6 @@ export const marketingSocialAdsManifest = build({
     "They are in {brand_name|the brand}'s ad library, on the {section|search} section: searching the public ad libraries (Meta, TikTok, Google, LinkedIn) and following advertisers. {result_count|No} ads are shown; they can search, filter the results and follow or unfollow advertisers.",
   description: "Search the public ad libraries (Meta, TikTok, Google, LinkedIn) and follow advertisers.",
   briefValues: ["ads_loaded", "brand_name", "section", "result_count"],
-  readinessNote:
-    "Values, result filters, Search, and create_ / update_ / delete_tracked_advertisers (Track, Look again or mark seen, Stop tracking). Every person action has an agent twin.",
   intro: `<surface_intro>
 You are on the brand's Ad library. section says Search or Tracked. In Search, results holds the ads of the last search (empty until one runs; searched says what ran); ${SOCIAL_ADS_TOOLS.search} needs the person's approval. ${SOCIAL_ADS_TOOLS.setFilters} narrows the shown results (active only, format, sort). In Tracked, tracked_advertisers lists the advertisers being followed, each opens to its ads.
 create_tracked_advertisers follows the advertiser of ads in results; update_tracked_advertisers looks again (the person approves it) or marks an advertiser's ads seen; delete_tracked_advertisers stops tracking. The person approves each on a card.

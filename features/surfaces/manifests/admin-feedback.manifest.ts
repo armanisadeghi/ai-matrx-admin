@@ -254,9 +254,6 @@ export const adminFeedbackManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Feedback triage queue",
-  readiness: "partial",
-  readinessNote:
-    "FeedbackManagementContainer emitter + announcement/category write targets are wired. FeedbackDetailDialog is now non-modal and browser-verified beside the Agents header/floating agent window; outside interaction preserves unsaved edits, and Cancel/Escape still close it. Remaining: FeedbackTable/WorkQueueTab do not bridge the selected feedback record or live detail-form state into FeedbackConsoleEditorStore, so admin_direction, admin_notes, and the user-reply draft are still neither surface values nor write targets. Also: no `data-surface-value` anchors, and no DB mirror of writeTargets.",
   label: "Feedback & Announcements",
   urlPattern: "/administration/users/feedback",
   intro: `<surface_intro>

@@ -25,7 +25,6 @@ export const hrTimeExceptionsManifest = hrPageSurface({
   urlPattern: "/hr/time/exceptions",
   situation:
     "They are on the attendance exceptions queue: {exception_total|no} exceptions match{exception_filter.kind| (all kinds)}. You can acknowledge the ones that allow it.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by ExceptionsQueue; acknowledge_exceptions handler wired. Live probe owed.",
   intro: `<surface_intro>
 The attendance exceptions queue. Every row was raised by a rule, never by a person. exceptions is this page of the list, most severe and oldest first.
 - acknowledge_exceptions acknowledges rows whose allowed list includes "acknowledged" (recorded against each row). Other resolutions open from the row's own record.

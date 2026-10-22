@@ -80,9 +80,6 @@ export const marketingBrandSessionManifest: SurfaceManifest = {
     "They are in the brand session, deciding one card at a time where each brand candidate belongs ({session_counts.answered|0} of {session_counts.total|the} cards answered). The card in front of them is in your context; the choice is theirs, but you can offer different wording as a new card.",
   urlPattern: "/marketing/[brandId]/identity/session",
   inheritsFrom: "matrx-user/marketing-brand",
-  readiness: "partial",
-  readinessNote:
-    "Deck state and one entity write target wired (2026-10-22); the Curator that sorts and pre-places candidates is not built, and no live agent write-back run has been done.",
   intro: `<surface_intro>
 You are on a brand's session screen: the person swipes one card at a time. A choice card asks where a candidate belongs: lead with it (the face), ours but not the face (its own place), not us, or not sure. A finding card asks whether a found fact is theirs.
 Read session_current for the card in focus. When asked, explain the card in plain words: what the element is, what the suggestion would make every agent do, and why. Never decide for the person and never tell them which way to swipe as if it were settled; the choice is theirs.

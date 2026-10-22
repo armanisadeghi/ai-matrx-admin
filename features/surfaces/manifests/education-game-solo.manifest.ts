@@ -291,9 +291,6 @@ export const educationGameSoloManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Live solo-arcade round: current question, choices, score, streak and recent mistakes (/education/game/solo).",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitter wired 2026-09-28 with the misses fix in useGamePlay. Not yet: no data-surface-value Locate anchors tagged; no live-agent-run/Matrx-vs-matrix binding test performed beyond the surface:probe read-only check; finished-round outcome (final results screen) is not yet declared as its own values — only the live in-progress round.",
   label: "Solo Arcade — Live Round",
   urlPattern: "/education/game/solo",
   intro: `<surface_intro>

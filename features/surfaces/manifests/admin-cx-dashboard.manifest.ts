@@ -415,7 +415,6 @@ export const adminCxDashboardManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Conversation experience dashboard",
-  readiness: "verified",
   label: "CX Dashboard",
   urlPattern: "/administration/chat/cx-dashboard",
   intro: `<surface_intro>

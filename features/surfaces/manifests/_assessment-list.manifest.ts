@@ -260,8 +260,6 @@ export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceMani
     executor: MATRX_WEB_APP_EXECUTOR,
     executionMode: "python-stream",
     description: `${w.label} — the person's ${w.plural} on the canonical list (lanes, search, sort and filter on every column, archive); agents can generate (metered), create, change and archive the person's own ${w.plural}.`,
-    readiness: "partial",
-    readinessNote: `page-pass 2026-09-27 moved the list onto EntityListPage over education.assessment_list_scoped with the assessment_list bundle and create/generate/update/delete_${w.targetPlural}; page-pass 2026-10-22 added list_view. Unproven: a live surface:probe --agent run (create two, update one, archive one, one refused).`,
     label: w.label,
     urlPattern: w.urlPattern,
     situation: w.situation,

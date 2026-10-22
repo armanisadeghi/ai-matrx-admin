@@ -285,9 +285,6 @@ export const marketingBrandVoiceManifest: SurfaceManifest = {
     "They are in the brand's Voice room (whose voice: {voice_whose|brand}); the measured voice is {voice_current.status|not measured yet}. They can pick writing samples and measure the voice, confirm the result, or paste a draft into the fixer to bring it into the voice.",
   urlPattern: "/marketing/[brandId]/identity/voice",
   inheritsFrom: "matrx-user/marketing-brand",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, emitter, four draft write targets and the voice-rewrite role are wired (2026-10-18); not yet run live with an agent. The structured targets name no valueKind (validated by hand in the handlers). Measure and Confirm are server jobs that are not mandates, so they have no role.",
   intro: `<surface_intro>
 You are on a brand's Voice room: how the brand writes, measured from its real writing and confirmed by its owner. Read brand_context first, then voice_current.
 The voice is a measured fingerprint, not a style guide. Until the owner confirms it (voice_confirm_choices present = waiting), nothing checks drafts against it. The owner picks 5 to 20 real samples, presses Measure voice, corrects the high-risk fields (em dashes, register, openers, closers, signature phrases, banned words they really use), then saves.

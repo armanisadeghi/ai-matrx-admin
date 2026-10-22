@@ -77,8 +77,6 @@ const values: SurfaceValue[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_AGENT_FACTORY_BUILD_SURFACE_NAME,
   situation:
     "As an admin they are looking at one Agent Factory build for {job|a new agent} ({build_load_status|loading}): run {run_status|unknown}, outcome {outcome|not decided yet}, {send_backs|0} send-backs. Nothing is changed from this page.",

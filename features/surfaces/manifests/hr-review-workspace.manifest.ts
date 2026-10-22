@@ -30,7 +30,6 @@ export const hrReviewWorkspaceManifest = hrPageSurface({
   urlPattern: "/hr/performance/reviews/[reviewId]",
   situation:
     "They are on {review.employee_name|an employee}'s performance review in the {review.cycle_name|current} cycle, status {review.status|not loaded yet}; their next step: {review.next_step|none}. You can fill in their answer form or set the overall rating when they may.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by ReviewWorkspace + AnswerForm; review_answers and overall_rating handlers wired. Live probe owed.",
   intro: `<surface_intro>
 One performance review. review says whose it is, its status and what this viewer may do (can). review_questions is the template: every question key, its type and, for ratings, the items and the scale (rating_points).
 - review_answers fills the answer form on screen (the self, manager or peer form, answers_in_progress.role); it autosaves like typing and is NOT submitted — the person presses Submit.

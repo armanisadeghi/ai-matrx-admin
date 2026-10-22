@@ -298,9 +298,6 @@ export const adminOfficialComponentsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Official component library admin",
-  readiness: "partial",
-  readinessNote:
-    "Emitters wired on BOTH routes (list page + [componentId] detail page) and verified live: all 12 surface-specific values reach an agent, each read off the same expression the page renders. Partial rather than verified only because the injected baselines `selection` / `context` are never populated — neither page mounts a v3 context menu to capture a selection. Write targets are ruled out permanently while the catalog stays a hardcoded const array: the registry has no backing table, no edit form and no mutation path, so it is a read-only report — see the WRITE TARGETS section of this file's docblock before re-assigning it.",
   label: "Official Components",
   urlPattern: "/administration/ui/official-components",
   intro: `<surface_intro>

@@ -962,9 +962,6 @@ export const crmRecordManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "create_deal, create_task and company-side add_employment were added 2026-09-27 and are not yet proven with a live agent run (surface:probe --agent).",
   label: "CRM Record",
   urlPattern: "/crm/[partyId]",
   intro: `<surface_intro>

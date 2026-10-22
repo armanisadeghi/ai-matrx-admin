@@ -329,7 +329,6 @@ export const connectionsSkillsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Skills editor (reachable from the Agent Connections window panel)",
-  readiness: "verified",
   label: "Connections Skills",
   urlPattern: "/agent-connections/skills",
   inheritsFrom: AGENT_CONNECTIONS_SURFACE_NAME,

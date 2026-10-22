@@ -331,9 +331,6 @@ export const educationFastfireManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "FastFire spoken rapid-drill over a flashcard deck (/education/fastfire).",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitter shipped for everything the drill state machine holds. Not yet stamped verified: a live non-matching-name binding test and the Matrx-vs-matrix context check have not been run, and no Locate anchors are tagged.",
   label: "FastFire",
   urlPattern: "/education/fastfire",
   intro: `<surface_intro>

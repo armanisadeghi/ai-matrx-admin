@@ -68,8 +68,6 @@ const recordWriteTargets: SurfaceWriteTarget[] = [
 ];
 
 const recordDeclared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_SPEND_APPROVAL_SURFACE_NAME,
   situation:
     "As an admin they are looking at the spend approval for one {subject_kind|subject} ({approval_load_status|loading}): whether its automated runs may spend. You can open a decision for them to confirm.",
@@ -97,8 +95,6 @@ const panelValues: SurfaceValue[] = [
 ];
 
 const panelDeclared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_WORKFLOW_SPEND_APPROVALS_SURFACE_NAME,
   situation:
     "As an admin they are looking at the spend approvals that cover one workflow ({approvals_load_status|loading}). Deciding one is their press, on its own page.",

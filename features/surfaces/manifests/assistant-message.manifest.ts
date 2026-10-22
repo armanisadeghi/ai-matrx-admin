@@ -194,7 +194,6 @@ export const assistantMessageManifest: SurfaceManifest = {
   systemNotes: [],
   description:
     "Read-only rendered conversation thread (the chat message display). Right-click a message or content block to act on it. Read side of matrx-user/chat.",
-  readiness: "verified",
   label: "Assistant Message",
   urlPattern: "/chat",
   intro: `<surface_intro>

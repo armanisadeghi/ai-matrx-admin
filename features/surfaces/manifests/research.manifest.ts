@@ -730,7 +730,6 @@ export const researchManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Research and analysis views",
-  readiness: "verified",
   label: "Research",
   urlPattern: "/research/topics/[topicId]",
   intro: `<surface_intro>

@@ -237,9 +237,6 @@ export const educationClassesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "My Classes: owned, archived and joined classes, New class dialog; create, update, archive and delete classes (/education/classes).",
-  readiness: "partial",
-  readinessNote:
-    "All four targets proven with live agent runs on production: new_class_draft and create_classes 2026-09-26; create (two classes, one approval), update (teacher + exam dates, term untouched) + archive (one approval), and a pre-approval refusal (duplicate + impossible date, nothing written) on 2026-09-27, each checked in the DB. Not yet stamped verified: no structured target names a valueKind (the handlers validate by hand); validation reports only the first problem in a list; no data-surface-value Locate anchors are tagged.",
   label: "My Classes",
   urlPattern: "/education/classes",
   guide: "features/surfaces/guides/education-classes.md",

@@ -438,9 +438,6 @@ export const organizationsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Organization switcher and member management",
-  readiness: "partial",
-  readinessNote:
-    "The launcher and workspace emitters, profile write targets, direct data paths, route metadata, Surface Context anchors, and canonical v3 launcher menu are statically complete. The 2026-08-26 launcher repair still needs isolated-browser proof at desktop/tablet/mobile in both themes, including search, card doors, context menu, Surface Context, loading/error/empty states, console, and Error Inspector, before readiness returns to verified.",
   label: "Organizations",
   urlPattern: "/organizations",
   intro: `<surface_intro>

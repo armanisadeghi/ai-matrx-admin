@@ -208,9 +208,6 @@ export const marketingBrandStrategyManifest: SurfaceManifest = {
     "They are in the brand's Strategy room: the brief, the facts the AI established, service lines and open questions (version {strategy_version_no|none yet}, {strategy_status|no strategy yet}). They can write corrections, which outrank everything the AI concluded.",
   urlPattern: "/marketing/[brandId]/identity/strategy",
   inheritsFrom: "matrx-user/marketing-brand",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, emitter, corrections write target and the strategist role are wired (2026-10-18); a live non-matching-name binding run has not been done.",
   intro: `<surface_intro>
 You are on a brand's Strategy room: the business facts every website of this brand reads. Read brand_context first, then strategy_brief_markdown.
 The strategy is written by the Brand Strategy Analyst and corrected by the owner. strategy_facts and strategy_service_lines are what the analyst concluded; strategy_open_questions are what it could not settle. strategy_guidance is the owner's saved correction and outranks every inference.

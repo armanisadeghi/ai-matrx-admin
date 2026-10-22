@@ -334,9 +334,6 @@ export const educationOverviewManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Study Hub home: the learner's dashboard — plan, streak, goals, due work, next actions, library counts, recent items and study kits (/education/overview). Read-only.",
-  readiness: "partial",
-  readinessNote:
-    "Emitter shipped 2026-09-27. Read-only by design (every action is a link; recent-item row menus belong to the Library surface). Not yet proven: no outside-helper binding test; the Recently created table's own search box does not report which rows it hides (MatrxDataTable gap).",
   label: "Study Hub home",
   urlPattern: "/education/overview",
   intro: `<surface_intro>

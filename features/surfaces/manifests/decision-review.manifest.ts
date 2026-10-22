@@ -75,8 +75,6 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: DECISION_REVIEW_SURFACE_NAME,
   situation:
     "They are giving the true answer to AI answers ({review_listed_count|none} listed). You can explain an answer or its question; only they give the true answer.",

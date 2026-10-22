@@ -281,9 +281,6 @@ export const agentShortcutsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "The shortcut library and editor: build, organize, and edit saved ways to run an agent.",
-  readiness: "stub",
-  readinessNote:
-    "Vocabulary declared to close a phantom route mapping (ten routes resolved to a surface with no manifest and no DB row). Not yet audited field-by-field against the pages, and no runtime emitter is wired — no page calls createAgentShortcutsScope yet.",
   label: "Agent Shortcuts",
   urlPattern: "/agents/shortcuts",
   intro: `<surface_intro>

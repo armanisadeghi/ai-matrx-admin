@@ -14,8 +14,6 @@ export const imagesHomeManifest: SurfaceManifest = {
   description: "Navigation landing for the image tools and workspaces.",
   urlPattern: "/images",
   inheritsFrom: "matrx-user/image-manager",
-  readiness: "partial",
-  readinessNote: "Landing runtime, canonical menu and navigation handler are wired; live outside-helper binding proof and independent certification remain.",
   intro: `<surface_intro>
 The Images landing lists the Manager and Studio tool catalogs. image_hub_sections, image_hub_links and image_hub_overview come from the displayed cards, including section home routes. There are no selected files or editable image records on this page.
 Use open_image_workspace with one displayed route to navigate to its real workspace. It cannot create, edit or delete images. The specialist destination then supplies its own surface contract. Existing image-manager family bindings remain inherited here.

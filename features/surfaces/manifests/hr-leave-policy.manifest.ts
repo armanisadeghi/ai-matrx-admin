@@ -27,7 +27,6 @@ export const hrLeavePolicyManifest = hrPageSurface({
   urlPattern: "/hr/settings/leave-policies/[policyId]",
   situation:
     "They are editing the leave policy {leave_policy.name|being created} ({leave_policy.status|new}). Unsaved changes: {has_unsaved_changes|no}. You can fill in the form; they save it.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by LeavePolicyEditorSurface; policy_form handler wired. Live probe owed.",
   intro: `<surface_intro>
 One leave policy's editor. policy_form is the form as it stands (field names as below); leave_policy is what is saved.
 - waitingPeriodDays delays EARNING; usableAfterDays delays SPENDING. Never confuse them.

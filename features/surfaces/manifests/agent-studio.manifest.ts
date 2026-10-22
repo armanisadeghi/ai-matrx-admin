@@ -80,8 +80,6 @@ export const agentStudioManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description: "Agent Studio: an assistant does the job with a person, then turns it into an agent, tests and improves it.",
   label: "Agent Studio",
-  readiness: "partial",
-  readinessNote: "Manifest, emitter and mandate disclosure wired (lane 5A). Not yet certified by an outside-helper live check.",
   urlPattern: "/agents/new/studio",
   intro: `<surface_intro>
 Agent Studio: an assistant does a job with the person, then makes it an agent, runs it and improves it.

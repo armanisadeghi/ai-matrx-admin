@@ -80,9 +80,6 @@ export const vaultManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Credential vault; non-secret vocabulary only.",
-  readiness: "partial",
-  readinessNote:
-    "Deliberately narrow non-secret vocabulary (2026-08-17). Emitter: features/secrets/components/VaultContextMenu.tsx (right-click menu + SurfaceRuntimeProvider around every WebVault placement), built by @ai-matrx/vault vaultInventoryScope from item metadata only. Secret values are intentionally NOT declarable here.",
   label: "Credential Vault",
   urlPattern: "/vault",
   intro: `<surface_intro>

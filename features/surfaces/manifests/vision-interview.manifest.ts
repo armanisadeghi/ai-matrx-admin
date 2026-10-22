@@ -166,9 +166,6 @@ export const visionInterviewManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Multi-round interrogation of a vision statement by six named roles.",
-  readiness: "stub",
-  readinessNote:
-    "Vocabulary declared 2026-08-17 to close an entirely undeclared agent-shaped feature. Not yet audited against the session page's loaded data (turns, per-role bindings, settings), and no runtime emitter is wired.",
   label: "Vision Interview",
   urlPattern: "/masterwork/vision-interview/[sessionId]",
   intro: `<surface_intro>

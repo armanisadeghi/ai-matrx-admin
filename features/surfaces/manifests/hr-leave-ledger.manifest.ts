@@ -69,8 +69,6 @@ export const hrLeaveLedgerManifest: SurfaceManifest = {
   description: "One person's balance on one leave policy and every entry that moved it.",
   label: "HR Leave ledger",
   urlPattern: "/hr/leave/balances/[employmentId]/[policyId]",
-  readiness: "partial",
-  readinessNote: "W2 2026-10-22: emitted on the manager ledger and the self ledger (/hr/me/time-off/[policyId]). Read-only. Live probe owed.",
   intro: `<surface_intro>
 One leave balance and its history. Every number is the server's; quote ledger_figures and ledger_sentence, never compute your own balance.
 - bookable_now is what can be booked today; ledger_balance can differ when requests are pending.

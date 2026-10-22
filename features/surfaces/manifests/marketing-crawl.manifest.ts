@@ -253,7 +253,6 @@ export const marketingCrawlManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "One frozen crawl session — summary, URLs, logs, snapshots, links, technical reports.",
-  readiness: "verified",
   label: "Marketing Crawl",
   situation:
     "They have one crawl session open ({crawl_status|status loading}), started {crawl_started_at|at a time not loaded yet} and lasting {crawl_duration|an unknown time}; they are on its {crawl_view} tab. They can read its summary, URLs, logs, snapshots, links and technical reports.",

@@ -56,8 +56,6 @@ export const canvasViewerManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Visual canvas viewer overlay",
-  readiness: "partial",
-  readinessNote: "emitter wired, browser verification pending",
   overlayId: "canvasViewerWindow",
   label: "Canvas Viewer",
   intro: `<surface_intro>

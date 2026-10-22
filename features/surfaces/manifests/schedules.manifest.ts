@@ -554,9 +554,6 @@ export const schedulesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitters (ScheduleList, ScheduleDetail, ScheduleForm), DB mirror, route-prefix mapping, and Locate anchors across roster, editor draft, open record, trigger, target, and run-history regions are wired. Remaining before verified: fresh isolated Browser proof of the live value/write/context-menu contract, including a non-matching-name binding test.",
   label: "Schedules",
   urlPattern: "/schedules",
   intro: `<surface_intro>

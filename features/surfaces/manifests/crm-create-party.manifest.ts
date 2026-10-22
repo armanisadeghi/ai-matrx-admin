@@ -237,7 +237,6 @@ export const crmCreatePartyManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Floating create form for a CRM person or company and optional contact methods",
-  readiness: "verified",
   overlayId: "crmCreatePartyWindow",
   label: "Create CRM Record",
   intro: `<surface_intro>

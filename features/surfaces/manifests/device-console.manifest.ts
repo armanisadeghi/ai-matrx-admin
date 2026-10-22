@@ -55,8 +55,6 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: DEVICE_CONSOLE_SURFACE_NAME,
   situation:
     "They are on the console of their computer {device_name|this computer} ({device_status|status unknown}), in the {console_view|terminal} view. Only they type into it.",

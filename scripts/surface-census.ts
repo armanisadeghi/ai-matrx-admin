@@ -1,7 +1,7 @@
 /**
  * surface-census — the facts behind the surface campaign's one list.
  *
- * For every registered surface: its readiness and note AS DECLARED, its host
+ * For every registered surface: its host
  * (route or overlay), how many values it declares, and — computed from source,
  * never self-reported — whether anything emits it: the manifest module's
  * `create…Scope` builder has at least one call site outside the manifest file.
@@ -70,13 +70,11 @@ type Row = {
   budgetedValues: number;
   surface: string;
   label: string;
-  readiness: string;
   host: string;
   values: number;
   scopeBuilders: string[];
   emitterFiles: string[];
   emitting: boolean;
-  readinessNote: string;
 };
 
 const PACKAGE_DIST = "node_modules/@ai-matrx/chat/dist";
@@ -303,27 +301,24 @@ async function main() {
       ).length,
       surface: m.surfaceName,
       label: m.label,
-      readiness: m.readiness,
       host: m.overlayId ? `overlay:${m.overlayId}` : (m.urlPattern ?? "(none)"),
       values: m.values.length,
       scopeBuilders: entry?.builders ?? [],
       emitterFiles,
       emitting: emitterFiles.length > 0,
-      readinessNote: (m.readinessNote ?? "").replace(/\s+/g, " ").trim(),
     };
   });
 
   if (args.includes("--sql")) {
     const values = rows
-      .map((r) => `('${r.surface.replace(/'/g, "''")}','${r.readiness}',${r.values})`)
+      .map((r) => `('${r.surface.replace(/'/g, "''")}',${r.values})`)
       .join(",\n  ");
     console.log(`-- Surfaces whose DB mirror disagrees with code (read-only).
 -- Run against https://db.matrxserver.com: save to a file, then pnpm admin-query --file <file>.
-with code(name, readiness, n_values) as (values
+with code(name, n_values) as (values
   ${values}
 )
 select coalesce(c.name, s.name) as surface,
-       c.readiness as code_readiness, s.readiness as db_readiness,
        c.n_values as code_values,
        (select count(*) from ui.ui_surface_value v where v.surface_name = coalesce(c.name, s.name) and v.deleted_at is null) as db_values,
        s.check_claimed_by, s.check_claimed_at,
@@ -332,41 +327,33 @@ select coalesce(c.name, s.name) as surface,
             else 'differs' end as problem
 from code c full join ui.ui_surface s on s.name = c.name
 where c.name is null or s.name is null
-   or c.readiness is distinct from s.readiness
    or c.n_values <> (select count(*) from ui.ui_surface_value v where v.surface_name = c.name and v.deleted_at is null)
 order by 1;`);
     return;
   }
 
   const filtered = rows.filter((r) =>
-    only === "not-emitting" ? !r.emitting : only ? r.readiness === only : true,
+    only === "not-emitting" ? !r.emitting : true,
   );
   const totals = {
     surfaces: rows.length,
     emitting: rows.filter((r) => r.emitting).length,
     notEmitting: rows.filter((r) => !r.emitting).length,
-    verified: rows.filter((r) => r.readiness === "verified").length,
-    partial: rows.filter((r) => r.readiness === "partial").length,
-    stub: rows.filter((r) => r.readiness === "stub").length,
-    verifiedButNotEmitting: rows.filter((r) => r.readiness === "verified" && !r.emitting).map((r) => r.surface),
   };
 
   if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ totals, rows }, null, 2));
   console.log(
-    `Surfaces: ${totals.surfaces} · emitting ${totals.emitting} · not emitting ${totals.notEmitting} · ` +
-      `declared verified ${totals.verified} / partial ${totals.partial} / stub ${totals.stub}`,
+    `Surfaces: ${totals.surfaces} · emitting ${totals.emitting} · not emitting ${totals.notEmitting}`,
   );
-  if (totals.verifiedButNotEmitting.length)
-    console.log(`Declared verified but nothing emits them: ${totals.verifiedButNotEmitting.join(", ")}`);
   console.log(
     `Emitting detected by builder ${rows.filter((r) => r.detectedBy === "builder").length} · by name only ${rows.filter((r) => r.detectedBy === "name").length} (probe these)`,
   );
   console.log(
-    "\n| surface | readiness | emitting | values | targets | guide | budgeted | host |\n|---|---|---|---|---|---|---|---|",
+    "\n| surface | emitting | values | targets | guide | budgeted | host |\n|---|---|---|---|---|---|---|",
   );
   for (const r of filtered)
     console.log(
-      `| ${r.surface} | ${r.readiness} | ${r.emitting ? (r.detectedBy === "name" ? "by name" : "yes") : "NO"} | ${r.values} | ${r.writeTargets} | ${r.guide ? "yes" : "—"} | ${r.budgetedValues || "—"} | ${r.host} |`,
+      `| ${r.surface} | ${r.emitting ? (r.detectedBy === "name" ? "by name" : "yes") : "NO"} | ${r.values} | ${r.writeTargets} | ${r.guide ? "yes" : "—"} | ${r.budgetedValues || "—"} | ${r.host} |`,
     );
 }
 

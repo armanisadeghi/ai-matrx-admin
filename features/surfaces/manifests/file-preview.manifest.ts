@@ -119,9 +119,6 @@ export const filePreviewManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "File preview overlay",
-  readiness: "partial",
-  readinessNote:
-    "Window-held state (file id, page, hydrated metadata) audited and emitted; PreviewPane internals (active tab, versions, extracted text content) are not emitted",
   overlayId: "filePreviewWindow",
   label: "File Preview",
   intro: `<surface_intro>

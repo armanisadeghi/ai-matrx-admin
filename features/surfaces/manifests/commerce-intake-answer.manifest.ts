@@ -111,8 +111,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMMERCE_INTAKE_ANSWER_SURFACE_NAME,
   situation:
     "They are answering quick questions about captured intake assets (page: {queue_load_status}): {open_question_count|no} questions waiting, {answered_count|none} answered this visit. The one in view asks: \"{question_prompt|nothing}\". You can fill the answer box or answer it.",

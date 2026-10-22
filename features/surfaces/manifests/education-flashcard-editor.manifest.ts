@@ -279,9 +279,6 @@ export const educationFlashcardEditorManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Flashcard deck editor — one deck open for authoring (/education/flashcards/[setId]/edit).",
-  readiness: "partial",
-  readinessNote:
-    "Deck details, card content, and add cards were verified against a live agent run. Delete cards is implemented through the same soft-delete service as the page's Delete action and still needs live agent acceptance. No agent roles or Locate anchors are declared; folder taxonomy and share links remain outside this surface's values.",
   label: "Flashcard deck editor",
   urlPattern: "/education/flashcards/[setId]/edit",
   intro: `<surface_intro>

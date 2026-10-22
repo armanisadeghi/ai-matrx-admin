@@ -45,8 +45,6 @@ This directory **owns the declarations**. The DB is a synced reflection. Admin U
 
    export const myThingManifest: SurfaceManifest = {
      surfaceName: "matrx-user/my-thing",
-     readiness: "partial",
-     readinessNote: "Runtime, mirror, and helper-context proof remain to be completed.",
      label: "My Thing",                       // REQUIRED — THE NAMING LAW
      urlPattern: "/things/[thingId]",
      groups,

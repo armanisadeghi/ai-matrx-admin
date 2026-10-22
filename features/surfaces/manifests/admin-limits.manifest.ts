@@ -78,9 +78,6 @@ export const adminLimitsManifest: SurfaceManifest = {
     "",
   label: "Limits and Knobs",
   urlPattern: "/administration/users/limits",
-  readiness: "partial",
-  readinessNote:
-    "Runtime scope emits the canonical add-ons table. This tab has no fixed agent role or agent write contract.",
   groups,
   values: mergeBaselineValues(pickBaseline("context"), values),
 };

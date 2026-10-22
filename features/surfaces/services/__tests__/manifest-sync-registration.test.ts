@@ -8,7 +8,6 @@ jest.mock("@/features/surfaces/manifests/registry", () => ({
       label: "Flashcard set",
       values: [],
       groups: [],
-      readiness: "partial",
     },
   ],
   getRegisteredSurfaceNames: () => ["matrx-user/education-flashcard-set"],

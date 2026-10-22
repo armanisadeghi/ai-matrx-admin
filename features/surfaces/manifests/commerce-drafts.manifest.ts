@@ -134,8 +134,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMMERCE_DRAFTS_SURFACE_NAME,
   situation:
     "They are reviewing AI listing drafts (page: {queue_load_status}): draft {queue_position|—} of {queue_count|0}, titled \"{draft_title|untitled}\". Unsaved edits: {has_unsaved_edits|no}. You can edit its fields or description, then approve, revise or reject it.",

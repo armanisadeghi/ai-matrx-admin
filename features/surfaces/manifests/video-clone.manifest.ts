@@ -27,8 +27,6 @@ export const videoCloneManifest: SurfaceManifest = {
   label: "Video clone",
   description: "One video clone project: the reference post, the plan, its versions and its rendered videos.",
   briefValues: ["project_loaded", "name", "head_version"],
-  readiness: "partial",
-  readinessNote: "Board tile surface: values emitted by the tile; actions are the video_clone tool.",
   intro: `<surface_intro>
 You are on ONE video clone project. Check project_loaded first. project_id and head_version are the arguments for the video_clone tool: read (part=script|plan|estimate), edit (base_version = head_version), generate, render, links. Generating and rendering price first; above the confirmation setting the tool returns needs_confirmation and you ask the person. Analyze, plan, generate and render can take minutes: past a short window the tool answers status=working and keeps going, so poll video_clone action=status (project_id, wait_seconds) until any_running is false and never start the same step twice.
 </surface_intro>`,

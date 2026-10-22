@@ -132,9 +132,6 @@ export const educationLibrarySuggestionsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Deck suggestions inbox: improvements other people suggested for the person's community decks; accept or decline them (/education/library/suggestions).",
-  readiness: "partial",
-  readinessNote:
-    "Built 2026-09-27; not yet stamped verified: no outside-helper binding test.",
   label: "Deck suggestions",
   urlPattern: "/education/library/suggestions",
   intro: `<surface_intro>

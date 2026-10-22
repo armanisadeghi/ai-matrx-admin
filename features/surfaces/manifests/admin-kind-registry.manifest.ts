@@ -416,9 +416,6 @@ export const adminKindRegistryManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Shape System admin: kind catalog, detail, one-shot kind builder",
-  readiness: "partial",
-  readinessNote:
-    "Catalog, detail, component-editor, and builder emitters are wired. The catalog's MatrxDataTable column-filter/search internals are not yet exposed by the table primitive, so the surface remains partial.",
   label: "Kind Registry Admin",
   urlPattern: "/administration/utilities/kind-registry",
   intro: `<surface_intro>

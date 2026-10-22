@@ -80,8 +80,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: NOTIFICATIONS_SURFACE_NAME,
   situation:
     "They are in their notifications inbox, {inbox_view|inbox} view, {unread_total|no} unread, {listed_count|nothing} listed. You can mark notices read, done or snoozed.",

@@ -104,8 +104,6 @@ export const hrNewEmployeeManifest: SurfaceManifest = {
   description: "The hire form for a new employee (/hr/people/new).",
   label: "HR New employee",
   urlPattern: "/hr/people/new",
-  readiness: "partial",
-  readinessNote: "W2 2026-10-22: values emitted by HrNewEmployee; new_employee_draft wired. Live probe owed.",
   intro: `<surface_intro>
 The person is filling in a new hire. hire_form is what they typed; hire_problems is what still stops Save.
 - To fill fields, use new_employee_draft with names or ids from hire_choices. It fills the form; they review and press create.

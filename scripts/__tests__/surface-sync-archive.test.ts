@@ -26,7 +26,6 @@ function plan() {
     executionMode: "python-stream",
     description: "Fixture.",
     label: "Fixture",
-    readiness: "stub",
     values: [value("kept")],
     itemTypes: [{ name: "card", label: "Card", description: "A card.", identity: ["id"], values: [value("id")] }],
   });

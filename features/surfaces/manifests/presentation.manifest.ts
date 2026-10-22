@@ -186,9 +186,6 @@ export const presentationManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description: "One presentation in the slides editor: deck, current slide and save state",
-  readiness: "partial",
-  readinessNote:
-    "Values and both write targets are wired from the editor; not yet probed with a live agent run. Images, slide backgrounds, transitions and comments are the person's: they have no write target.",
   label: "Presentation",
   urlPattern: "/presentations/[id]",
   intro: `<surface_intro>

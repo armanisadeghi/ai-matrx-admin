@@ -47,9 +47,10 @@ import {
   FLEET_READINESS_LABEL,
   FLEET_READINESS_RULE,
   FLEET_READINESS_SORT,
-  type FleetReadiness,
+  readinessGaps,
 } from "@/features/surfaces/utils/fleet-readiness";
 import { getManifest } from "@/features/surfaces/manifests/registry";
+import { SurfaceReadinessBadge } from "@/features/surfaces/components/SurfaceReadinessBadge";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import {
   checkAgeLabel,
@@ -217,29 +218,6 @@ function NameCell({
   );
 }
 
-const FLEET_READINESS_CLASS: Record<FleetReadiness, string> = {
-  ready: "border-success/40 text-success",
-  partial: "border-warning/40 text-warning",
-  unproven: "bg-muted text-muted-foreground border-border",
-};
-
-function FleetReadinessBadge({
-  readiness,
-  className,
-}: {
-  readiness: FleetReadiness;
-  className?: string;
-}) {
-  return (
-    <Badge
-      variant="outline"
-      className={cn("text-xs", FLEET_READINESS_CLASS[readiness], className)}
-    >
-      {FLEET_READINESS_LABEL[readiness]}
-    </Badge>
-  );
-}
-
 /** A count that is only known once the fleet metric has loaded. */
 function countOrEmpty(n: number | null | undefined) {
   return n === null || n === undefined ? EMPTY : n;
@@ -325,7 +303,7 @@ function allSurfaceColumns(
       width: 104,
       cell: (row) => {
         const r = readiness(row);
-        return r ? <FleetReadinessBadge readiness={r} /> : EMPTY;
+        return r ? <SurfaceReadinessBadge readiness={r} gaps={readinessGaps(m(row))} /> : EMPTY;
       },
     },
     {
@@ -853,7 +831,7 @@ export function SurfacesTable({
               <NameCell row={row} navigating={row.name === navigatingName} />
             </button>
             {fleet && (
-              <FleetReadinessBadge
+              <SurfaceReadinessBadge
                 readiness={deriveFleetReadiness(fleet.get(row.name))}
                 className="mt-0.5 shrink-0"
               />

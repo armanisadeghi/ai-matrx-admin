@@ -27,7 +27,6 @@ export const hrTaskDecisionManifest = hrPageSurface({
   urlPattern: "/hr/tasks/[instanceId]",
   situation:
     "They are looking at the HR request {hr_request.kind|being loaded} about {hr_request.subject|someone not shown to them}, state {hr_request.state|unknown}. They can decide it: {can_decide|no}.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by HrDecisionPanel; decision_reason and record_decision handlers wired. Live probe owed.",
   intro: `<surface_intro>
 One HR request. hr_request says what it is and its state; request_change lists what it changes (from → to) when this viewer may be told, else request_summary.
 - decision_reason fills the reason box (kept in the ledger). Nothing is recorded.

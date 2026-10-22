@@ -772,7 +772,6 @@ export const cmsSiteManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "CMS site workspace — page list, site settings, components hub",
-  readiness: "verified",
   label: "CMS Site",
   urlPattern: "/cms/[siteId]",
   inheritsFrom: "matrx-user/cms",

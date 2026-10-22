@@ -22,8 +22,6 @@ export const defaultBasicContentDisplayManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Defaults for any content-viewer surface: primary content and a free-form context blob.",
-  readiness: "stub",
-  readinessNote: "Label declared 2026-10-12; contract row only, no page of its own.",
   label: "Content Viewer Defaults",
   groups: [],
   values,

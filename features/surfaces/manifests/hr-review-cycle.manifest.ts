@@ -27,7 +27,6 @@ export const hrReviewCycleManifest = hrPageSurface({
   urlPattern: "/hr/performance/cycles/[cycleId]",
   situation:
     "They are on the {cycle.name|review} cycle ({cycle.status|status unknown}): {cycle.acknowledged_count|0} of {cycle_review_count|its} reviews acknowledged, view {cycle_view|reviews}.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by CyclePage + LaunchPanel; start_reviews and close_cycle handlers wired. Live probe owed.",
   intro: `<surface_intro>
 One performance review cycle. cycle has its dates and status; cycle_reviews lists each review (employee, manager, status, what it still waits on).
 - start_reviews adds people to the cycle: a department (from departments), a manager's team, or named people by employment id. The cycle must be open and the viewer HR.

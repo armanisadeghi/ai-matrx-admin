@@ -46,8 +46,6 @@ export const educationFamilyManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description: "Guardian and learner consent management, plus read-only linked learner progress.",
-  readiness: "partial",
-  readinessNote: "Source registration and runtime context are implemented. No DB mirror sync or live agent probe has been run. The linked learner detail is read-only by design.",
   label: "Family",
   urlPattern: "/education/family",
   intro: `<surface_intro>

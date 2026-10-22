@@ -321,9 +321,6 @@ export const mandatesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Admin mandate list — system mandates with their pins, health, grades and the advance.",
-  readiness: "partial",
-  readinessNote:
-    "List emitter is live (the page on screen, the query's total, the health roll-up, select_mandate). The selected-mandate and exemplar values are never present here: one mandate's page is its own surface.",
   label: "Mandates Admin",
   urlPattern: "/administration/intelligence/mandates",
   intro: `<surface_intro>

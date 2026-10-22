@@ -606,9 +606,6 @@ export const adminSystemAgentsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "System agent management",
-  readiness: "partial",
-  readinessNote:
-    "Roster + open-agent emitters are wired and real. Version HISTORY lists (AgentVersionDiffPage) and linked sync-twin state (AgentSyncBody, an overlay window) are loaded on adjacent UI but not emitted, so they are deliberately undeclared. The shortcuts / categories / lineage / apps sub-pages under this route have no emitter yet.",
   label: "System Agents",
   urlPattern: "/administration/agents/system-agents",
   intro: `<surface_intro>

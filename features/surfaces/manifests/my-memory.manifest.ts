@@ -124,8 +124,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: MY_MEMORY_SURFACE_NAME,
   situation:
     "They are managing the memory files their agents read in every sandbox: {memory_file_count|no} files, open: {open_file_path|none}.",

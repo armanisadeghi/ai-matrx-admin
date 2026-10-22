@@ -16,8 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { SurfaceReadinessBucket } from "@ai-matrx/chat/surfaces/services/surfaces.service";
-import { READINESS_META } from "@/features/surfaces/components/SurfaceReadinessBadge";
+import { READINESS_META, READINESS_ORDER } from "@/features/surfaces/components/SurfaceReadinessBadge";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 
 import type { StatusFilter, ManifestFilter, ReadinessFilter, CheckedFilter, SurfacesFilterState } from "@ai-matrx/chat/surfaces/host-surface-types";
@@ -78,7 +77,7 @@ function FilterSelects({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Any readiness</SelectItem>
-            {(Object.keys(READINESS_META) as SurfaceReadinessBucket[]).map((b) => (
+            {READINESS_ORDER.map((b) => (
               <SelectItem key={b} value={b}>
                 <span className="capitalize">{READINESS_META[b].label}</span>
               </SelectItem>

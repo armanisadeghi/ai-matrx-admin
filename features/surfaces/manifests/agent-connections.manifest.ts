@@ -223,7 +223,6 @@ export const agentConnectionsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Agent inter-dependency graph",
-  readiness: "verified",
   label: "Agent Connections",
   urlPattern: "/agent-connections",
   intro: `<surface_intro>

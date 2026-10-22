@@ -148,9 +148,6 @@ export const itemDetailManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Declared and emitted 2026-08-24 when the window got its own right-click menu (before that, a right-click inside the floating dossier was answered by the page underneath). `partial` because the surface is generic over every item type: the value set is complete for the dossier itself, but nobody has yet walked a spread of item types through it live to confirm the emitted scope reads well for each.",
   overlayId: "detailWindow",
   label: "Item Detail",
   intro: `<surface_intro>

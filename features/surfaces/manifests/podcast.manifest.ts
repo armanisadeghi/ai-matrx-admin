@@ -147,9 +147,6 @@ export const podcastManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitter (PodcastIndexClient) are wired and complete against what the page loads. Not yet DB-synced, not yet in route-to-surface.ts, and no agent roles are bound — promote to verified after the sync + a live binding test.",
   label: "Podcasts",
   urlPattern: "/podcast",
   intro: `<surface_intro>

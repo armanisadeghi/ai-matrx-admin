@@ -128,9 +128,6 @@ export const aiWorkManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "AI Work hub: the overview directory, Saved Requests, and connections.",
-  readiness: "partial",
-  readinessNote:
-    "page-pass 2026-10-22: /work (the overview) renders the conversations list and emits work_route plus the conversation_list bundle and rows, with list_view / update_conversations / delete_conversations (conversationListSurface.ts). /work/requests and /work/connections still emit nothing; nothing probed live yet.",
   label: "AI Work Hub",
   urlPattern: "/work",
   intro: `<surface_intro>

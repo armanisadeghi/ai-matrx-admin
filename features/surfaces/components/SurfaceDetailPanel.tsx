@@ -28,13 +28,14 @@ import {
   listToolBindings,
   tierFor,
   updateSurface,
-  readinessBucketOf,
   type SurfaceWithStats,
 } from "@ai-matrx/chat/surfaces/services/surfaces.service";
 import {
   SurfaceReadinessBadge,
   READINESS_META,
 } from "@/features/surfaces/components/SurfaceReadinessBadge";
+import type { SurfaceFleetMetric } from "@/features/surfaces/services/surface-fleet-metric";
+import { deriveFleetReadiness, readinessGaps } from "@/features/surfaces/utils/fleet-readiness";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import { SurfaceValuesTable } from "@/features/surfaces/components/SurfaceValuesTable";
 import { getManifest } from "@/features/surfaces/manifests/registry";
@@ -45,6 +46,8 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 interface Props {
   surface: SurfaceWithStats;
+  /** This surface's fleet metric row; undefined until the metric loads, null when it has none. */
+  fleetMetric?: SurfaceFleetMetric | null;
   onClose: () => void;
   onChanged: () => void;
   onDeleted: (name: string) => void;
@@ -54,6 +57,7 @@ interface Props {
 
 export function SurfaceDetailPanel({
   surface,
+  fleetMetric,
   onClose,
   onChanged,
   onDeleted,
@@ -63,6 +67,9 @@ export function SurfaceDetailPanel({
     "overview",
   );
   const [busy, setBusy] = useState(false);
+  // Earned readiness (D2): undefined metric = still loading; null = no row (unproven).
+  const readiness = fleetMetric === undefined ? null : deriveFleetReadiness(fleetMetric ?? undefined);
+  const gaps = fleetMetric === undefined ? [] : readinessGaps(fleetMetric ?? undefined);
   const [editingDesc, setEditingDesc] = useState(false);
   const [desc, setDesc] = useState(surface.description ?? "");
 
@@ -186,7 +193,7 @@ export function SurfaceDetailPanel({
             <span className="truncate text-sm font-medium">
               {surface.label?.trim() || getSurfaceDisplayLabel(surface.name)}
             </span>
-            <SurfaceReadinessBadge row={surface} className="shrink-0" />
+            <SurfaceReadinessBadge readiness={readiness} gaps={gaps} className="shrink-0" />
           </div>
           <div className="truncate font-mono text-xs text-muted-foreground">
             {surface.name}
@@ -328,16 +335,15 @@ export function SurfaceDetailPanel({
             <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
               Readiness
             </Label>
-            <div className="flex items-center gap-2 flex-wrap">
-              <SurfaceReadinessBadge row={surface} />
-              <span className="text-xs text-muted-foreground">
-                {READINESS_META[readinessBucketOf(surface)].description}
-              </span>
-            </div>
-            {surface.readiness_note && (
-              <p className="text-xs text-foreground/80">
-                {surface.readiness_note}
-              </p>
+            {readiness ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <SurfaceReadinessBadge readiness={readiness} gaps={gaps} />
+                <span className="text-xs text-muted-foreground">
+                  {gaps.length > 0 ? gaps[0] : READINESS_META[readiness].description}
+                </span>
+              </div>
+            ) : (
+              <span className="text-xs text-muted-foreground">Fleet metric not loaded</span>
             )}
             {surface.overlay_id && (
               <p className="text-xs text-muted-foreground">
@@ -348,8 +354,7 @@ export function SurfaceDetailPanel({
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              {/* The manifest's `readiness` field. */}
-              Set in the code manifest; re-sync to change
+              Earned from the last probe and the fleet metric
             </p>
           </div>
 

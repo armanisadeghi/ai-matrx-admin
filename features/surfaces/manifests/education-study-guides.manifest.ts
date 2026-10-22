@@ -78,8 +78,6 @@ export const educationStudyGuidesManifest: SurfaceManifest = {
     "The study-guide library: the person's guides in the picker, before one is opened (/education/study-guides). One open guide is matrx-user/education-study-guide.",
   label: "Study guides",
   urlPattern: "/education/study-guides",
-  readiness: "partial",
-  readinessNote: "The list CRUD targets are registered through the reader's canonical Notes paths. Annotation persistence and independent full surface certification are pending.",
   intro: "You are in the Study Guides library. available_guides is the person's complete loaded guide list. Use create_study_guides to add guides, update_study_guides to change a loaded guide by id with its required expected_version, and delete_study_guides to move loaded guides to Trash. A failed read is not an empty guide.",
   groups,
   values: mergeBaselineValues(pickBaseline("selection", "context"), values),

@@ -597,9 +597,6 @@ export const podcastRunManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitter (StudioRunView) are wired against the live run state and durable run detail. Not yet DB-synced, not yet in route-to-surface.ts, and the declared agent roles have no default agents bound. Per-slot file_ids come from the durable run detail, so they are absent on a purely-live run until the detail loads.",
   label: "Podcast Run",
   urlPattern: "/podcast/studio/run/[id]",
   intro: `<surface_intro>

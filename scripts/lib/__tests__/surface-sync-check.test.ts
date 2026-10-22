@@ -25,7 +25,6 @@ function plan() {
     executionMode: "python-stream",
     description: "A recycling company's pickup board.",
     label: "Pickup board",
-    readiness: "stub",
     values: [value("status", "Board status")],
     itemTypes: [
       {

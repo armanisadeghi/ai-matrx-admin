@@ -84,9 +84,6 @@ export const marketingCompetitorDirectoryManifest: SurfaceManifest = {
   description: "A brand's competitors with their websites and tracked social accounts.",
   urlPattern: "/marketing/[brandId]/intelligence/competitors",
   briefValues: ["competitors_loaded", "brand_name", "competitor_count", "with_accounts_count"],
-  readiness: "partial",
-  readinessNote:
-    "Values plus create_competitors (Add competitor) and update_competitors (Find socials, Track found accounts). Every person action on this list has an agent twin; editing one competitor's accounts lives in its detail panel. No outside-helper binding test.",
   intro: `<surface_intro>
 You are on a brand's competitor directory: one row per competitor with its website and tracked social accounts. Check competitors_loaded first; when false, load_error says why.
 competitor_list is the condensed rows (read it first); competitors holds every row. A competitor with no tracked accounts has no audience numbers yet; null followers mean not measured, never zero. create_competitors adds competitors (with their website and any account handles); update_competitors reads a competitor's website for social links (find_socials) and tracks the accounts found (track_found). The person approves each on a card.

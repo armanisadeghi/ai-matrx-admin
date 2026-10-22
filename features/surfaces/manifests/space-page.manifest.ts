@@ -176,8 +176,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: SPACE_PAGE_SURFACE_NAME,
   situation:
     "They have the Space page {page_title|this page} open (page: {page_load_status}); editable by them: {page_can_edit|unknown}. You can edit its content or rename it.",

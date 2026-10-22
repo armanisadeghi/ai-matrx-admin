@@ -397,7 +397,6 @@ export const marketingBacklinksManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Persisted backlink intelligence — summary KPIs, referring domains, anchors, competitors.",
-  readiness: "verified",
   label: "Marketing Backlinks",
   situation:
     "They are on the website's backlinks: who links to it, the anchors used, the pages linked to and competitors sharing those links, last collected {backlinks_collected_at|never}. They can review link-gap and search-result prospects, refresh the data and set the refresh schedule.",

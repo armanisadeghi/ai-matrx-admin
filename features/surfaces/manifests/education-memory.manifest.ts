@@ -411,9 +411,6 @@ export const educationMemoryManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Create, edit, generate, and view memory aids (/education/memory).",
-  readiness: "partial",
-  readinessNote:
-    "Memory library, generator, manual editor, and detail emit live context. Local manual create/edit/delete was exercised against a disposable record; collection agent writes are declared and await a representative agent run. Generation entitlement and COPPA state are not yet surfaced as values.",
   label: "Memory Aids",
   urlPattern: "/education/memory",
   intro: `<surface_intro>

@@ -37,9 +37,6 @@ export const barcodePreviewManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Runtime wiring and focused source checks are complete, and the live manifest mirror is synchronized; independent browser certification remains outstanding.",
   label: "Barcode Preview",
   urlPattern: "/print/barcodes",
   intro: `<surface_intro>

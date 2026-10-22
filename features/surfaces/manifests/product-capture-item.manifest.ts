@@ -101,8 +101,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: PRODUCT_CAPTURE_ITEM_SURFACE_NAME,
   situation:
     "They are looking at one captured product, {item_code|no product number yet} ({item_status|status unknown}; page: {item_load_status}), with {photo_count|no} photos and {voice_note_count|no} voice notes. You can rewrite its notes or set its product number.",

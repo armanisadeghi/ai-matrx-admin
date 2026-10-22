@@ -164,9 +164,6 @@ export const cameraManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Photograph or record something and save it into files.",
-  readiness: "partial",
-  readinessNote:
-    "Runtime emitter, page menu and the capture_filter target wired by page-pass 2026-10-22 (live probe pending release). Not declared: the studio's mode (photo/video/audio), chosen devices and camera permission state, which live inside CaptureStudio. A capture itself has no agent twin (it needs the person's device); rename/move/share/delete of a capture stay on the file menu with no write target.",
   label: "Camera",
   urlPattern: "/camera",
   intro: `<surface_intro>

@@ -178,8 +178,6 @@ export function buildPrintToolManifest(spec: PrintToolSpec): SurfaceManifest {
     { key: PRINT_RESULT_GROUP, label: "What it makes", sortOrder: 200, description: "The preview and its checks." },
   ];
   const declared: SurfaceManifest = {
-    readiness: "partial",
-    readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
     surfaceName: spec.surfaceName,
     situation: spec.situation,
     inheritsFrom: "matrx-default/publish",

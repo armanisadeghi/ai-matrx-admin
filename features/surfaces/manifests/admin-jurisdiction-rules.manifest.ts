@@ -76,8 +76,6 @@ const ruleWriteTargets: SurfaceWriteTarget[] = [
 ];
 
 const ruleDeclared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_JURISDICTION_RULE_SURFACE_NAME,
   situation:
     "As an admin they are looking at one jurisdiction rule in the HR rule library ({rule_load_status|loading}). You can open a status change, with a sign-off note, for them to confirm.",
@@ -123,8 +121,6 @@ const boardValues: SurfaceValue[] = [
 ];
 
 const boardDeclared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_JURISDICTION_VERIFICATION_SURFACE_NAME,
   situation:
     "As an admin they are on the jurisdiction rule verification board ({board_load_status|loading}): the JUR-SEED tasks and the rules past their verification date. Rules are verified on their own pages.",

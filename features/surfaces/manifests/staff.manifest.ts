@@ -54,9 +54,6 @@ export const staffManifest: SurfaceManifest = {
     "The in-app door onto a person's Personal Staff (/staff) — the SAME conversation their texts and phone calls use, answered by the Holder of personal_staff.front_line. Also the native client's surface.",
   label: "Your staff",
   urlPattern: "/staff",
-  readiness: "partial",
-  readinessNote:
-    "The route, the door and the route→surface mapping are wired and the ui_surface row is live. The room still publishes its scope under matrx-user/chat (ChatRoomClient's own provider), so this surface emits the baseline only.",
   groups: [],
   values: mergeBaselineValues(pickBaseline("content", "context"), []),
 };

@@ -62,9 +62,6 @@ function manifest(args: {
     description: args.description,
     situation: args.situation,
     briefValues: args.briefValues,
-    readiness: "partial",
-    readinessNote:
-      "Board tile surface: values and client tools are emitted by the tile; not yet independently certified.",
     intro: args.intro,
     groups: args.groups,
     values: mergeBaselineValues(pickBaseline("selection", "context"), args.values),

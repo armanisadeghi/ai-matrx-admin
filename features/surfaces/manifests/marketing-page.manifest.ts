@@ -987,7 +987,6 @@ export const marketingPageManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Marketing page workspace — one canonical web.page: observed crawl evidence (SERP preview, metrics) plus the user's editorial intent (target keyword, desired metadata).",
-  readiness: "verified",
   label: "Marketing Page Workspace",
   situation:
     "They have one page open: {page_path} (status {page_status|unknown}). Target keyword: {target_keyword|none set}; page score {page_score|not computed}; {open_findings|no} open findings. They can set the target keyword, desired title and description, draft the content, and plan its links, images, headings and share card.",

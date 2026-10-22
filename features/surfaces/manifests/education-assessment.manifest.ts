@@ -606,9 +606,6 @@ export const educationAssessmentManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "One quiz or practice test: its create, detail, take, edit and results views (/education/quizzes/*, /education/practice-tests/*). The two lists are their own surfaces.",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitters shipped for the create and detail/take views (the lists moved to education-quizzes / education-practice-tests on 2026-09-27) (one surface spanning /education/quizzes and /education/practice-tests). Not yet stamped verified: the DB sync, a live non-matching-name binding test, and the Matrx-vs-matrix context check have not been run; no agent roles are declared (the generator/grader agents resolve via ASSESSMENT_AGENTS ids, not surface roles); no `data-surface-value` Locate anchors are tagged; and the detail emitter mounts only after the row loads, so the loading/error states emit nothing.",
   label: "Assessments",
   urlPattern: "/education/quizzes/[id]",
   intro: `<surface_intro>

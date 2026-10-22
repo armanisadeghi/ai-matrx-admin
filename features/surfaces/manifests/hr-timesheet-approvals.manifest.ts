@@ -27,7 +27,6 @@ export const hrTimesheetApprovalsManifest = hrPageSurface({
   urlPattern: "/hr/time/timesheets",
   situation:
     "They are approving timesheets for the pay period {grid_period.start_on|not chosen yet} to {grid_period.end_on|}: {grid_period.approved|0} of {grid_period.total|the} timecards approved.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by PeriodApprovalGrid; no write targets yet (bulk approve stays the Review dialog). Live probe owed.",
   intro: `<surface_intro>
 One pay period's timesheet approval grid. timecards is this page, decisions first (open exceptions, then disputes, then overtime). A timecard with open exceptions cannot be approved until they are resolved. Each opens at /hr/time/timesheets/<employment_id>?period=<period id>.
 </surface_intro>`,

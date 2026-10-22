@@ -260,9 +260,6 @@ export const educationStudyGuideManifest: SurfaceManifest = {
     "One study guide: its full text, outline, the person's private highlights and notes, comment threads and linked key terms; create, edit, or move a guide to Trash, and add or change notes and comments (/education/study-guides/[id]).",
   label: "Study guide",
   urlPattern: "/education/study-guides/[id]",
-  readiness: "partial",
-  readinessNote:
-    "Record, notes, comments and key terms emitted from the reader; guide_content and the personal-note and comment CRUD targets validate through unit-tested parsers. Not yet stamped verified: no structured target names a valueKind, no outside-helper binding test, and a guide longer than the record tier (10,000 chars) arrives as a lookup.",
   guide: "features/surfaces/guides/education-study-guide.md",
   intro: `<surface_intro>
 You are on one study guide at /education/study-guides/[id]. study_guide is the guide itself (title and the full markdown body in content); personal_annotations are the person's private highlights and notes on it; guide_comments are comment threads everyone who can read the guide sees; key_terms are flashcards from linked decks (read-only here).

@@ -147,9 +147,6 @@ export const agentBattleManifest: SurfaceManifest = {
   description:
     "Side-by-side agent comparisons in every mode except Model: what the battle varies, what the columns share, and each column's answer and scores.",
   label: "Agent Battle",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, route mapping and emitter are wired and the per-answer 'Prepare this page' reads it. Not yet certified: no outside-helper binding has been exercised live (Matrx-vs-matrix test) on this surface.",
   urlPattern: "/agents/battle",
   intro: `<surface_intro>
 Agent Battle runs the same work through several columns side by side so a person can compare the answers. Each mode varies one thing and holds the rest constant — battle_mode.varies says which.

@@ -390,7 +390,6 @@ export const analysisStudioManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "PDF Analysis Studio (/files/f/[id]/studio) — pages, detectors, annotations, redaction. Agents act on the open file/page.",
-  readiness: "verified",
   inheritsFrom: "matrx-user/pdf-extractor",
   label: "Analysis Studio",
   urlPattern: "/files/f/[fileId]/studio",

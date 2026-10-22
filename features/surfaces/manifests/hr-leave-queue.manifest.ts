@@ -81,8 +81,6 @@ export const hrLeaveQueueManifest: SurfaceManifest = {
   description: "HR time-off decisions: requests waiting on the approver, with balances and findings (/hr/leave).",
   label: "HR Time-off decisions",
   urlPattern: "/hr/leave",
-  readiness: "partial",
-  readinessNote: "W2 2026-10-22: values emitted by LeaveQueueSurface; decision dialog target wired. Live probe owed.",
   intro: `<surface_intro>
 The approver's time-off queue. leave_requests_waiting holds every request they can decide, with the balance on the start date and the validator's findings.
 - To help decide, read the findings and the balance; a negative balance_on_start_date means approving overdraws.

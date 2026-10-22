@@ -64,8 +64,6 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: APPROVALS_SURFACE_NAME,
   situation:
     "They are looking at what is waiting on their approval: {approvals_waiting_count|nothing} waiting. You can explain or recommend; only they approve or reject.",

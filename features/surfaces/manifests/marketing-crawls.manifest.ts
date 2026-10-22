@@ -263,7 +263,6 @@ export const marketingCrawlsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Crawl sessions list and launch workspace for one site.",
-  readiness: "verified",
   label: "Marketing Crawls",
   situation:
     "They are on the website's Crawls page: {sessions_total|no} crawl sessions are listed, and the new crawl is {crawl_run_status|idle}. They can set the crawl's limits and include or exclude patterns, start a crawl and watch it run live.",

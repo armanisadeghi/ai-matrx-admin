@@ -287,9 +287,6 @@ export const adminBundlesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Tool bundle admin",
-  readiness: "verified",
-  readinessNote:
-    "Emitter + write half both live. BundlesAdminPage mounts the SurfaceRuntimeProvider; the list, the selected bundle's detail panel and the New bundle dialog publish into the page-scoped store in components/BundlesSurfaceRuntime.tsx, which builds both the scope and the new_bundle_draft / bundle_description handlers. Not yet mirrored to ui.ui_surface_write_target.",
   label: "Bundles Admin",
   urlPattern: "/administration/agents/bundles",
   intro: `<surface_intro>

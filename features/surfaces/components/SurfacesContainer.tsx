@@ -20,7 +20,6 @@ import {
   CircleCheck,
   CircleDashed,
   Circle,
-  CircleAlert,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -78,7 +77,11 @@ import {
   refreshSurfaceRunSupply,
   type SurfaceFleetMetric,
 } from "@/features/surfaces/services/surface-fleet-metric";
-import { FLEET_READINESS_RULE } from "@/features/surfaces/utils/fleet-readiness";
+import {
+  FLEET_READINESS_RULE,
+  deriveFleetReadiness,
+  type FleetReadiness,
+} from "@/features/surfaces/utils/fleet-readiness";
 import { FieldHelp } from "@ai-matrx/design-system/controls";
 import { SurfaceDetailPanel } from "@/features/surfaces/components/SurfaceDetailPanel";
 import { SurfaceCandidatesDialog } from "@/features/surfaces/components/SurfaceCandidatesDialog";
@@ -98,9 +101,7 @@ import {
   updateSurface,
   listClientNames,
   listSurfacesWithStats,
-  readinessBucketOf,
   type SurfaceWithStats,
-  type SurfaceReadinessBucket,
 } from "@ai-matrx/chat/surfaces/services/surfaces.service";
 import { READINESS_META } from "@/features/surfaces/components/SurfaceReadinessBadge";
 import { getRegisteredSurfaceNames } from "@/features/surfaces/manifests/registry";
@@ -231,6 +232,10 @@ export function SurfacesContainer() {
 
   const parentNames = listParentFilterOptions(surfaces);
 
+  // Earned readiness (D2) from the fleet metric; null until it loads.
+  const readinessOf = (row: SurfaceWithStats): FleetReadiness | null =>
+    fleet ? deriveFleetReadiness(fleet.get(row.name)) : null;
+
   const visible = surfaces.filter((s) => {
       if (filters.client !== "__all__" && s.client_name !== filters.client) {
         return false;
@@ -249,7 +254,7 @@ export function SurfacesContainer() {
       if (filters.status === "inactive" && s.is_active) return false;
       if (
         filters.readiness !== "all" &&
-        readinessBucketOf(s) !== filters.readiness
+        readinessOf(s) !== filters.readiness
       ) {
         return false;
       }
@@ -280,17 +285,17 @@ export function SurfacesContainer() {
   ).length;
   // Readiness rollup — scoped to the active client filter (before the other
   // filters) so the tiles always describe the client you're looking at.
-  const readinessCounts: Record<SurfaceReadinessBucket, number> = {
-      verified: 0,
-      partial: 0,
-      stub: 0,
-      unregistered: 0,
+  const readinessCounts: Record<FleetReadiness, number> = {
+    ready: 0,
+    partial: 0,
+    unproven: 0,
   };
   for (const s of surfaces) {
     if (filters.client !== "__all__" && s.client_name !== filters.client) {
       continue;
     }
-    readinessCounts[readinessBucketOf(s)] += 1;
+    const r = readinessOf(s);
+    if (r) readinessCounts[r] += 1;
   }
 
   const candidatesAvailable = SURFACE_CANDIDATES.filter(
@@ -355,6 +360,7 @@ export function SurfacesContainer() {
       manifestedNames: manifestedSurfaceNames,
       filters,
       readinessCounts,
+      readinessOf,
       candidatesAvailable,
       driftIssues,
       peekedName: selectedName,
@@ -435,6 +441,7 @@ export function SurfacesContainer() {
   const peekPanel = (surface: SurfaceWithStats) => (
     <SurfaceDetailPanel
       surface={surface}
+      fleetMetric={fleet ? (fleet.get(surface.name) ?? null) : undefined}
       onClose={() => setSelectedName(null)}
       onChanged={() => void load()}
       onDeleted={(name) => {
@@ -532,10 +539,9 @@ export function SurfacesContainer() {
           <div className="flex flex-wrap items-center gap-1">
             {(
               [
-                { bucket: "verified", icon: CircleCheck },
+                { bucket: "ready", icon: CircleCheck },
                 { bucket: "partial", icon: CircleDashed },
-                { bucket: "stub", icon: Circle },
-                { bucket: "unregistered", icon: CircleAlert },
+                { bucket: "unproven", icon: Circle },
               ] as const
             ).map(({ bucket, icon: Icon }) => {
               const meta = READINESS_META[bucket];

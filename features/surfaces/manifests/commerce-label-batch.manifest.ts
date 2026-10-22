@@ -100,9 +100,6 @@ export const commerceLabelBatchManifest: SurfaceManifest = {
     "",
   label: "Label batch",
   urlPattern: "/commerce/labels/:batchId",
-  readiness: "partial",
-  readinessNote:
-    "Runtime scope emits the live batch and canonical codes table. This page has no fixed agent role or agent write contract.",
   groups,
   values: mergeBaselineValues(pickBaseline("context"), values),
 };

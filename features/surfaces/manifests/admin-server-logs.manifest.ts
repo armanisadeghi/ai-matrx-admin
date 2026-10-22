@@ -339,7 +339,6 @@ export const adminServerLogsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Server log viewer",
-  readiness: "verified",
   label: "Server Logs",
   urlPattern: "/administration/compute/server-logs",
   intro: `<surface_intro>

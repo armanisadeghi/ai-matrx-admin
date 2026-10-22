@@ -31,7 +31,6 @@ export const hrGoalsManifest = hrPageSurface({
   urlPattern: "/hr/performance/goals",
   situation:
     "They are on Goals: {my_goal_count|no} goals of their own and {team_member_count|no} direct reports' goals below. You can add goals, change them, record progress or archive them.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by GoalsPage; create_goals / update_goals handlers wired. Live probe owed.",
   intro: `<surface_intro>
 Goals of the person and of each of their direct reports. Every goal has a goal_id, an owner (employment_id), status, progress (0-100) and may support another goal (parent_goal_id).
 - create_goals adds goals for the person (my_employment_id) or a direct report whose can_edit is true.

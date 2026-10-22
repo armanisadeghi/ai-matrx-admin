@@ -181,9 +181,6 @@ export const educationLibraryCommunityManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Community Library: public flashcard decks with search and a Certified-only toggle; copy decks into your library or suggest edits to their owners (/education/library/community).",
-  readiness: "partial",
-  readinessNote:
-    "Built 2026-09-27; not yet stamped verified: no outside-helper binding test. A failed deck search shows as an empty list (listPublicDecks swallows the error).",
   label: "Community Library",
   urlPattern: "/education/library/community",
   intro: `<surface_intro>

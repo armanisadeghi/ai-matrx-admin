@@ -228,9 +228,6 @@ export const keywordIntelligenceManifest: SurfaceManifest = {
   situation:
     "They have the Keyword Intelligence window open on the keyword \"{phrase|none chosen yet}\": its demand, cost, what it means for this site and its related keywords are in your context. They can switch to another keyword or pick keywords from it.",
   overlayId: "keywordWindow",
-  readiness: "partial",
-  readinessNote:
-    "Rank targets and the stored SERP landscape load tab-locally (aidream reads) and are not yet emitted as surface values; declare + lift when the rank data layer gets a shareable cache.",
   intro: `<surface_intro>
 The Keyword Intelligence window is the platform's canonical dossier for ONE
 keyword. The user researches, evaluates, and acts on a single phrase here:

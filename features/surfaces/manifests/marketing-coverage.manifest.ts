@@ -258,7 +258,6 @@ export const marketingCoverageManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Source-disagreement coverage matrix over the canonical page registry.",
-  readiness: "verified",
   label: "Marketing Coverage Matrix",
   situation:
     "They are on the website's coverage matrix, where the crawl, the sitemaps and Search Console disagree about which pages exist: {total_pages|an unknown number of} crawled pages, {never_crawled|no} never crawled, {sitemap_not_crawled|no} in a sitemap but not crawled. Each tile opens the matching page list.",

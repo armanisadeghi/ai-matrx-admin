@@ -423,7 +423,6 @@ export const agentSettingsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Per-agent configuration UI",
-  readiness: "verified",
   overlayId: "agentSettingsWindow",
   label: "Agent Settings",
   intro: `<surface_intro>

@@ -239,9 +239,6 @@ export const aiWorkComposerManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "The eight-step composer at /work/new that assembles and launches one run.",
-  readiness: "partial",
-  readinessNote:
-    "page-pass 2026-10-22: AiWorkComposer emits every value through compose/composerSurface.ts and declares its own run (ownConversationId). No write targets yet (the request box is a chat-package composer); not yet probed live.",
   label: "AI Work Composer",
   urlPattern: "/work/new",
   intro: `<surface_intro>

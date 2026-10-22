@@ -413,9 +413,6 @@ export const meetingManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "One meeting — its time, guests, agenda and settings, and after it happened, its summary, decisions, action items, notes and transcript.",
-  readiness: "partial",
-  readinessNote:
-    "Values, write targets and the shared host are wired on /meetings/[id] and a meeting on the Board. Not yet certified (S1–S18) and no bound-agent Matrx-vs-matrix walk has been run.",
   label: "Meeting",
   urlPattern: "/meetings/[id]",
   intro: `<surface_intro>

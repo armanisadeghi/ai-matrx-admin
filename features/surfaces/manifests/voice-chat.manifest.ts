@@ -16,8 +16,6 @@ export const voiceChatManifest: SurfaceManifest = {
     "",
   label: "Hands-free Voice Chat",
   urlPattern: "/voice/playground",
-  readiness: "partial",
-  readinessNote: "Runtime emitter and route mapping are wired; live microphone, mobile Safari, manifest sync, and agent review remain to be verified.",
   intro: `<surface_intro>
 You are on Hands-free Voice Chat. The user speaks without holding a button, the assistant answers aloud, and speaking over the reply interrupts it. Treat transcript text as speech recognition: interpret disfluencies and homophones generously. Phase tells you whether the page is listening, hearing, thinking, speaking, sleeping, paused, or in error. Transcript turns are a record of what was said and must never be rewritten as though the user typed them.
 </surface_intro>`,

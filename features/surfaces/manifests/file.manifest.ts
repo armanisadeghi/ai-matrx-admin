@@ -458,9 +458,6 @@ export const fileManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description: "One file, worked on: its page and its Board tile",
-  readiness: "partial",
-  readinessNote:
-    "Desktop page and Board tile mount the shared host (values, four entity write targets, three client tools). Mobile /files/f renders MobileStack, which does not mount this host. The extracted text itself is not emitted — agents read it from file_knowledge_document through the Knowledge tools. Full S1–S18 certification not run.",
   label: "File",
   urlPattern: "/files/f/[fileId]",
   intro: `<surface_intro>

@@ -195,9 +195,6 @@ export const marketingReportsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Shareable Search Console reports with plain-language findings and canonical traffic-class evidence.",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, route mapping, canonical GSC emitters, traffic-class evidence, and printable report are wired; live agent binding verification remains.",
   label: MARKETING_REPORTS_LABEL,
   situation:
     "They are in Marketing Reports, on the Search Console report for {selected_site.name|no website chosen yet} (report {report_status}): the last 28 days against the 28 before, with plain-language findings, traffic classes, top searches and top pages. They can pick another website and share or print the report.",

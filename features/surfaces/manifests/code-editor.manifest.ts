@@ -344,7 +344,6 @@ export const codeEditorManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Code editing, review, and generation surfaces",
-  readiness: "verified",
   label: "Code Editor",
   urlPattern: "/code",
   intro: `<surface_intro>

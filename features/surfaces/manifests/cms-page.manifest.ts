@@ -722,7 +722,6 @@ export const cmsPageManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "CMS page editor — HTML/CSS/JS/SEO/preview/version-history for one page",
-  readiness: "verified",
   label: "CMS Page",
   urlPattern: "/cms/[siteId]/pages/[pageId]",
   intro: `<surface_intro>

@@ -73,8 +73,6 @@ export const transcriptScribeManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Scribe session screen (mobile audio studio): the Agent tab chats against the working document and session recordings. Distinct from the transcripts list so it can carry its own tool defaults (memory).",
-  readiness: "partial",
-  readinessNote: "Context flows via smartExecute (useStudioAssistant), no surface-scope emitter",
   label: "Transcript Scribe",
   urlPattern: "/transcripts/scribe/:sessionId",
   // Baselines (selection / text_before / text_after / content / context) are

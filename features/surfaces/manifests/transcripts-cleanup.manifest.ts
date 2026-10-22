@@ -612,7 +612,6 @@ export const transcriptsCleanupManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "High-volume transcription cleanup page (record -> clean -> custom refine)",
-  readiness: "verified",
   // Surface inheritance v1: shares the transcript-family values + agent
   // bindings declared on the parent; page-specific values below override.
   inheritsFrom: "matrx-user/transcripts",

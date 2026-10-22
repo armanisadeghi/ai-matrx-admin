@@ -238,9 +238,6 @@ export const messagesManifest: SurfaceManifest = {
   description:
     "Cross-conversation message inbox",
   agentRoles,
-  readiness: "partial",
-  readinessNote:
-    "Audited against the live page 2026-08-11; read gap closed and write targets re-evaluated 2026-08-12. TWO emitters: the thread route emits all 9 surface-specific values, the list route only total_unread_count + all_conversations (there is no open conversation there). current_conversation_message_count is the LOADED window size, not a conversation total — the thread paginates and no total exists on the client. Still `partial` rather than `verified` because the list mount is a deliberate 2-of-9. Write targets evaluated twice and deliberately not declared — see the docblock.",
   label: "Messages",
   urlPattern: "/messages",
   values: mergeBaselineValues(

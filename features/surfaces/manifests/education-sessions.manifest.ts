@@ -113,9 +113,6 @@ export const educationSessionsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Study-session history list at /education/sessions and per-flashcard-set session history.",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, route mapping, and provider/agent delete handler are implemented. Focused mirror sync and live agent interaction proof remain required.",
   label: "Study sessions",
   urlPattern: "/education/sessions",
   intro: `<surface_intro>

@@ -52,9 +52,6 @@ export const marketingAutomationsManifest: SurfaceManifest = {
   label: "Automations",
   situation:
     "They are on Automations, running the keyword coverage engines over their organization's brands and setting the schedule that overrides the system default. Engine: {active_engine_label}. {active_engine_what} Live stage: {run_stage|no pass running}; {run_outcome_count} brand results this session, {queue_length} brands waiting.",
-  readiness: "partial",
-  readinessNote:
-    "Registered 2026-08-25 alongside its admin twin, sharing the run-console vocabulary and emitter. Same outstanding items as matrx-admin/marketing-run-console: the sub-panels' local editor state is undeclared, and Locate anchors plus a live binding test are pending. The per-brand (site tier) mount has not been observed live.",
   urlPattern: "/marketing/automations",
   intro: `<surface_intro>
 The work here is running the coverage engines over THIS organization's brands, and reading back what they did. Same console the platform team uses, scoped down: scope_tier is "organization" (every brand this organization controls) or "site" (one brand) — never the whole platform.

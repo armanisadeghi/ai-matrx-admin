@@ -195,9 +195,6 @@ export const educationManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "STALE since 2026-09-27: signed-in people are redirected off /education, and EducationHome (now at /education/overview) emits matrx-user/education-overview instead, so this hub's Study-today values are never supplied. Only the hub's discovery values can appear, for signed-out visitors. Re-scope this manifest to what /education actually renders for them (or retire the Study-today group) before it is verified.",
   label: "Education Hub",
   urlPattern: "/education",
   intro: `<surface_intro>

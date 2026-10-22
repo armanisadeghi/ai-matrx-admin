@@ -420,9 +420,6 @@ export const adminBillingSpendManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Super-admin platform spend dashboard: the spend alarm, cost sources, print orders, and a window's batch savings and estimated cost.",
-  readiness: "partial",
-  readinessNote:
-    "Runtime contract and DB mirror are wired; full independent S1-S18 surface certification remains.",
   label: "Billing Spend",
   urlPattern: "/administration/billing/spend",
   intro: `<surface_intro>

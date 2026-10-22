@@ -142,9 +142,6 @@ export const marketingBrandAudienceManifest: SurfaceManifest = {
     "They are in the brand's Audience room: {audience_persona_count|the} named personas the brand sells to, each with goals, pain points, objections and channels. They can add or edit a persona in the editor.",
   urlPattern: "/marketing/[brandId]/identity/audience",
   inheritsFrom: "matrx-user/marketing-brand",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, emitter and the persona draft write target are wired (2026-10-18); not yet run live with an agent. The persona_draft target is structured and names no valueKind (validated by hand in the handler). There is no AI job on this room, so no agent roles.",
   intro: `<surface_intro>
 You are on a brand's Audience room: the named personas every brief and agent writes for. Read brand_context first, then audience_personas.
 Each persona is a real audience the owner defined: who they are (demographics), what they want (goals), what holds them back (pain_points, objections) and where to reach them (channels). One may be primary.

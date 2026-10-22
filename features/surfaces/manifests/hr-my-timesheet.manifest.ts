@@ -70,8 +70,6 @@ export const hrMyTimesheetManifest: SurfaceManifest = {
   description: "The person's own timesheet for one pay period (/hr/me/timesheet).",
   label: "HR My timesheet",
   urlPattern: "/hr/me/timesheet",
-  readiness: "partial",
-  readinessNote: "W2 2026-10-22: values emitted by MyTimesheet. Read-only by design. Live probe owed.",
   intro: `<surface_intro>
 The person's own timesheet. Every hour figure is the payroll engine's; quote it, never recompute it.
 You cannot attest or change punches; explain what is shown and where to go (a disagreement or a missed punch goes to their manager through HR tasks).

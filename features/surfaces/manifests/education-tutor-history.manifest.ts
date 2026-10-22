@@ -85,9 +85,6 @@ export const educationTutorHistoryManifest: SurfaceManifest = {
   description: "The AI Tutor conversation list at /education/tutor.",
   label: "AI Tutor conversations",
   urlPattern: "/education/tutor",
-  readiness: "partial",
-  readinessNote:
-    "Conversation writes are constrained to owned rows already loaded by the canonical Tutor history list and use the canonical conversation thunks.",
   intro:
     "You are on the AI Tutor conversation list. owned_tutor_conversations contains only the learner's currently loaded tutor rows. Use the rename, archive, or Trash target only with an id from that value. Every change asks the learner first. Do not change a shared, unloaded, or non-tutor conversation.",
   groups,

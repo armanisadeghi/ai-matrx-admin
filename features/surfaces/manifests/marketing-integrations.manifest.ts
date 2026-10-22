@@ -266,7 +266,6 @@ export const marketingIntegrationsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Provider bindings for one site — GSC, GA4, PageSpeed, CMS. Reference-only, never secrets.",
-  readiness: "verified",
   label: "Marketing Site Integrations",
   situation:
     "They are in the website's integrations settings: binding Google Search Console, GA4, PageSpeed and a CMS, and setting up how URL changes are reported to search engines. Unsaved changes: {unsaved_changes}. They choose which accounts and properties to bind, then save.",

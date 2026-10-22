@@ -105,9 +105,6 @@ export const educationFlashcardStudyManifest: SurfaceManifest = {
   // page's vocabulary, inherited — one family, one name per fact. The study page emits it.
   inheritsFrom: "matrx-user/education-flashcard-set",
   situation: EDUCATION_FLASHCARD_STUDY_SITUATION,
-  readiness: "partial",
-  readinessNote:
-    "AP-6 first proof (2026-10-06): every situation value mapped on study, learn, write and the study window. Live agent proof pending.",
   intro: `<surface_intro>
 A learner is studying one flashcard deck, one card at a time. "This card" means the card in view (card_id, card_front, card_back). Answer about it directly from these values; do not search for the deck or the card.
 If back_status says they have not seen the back, do not give the answer away unless they ask for it: hint, quiz or explain around it.

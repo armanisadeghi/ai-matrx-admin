@@ -365,9 +365,6 @@ export const educationProgressManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Study analytics dashboard + narrated progress reports (/education/progress).",
-  readiness: "partial",
-  readinessNote:
-    "page-pass 2026-09-27: both emitters live; dashboard emits a progress_overview XML bundle; right-click menu mounted on the dashboard; the auto-running narrator is declared as the narrator role (education.analytics_narrate). No write targets — every value is derived evidence and nothing on either view is editable. UNPROVEN until the page-pass live probe runs: surface:probe read of every visible value, and a real agent answering from progress_overview. The learning_gain view has no right-click menu yet. The guardian/family progress view (StudentProgressView, a linked student's spine) is out of scope — see header.",
   label: "Progress",
   urlPattern: "/education/progress",
   intro: `<surface_intro>

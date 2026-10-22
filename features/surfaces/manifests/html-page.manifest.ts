@@ -376,7 +376,6 @@ export const htmlPageManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Standalone published HTML page editor (html_pages table, distinct from client sites)",
-  readiness: "verified",
   label: "HTML Page",
   urlPattern: "/cms/html-pages/[pageId]",
   intro: `<surface_intro>

@@ -224,9 +224,6 @@ export const marketingBrandOfferingsManifest: SurfaceManifest = {
     "They are in the brand's Offerings room: the tree of what the brand sells ({offerings_count|an unknown number of} offerings), shown for the website {offerings_site.domain|none chosen}. They can add, edit, move or stop an offering, set what it is worth and whether this website offers it.",
   urlPattern: "/marketing/[brandId]/identity/offerings",
   inheritsFrom: "matrx-user/marketing-brand",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, emitter and five write targets (offering form, stop offering, worth ruling, offer here, move) are wired and synced to the DB mirror (2026-10-18); not yet run live. Deleting an offering and clearing a worth ruling are deliberately not agent-writable. This room inherits the brand only: in the site view the open website is declared by this room as offerings_site, while the site surface's own context (site_context, connections) is not carried into this room's scope. No AI job runs from this room, so there are no agent roles.",
   intro: `<surface_intro>
 You are on a brand's Offerings room: the tree of what the brand sells and what it charges. Read brand_context first, then offerings_outline for the shape and offerings_catalog for ids and prices.
 Offerings belong to the brand; the parent/child tree is catalog hierarchy ("On-site Shredding is part of Hard Drive Shredding"), not which website sells it. When offerings_site is present the brand has a website and the page also shows what THAT site offers, its worth rulings and the keyword demand per offering; when it is absent this is the brand-only editor.

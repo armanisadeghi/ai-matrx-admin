@@ -496,7 +496,6 @@ export const ragSearchManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "verified",
   label: "Knowledge Search",
   urlPattern: "/knowledge/search",
   intro: `<surface_intro>

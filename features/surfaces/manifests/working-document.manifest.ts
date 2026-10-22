@@ -50,7 +50,6 @@ export const workingDocumentManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Per-conversation collaborative working document editor. The cloud agent reads and writes it; surface agents act on the user's selection or the whole body.",
-  readiness: "verified",
   label: "Working Document",
   intro: `<surface_intro>
 You are INSIDE the conversation's working document — the collaborative markdown artifact the user and the cloud agent build together. Here it is just text: its PARTS are your context.

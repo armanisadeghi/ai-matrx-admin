@@ -157,7 +157,6 @@ export const marketingAuthorityManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "verified",
   label: "Internal Authority Router",
   situation:
     "They are on the website's Internal Authority page, which recommends internal links (source page, target page, anchor, placement) from link, demand and page-role evidence. They can type a priority note to steer the next run; approved links go into the pages' link plans.",

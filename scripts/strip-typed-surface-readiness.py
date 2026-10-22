@@ -39,6 +39,15 @@ def strip(src: str) -> tuple[str, int, list[str]]:
             out.append(line)
             i += 1
             continue
+        # Only a string-literal value (on this line, or starting on the next) is stripped;
+        # a type annotation (`readinessNote: string;`) or an expression (`args.readinessNote`)
+        # is left in place and reported, never swallowed with the lines after it.
+        nxt = lines[i + 1].lstrip() if i + 1 < len(lines) else ""
+        if not (rest[:1] in "\"'`" and rest) and not (rest.strip() == "" and nxt[:1] in "\"'`/"):
+            odd.append(f"{i + 1}: {line.strip()[:120]}")
+            out.append(line)
+            i += 1
+            continue
         j = i
         if rest.startswith("`"):
             # template literal: until a line containing the closing backtick followed by , or end

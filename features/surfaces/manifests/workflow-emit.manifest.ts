@@ -94,9 +94,6 @@ export const workflowEmitManifest: SurfaceManifest = {
   description:
     "Workflow emit-to-frontend render surface. Agent-authored custom React components (in tool_ui) that render a workflow node's emitted output — shown in the Workflow Studio canvas and in shared Applets.",
   label: "Workflow emissions",
-  readiness: "stub",
-  readinessNote:
-    "Declared so the live row has an owner (ALC-14). No SurfaceRuntimeProvider emits these values yet; the emit renderers receive them as props.",
   skipBaselineValues: true,
   values,
 };

@@ -25,7 +25,6 @@ export const hrTaskInboxManifest = hrPageSurface({
   urlPattern: "/hr/tasks",
   situation:
     "They are in their HR task inbox ({inbox_scope|mine}): {decision_count|no} items need their decision, {queue_count|no} open in the team or HR queue. You can approve or reject the bulk-decidable ones, or switch the view.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by HrTaskInbox; decide_tasks and inbox_scope handlers wired. Live probe owed.",
   intro: `<surface_intro>
 The HR task inbox. needs_my_decision lists the items waiting on this person (each with what it is about, in the words the page shows, and whether it may be decided in bulk). scope_items are the team's or the HR queue's open items. Each item opens at /hr/tasks/<instance_id>.
 - decide_tasks approves or rejects several bulk-decidable items at once (a reason is required to reject). Items not marked bulk_ok must be opened and decided one by one.

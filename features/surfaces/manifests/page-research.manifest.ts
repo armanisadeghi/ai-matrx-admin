@@ -394,9 +394,6 @@ export const pageResearchManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Complete authored contract, nested runtime, draft write handlers, canonical menus, Pro inputs, and Locate anchors are wired; DB mirror sync and isolated live Browser certification remain coordinator-owned before verified.",
   overlayId: "pageResearchWindow",
   label: "Page Research",
   intro: `<surface_intro>

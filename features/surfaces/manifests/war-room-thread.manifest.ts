@@ -526,7 +526,6 @@ export const warRoomThreadManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "War Room thread agent panel — one thread (real chat: working doc + scratchpad + context).",
-  readiness: "verified",
   label: "War Room Thread",
   urlPattern: "/war-room/[id]",
   intro: `<surface_intro>

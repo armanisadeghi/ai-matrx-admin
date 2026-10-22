@@ -364,9 +364,6 @@ export const keywordQuickAnswersManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, trigger-time emitter, v3 menus, Locate anchors, and write handlers are wired; DB mirror sync and isolated live Browser proof are still pending before verified.",
   overlayId: "keywordQuickAnswersWindow",
   label: "Quick Answers",
   situation:

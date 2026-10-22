@@ -1,19 +1,19 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
-  readinessBucketOf,
-  type SurfaceReadinessBucket,
-} from "@ai-matrx/chat/surfaces/services/surfaces.service";
-import type { UiSurfaceRow } from "@ai-matrx/chat/surfaces/services/surfaces.service";
+  FLEET_READINESS_LABEL,
+  type FleetReadiness,
+} from "@/features/surfaces/utils/fleet-readiness";
 
 /**
- * Presentation config for each readiness bucket. Semantic-token accents via
- * the outline badge variant — the same emerald/amber treatment the repo
- * already uses for status accents (e.g. Installations, SurfacesListColumn).
+ * Presentation for EARNED readiness (surface declarations D2): the derived
+ * fleet readiness (`deriveFleetReadiness`), never the typed manifest field.
+ * One home for the badge, the header toggles and the filter bar.
  */
 export const READINESS_META: Record<
-  SurfaceReadinessBucket,
+  FleetReadiness,
   {
     label: string;
     className: string;
@@ -21,52 +21,48 @@ export const READINESS_META: Record<
     description: string;
   }
 > = {
-  verified: {
-    label: "verified",
-    className:
-      "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    iconClassName: "text-emerald-600 dark:text-emerald-400",
-    description: "Verified correct and complete",
+  ready: {
+    label: FLEET_READINESS_LABEL.ready,
+    className: "border-success/40 text-success",
+    iconClassName: "text-success",
+    description: "Probe passed, every value supplied, every write handled",
   },
   partial: {
-    label: "partial",
-    className:
-      "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    iconClassName: "text-amber-600 dark:text-amber-400",
-    description: "Partially done — known gaps remain",
+    label: FLEET_READINESS_LABEL.partial,
+    className: "border-warning/40 text-warning",
+    iconClassName: "text-warning",
+    description: "Some values supplied; gaps remain",
   },
-  stub: {
-    label: "stub",
-    className: "text-muted-foreground",
+  unproven: {
+    label: FLEET_READINESS_LABEL.unproven,
+    className: "bg-muted text-muted-foreground border-border",
     iconClassName: "text-muted-foreground",
-    description: "Stub — declared but not built out",
-  },
-  unregistered: {
-    label: "unregistered",
-    className: "border-destructive/40 bg-destructive/5 text-destructive-ink",
-    iconClassName: "text-destructive",
-    description: "No code manifest declares this surface",
+    description: "Nothing supplied or probed yet",
   },
 };
 
+export const READINESS_ORDER: readonly FleetReadiness[] = ["ready", "partial", "unproven"];
+
 /**
- * Compact readiness badge for a ui_surface row. `readiness_note` (when set)
- * becomes the hover title; otherwise the bucket's generic description.
+ * Compact derived-readiness badge. `gaps` (from `readinessGaps`) become the
+ * hover title; null readiness = the fleet metric has not loaded.
  */
 export function SurfaceReadinessBadge({
-  row,
+  readiness,
+  gaps,
   className,
 }: {
-  row: Pick<UiSurfaceRow, "readiness" | "readiness_note">;
+  readiness: FleetReadiness | null;
+  gaps?: readonly string[];
   className?: string;
 }) {
-  const bucket = readinessBucketOf(row);
-  const meta = READINESS_META[bucket];
+  if (!readiness) return null;
+  const meta = READINESS_META[readiness];
   return (
     <Badge
       variant="outline"
-      className={`text-xs capitalize ${meta.className} ${className ?? ""}`}
-      title={row.readiness_note ?? meta.description}
+      className={cn("text-xs", meta.className, className)}
+      title={gaps && gaps.length > 0 ? gaps.join(" · ") : meta.description}
     >
       {meta.label}
     </Badge>

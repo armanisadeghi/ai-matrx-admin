@@ -458,9 +458,6 @@ export const educationAudioStudyManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Audio study episodes: generate, listen, spoken review (/education/audio-study).",
-  readiness: "partial",
-  readinessNote:
-    "Manual saved-recording CRUD is declared and uses the same service as the human Add audio file and edit screens. AI generation remains human-initiated because it spends a metered allowance. DB sync has not been run; the Audio Review live-voice session (/education/audio-study/review) declares review_* values but has no SurfaceRuntimeProvider mount (its phase machine deserves its own pass, see manifest header); no agent roles; no data-surface-value Locate anchors are tagged; no live-agent-run verification or Matrx-vs-matrix test has been performed.",
   label: "Audio Study",
   urlPattern: "/education/audio-study",
   intro: `<surface_intro>

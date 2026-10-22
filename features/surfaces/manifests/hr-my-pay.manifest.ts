@@ -53,8 +53,6 @@ export const hrMyPayManifest: SurfaceManifest = {
   description: "The person's own compensation: current components and history (/hr/me/pay).",
   label: "HR My pay",
   urlPattern: "/hr/me/pay",
-  readiness: "partial",
-  readinessNote: "W2 2026-10-22: values emitted by MyPaySurface. Read-only. Live probe owed.",
   intro: `<surface_intro>
 The person's own pay. Each row in pay_current is a separate rate with its own window; never sum them into one number.
 Nothing can be changed here; a pay question goes to their manager or HR.

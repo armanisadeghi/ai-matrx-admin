@@ -55,8 +55,6 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: EXPORT_LIBRARY_SURFACE_NAME,
   situation: "They are looking at the export {export_name|they brought in} from {export_source|an outside service} (indexing: {export_index_phase|unknown}).",
   inheritsFrom: "matrx-default/knowledge",

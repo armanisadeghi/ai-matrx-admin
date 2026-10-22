@@ -280,9 +280,6 @@ export const searchManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Matrx Search — the platform's public search engine at /search. One box; the web comes back as the web_search_results kind family.",
-  readiness: "partial",
-  readinessNote:
-    "Values and write targets declared against the live page, emitter wired in SearchPage (shared with /scraper/search). Not yet verified: no agent role is bound here, so the non-matching-name binding test has not been run.",
   label: "Matrx Search",
   urlPattern: "/search",
   intro: `<surface_intro>

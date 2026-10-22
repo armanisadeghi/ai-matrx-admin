@@ -561,9 +561,6 @@ export const adminAiModelsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "AI model registry and provider sync",
-  readiness: "partial",
-  readinessNote:
-    "The main registry page (list + providers + open model + tab/filter state) is fully declared and emitted from AiModelsContainer. The sibling admin routes — endpoints, APIs, offerings, settings, aliases, audit, provider-sync, deprecated-audit — have no emitter, so their data is deliberately undeclared. Serving-vendor identity, auth_ref, byok_secret_key and real-dollar pricing are permanently excluded as admin-secret.",
   label: "AI Model Registry",
   urlPattern: "/administration/ai/ai-models",
   intro: `<surface_intro>

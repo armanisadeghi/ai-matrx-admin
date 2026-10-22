@@ -234,9 +234,6 @@ export const educationLibraryManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Education Library: the person's flashcards, assessments, study media and notes in Mine / Shared / Public tabs, with search, filters and sort (/education/library).",
-  readiness: "partial",
-  readinessNote:
-    "Values and library_view built 2026-09-27; not yet stamped verified: no outside-helper binding test, and library_list reflects the page's own server query only (the table view's column sorting is the same server sort).",
   label: "Education Library",
   urlPattern: "/education/library",
   guide: "features/surfaces/guides/education-library.md",

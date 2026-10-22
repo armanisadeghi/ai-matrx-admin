@@ -63,9 +63,8 @@ export function hrTarget(
 
 /** The manifest shell every HR page surface shares (client, executor, parent). */
 export function hrPageSurface(
-  manifest: Omit<SurfaceManifest, "client" | "executor" | "executionMode" | "inheritsFrom" | "readiness"> & {
+  manifest: Omit<SurfaceManifest, "client" | "executor" | "executionMode" | "inheritsFrom"> & {
     inheritsFrom?: string;
-    readinessNote: string;
   },
 ): SurfaceManifest {
   return {
@@ -73,9 +72,6 @@ export function hrPageSurface(
     executor: MATRX_WEB_APP_EXECUTOR,
     executionMode: "python-stream",
     inheritsFrom: HR_MODULE_PARENT,
-    // `readiness` is still a required field on the published `SurfaceManifest` type (D2 makes it
-    // derived; until that cross-package change lands the type demands a value).
-    readiness: "partial",
     ...manifest,
   };
 }

@@ -379,9 +379,6 @@ export const agentsHubManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Agent listing, runs, and shortcuts hub",
-  readiness: "partial",
-  readinessNote:
-    "The canonical /agents/all runtime, 27-value scope, and catalog_filters approval write were production-verified at desktop, tablet, and phone widths on 2026-08-25. Readiness remains partial until the current full S1-S18 surface sweep completes fresh live visual and interaction proof.",
   label: "Agents Hub",
   urlPattern: "/agents",
   intro: `<surface_intro>

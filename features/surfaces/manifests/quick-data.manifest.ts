@@ -123,9 +123,6 @@ export const quickDataManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Quick data table browser overlay",
-  readiness: "partial",
-  readinessNote:
-    "Emitter wired in QuickDataSheet and reflects its real state (table picker + selection). The open table's deep state (schema, rows on screen, selection, the one cell write) is the `matrx-user/data-tables` surface, mounted by the one table page inside this window; deepest-first resolution hands the agent that surface while a table is open, so nothing is duplicated here.",
   overlayId: "quickDataWindow",
   label: "Quick Data",
   intro: `<surface_intro>

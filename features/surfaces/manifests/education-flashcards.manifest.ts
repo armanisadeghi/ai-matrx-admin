@@ -334,9 +334,6 @@ export const educationFlashcardsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Flashcard Studio — the learner's deck library with lanes, search, sort, filters and archive, plus their study streak; agents can create, change, copy and archive the person's own decks.",
-  readiness: "partial",
-  readinessNote:
-    "page-pass 2026-09-27: the list moved onto EntityListPage over the server-side education.fc_set_list_scoped RPC (lanes, sort/filter, archive, row menus) and gained create/update/delete_decks + the deck_list bundle. The agent write path is proven live only for what the page-pass report lists.",
   label: "Flashcard Studio",
   urlPattern: "/education/flashcards",
   intro: `<surface_intro>

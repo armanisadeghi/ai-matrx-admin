@@ -22,8 +22,6 @@ export const defaultBasicEditorManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Defaults for any text-editor-style surface: current selection, text before and after, full content.",
-  readiness: "stub",
-  readinessNote: "Label declared 2026-10-12; contract row only, no page of its own.",
   label: "Text Editor Defaults",
   groups: [],
   values,

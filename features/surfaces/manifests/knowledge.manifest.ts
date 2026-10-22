@@ -758,9 +758,6 @@ export const knowledgeManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + all three route emitters are wired (extraction grid, graph canvas, suggestion queue), but the surface has not been live-verified with a non-matching-name binding, no `data-surface-value` anchors are tagged for Locate, and `/knowledge` itself is a data-less showcase page so the feature's front door emits nothing.",
   label: "Knowledge System",
   urlPattern: "/knowledge",
   intro: `<surface_intro>

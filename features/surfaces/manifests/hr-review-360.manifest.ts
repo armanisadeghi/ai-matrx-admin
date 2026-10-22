@@ -54,7 +54,6 @@ export const hrReview360Manifest = hrPageSurface({
   urlPattern: "/hr/performance/[reviewId]",
   situation:
     "They are looking at the 360 review of {review_360.employee_name|an employee}, state {review_360.state|not loaded yet}: the employee's half and the manager's half side by side.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by ReviewDetail; share_review_360 handler wired. Live probe owed.",
   intro: `<surface_intro>
 One 360 review of one employee. self_half is what the employee wrote about themselves, manager_half what their manager wrote; a half that is not in yet (or that this viewer may not read) is empty and shown as Waiting. Each half lists items per section.
 - share_review_360 shares both halves with both people. Only HR may, and only once both halves are in.

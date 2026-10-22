@@ -166,9 +166,6 @@ export const shareManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Resource sharing dialog",
-  readiness: "partial",
-  readinessNote:
-    "Emitter wired 2026-08-09 (nested SurfaceRuntimeProvider inside ShareModalWindow — resource identity, share URL, active tab, and post-load grant state at Run time). Needs the live browser pass to earn verified.",
   overlayId: "shareModalWindow",
   label: "Share",
   intro: `<surface_intro>

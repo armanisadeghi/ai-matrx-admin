@@ -66,8 +66,6 @@ export const hrMyClockManifest: SurfaceManifest = {
   description: "The person's own time clock: state, punches of the open shift, what they can press (/hr/me/clock).",
   label: "HR My time clock",
   urlPattern: "/hr/me/clock",
-  readiness: "partial",
-  readinessNote: "W2 2026-10-22: values reported by PunchWidget.onClockChange into MyClockSurface. Read-only by design. Live probe owed.",
   intro: `<surface_intro>
 The person's own time clock. Explain their state, punches and flags from these values.
 Never punch for them and never say they are clocked in or out unless clock_phase says so. Minutes here are a display; paid hours come from the payroll engine.

@@ -31,7 +31,6 @@ const testManifest = {
   executionMode: "python-stream",
   description: "A recycling company's pickup intake form.",
   label: "Cascade Electronics Pickup Intake",
-  readiness: "stub",
   values: [],
   groups: [],
   agentRoles: [],

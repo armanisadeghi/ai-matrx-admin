@@ -209,9 +209,6 @@ export const contentPlanSetupManifest: SurfaceManifest = {
   label: "Content Plan Setup",
   situation:
     "They are on the plan's Site Setup view, choosing the website's shape ({selected_archetype_key|none chosen}), how many pages of each kind and their names, and previewing the routes it would create ({route_preview_summary.conflict|no} clash with existing pages). The readiness checklist is in your context.",
-  readiness: "partial",
-  readinessNote:
-    "Emitter + write handlers wired in SetupView; site_shaper bound to the Content Plan Shape Planner (manifest + ui.ui_surface_agent_role synced 2026-07-30); bridge-rung state (CMS link, fill job) not yet declared; write targets code-only (not mirrored to DB).",
   urlPattern: "/marketing/content-plan/[siteId]?view=setup",
   inheritsFrom: "matrx-user/content-plan",
   intro: `<surface_intro>

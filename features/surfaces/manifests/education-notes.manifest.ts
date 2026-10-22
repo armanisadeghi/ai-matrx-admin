@@ -115,9 +115,6 @@ export const educationNotesManifest: SurfaceManifest = {
   description: "The Education Smart Notes collection at /education/notes.",
   label: "Smart Notes",
   urlPattern: "/education/notes",
-  readiness: "partial",
-  readinessNote:
-    "Collection writes use the canonical Notes API with ownership and revision checks. The note detail route remains the canonical Notes editor surface.",
   intro:
     "You are in the Smart Notes collection. education_notes shows every loaded Education note. Only owned_education_notes can be changed here. Create notes with create_education_notes. For updates and Trash, use an id and its loaded expected_version; each write asks the learner first. Open a note to edit its full body through the canonical Notes surface.",
   groups,

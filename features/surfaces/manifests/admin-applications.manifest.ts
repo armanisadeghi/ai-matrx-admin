@@ -481,7 +481,6 @@ export const adminApplicationsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Applications hub: shipped-client config, catalogs, installations, history.",
-  readiness: "verified",
   label: "Applications",
   urlPattern: "/administration/applications",
   intro: `<surface_intro>

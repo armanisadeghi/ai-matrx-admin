@@ -124,7 +124,6 @@ export const marketingSitePagesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Canonical page registry for one site — coverage filters, health verdicts, GSC metrics.",
-  readiness: "verified",
   label: "Marketing Pages Registry",
   situation:
     "They are on the website's page list, filtered to {coverage_filter|all pages}, with {visible_page_count|no} pages on screen; each row shows the page's health and Search Console numbers. They can search, filter and open a page.",

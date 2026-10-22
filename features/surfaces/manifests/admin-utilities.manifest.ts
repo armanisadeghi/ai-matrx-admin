@@ -448,9 +448,6 @@ export const adminUtilitiesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Utilities admin family: all-routes, caches, capture-inspector, content-blocks, message-templates, markdown-tester, text-cleaner (kind-registry excluded)",
-  readiness: "partial",
-  readinessNote:
-    "Emitter wired, browser verification pending. kind-registry remains deliberately excluded as its own surface.",
   label: "Utilities Admin",
   urlPattern: "/administration/utilities",
   intro: `<surface_intro>

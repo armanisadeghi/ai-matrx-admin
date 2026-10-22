@@ -168,9 +168,6 @@ export const tableSettingsManifest: SurfaceManifest = {
   description:
     "The data table's settings window: columns, table details and row actions.",
   label: "Table Settings",
-  readiness: "partial",
-  readinessNote:
-    "Fed by records-ui's settings panel through the `settingsAgent` port (2026-10-07, Sheet retirement): the description as edited, row actions and the one being edited, with what stops it saving. Agent-stageable: a whole row action, one Calculate step's formula, the description. Not offered: column changes (each column has its own field panel) and table rename (its menu).",
   intro: `<surface_intro>
 You are in the settings panel of one of the person's data tables. The table itself (its columns, the rows on screen, the selected cell) is in the surface chain as the page under this panel — read it there. This panel adds what only it can see: the description as edited, edits not saved yet, the table's row actions, and the row action being edited, with every reason it cannot be saved yet.
 

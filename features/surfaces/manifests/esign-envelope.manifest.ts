@@ -152,8 +152,6 @@ export const ESIGN_WRITE_TARGETS: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ESIGN_ENVELOPE_SURFACE_NAME,
   situation:
     "They have the e-signature envelope {envelope_title|a new envelope} open ({envelope_status|draft}). On a draft you can fill in its title, subject and message and add or change recipients; only the person sends it.",

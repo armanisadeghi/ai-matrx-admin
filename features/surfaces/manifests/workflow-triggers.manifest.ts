@@ -109,8 +109,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: WORKFLOW_TRIGGERS_SURFACE_NAME,
   situation:
     "They are setting how the workflow {workflow_name|this workflow} runs without them (page: {triggers_load_status}): {trigger_count|no} triggers, {active_trigger_count|none} switched on. You can add schedules or switch triggers on and off.",

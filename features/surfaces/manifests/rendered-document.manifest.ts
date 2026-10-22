@@ -53,8 +53,6 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: RENDERED_DOCUMENT_SURFACE_NAME,
   situation:
     "They are reading a document made {rendered_at|at some point} in {document_organization_name|its organization}; its words are frozen and cannot be changed.",

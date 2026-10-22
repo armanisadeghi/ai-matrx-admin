@@ -22,8 +22,6 @@ export const chromeExtensionPilotManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Chrome extension Pilot side panel",
-  readiness: "stub",
-  readinessNote: "Label declared 2026-10-12; the extension declares no page vocabulary beyond the baseline yet.",
   label: "Extension Pilot",
   groups: [],
   values,

@@ -472,9 +472,6 @@ export const keywordResearchWindowManifest: SurfaceManifest = {
   situation:
     "They have the floating Keyword Research window open for {selected_site.name|no website chosen yet}, above whatever page is underneath. {keywords_total} library keywords are shown; the research run is {run_status} (last keyword: {run_primary_keyword|none}). They can pick a website, filter and stage a keyword; only they can start a paid run.",
   overlayId: "keywordResearchWindow",
-  readiness: "partial",
-  readinessNote:
-    "The complete overlay manifest, live nested provider, trigger-time emitter, canonical v3 menu, Locate anchors, and four safe staged/UI write targets are implemented. Promotion to verified awaits coordinator-owned registry inclusion, focused DB manifest sync, independent certification, and isolated live Browser proof; the paid Research action is deliberately human-only.",
   intro: `<surface_intro>
 You are on the floating Keyword Research window, the overlay member of the Keyword Research family. It can open above any host page, so use only this window's selected_site, library, cluster, staged input, and research-run values; do not infer context from the page underneath.
 Research belongs to one site. site_options and selected_site describe that scope. loaded_keywords is the complete loaded query result, while visible_keywords is the bounded, volume-sorted set the compact explorer currently shows after its cluster filter.

@@ -91,9 +91,6 @@ export const marketingRanksHubManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Cross-site rank tracking hub at /marketing/ranks: every rank target across every brand and site the user can see, read-only, with per-row links to the owning site's Ranks workspace.",
-  readiness: "partial",
-  readinessNote:
-    "Declared, emitted (CrossSiteRanksHub provider), routed, and synced; the live non-matching-name binding + Matrx-vs-matrix verification has not been run yet.",
   label: "Marketing Rank Tracking Hub",
   situation:
     "They are on the cross-site rank tracking page: every tracked keyword across the brands and websites they can see, with {history_window_days} days of history per row. It is read-only; each row links to its website's rank tracking.",

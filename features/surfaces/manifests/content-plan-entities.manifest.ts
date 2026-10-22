@@ -186,9 +186,6 @@ export const contentPlanEntitiesManifest: SurfaceManifest = {
   label: "Content Plan Entities",
   situation:
     "They are on the plan's Entities view: the people, sources, media and organizations behind the website's content ({entity_total|no} in all). They can add entities, and create or edit one in the editor.",
-  readiness: "partial",
-  readinessNote:
-    "Emitter wired in EntityManager; per-entity attributes not audited field-by-field; entity_curator bound to the Content Plan Entity Curator (manifest + ui.ui_surface_agent_role synced 2026-07-30). Write half live-verified with real agent runs 2026-08-10 (entity_draft / save_entity_draft / add_entities, then open_entity_editor + the source_type_id key); writeTargets are not yet mirrored to ui.ui_surface_write_target.",
   urlPattern: "/marketing/content-plan/[siteId]?view=entities",
   inheritsFrom: "matrx-user/content-plan",
   intro: `<surface_intro>

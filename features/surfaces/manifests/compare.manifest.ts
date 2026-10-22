@@ -141,8 +141,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMPARE_SURFACE_NAME,
   situation:
     "They are comparing {compare_kind_label|things} side by side (stage: {phase|build}); the ask is \"{ask_text|empty}\".",

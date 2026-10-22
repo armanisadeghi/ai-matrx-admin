@@ -218,7 +218,6 @@ export const marketingAuditManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Deterministic site-wide audit rollup over stored per-snapshot metrics.",
-  readiness: "verified",
   label: "Marketing Site Audit",
   situation:
     "They are on the website's audit: {audit_coverage_statement} The top issues, worst pages, pages that are gone and the score trend are in your context. The audit is read-only.",

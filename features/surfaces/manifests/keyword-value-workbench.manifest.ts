@@ -241,9 +241,6 @@ export const keywordValueWorkbenchManifest: SurfaceManifest = {
     "They are on the website's Keyword Value workbench: what each keyword is worth and the level it lands on. {matching_keywords_total|No} keywords match their filters (level: {active_level_filter|any}); a person has pinned the level on {expert_ruling_count|no} keywords. They can search, filter and tick keywords to rule on several at once.",
   urlPattern: "/marketing/[brandId]/seo/[siteId]/keywords/value",
   inheritsFrom: "matrx-user/marketing-site",
-  readiness: "verified",
-  readinessNote:
-    "Manifest + registry + route mapping + DB rows + runtime emitter all live; the page's context menu passes surfaceName and the emitter's values, and an agent launched from a keyword row was verified to receive them (2026-08-24).",
   intro: `<surface_intro>
 Read brand_context and site_context first — they say whose site this is and what it sells.
 You are on the Keyword Value Workbench: the screen where a person decides what each of this site's search keywords is actually WORTH to the business, and pins that decision.

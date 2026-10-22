@@ -176,9 +176,6 @@ export const adminDocumentationManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Documentation admin: feature-docs browser and doc viewer",
-  readiness: "partial",
-  readinessNote:
-    "Navigation (documentation_section/feature_docs_zone/feature_docs_dot_dir/feature_docs_dot_dirs_list) is wired and real via FeatureDocsShell. The doc viewer (current_doc_path/current_doc) is wired and real via FeatureDocViewerRuntime, nested inside the shell's provider depth. feature_docs_rows and feature_docs_table_filters are declared (THE COMPLETENESS LAW) but NOT emitted — they live inside FeatureDocsTable's own useState with no prop seam to publish from today; left for a follow-up pass.",
   label: "Documentation Admin",
   urlPattern: "/administration/documentation",
   intro: `<surface_intro>

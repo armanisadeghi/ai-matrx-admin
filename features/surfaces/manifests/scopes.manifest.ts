@@ -394,9 +394,6 @@ export const scopesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitters wired on /scopes and /scopes/settings; not yet live-verified with a bound agent, and the embedded knowledge-graph suggestions inbox (HeavyHitterSuggestionsInbox on the hub) loads data that is not declared here. Read-only by decision, not by omission: write targets were evaluated 2026-08-11 and again 2026-08-12 and DELIBERATELY NOT DECLARED — both mounts are read-only (one filter input and one refresh button between them) and the route that edits scope cells mounts no surface. See the WRITE TARGETS block in this file's docblock before re-assigning.",
   label: "Scopes",
   urlPattern: "/scopes",
   intro: `<surface_intro>

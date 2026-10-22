@@ -335,9 +335,6 @@ export const keywordResearchManifest: SurfaceManifest = {
   situation:
     "They are on the Keyword Research workbench, which is not tied to any website: {keywords_total} keywords listed for \"{library_search|everything}\". The research run is {run_status} (last keyword: {run_primary_keyword|none}). Runs cost money; they can filter the library, scope it to a run's cluster and stage a keyword.",
   urlPattern: "/marketing/keyword-research",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitter complete for the workbench's own state, and agent-writable since 2026-08-10 (library_search, cluster_scope, research_input_keyword — see the writeTargets docblock for what is deliberately withheld). Registered in registry.ts and route-to-surface.ts; the ui_surface / ui_surface_write_target DB mirror still needs a manifest sync run. The live agent token streams (relationship research + classification) are deliberately NOT emitted — they are transient render buffers; the persisted research_artifact/research_result are the durable truth.",
   intro: `<surface_intro>
 You are on the Keyword Research workbench — the universal, site-agnostic plane of keywords. There is no site, page, or brand here: the user researches and explores keyword demand itself.
 Two halves. The LIBRARY EXPLORER (library_search, visible_keywords, keywords_total) lists keyword rows with provider market evidence: search volume, CPC, competition, demand trajectory, and intent classification. These numbers come from a paid data provider — read them as evidence and never invent, extrapolate, or "estimate" a missing one; an absent market row means the keyword has simply never been fetched.

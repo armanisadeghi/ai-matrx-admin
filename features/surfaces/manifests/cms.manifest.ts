@@ -257,7 +257,6 @@ export const cmsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "CMS hub — list of owned websites + entry to standalone published pages",
-  readiness: "verified",
   label: "CMS",
   urlPattern: "/cms",
   intro: `<surface_intro>

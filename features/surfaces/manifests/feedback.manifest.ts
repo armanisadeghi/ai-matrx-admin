@@ -277,9 +277,6 @@ export const feedbackManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Feedback / bug report submission",
-  readiness: "partial",
-  readinessNote:
-    "Emitter wired on FeedbackWindow (type, route, description, attachment count, submission state and admin routing all live) and the write half (feedback_draft, feedback_attachment) is registered; page-pass 2026-09-27 re-proof of the write with a live agent is still owed",
   overlayId: "feedbackDialog",
   label: "Feedback",
   intro: `<surface_intro>

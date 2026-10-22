@@ -101,8 +101,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMMERCE_PRINTER_CERTIFY_SURFACE_NAME,
   situation:
     "They are certifying a label printer ({certify_mode}): {printer_name|no printer named yet}, at step {step} of 4 (1 describe, 2 print the calibration page, 3 answer the checks, 4 verdict). Verdict: {verdict|not yet}. You can fill in the printer and label stock; only they can answer the checks.",

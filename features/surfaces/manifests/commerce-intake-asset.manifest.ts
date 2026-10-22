@@ -108,8 +108,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMMERCE_INTAKE_ASSET_SURFACE_NAME,
   situation:
     "They are looking at one intake asset ({pipeline_state|state unknown}; page: {asset_load_status}) with {photo_count|no} photos and {voice_note_count|no} voice notes. You can rewrite its notes or set its attributes.",

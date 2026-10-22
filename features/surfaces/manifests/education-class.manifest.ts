@@ -376,9 +376,6 @@ export const educationClassManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "One class: details, exam dates, roster, assignments, class progress and study content; edit the class, tag content, assign decks and quizzes (/education/classes/[classId]).",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, emitter and five write targets wired 2026-09-27 for the owner and member views. Not yet stamped verified: no data-surface-value Locate anchors; no canonical v3 context menu on the hub; write targets name no valueKind (validated by hand in classHubAgentWrites.ts); member view proven only by code, not a live member account.",
   label: "Class Hub",
   urlPattern: "/education/classes/[classId]",
   intro: `<surface_intro>

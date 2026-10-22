@@ -53,8 +53,6 @@ export const hrVerificationsManifest: SurfaceManifest = {
   description: "Employment and income verification requests and letters (/hr/people/verifications).",
   label: "HR Verification letters",
   urlPattern: "/hr/people/verifications",
-  readiness: "partial",
-  readinessNote: "W2 2026-10-22: values emitted by VerificationsSurface. Read-only by design. Live probe owed.",
   intro: `<surface_intro>
 Verification requests from lenders, landlords and agencies. A letter that includes pay needs the employee's consent first (consent_at); say who they are waiting on.
 You cannot generate, deliver or deny a letter; HR does that from the row.

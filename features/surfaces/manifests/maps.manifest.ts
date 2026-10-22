@@ -212,7 +212,6 @@ export const mapsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "A non-executable visual thinking canvas for boxes, sections, and arrows.",
-  readiness: "verified",
   label: "Visual Maps",
   urlPattern: "/maps/[id]",
   intro: `<surface_intro>

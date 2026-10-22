@@ -79,8 +79,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_TOOL_ALERT_SURFACE_NAME,
   situation:
     "As an admin they are looking at the Tool alert {alert_title|loading} ({alert_load_status|loading}): {alert_sentence|no account yet}. You can open its decision for them to confirm.",

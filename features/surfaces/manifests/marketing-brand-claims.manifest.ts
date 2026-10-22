@@ -139,9 +139,6 @@ export const marketingBrandClaimsManifest: SurfaceManifest = {
     "They are in the brand's Claims room: statements the brand may make word for word, statements it must never make, and required disclaimers. They can add, change or remove items in any of the three lists.",
   urlPattern: "/marketing/[brandId]/identity/claims",
   inheritsFrom: "matrx-user/marketing-brand",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, page-state emitter and three draft write targets are wired (2026-10-18); no AI job runs here, and no live agent write-back run has been done.",
   intro: `<surface_intro>
 You are on a brand's Claims room, where the owner lists what the brand may say as written, what it must never say, and the legal wording to attach. Read brand_context first, then the claims_* values, which are the page exactly as it is on screen, unsaved edits included.
 Claims are compliance-sensitive: help the owner word them precisely and spot conflicts between lists, but never invent a claim the brand has not made. Stage changes with the claims_* write targets; the owner reviews and presses Save, nothing you stage is saved on its own.

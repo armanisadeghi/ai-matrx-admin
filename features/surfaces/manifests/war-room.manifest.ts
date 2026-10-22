@@ -438,7 +438,6 @@ export const warRoomManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "War Room room-level agent — spans all threads in a room.",
-  readiness: "verified",
   label: "War Room",
   urlPattern: "/war-room/[id]",
   intro: `<surface_intro>

@@ -188,9 +188,6 @@ export const imageUploaderManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Image upload overlay",
-  readiness: "partial",
-  readinessNote:
-    "Emitter wired in ImageUploaderWindow and verified live. Gap: the in-flight upload status (idle/uploading/success), the name of the file being uploaded, and the URL-paste draft live inside the shared `ImageAssetUploader` official component (17 callers) and are not handed up to the window, so they are neither declared nor emitted.",
   overlayId: "imageUploaderWindow",
   label: "Image Uploader",
   intro: `<surface_intro>

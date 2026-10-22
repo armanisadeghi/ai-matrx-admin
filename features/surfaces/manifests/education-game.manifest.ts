@@ -285,9 +285,6 @@ export const educationGameManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Study game arcade hub + multiplayer host/join (/education/game). Solo Arcade has its own surface, matrx-user/education-game-solo.",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + home, host, join, and narrow play-route emitters shipped, targeting a live DB row that previously had no manifest at all. The play route supplies only the current durable room state and an approval-gated host cancellation target; it does not expose mutable live scores, presence, or active-round controls. Solo Arcade moved to its own surface (matrx-user/education-game-solo). NOT yet: DB sync has not been run; no data-surface-value Locate anchors are tagged; no live-agent-run verification or Matrx-vs-matrix test has been performed.",
   label: "Study Games",
   urlPattern: "/education/game",
   intro: `<surface_intro>

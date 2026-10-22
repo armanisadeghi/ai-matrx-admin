@@ -148,9 +148,6 @@ export const aiWorkConversationsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Browse and inspect every accessible conversation, native or mirrored.",
-  readiness: "partial",
-  readinessNote:
-    "page-pass 2026-10-22: the list route emits the conversation_list bundle and rows (conversationListSurface.ts) with list_view / update_conversations / delete_conversations. The detail route's Open conversation and Provenance values are still not emitted; nothing probed live yet.",
   label: "AI Work Conversations",
   urlPattern: "/work/conversations",
   intro: `<surface_intro>

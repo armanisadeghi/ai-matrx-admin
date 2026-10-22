@@ -207,9 +207,6 @@ export const taskCreateManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Quick task creation overlay",
-  readiness: "partial",
-  readinessNote:
-    "Opener payload and the live form draft (task_draft) are both emitted and the task_draft write target is live-verified; the project and scope PICK LISTS the form renders are still not emitted, which is why neither is agent-writable",
   overlayId: "taskQuickCreateWindow",
   label: "Task Quick Create",
   intro: `<surface_intro>

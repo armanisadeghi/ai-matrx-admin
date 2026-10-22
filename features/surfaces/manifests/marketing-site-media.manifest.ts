@@ -150,9 +150,6 @@ export const marketingSiteMediaManifest: SurfaceManifest = {
     "They are on the website's media workspace on the {media_view} view: images found by crawling, the brand library, research images, AI image orders and the website's image standards. They can edit the image standards' slots and notes.",
   urlPattern: "/marketing/[brandId]/websites/[siteId]/media",
   inheritsFrom: "matrx-user/marketing-site",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, emitter, registry, route mapping, and DB sync are in place; the standards write targets were verified with a live agent run (2026-08-10). Narrowed to the three per-site views on 2026-08-15 when Library / Research / Sources / Generate moved to matrx-user/marketing-brand-assets — the DB sync for that removal and the live non-matching-name binding verification have not been run.",
   intro: `<surface_intro>
 Read brand_context and site_context first — they tell you whose site this is and what it sells.
 You are on the media desk for ONE managed website: three views on one route. media_view tells you which one is open: crawled (every image observed across the site's canonical page snapshots — evidence, not owned files), videos (crawled video and embed evidence plus the brand's owned video assets), and standards (the site's target image sizes and rules).

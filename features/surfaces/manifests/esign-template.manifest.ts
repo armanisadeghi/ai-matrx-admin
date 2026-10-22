@@ -41,8 +41,6 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ESIGN_TEMPLATE_SURFACE_NAME,
   situation:
     "They are editing the e-signature template {template_name|a new template}. You can fill in its title, subject and message and its recipient roles; the person saves it.",

@@ -752,9 +752,6 @@ export const shapesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitters are wired on the list, preview/schema, instances, test, and new routes, but the surface has not been live-verified with a non-matching-name binding, no `data-surface-value` anchors are tagged for Locate, and `kind_surface` (detection) rows are intentionally undeclared because no /shapes route loads them.",
   label: "Shape Studio",
   urlPattern: "/shapes",
   intro: `<surface_intro>

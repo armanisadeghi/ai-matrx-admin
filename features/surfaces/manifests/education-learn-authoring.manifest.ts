@@ -437,9 +437,6 @@ export const educationLearnAuthoringManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Study guide authoring — the super-admin editor behind the public /education/learn library (/education/learn/admin).",
-  readiness: "partial",
-  readinessNote:
-    "The four content draft targets were verified in a live agent run. Start-draft and soft-delete targets are implemented through the authoring page and still need live agent acceptance. Publishing stays with the admin. The public reader routes have their own partial surface.",
   label: "Study guide authoring",
   urlPattern: "/education/learn/admin",
   intro: `<surface_intro>

@@ -608,7 +608,6 @@ export const transcriptsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Transcript editor and transcription views",
-  readiness: "verified",
   label: "Transcripts",
   groups,
   writeTargets,

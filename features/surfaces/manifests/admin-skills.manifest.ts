@@ -229,9 +229,6 @@ export const adminSkillsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Skills registry admin: skills, categories, ingest",
-  readiness: "partial",
-  readinessNote:
-    "Emitter wired, browser verification pending.",
   label: "Skills Admin",
   urlPattern: "/administration/agents/skills",
   intro: `<surface_intro>

@@ -226,9 +226,6 @@ export const scopeDetailManifest: SurfaceManifest = {
   label: "Scope",
   briefValues: ["scope_name", "scope_type", "context_items_filled", "context_items_total"],
   urlPattern: "/organizations/[orgId]/scopes/[typeId]/[scopeId]",
-  readiness: "partial",
-  readinessNote:
-    "Values and three entity write targets (name, description, context item values) are emitted by ScopeDetailEditor; not yet independently certified. Not declared: the knowledge-graph card, the suggestions banner and the attached Resources grid (read through their own features), and structured (picklist, reference, media) values.",
   intro: `<surface_intro>
 You are on ONE scope: a value on a dimension the user authors inside an organization (a Client, a Department, a Repo, a Case). Its type's context items are the fields this scope fills in; context_item_values lists every one with its current value, empty ones included.
 Check scope_loaded first. Scope is not Context: the context an agent receives at invocation is assembled by the system from many sources, and this scope's values are only the hand-authored part. Treat them as the user's own words; never invent a value to fill an empty item, ask or leave it empty.

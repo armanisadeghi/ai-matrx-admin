@@ -539,9 +539,6 @@ export const documentsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Document viewer and editor",
-  readiness: "partial",
-  readinessNote:
-    "Both emitters are wired and the body text is readable and writable through the editor (2026-09-30). No independent certification yet; the editor's save status and collab presence stay undeclared.",
   label: "Documents",
   urlPattern: "/documents/[id]",
   intro: `<surface_intro>

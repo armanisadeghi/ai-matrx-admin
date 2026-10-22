@@ -152,9 +152,6 @@ export const knowledgeRepositoriesManifest: SurfaceManifest = {
   description:
     "The repository list for Knowledge indexing: the repositories visible to this person and their indexing state.",
   label: "Knowledge Repositories",
-  readiness: "partial",
-  readinessNote:
-    "The manifest and read-only runtime describe the live repository list, deep link, file rollup, and in-flight indexing state. It has not yet been independently certified or synced to the database mirror.",
   urlPattern: "/knowledge/repositories",
   intro: `<surface_intro>
 This is the repository list for Knowledge indexing. The table is populated by a

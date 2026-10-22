@@ -35,7 +35,6 @@ export const crmManagerManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Floating CRM people-and-companies manager available from the main app menu",
-  readiness: "verified",
   overlayId: "crmManagerWindow",
   label: "CRM Manager",
   inheritsFrom: CRM_SURFACE_NAME,

@@ -607,9 +607,6 @@ export const ragLibraryManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Values authored against the live /knowledge/library + /knowledge/library-catalog components and both emitters are wired via SurfaceRuntimeProvider; not yet DB-synced and no live non-matching-name binding test run. All four write targets ARE live-verified against a real agent run on /knowledge/library — apply, decline, an undeclared-target refusal, and a handler throw reaching the agent. catalog_filters' handler is verified by construction on the same seam but its route (/knowledge/library-catalog) was not separately driven. The detail sheet's LibraryDocDetail body stays undeclared by design — it belongs to matrx-user/knowledge-viewer.",
   label: "Knowledge Library",
   urlPattern: "/knowledge/library",
   intro: `<surface_intro>

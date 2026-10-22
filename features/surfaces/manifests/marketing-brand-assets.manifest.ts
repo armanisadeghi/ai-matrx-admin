@@ -182,9 +182,6 @@ export const marketingBrandAssetsManifest: SurfaceManifest = {
     "They are in the brand's asset desk on the {assets_view} view: the brand's own image library, research images, stock sources and AI image generation, with the brand's image standards in your context. They can stage an AI image order.",
   urlPattern: "/marketing/[brandId]/identity/media",
   inheritsFrom: "matrx-user/marketing-brand",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, emitter, registry, route mapping and the media_order write target carry over from the verified site-media implementation. The two Generate-view mandates (marketing.image_prompt, marketing.page_image) are disclosed as roles (2026-10-18). The scope now spreads the inherited brand scope from the Identity layout. The DB sync and a live agent run against this surface name have not been re-verified; art_director and library_curator remain slots for user-chosen helper agents.",
   intro: `<surface_intro>
 Read brand_context first — it tells you whose brand this is and what it sells.
 You are on the asset desk for ONE BRAND: everything the brand OWNS or could own, four views on one route. assets_view tells you which one is open: library (the brand's owned assets — uploads, promoted crawl finds, generated images), research (images the research system captured, for reuse and creative reference), sources (free stock search and the brand's own stock-portal links), and generate (order AI images off preset types).

@@ -55,8 +55,6 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: SOURCE_LIBRARY_SURFACE_NAME,
   situation: "They are looking at the source library {source_library_name|they opened} ({source_library_source|an outside source}).",
   inheritsFrom: "matrx-default/media",

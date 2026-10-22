@@ -109,8 +109,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: WORKFLOW_REVIEW_ISSUE_SURFACE_NAME,
   situation:
     "They are looking at one review issue of the workflow {workflow_name|this workflow}: \"{issue_what|the issue}\", status {issue_status|unknown}, seen {occurrence_count|an unknown number of} times (page: {issue_load_status}). You can mark it seen, fixed or ignored, or reopen it.",

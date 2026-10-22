@@ -36,9 +36,6 @@ export const markdownPdfManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Runtime wiring and focused source checks are complete; the live manifest mirror is synchronized and browser certification remains outstanding.",
   label: "Markdown to PDF",
   urlPattern: "/print/documents",
   intro: `<surface_intro>

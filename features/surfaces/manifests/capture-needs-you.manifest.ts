@@ -60,8 +60,6 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: CAPTURE_NEEDS_YOU_SURFACE_NAME,
   situation:
     "They are looking at the {needs_you_count|no} web pages only their own browser can open for their library; only they can start that.",

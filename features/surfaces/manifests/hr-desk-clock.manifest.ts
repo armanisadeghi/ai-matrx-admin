@@ -26,7 +26,6 @@ export const hrDeskClockManifest = hrPageSurface({
   urlPattern: "/hr/time/clock",
   situation:
     "They are at the shared time clock, recording punches for {clock_subject.name|nobody chosen yet} ({clock_status.state|no clock open}). Every punch is stamped as entered by them.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by DeskClockSurface + PunchWidget; read-only by design. Live probe owed.",
   intro: `<surface_intro>
 The shared desk clock. The operator searches for a person (clock_subject) and punches in, out or to a break for them; clock_status is that person's clock right now. Punches are made by the operator's own press; explain what a button does, never claim a punch was made.
 </surface_intro>`,

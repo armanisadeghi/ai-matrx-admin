@@ -223,9 +223,6 @@ export const marketingTopicalMapManifest: SurfaceManifest = {
   label: "Topical Map",
   situation:
     "They are in a brand's topical map \"{map_name|(still loading)}\" on the {map_screen|outline} screen: the tree of subjects the brand should cover ({topic_total|an unknown number of} topics), which decides which pages should exist and where. Selected topic: {selected_topic_slug|none}.",
-  readiness: "partial",
-  readinessNote:
-    "The workspace body mounts the SurfaceRuntimeProvider and emits this scope from the live store (2026-09-18): map_id, map_screen, site_id, topic_total, selected_topic_slug, expanded_topic_slugs, visible_topics, and page_intents on the pages screen. The rest fill in as the view builders land — map_outline, map_diagnostics and map_history are read by their screens but not emitted yet, and page_intent_total is deliberately absent because the slice holds the rows this workspace LISTED, not the server's matched total. agentRoles: seo.map_curation is declared (Lane G, with its 'Ask the map' launcher in the map window and the canvas pane); seo.map_author is declared (Lane E, with the Content home's Start a map screen and Extend from the site); seo.page_mapper and seo.page_intent_proposer are declared (Lane F, with the pages workspace's run controls); seo.topic_curation is declared (Lane D, with the topic panel's Rewrite description and Ask about this topic controls). Every role landed with the control that runs it, never ahead of it.",
   urlPattern: "/marketing/[brandId]/content/map/[mapId]",
   intro: `<surface_intro>
 You are in a brand's TOPICAL MAP: the tree of subjects this brand should cover, and the plan for getting its website there. The map decides WHICH pages should exist and WHERE they live; the content plan, a separate surface, decides what one page says.

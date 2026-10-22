@@ -139,9 +139,6 @@ export const adminAiModelAuditManifest: SurfaceManifest = {
   description:
     "",
   label: "AI Model Data Audit",
-  readiness: "partial",
-  readinessNote:
-    "The audit scope is emitted at run time with every loaded model, deterministic result, rule, and active view state. The surface has no fixed AI worker or write targets; model edits remain the audit's own explicit admin controls.",
   urlPattern: "/administration/ai/ai-models/audit",
   intro: `<surface_intro>
 This is the super-admin AI Model Data Audit. The page compares loaded model records against the current deterministic audit rules so an administrator can find missing core fields and capability coverage.

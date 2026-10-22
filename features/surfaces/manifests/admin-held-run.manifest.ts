@@ -76,8 +76,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_HELD_RUN_SURFACE_NAME,
   situation:
     "As an admin they are looking at a run a spend gate stopped: {run_label|a held run} ({held_run_load_status|loading}), stopped by {gate|a gate}: {why_stopped|no reason recorded}. You can pause or resume its automation; replaying it is their press.",

@@ -146,9 +146,6 @@ export const marketingBrandGuidelinesManifest: SurfaceManifest = {
     "They are in the brand's Guidelines room: the business guidelines every AI run for this website reads first (version {guidelines_version|never saved}), open in an editor; unsaved changes: {guidelines_has_unsaved_changes|no}. {guidelines_pending_draft_count|No} AI-proposed edits wait for their review.",
   urlPattern: "/marketing/[brandId]/identity/guidelines",
   inheritsFrom: "matrx-user/marketing-site",
-  readiness: "partial",
-  readinessNote:
-    "Document, editor, provenance and the editor write target are wired (2026-10-18). The text of pending AI drafts lives in the shared approval queue and is not declared. No live binding run yet.",
   intro: `<surface_intro>
 You are on a brand's Guidelines room: the plain-text business guidelines for one of its websites (site_name, site_root_url and brand_context arrive from the parent). Every AI classification and valuation run for that site reads this document first, so a sentence here changes what the AI decides.
 Read guidelines_text (saved) and guidelines_draft_text (editor now). Good guidelines name the things a smart outsider would get wrong: what the business sells, who the good customer is, look-alike terms that are NOT the customer, and where it serves.

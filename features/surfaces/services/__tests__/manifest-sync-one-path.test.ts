@@ -30,7 +30,6 @@ const manifest = {
   description: "A recycling company's pickup intake form.",
   label: "Pickup intake",
   urlPattern: "/cascade-pickup-intake",
-  readiness: "stub",
   values: [
     {
       name: "pickup_address",

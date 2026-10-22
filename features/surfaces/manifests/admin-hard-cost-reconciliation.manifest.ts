@@ -59,8 +59,6 @@ export const adminHardCostReconciliationManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description: "Super-admin hard-cost reconciliation: vendor-reported spend against our ledger and the points charged, per window and provider.",
-  readiness: "partial",
-  readinessNote: "Manifest, registry and runtime emitter are wired; the focused DB sync and independent certification remain.",
   label: "Hard-cost reconciliation",
   urlPattern: "/administration/usage/reconciliation",
   intro: `<surface_intro>

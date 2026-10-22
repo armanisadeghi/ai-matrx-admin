@@ -250,7 +250,6 @@ export const marketingRanksManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "verified",
   label: "Marketing Rank Tracking",
   situation:
     "They are on the website's rank tracking for {site_domain}: {portfolio_summary.tracked|the} keywords it tracks and where it sits for each. They can add keywords to track, pause or resume tracking, and open one keyword's position history and search results.",

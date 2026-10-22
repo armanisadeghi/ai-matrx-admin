@@ -258,7 +258,6 @@ export const adminSandboxManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Sandbox environment admin",
-  readiness: "verified",
   label: "Accessible Sandboxes",
   urlPattern: "/administration/compute/sandbox",
   intro: `<surface_intro>

@@ -26,7 +26,6 @@ export const hrPayPeriodManifest = hrPageSurface({
   urlPattern: "/hr/time/periods/[periodId]",
   situation:
     "They are on the {pay_period.pay_group|} pay period {pay_period.start_on|} to {pay_period.end_on|}, state {pay_period.state|unknown}: {pay_period.counts.approved|0} of {pay_period.counts.employments|its} timecards approved. They act as {period_role|a viewer}.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by PeriodDetailPage; read-only by design. Live probe owed.",
   intro: `<surface_intro>
 One pay period. pay_period has its dates, state and timecard counts; approval_flows says, per timecard, whether anybody was actually asked to decide (awaiting, stuck, no flow, done). Transitions (submit, approve, lock, close, reopen, export) are the person's own presses on the page; explain what each does, never claim one was made.
 </surface_intro>`,

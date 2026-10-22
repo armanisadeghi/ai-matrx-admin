@@ -160,7 +160,6 @@ export const marketingCompetitorsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "verified",
   label: "Competitor Opportunity Autopsy",
   situation:
     "They are on the competitor autopsy for {site.domain|no website chosen yet}: which competitors win, why, and the opportunities that close the gap. They can choose the competitors and depth of the next autopsy and run it, classify or track competitors, and change an opportunity's status.",

@@ -30,7 +30,6 @@ export const hrReview360MeetingManifest = hrPageSurface({
   urlPattern: "/hr/performance/[reviewId]/meeting",
   situation:
     "They are in the review meeting, looking at the {meeting_section|accomplishments} section side by side. You can move the meeting to another section.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted from Review360SideBySide; meeting_section handler wired. Live probe owed.",
   intro: `<surface_intro>
 The 360 review meeting, held in person on one screen. Both halves of the review show one section at a time; meeting_section names it and section_items holds what each side wrote there.
 - meeting_section moves the screen to another section (${REVIEW_360_MEETING_SECTIONS.join(", ")}). Nothing is saved.

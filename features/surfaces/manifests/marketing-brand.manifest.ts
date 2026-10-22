@@ -186,7 +186,6 @@ export const marketingBrandManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Brand cockpit — identity, editorial profile, properties, confirmed facts, assets, managed sites.",
-  readiness: "verified",
   label: "Marketing Brand Cockpit",
   situation:
     "They are working on the brand \"{brand_name|(brand still loading)}\"; its profile and facts are in your context, and {pending_review_count|no} discovered items wait for their review. On the brand's main page they can edit its identity and profile and open its websites and social accounts.",

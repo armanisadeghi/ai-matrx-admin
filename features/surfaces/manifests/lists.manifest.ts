@@ -286,9 +286,6 @@ export const listsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "A pick list's own page (/pick-lists/<id>): its name, description and choices; add, edit and archive choices, rename and re-describe the list.",
-  readiness: "partial",
-  readinessNote:
-    "page-pass 2026-10-22: the route page now mounts this surface (it mounted nothing before), with the up-front bundle, load state, focused choice and delete_list_items (archive). Not yet proven with a live agent run on this route (probe pending the release carrying the window hooks); phone and dark looked at statically.",
   label: "Pick list",
   urlPattern: "/pick-lists/[id]",
   intro: `<surface_intro>

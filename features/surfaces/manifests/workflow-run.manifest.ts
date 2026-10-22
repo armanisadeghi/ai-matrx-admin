@@ -336,9 +336,6 @@ export const workflowRunManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "One workflow run — its state, plan, inputs and outputs, and the run page's own controls.",
-  readiness: "partial",
-  readinessNote:
-    "Values, write targets and the shared host are wired on the run permalink, the adopted run on a workflow page, and a run on the Board. Not yet certified (S1–S18) and no bound-agent Matrx-vs-matrix walk has been run.",
   label: "Workflow run",
   urlPattern: "/workflows/runs/[runId]",
   intro: `<surface_intro>

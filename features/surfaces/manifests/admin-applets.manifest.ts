@@ -767,7 +767,6 @@ export const adminAppletsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Applet admin",
-  readiness: "verified",
   label: "Applets Admin",
   urlPattern: "/administration/applets",
   intro: `<surface_intro>

@@ -418,9 +418,6 @@ export const adminReportingManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Reporting admin family: events, reports catalog, dead-ends/unwired/lint-debt scoreboards",
-  readiness: "partial",
-  readinessNote:
-    "Emitter wired, browser verification pending. The reporting hub remains a static link directory with only its section identity.",
   label: "Reporting Admin",
   urlPattern: "/administration/reporting",
   intro: `<surface_intro>

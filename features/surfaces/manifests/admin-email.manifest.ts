@@ -258,7 +258,6 @@ export const adminEmailManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Email configuration",
-  readiness: "verified",
   label: "Email Users",
   urlPattern: "/administration/users/email",
   intro: `<surface_intro>

@@ -81,8 +81,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: TRASH_SURFACE_NAME,
   situation:
     "They are in their Trash with {trash_total|nothing} deleted items. You can restore items; nothing here deletes anything for good.",

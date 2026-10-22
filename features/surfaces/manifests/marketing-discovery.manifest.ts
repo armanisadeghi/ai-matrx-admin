@@ -210,7 +210,6 @@ export const marketingDiscoveryManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Machine-discovery review inbox — pending candidates promoted to confirmed brand truth.",
-  readiness: "verified",
   label: "Marketing Discovery Inbox",
   situation:
     "They are in the brand's discovery inbox on the {active_status} tab: things the system found about the brand, waiting for a person to confirm or dismiss. {pending_count|No} items are pending; they can set each item's type before confirming it.",

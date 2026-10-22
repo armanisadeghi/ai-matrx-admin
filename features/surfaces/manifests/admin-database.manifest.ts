@@ -404,9 +404,6 @@ export const adminDatabaseManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Database explorer + SQL workbench",
-  readiness: "partial",
-  readinessNote:
-    "Hub-catalogue, SQL-workbench, and database-admin function-catalogue emitters are wired and real. The route has no schema/table browser page state (selected table, columns, row sample), so those values are deliberately undeclared; the schema visualizer, sql-functions, enums, relationships, canonicalization and workbench sub-routes have no emitter yet.",
   label: "Database Admin",
   urlPattern: "/administration/database",
   intro: `<surface_intro>

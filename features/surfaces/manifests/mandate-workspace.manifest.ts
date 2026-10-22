@@ -189,9 +189,6 @@ export const mandateWorkspaceManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "partial",
-  readinessNote:
-    "Provider mounted on the admin route; identity + goal + goal-draft values live; the one write target (goal draft) is wired and user-verified. Inputs/holder/health are not yet emitted as values.",
   label: "Mandate Workspace",
   urlPattern: "/administration/intelligence/mandates/:mandateKey",
   intro: `<surface_intro>

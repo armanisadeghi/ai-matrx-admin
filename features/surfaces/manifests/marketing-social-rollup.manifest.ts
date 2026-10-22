@@ -58,9 +58,6 @@ export const marketingSocialRollupManifest: SurfaceManifest = {
   description: "Every tracked social account and recent outlier across the person's brands.",
   urlPattern: "/marketing/social",
   briefValues: ["rollup_loaded", "view", "account_count", "outlier_count"],
-  readiness: "partial",
-  readinessNote:
-    "Read values only, by design: the roll-up creates and changes nothing. Not yet proven with an outside-helper binding test.",
   intro: `<surface_intro>
 You are on the agency Social roll-up: every tracked account across the person's brands, and the recent outliers among them. Check rollup_loaded first; when false, load_error says why.
 account_list is the condensed rows (read it first); accounts holds every row. Followers null means not measured, never zero. To track or change an account, send the person to that brand's Socials; this page changes nothing.

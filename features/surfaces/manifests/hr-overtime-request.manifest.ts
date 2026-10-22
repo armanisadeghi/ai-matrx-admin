@@ -25,7 +25,6 @@ export const hrOvertimeRequestManifest = hrPageSurface({
   urlPattern: "/hr/time/overtime/[requestId]",
   situation:
     "They are on {overtime_request.employee|an employee}'s overtime request for {overtime_request.requested_hours|some} hours, {overtime_request.covers_from|} to {overtime_request.covers_to|}, state {overtime_request.state|unknown}. They see it as {overtime_viewer|an employee}.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by OvertimeRequestPage; decide_overtime handler wired. Live probe owed.",
   intro: `<surface_intro>
 One overtime pre-approval request. overtime_request has who, when, how many hours, why and its state; actual_hours and variance_hours appear once the hours are worked.
 - decide_overtime approves (optionally capping the hours) or denies it, for an approver (overtime_viewer "manager") while it is requested. Denying never withholds pay for hours already worked; overtime beyond an approved cap is still paid and flagged.

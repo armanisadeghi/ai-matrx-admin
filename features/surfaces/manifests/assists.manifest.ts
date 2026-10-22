@@ -138,9 +138,6 @@ export const assistsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "The user inbox of one-click AI assists.",
-  readiness: "partial",
-  readinessNote:
-    "The manager emits loaded rows, statistics, suppressions, query, quiet preferences, and action state through a runtime provider. Canonical menu and view/triage handlers are wired; live outside-helper binding proof and independent certification remain.",
   label: "Assists",
   urlPattern: "/assists",
   intro: `<surface_intro>

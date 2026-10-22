@@ -167,8 +167,6 @@ export const adminAiUsageManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description: "Super-admin AI usage explorer: one question of the usage ledger, per execution or the model calls, with its answer.",
-  readiness: "partial",
-  readinessNote: "Manifest, registry and runtime emitter are wired; the focused DB sync, its --check and independent S1-S18 certification remain.",
   label: "AI Usage",
   urlPattern: "/administration/usage",
   intro: `<surface_intro>

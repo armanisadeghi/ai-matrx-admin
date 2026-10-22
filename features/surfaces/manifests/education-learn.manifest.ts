@@ -219,9 +219,6 @@ export const educationLearnManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Published Learn library articles, server-rendered (/education/learn).",
-  readiness: "partial",
-  readinessNote:
-    "The index (/education/learn) emits view, guide_count, guide_library_xml and guide_library from LearnIndexSurface (a thin client wrapper around the server-rendered grid, so the page stays ISR/SSR) and mounts the page's right-click menu; proven by code read and type check, live probe pending the release carrying it. The article page (/education/learn/[...slug]) still emits nothing — its article_* values are declared vocabulary only. No write targets: a reader page has nothing to author (authoring is matrx-user/education-learn-authoring). No agent roles.",
   label: "Study guide library",
   urlPattern: "/education/learn",
   intro: `<surface_intro>

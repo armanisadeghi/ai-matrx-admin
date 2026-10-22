@@ -58,9 +58,6 @@ export const launchpadManifest: SurfaceManifest = {
   label: "Launchpad",
   description: "One of the person's launchpads: a grid of widgets from across the app, their data pages and Applets.",
   executionMode: "python-stream",
-  readiness: "partial",
-  readinessNote:
-    "Tools live on /launchpad/<key>; the maintainer mandate start_page.maintainer is declared and held (Agent Factory). Full readiness waits on the first proven UI run.",
   urlPattern: "/launchpad/:key",
   intro: `<surface_intro>
 The person is on one of their launchpads: a grid of widgets on 12 columns (s = a quarter of the width, m = half, l = the whole row; w / h give exact grid units).

@@ -224,9 +224,6 @@ export const agentComparisonModelManifest: SurfaceManifest = {
   description:
     "",
   label: "Model Battle",
-  readiness: "partial",
-  readinessNote:
-    "The manifest and runtime contract are wired, focused checks pass, and the DB mirror is synchronized. Live menu, launch, writeback, and blind-session verification remain pending.",
   urlPattern: "/agents/battle/model",
   intro: `<surface_intro>
 Model Battle sends one locked request to several model variants of the same agent.

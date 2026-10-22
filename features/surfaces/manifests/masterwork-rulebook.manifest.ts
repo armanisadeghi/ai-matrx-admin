@@ -419,7 +419,6 @@ export const masterworkRulebookManifest: SurfaceManifest = {
   description:
     "One Rulebook workspace for reviewing, sourcing, correcting, and approving the rules that power Masterworks.",
   label: "Rulebook",
-  readiness: "verified",
   urlPattern: "/masterwork/[rulebookId]",
   intro: `<surface_intro>
 You are on one Rulebook inside Masterwork Studio: the durable, versioned capture of an Expert's judgment. The page is where the Expert reviews, corrects, sources, and approves rules; approved rules power the Understudy and every built Masterwork.

@@ -205,9 +205,6 @@ export const imageEditManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Single-image editor at /images/edit/[id] (Filerobot canvas, AI ops, versions); also opens as a modal.",
-  readiness: "partial",
-  readinessNote:
-    "READ half: EditModeShell emitter (covers page AND modal mounts). WRITE half: deliberately none while `IMAGE_STUDIO_BACKEND_CAPABILITIES.promptEdit` is false — the header's WRITE DOCTRINE records the exact target to add when it flips; re-read it before scoping another pass. Remaining: no `data-surface-value` anchors, no live non-matching-name binding test. Known and accepted: the /images/edit landing picker mounts no provider — no image is chosen yet, so there is nothing to emit.",
   label: "Image Editor",
   urlPattern: "/images/edit/[id]",
   intro: `<surface_intro>

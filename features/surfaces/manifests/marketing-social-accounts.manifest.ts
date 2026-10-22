@@ -80,9 +80,6 @@ export const marketingSocialAccountsManifest: SurfaceManifest = {
   description: "The brand's own and tracked social accounts, one row per account.",
   urlPattern: "/marketing/[brandId]/socials/accounts",
   briefValues: ["accounts_loaded", "brand_name", "account_count", "accounts_by_role"],
-  readiness: "partial",
-  readinessNote:
-    "Values plus create_accounts (the Track dialog's handle-or-link save) and update_accounts (Track as Own, Stop tracking, role, Refresh). Every person action has an agent twin except opening an account's X connection.",
   intro: `<surface_intro>
 You are on the brand's Social accounts list: its own accounts and the competitor and inspiration accounts it tracks. Check accounts_loaded first.
 account_list is the condensed rows (read it first); accounts holds every row. A row with has_page true opens an account page at /marketing/<brand>/socials/<platform>/<profile_id>; has_page false means the account is not tracked yet, so no numbers exist. Followers or growth null mean not measured, never zero.

@@ -65,9 +65,6 @@ export const marketingRunConsoleManifest: SurfaceManifest = {
   label: "Run console",
   situation:
     "They are on the admin Run console, driving the keyword coverage engines by hand across every brand on the platform. Engine: {active_engine_label}. {active_engine_what} Live stage: {run_stage|no pass running}; {run_outcome_count} brand results this session, {queue_length} brands waiting.",
-  readiness: "partial",
-  readinessNote:
-    "Registered 2026-08-25 with the shared run-console vocabulary, the topic-assigner role bound by mandate key, and emitters on both engine bodies. Not yet verified: the sub-panels' own state (schedule cascade editor fields, run-history filters, the Proposals/Not-placed queues' internals) is deliberately undeclared for now — the console declares the schedule ROWS and the outcomes it owns, not those panels' local editor state. Locate anchors and a live non-matching-name binding test are still outstanding.",
   urlPattern: "/administration/marketing/run-console",
   intro: `<surface_intro>
 This is an ADMIN surface: the Run console at the SYSTEM tier, which governs EVERY brand on the platform. The same console mounts for one organization's brands elsewhere — read scope_tier before you say anything about blast radius.

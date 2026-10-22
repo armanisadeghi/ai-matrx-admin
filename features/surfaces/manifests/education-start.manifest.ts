@@ -207,9 +207,6 @@ export const educationStartManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Create a study kit: the material, outputs, depth and focus form, then the live kit build (/education/kits/new). Fill the form with kit_request_draft.",
-  readiness: "partial",
-  readinessNote:
-    "Emitter and kit_request_draft shipped 2026-09-27 with unit-tested validation. Not yet proven: no outside-helper binding test; a live build (kit_outputs through to done) is not exercised by the probe because it spends the allowance.",
   label: "Create a study kit",
   urlPattern: "/education/kits/new",
   intro: `<surface_intro>

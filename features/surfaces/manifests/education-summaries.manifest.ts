@@ -268,9 +268,6 @@ export const educationSummariesManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description: "Create, edit, and view study summaries (/education/summaries).",
-  readiness: "partial",
-  readinessNote:
-    "Manifest + emitters for list, detail, and editor views. Summary collection CRUD follows the canonical study_media service; edits preserve source lineage and downgrade rendered grounding to inferred. Not yet stamped verified: no `data-surface-value` Locate anchors or representative agent run.",
   label: "Study Summaries",
   urlPattern: "/education/summaries",
   intro: `<surface_intro>

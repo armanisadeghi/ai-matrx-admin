@@ -109,8 +109,6 @@ export const educationCreatorManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description: "Authenticated creator profile editor at /education/creator.",
-  readiness: "partial",
-  readinessNote: "Manifest, route mapping, scope, and canonical create/update/publish handlers are implemented. Focused mirror sync and live agent interaction proof remain required.",
   label: "Creator profile",
   urlPattern: "/education/creator",
   intro: `<surface_intro>

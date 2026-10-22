@@ -453,9 +453,6 @@ export const tasksManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Task management and to-do lists",
-  readiness: "partial",
-  readinessNote:
-    "Static S1-S18 repair is complete; independent desktop/mobile and light/dark browser certification is pending",
   label: "Tasks",
   urlPattern: "/tasks",
   intro: `<surface_intro>

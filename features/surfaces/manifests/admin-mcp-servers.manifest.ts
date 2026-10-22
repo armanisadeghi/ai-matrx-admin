@@ -325,7 +325,6 @@ export const adminMcpServersManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "MCP server admin (sync status + configs)",
-  readiness: "verified",
   label: "MCP Servers Admin",
   urlPattern: "/administration/agents/mcp-servers",
   intro: `<surface_intro>

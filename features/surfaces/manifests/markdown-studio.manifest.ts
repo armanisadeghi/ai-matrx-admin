@@ -260,7 +260,6 @@ export const markdownStudioManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "verified",
   label: "Markdown Studio",
   urlPattern: "/markdown-studio",
   intro: `<surface_intro>

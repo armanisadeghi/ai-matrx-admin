@@ -633,7 +633,6 @@ export const settingsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "User preferences and account settings",
-  readiness: "verified",
   label: "Settings",
   urlPattern: "/user-settings",
   intro: `<surface_intro>

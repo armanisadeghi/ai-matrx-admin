@@ -195,9 +195,6 @@ export const connectedSourcesManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Connected sources (/connected-sources): the accounts the person connected and the items inside the one on screen, read live from the provider.",
-  readiness: "partial",
-  readinessNote:
-    "Built 2026-09-27 (page-pass). Round 4: selected_ids and the three read targets (read_comments, read_history, read_speaker_notes) added; browse made organization-optional server-side (aidream b159670da8). Not yet proven live: the read targets through a real agent run, and the rows values through the probe after that server release.",
   label: "Connected sources",
   urlPattern: "/connected-sources",
   intro: `<surface_intro>

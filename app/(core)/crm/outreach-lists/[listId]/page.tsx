@@ -37,7 +37,7 @@ export default async function CrmOutreachListRoute({
           { label: "CRM", href: "/crm" },
           { label: "Outreach lists", href: "/crm/outreach-lists" },
         ]}
-        record={{ name: "Outreach list", token: "crm-outreach-list", id: listId }}
+        record={{ name: "Outreach list" }}
       />
       <OutreachListDetailPage listId={listId} />
     </>

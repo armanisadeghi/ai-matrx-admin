@@ -101,9 +101,6 @@ export const imageManagerManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "The image hub and its tabs (tools, branded, profile photo, public search, studio library).",
-  readiness: "partial",
-  readinessNote:
-    "The /images/manager landing emits image_hub_tab, the displayed tools and open_image_workspace (page-pass 2026-10-22; live probe pending release). The other hub tabs (tools, branded, profile photo, public search, studio library, presets, all-files) still emit nothing and remain partial pending their own passes. The /images navigation landing is the images-home child.",
   label: "Image Manager",
   urlPattern: "/images/manager",
   intro: `<surface_intro>

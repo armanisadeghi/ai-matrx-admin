@@ -373,7 +373,6 @@ export const agentAdvancedEditorManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Agent system + content editor",
-  readiness: "verified",
   label: "Agent Advanced Editor",
   // No `urlPattern`: this is a floating WINDOW, opened over whatever route the
   // user is on, so the provider — not the URL — is what puts the surface live.

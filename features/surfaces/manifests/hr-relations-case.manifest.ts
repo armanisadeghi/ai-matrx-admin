@@ -64,8 +64,6 @@ export const hrRelationsCaseManifest: SurfaceManifest = {
   description: "One employee-relations case: incident or corrective action (/hr/people/relations/[caseId]).",
   label: "HR Relations case",
   urlPattern: "/hr/people/relations/[caseId]",
-  readiness: "partial",
-  readinessNote: "W2 2026-10-22: values emitted by CaseSurface. Read-only for the agent by design. Live probe owed.",
   intro: `<surface_intro>
 A confidential employee-relations case. Help the investigator think: summarize, list open questions, draft wording for notes or letters for them to paste.
 You cannot change the case; every change is an audited act in its own panel. Never guess the reporter of an anonymous report or the contents of restricted notes.

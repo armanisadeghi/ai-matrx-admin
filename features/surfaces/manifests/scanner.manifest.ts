@@ -449,7 +449,6 @@ export const scannerManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Phone/desktop document scanner (/tools/scanner) — capture or import pages into a PDF, then hand off to the extractor pipeline.",
-  readiness: "verified",
   inheritsFrom: "matrx-user/pdf-extractor",
   label: "Scanner",
   urlPattern: "/tools/scanner",

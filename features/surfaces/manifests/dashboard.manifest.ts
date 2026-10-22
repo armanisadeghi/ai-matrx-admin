@@ -197,7 +197,6 @@ export const dashboardManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Dashboard and analytics views",
-  readiness: "verified",
   label: "Dashboard",
   urlPattern: "/dashboard",
   intro: `<surface_intro>

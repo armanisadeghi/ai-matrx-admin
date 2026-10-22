@@ -51,7 +51,6 @@ export const scratchpadManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Per-conversation private scratchpad editor. The cloud agent only reads it; surface (context-menu) agents can edit it — it is just text inside the surface.",
-  readiness: "verified",
   label: "Scratchpad",
   intro: `<surface_intro>
 You are INSIDE the user's scratchpad — their private per-conversation notes. In chat the cloud agent only READS this; but here, acting on the user's own request, it is just text and you may rewrite, bullet, tabulate, or clean it up.

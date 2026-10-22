@@ -78,8 +78,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_SPEND_ALARM_SURFACE_NAME,
   situation:
     "As an admin they are looking at one spend alarm ({alarm_status_label|loading}): {alarm_sentence|not loaded yet}. You can open one of its actions for them to confirm.",

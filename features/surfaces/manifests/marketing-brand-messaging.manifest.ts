@@ -324,9 +324,6 @@ export const marketingBrandMessagingManifest: SurfaceManifest = {
     "They are in the brand's Messaging room: mission, vision, values, story, personality, elevator pitches, messaging and content pillars, and hashtags, all in your context as currently edited. They can edit any of these.",
   urlPattern: "/marketing/[brandId]/identity/messaging",
   inheritsFrom: "matrx-user/marketing-brand",
-  readiness: "partial",
-  readinessNote:
-    "Manifest, page-state emitter and six draft write targets are wired (2026-10-18); no AI job runs here, and no live agent write-back run has been done.",
   intro: `<surface_intro>
 You are on a brand's Messaging room, where the owner writes what the brand stands for and how it says it. Read brand_context first, then the messaging_* values, which are the page exactly as it is on screen, unsaved edits included.
 Help the owner sharpen the writing: tighten the mission and pitches, make pillars specific and provable, keep vocabulary consistent. Stage changes with the messaging_* write targets in the brand's own voice; the owner reviews and presses Save, nothing you stage is saved on its own.

@@ -51,8 +51,6 @@ export const educationQuickMathAuthoringManifest: SurfaceManifest = {
   executionMode: "python-stream",
   label: "Quick Math authoring",
   description: "Super-admin authoring for the persisted Quick Math problem catalog.",
-  readiness: "partial",
-  readinessNote: "Emitter and approval-gated CRUD handlers are in the admin authoring screen. Publishing remains a deliberate human-only action. DB manifest sync and live agent probe are pending.",
   urlPattern: "/education/subjects/quick-math/admin",
   intro: `<surface_intro>You are on the Quick Math AUTHORING page, a staff-only catalog editor. math_problems lists live editable records. Use create_math_problems, update_math_problems, and delete_math_problems for catalog changes; each asks for approval and uses the same RLS-gated path as the screen. Do not attempt to publish or expose a problem: publishing and publishing to the web remain human-only because that changes public content.</surface_intro>`,
   groups,

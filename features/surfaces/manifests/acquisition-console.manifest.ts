@@ -79,8 +79,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ACQUISITION_SURFACE_NAME,
   situation:
     "They are onboarding an expert on the acquisition console: {acquisition_have_count|no} sources so far, {acquisition_blocked_count|nothing} stuck. You can narrow it to one rulebook.",

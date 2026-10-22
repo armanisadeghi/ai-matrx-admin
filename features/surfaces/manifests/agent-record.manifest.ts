@@ -88,9 +88,6 @@ export const agentRecordManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description: "One agent's record view: definition, configuration and version",
-  readiness: "partial",
-  readinessNote:
-    "Values and the Reset to latest target are wired from the agent-definition store; not yet probed with a live agent run, and the page's JSON view toggle (admins) is not declared.",
   label: "Agent Record",
   urlPattern: "/agents/[id]",
   intro: `<surface_intro>

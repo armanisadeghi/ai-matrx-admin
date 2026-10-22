@@ -104,9 +104,6 @@ export const boardManifest: SurfaceManifest = {
   agentRosterMode: "universal",
   contextBudgetApproval:
     "Arman 2026-10-04: \"the agent should instantly know the basics of what I have on my board and if I have one selected, then it should have the full data for that one ... it always sees enough to know what I'm talking about and has id references\" — board_items (every item's basics, 8,000, plus a non-live selected tile's full values, 12,000, plus ids) is always inline, up to 24,000.",
-  readiness: "partial",
-  readinessNote:
-    "Board agent tools live on every mounted board (read, add, add items, find records, edit, move, arrange, group, connect, draw shapes, focus, open item, act on item, park, remove, undo). board_add_items puts the person's real records (or new ones) on the person's own Board; board_find_records finds them by name across every organization. board_items names every item with its basics; board_open_item / board_item_act reach any item's own surface on the person's Board (hosts that keep no per-tile capture list identity only); board_read carries positions and excerpts.",
   urlPattern: "/demos/board",
   intro: `<surface_intro>
 The person is looking at a Board: an infinite, zoomable plane of tiles (live AI results, notes, rendered markdown, generated pages, images, meeting parts, workflow steps) grouped into named frames. They pan and zoom it like a map.

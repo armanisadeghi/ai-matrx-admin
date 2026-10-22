@@ -617,9 +617,6 @@ export const adminToolRegistryManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Tool, bundle, and surface admin pages",
-  readiness: "partial",
-  readinessNote:
-    "Catalog and open-tool emitters are wired and real. Executor bindings (tool.executor + tool.binding) and per-surface tool defaults (tool.surface_defaults) are loaded inside the detail page's Registry tab and never reach the emitter, so they are deliberately undeclared; lifting that state to the emitter is the remaining work. The mcp-servers / bundles / executor-surfaces sibling routes have no emitter.",
   label: "Tool Registry",
   urlPattern: "/administration/agents/mcp-tools",
   intro: `<surface_intro>

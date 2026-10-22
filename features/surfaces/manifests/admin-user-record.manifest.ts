@@ -62,9 +62,6 @@ export const adminUserRecordManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description: "One person's admin record: identity, status, plan, attention and the open tab.",
-  readiness: "partial",
-  readinessNote:
-    "Emitter wired (UserRecordSurface.tsx, synchronous over the page's admin.user_overview read). Not yet walked in a live agent run or the Surface Context window; tab bodies' own rows are not declared (Copy for AI carries them).",
   label: "Users & Access — Person record",
   urlPattern: "/administration/users/[id]",
   intro: `<surface_intro>

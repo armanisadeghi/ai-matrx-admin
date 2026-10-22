@@ -438,9 +438,6 @@ export const appletsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Applets: the editor and hub for a person's small Applets (files, pages, jobs, sources)",
-  readiness: "partial",
-  readinessNote:
-    "AP-0 lane B3 2026-10-07: values describe the Applet record (files, entry, pages, jobs, sources); the shell/slot/agent/run keys are gone. Live probe and agent write proof are pending.",
   label: "Applets",
   urlPattern: "/applets",
   intro: `<surface_intro>

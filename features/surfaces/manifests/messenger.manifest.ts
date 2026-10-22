@@ -52,8 +52,6 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 const declared: SurfaceManifest = {
-  readiness: "partial",
-  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: MESSENGER_SURFACE_NAME,
   situation: "They are in Messenger. You can write a message into the open conversation's box; they send it.",
   inheritsFrom: "matrx-user/messages",

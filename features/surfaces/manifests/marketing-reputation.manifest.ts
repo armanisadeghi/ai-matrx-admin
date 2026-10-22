@@ -211,7 +211,6 @@ export const marketingReputationManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "",
-  readiness: "verified",
   label: "Digital PR & Reputation",
   situation:
     "They are on the website's Digital PR and Reputation page: reputation cases, publications likely to cover them, recurring narratives and the latest brief, with the evidence on hand counted in your context. They can triage cases.",

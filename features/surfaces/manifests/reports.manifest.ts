@@ -155,9 +155,6 @@ export const reportsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Read-only analyses over platform data.",
-  readiness: "partial",
-  readinessNote:
-    "The /reports landing emits the complete report catalog and live availability. Agent Drift publishes successful rollups and current view controls; outside-helper live binding proof and independent certification remain.",
   label: "Reports",
   urlPattern: "/reports",
   intro: `<surface_intro>

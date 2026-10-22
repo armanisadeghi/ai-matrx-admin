@@ -419,9 +419,6 @@ export const artifactsManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Durable typed outputs agents have produced, and the run that produced each.",
-  readiness: "partial",
-  readinessNote:
-    "Emitters wired 2026-09-25 on both routes (CmsArtifactList, CmsArtifactDetail) through features/artifacts/lib/artifacts-scope.ts, each inside the canonical NonEditableContextMenu; completeness pass redone from the components (vocabulary 11 -> 26 own values). Verified live in the Surface Context window: list 3/30 at the default view (4/30 with a search, filters appear when set), detail 14/30 on a data-table artifact including content from the preview, access-gate id reports artifact_load_state only; no undeclared keys; menu shows the Artifacts label. Independent review 2026-09-25 confirmed the above and found gaps, now fixed or documented: failed load no longer reports 0; whitespace search is reported; the unobservable canvas value was removed. 2026-10-22: the table's own column filters/sort now reach visible_artifacts, artifact_column_filters and artifact_sort through MatrxDataTable.onViewChange (query half needs design-system > 0.86.292; not yet probed live). Not verified: gate reason (denied vs missing) not emitted; no outside-helper binding exercised (non-matching-name + Matrx-vs-matrix).",
   label: "Artifacts",
   urlPattern: "/artifacts",
   intro: `<surface_intro>

@@ -28,7 +28,6 @@ export const hrEmployeeTimesheetManifest = hrPageSurface({
   urlPattern: "/hr/time/timesheets/[employmentId]",
   situation:
     "They are on {timesheet.employee|an employee}'s timesheet for {timesheet.period_start|a pay period} to {timesheet.period_end|}: {timesheet.total_hours|no} hours, state {timesheet.state|unknown}. This timecard can be decided now: {timecard_decision.decidable|no}.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by EmploymentPeriodDetail + DecisionBar; decide_timecard handler wired. Live probe owed.",
   intro: `<surface_intro>
 One person's timesheet for one pay period. timesheet has the totals, attestation and dispute; days lists each worked day with its hours. open_exceptions must be resolved before the timecard can be approved.
 - decide_timecard approves this timecard or sends it back with a reason. It never moves the pay period.

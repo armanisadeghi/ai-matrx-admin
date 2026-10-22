@@ -25,7 +25,6 @@ export const hrLeavePolicyEnrollmentManifest = hrPageSurface({
   urlPattern: "/hr/settings/leave-policies/[policyId]/enrollment",
   situation:
     "They are on the enrollment of the {enrollment_policy.name|leave} policy: {enrolled_count|no} people enrolled, {candidate_count|no} active people not on it yet. You can enroll people.",
-  readinessNote: "W2 hr-b 2026-10-22: values emitted by LeaveEnrollmentSurface; enroll_people handler wired. Live probe owed.",
   intro: `<surface_intro>
 Enrollment of one leave policy. enrolled_people are on it (with the balance sentence the page shows); enrollment_candidates are active people with a live employment who are not on it yet.
 - enroll_people enrolls candidates by employment_id or name, optionally from a date. People the door skips are named with the reason.

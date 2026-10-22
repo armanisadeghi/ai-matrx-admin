@@ -562,7 +562,6 @@ export const scraperManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Web scraper overlay (also a /scraper route)",
-  readiness: "verified",
   label: "Scraper",
   urlPattern: "/scraper",
   intro: `<surface_intro>

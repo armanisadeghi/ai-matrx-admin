@@ -228,7 +228,6 @@ export const marketingSiteManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Managed website overview — identity, connections, initialization, registry counts.",
-  readiness: "verified",
   label: "Marketing Site Workspace",
   situation:
     "They are inside its website \"{site_name|(website still loading)}\" ({site_root_url|address not loaded}): {pages_total|an unknown number of} known pages, {open_findings_total|no} open findings, last crawl {last_crawl_at|none on record}. On the website's overview they can rename it or edit its description.",
