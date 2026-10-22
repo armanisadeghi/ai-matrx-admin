@@ -544,17 +544,20 @@ function parseProvider(row: AiProviderRow): AiProvider {
 // screens read and write them through admin-lane doors that refuse outside the admin apps;
 // everyone else sees prices in credits (ai.model_public / ai.model_offering).
 const ENDPOINT_PUBLIC_COLUMNS =
-  "id,organization_id,is_system,created_by,updated_by,created_at,updated_at,deleted_at,version,metadata,vendor,internal_name,display_name,priority,is_active,notes,doc_sources,shown_to,published_to_web,published_to_web_at,published_to_web_by,custom_fields,test_run_id,test_expires_at";
+  "id,organization_id,is_system,created_by,updated_by,created_at,updated_at,deleted_at,version,metadata,vendor,internal_name,display_name,priority,is_active,notes,doc_sources,shown_to,published_to_web,published_to_web_at,published_to_web_by,custom_fields";
 const OFFERING_PUBLIC_COLUMNS =
-  "id,organization_id,is_system,model_id,provider_model_id,priority,is_available,usage_basis,capabilities_override,override,notes,created_by,updated_by,created_at,updated_at,deleted_at,version,metadata,token_billed,endpoint_id,api_id,pricing_verified_at,shown_to,published_to_web,published_to_web_at,published_to_web_by,custom_fields,setting_profile_id,test_run_id,test_expires_at";
+  "id,organization_id,is_system,model_id,provider_model_id,priority,is_available,usage_basis,capabilities_override,override,notes,created_by,updated_by,created_at,updated_at,deleted_at,version,metadata,token_billed,endpoint_id,api_id,pricing_verified_at,shown_to,published_to_web,published_to_web_at,published_to_web_by,custom_fields,setting_profile_id";
 
 type EndpointAdminKey = "byok_secret_key" | "auth_ref" | "base_url";
 // The retiring row column is never read; the row words are (access ladder T-13).
-type EndpointPublicRow = Omit<AiEndpointRow, EndpointAdminKey | RetiredRowColumn>;
+// test_run_id / test_expires_at carry no client SELECT grant on ai.endpoint or
+// ai.offering (column-granted tables); naming them made the read 403 (2026-10-22).
+type UngrantedFixtureColumn = "test_run_id" | "test_expires_at";
+type EndpointPublicRow = Omit<AiEndpointRow, EndpointAdminKey | RetiredRowColumn | UngrantedFixtureColumn>;
 type EndpointAdminColumns = Pick<AiEndpointRow, EndpointAdminKey>;
 // `variant_id` carries no client SELECT grant (live column_privileges, 2026-10-16), so the
 // public read never names it.
-type OfferingPublicRow = Omit<AiOfferingRow, "pricing" | "variant_id" | RetiredRowColumn>;
+type OfferingPublicRow = Omit<AiOfferingRow, "pricing" | "variant_id" | RetiredRowColumn | UngrantedFixtureColumn>;
 
 async function fetchEndpointAdminColumns(): Promise<Map<string, EndpointAdminColumns>> {
   const { data, error } = await supabase.schema("ai").rpc("endpoint_admin_columns");

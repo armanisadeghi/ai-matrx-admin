@@ -221,6 +221,13 @@ function expectCompleteReadContract(
   for (const call of mockTransport.calls) {
     expect(call.table).toBe(table);
     expect(call.select[1]).toEqual({ count: "exact" });
+    if (table === "endpoint" || table === "offering") {
+      // 2026-10-22 live walk: opening a model logged a 403 ("permission denied
+      // for table offering") because the read named test_run_id /
+      // test_expires_at, which carry no client SELECT grant on these
+      // column-granted tables. A client read names only granted columns.
+      expect(String(call.select[0])).not.toMatch(/test_run_id|test_expires_at|variant_id/);
+    }
     if (table === "endpoint") {
       // Credential pointers and the serving address never ride a client table read.
       expect(String(call.select[0])).not.toMatch(/byok_secret_key|auth_ref|base_url/);
