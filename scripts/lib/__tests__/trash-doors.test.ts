@@ -13,6 +13,7 @@ import {
   judgeTrashCoverage,
   judgeTrashDoorBody,
   judgeTrashTimings,
+  OVERVIEW_BLOCKS_CEILING,
   STORE_TRASH_KINDS,
   TRASH_COVERAGE_EXEMPT,
   trashRole,
@@ -97,6 +98,27 @@ describe("Trash timing judgment (judgeTrashTimings)", () => {
       { label: "trash_counts (admin@admin.com)", class: "counts", ms: 57.2 },
       { label: "org_trash_list merged page (AI Matrx)", class: "kind", ms: 21.8 },
     ])).toEqual([]);
+  });
+
+  test("RED on the measured pre-FT3 Recent overview: cold first call ~5 s, 209k / 685k blocks warm (FT3, 2026-10-22)", () => {
+    const findings = judgeTrashTimings([
+      { label: "trash_list Recent overview (admin@admin.com)", class: "overview", ms: 855, blocks: 209_001 },
+      { label: "trash_list Recent overview (test@test.com)", class: "overview", ms: 1269, blocks: 685_257 },
+      { label: "trash_list Recent overview, cold first call (admin@admin.com)", class: "cold", ms: 3898 },
+    ]);
+    expect(findings.map((f) => f.problem)).toEqual([
+      expect.stringContaining("209001 blocks"),
+      expect.stringContaining("1269.0 ms"),
+      expect.stringContaining("685257 blocks"),
+      expect.stringContaining("3898.0 ms"),
+    ]);
+  });
+
+  test("the overview block budget and the cold ceiling are exact", () => {
+    expect(judgeTrashTimings([{ label: "o", class: "overview", ms: 10, blocks: OVERVIEW_BLOCKS_CEILING }])).toEqual([]);
+    expect(judgeTrashTimings([{ label: "o", class: "overview", ms: 10, blocks: OVERVIEW_BLOCKS_CEILING + 1 }])).toHaveLength(1);
+    expect(judgeTrashTimings([{ label: "c", class: "cold", ms: 1000 }])).toEqual([]);
+    expect(judgeTrashTimings([{ label: "c", class: "cold", ms: 1000.1 }])).toHaveLength(1);
   });
 
   test("the ceilings are exactly 300 ms per kind and 2 s for counts", () => {

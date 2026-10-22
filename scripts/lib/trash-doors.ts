@@ -157,13 +157,25 @@ export const COUNTS_CEILING_MS = 2000;
 /** The personal "Recent" overview (every kind's newest few, one call): /trash's first page, under 1 s (FT2, 2026-10-22). */
 export const OVERVIEW_CEILING_MS = 1000;
 
+/**
+ * FT3 (2026-10-22): a COLD session's first Recent overview took ~5 s while a warm one took 0.8 s. The cause was not
+ * planning but how many blocks the overview touched (admin 209k, test@test.com 685k): every one of them a disk read
+ * when the shared cache is cold. Timing a warm call cannot see that, so the overview is also held to a block budget
+ * (shared hit + read, EXPLAIN BUFFERS) and the first call on a fresh connection is timed as the "cold" class.
+ * After ft_7..ft_10: admin 89k, test@test.com 124k (most are repeat hits on small index pages); 150k keeps both old
+ * measurements red and leaves room for growth.
+ */
+export const OVERVIEW_BLOCKS_CEILING = 150_000;
+
 export interface TrashTiming {
   /** e.g. "trash_list file (admin@admin.com)" */
   label: string;
-  /** "kind" rows are held to 300 ms; "overview" rows to 1 s; "counts" rows to 2 s. */
-  class: "kind" | "overview" | "counts";
+  /** "kind" rows are held to 300 ms; "overview" and "cold" (first call on a fresh connection) rows to 1 s; "counts" rows to 2 s. */
+  class: "kind" | "overview" | "cold" | "counts";
   /** Server-side Execution Time; null when the statement was canceled or failed. */
   ms: number | null;
+  /** Shared blocks touched (hit + read); an "overview" row is held to OVERVIEW_BLOCKS_CEILING. */
+  blocks?: number;
   error?: string;
 }
 
@@ -171,11 +183,21 @@ export function judgeTrashTimings(rows: TrashTiming[]): TrashDoorFinding[] {
   const out: TrashDoorFinding[] = [];
   for (const r of rows) {
     const ceiling =
-      r.class === "kind" ? KIND_LISTING_CEILING_MS : r.class === "overview" ? OVERVIEW_CEILING_MS : COUNTS_CEILING_MS;
+      r.class === "kind"
+        ? KIND_LISTING_CEILING_MS
+        : r.class === "overview" || r.class === "cold"
+          ? OVERVIEW_CEILING_MS
+          : COUNTS_CEILING_MS;
     if (r.ms === null) {
       out.push({ door: r.label, problem: `did not answer (${r.error ?? "no timing"}); ceiling ${ceiling} ms` });
     } else if (r.ms > ceiling) {
       out.push({ door: r.label, problem: `answered in ${r.ms.toFixed(1)} ms, over the ${ceiling} ms ceiling` });
+    }
+    if (r.class === "overview" && r.blocks !== undefined && r.blocks > OVERVIEW_BLOCKS_CEILING) {
+      out.push({
+        door: r.label,
+        problem: `touched ${r.blocks} blocks, over the ${OVERVIEW_BLOCKS_CEILING} block budget (each one a disk read when the cache is cold)`,
+      });
     }
   }
   return out;
