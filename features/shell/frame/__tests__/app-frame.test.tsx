@@ -219,8 +219,8 @@ describe("the app grid is one Tab stop", () => {
     const tiles = [...grid.querySelectorAll<HTMLElement>("[data-mf-tile]")];
     expect(tiles.length).toBeGreaterThan(5);
     const stops = [...grid.querySelectorAll<HTMLElement>("a, button")].filter((el) => el.tabIndex === 0);
-    // Exactly one tile, and the Edit favorites button under the grid.
-    expect(stops.map((el) => el.textContent?.trim())).toEqual([expect.stringContaining("Chat"), "Edit favorites"]);
+    // Exactly one tile, and the Edit grid button under the grid.
+    expect(stops.map((el) => el.textContent?.trim())).toEqual([expect.stringContaining("Chat"), "Edit grid"]);
 
     act(() => tiles[0].focus());
     act(() => {

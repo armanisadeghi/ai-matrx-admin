@@ -38,7 +38,7 @@ export const GRID_FAVORITES_MAX = 9;
 /** Cell heights: tall screens, then short ones (under 760px). */
 export const GRID_TILE_TALL_PX = 72;
 export const GRID_TILE_SHORT_PX = 60;
-/** The body's chrome around the tiles: card padding, the gap, the "Edit favorites" row, body padding. */
+/** The body's chrome around the tiles: card padding, the gap, the "Edit grid" row, body padding. */
 const GRID_BODY_CHROME_PX = 8 + 4 + 36 + 16;
 
 /** The grid's shape for a screen height: columns, cell height and the body's natural height. */
@@ -317,7 +317,7 @@ export function AppGrid({
           )}
           <div className="flex justify-center pt-1">
             <Button variant="quiet" icon={editing ? <Check /> : <Pencil />} onClick={() => setEditing((v) => !v)}>
-              {editing ? "Done" : "Edit favorites"}
+              {editing ? "Done" : "Edit grid"}
             </Button>
           </div>
         </div>

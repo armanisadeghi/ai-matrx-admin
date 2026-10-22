@@ -62,7 +62,7 @@ const click = (el: Element) => act(() => (el as HTMLElement).click());
 async function openAndEdit() {
   click(document.querySelector('[aria-label="All products"]')!);
   await settle();
-  click([...body().querySelectorAll("button")].find((b) => b.textContent === "Edit favorites")!);
+  click([...body().querySelectorAll("button")].find((b) => b.textContent === "Edit grid")!);
   await settle();
 }
 
