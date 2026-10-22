@@ -25,7 +25,9 @@ import { resolveTopicAudioSource } from "@/features/education/media/audio/resolv
 import {
   deckIdsOf,
   focusWithTopic,
+  chunksOfSources,
   groundedTextOf,
+  groundedTextWithChunks,
   mediaSourceOf,
   notesOf,
   sourceTitleOf,
@@ -143,6 +145,8 @@ export function useEducationSources(surfaceKey: string, options: UseEducationSou
       const t = resolveTopicAudioSource(topic);
       return {
         content: t.content,
+        plainContent: t.content,
+        chunks: [],
         title: t.source.title,
         source: t.source,
         trust: t.trust,
@@ -161,12 +165,15 @@ export function useEducationSources(surfaceKey: string, options: UseEducationSou
     const orgId = await ensureOrgId(undefined);
     // Citations open the real file only through its file id.
     const resolved = await backfillFileIds(await resolving);
-    const content = groundedTextOf(resolved.sources);
-    if (!content.trim()) {
+    const plainContent = groundedTextOf(resolved.sources);
+    const content = groundedTextWithChunks(resolved.sources);
+    if (!plainContent.trim()) {
       throw new Error("None of the sources had any text to work from. Check each source, or add another.");
     }
     return {
       content,
+      plainContent,
+      chunks: chunksOfSources(resolved.sources),
       // Several Sources are titled by THE kit namer (an equal share of each), "A, B and N more" only as its floor.
       title: await nameFromSources(
         resolved.sources,

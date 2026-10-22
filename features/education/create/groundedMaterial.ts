@@ -18,8 +18,16 @@ import { peekHref } from "@/features/organizations/peek/peekHref";
 
 /** Everything a Create page needs once its Sources are read. */
 export interface PreparedMaterial {
-  /** The text the generator reads (a topic alone is just the topic). */
+  /**
+   * The text the generator reads (a topic alone is just the topic). Source text
+   * keeps the server's `### Chunk <id> (page N)` markers so an output can be
+   * traced to the passage it came from (see `chunkCitations.ts`).
+   */
   content: string;
+  /** The same text with the chunk markers taken out — for what is read aloud. */
+  plainContent: string;
+  /** Every grounded passage of every readable Source, with the Source that holds it. */
+  chunks: GroundedChunk[];
   /** What the artifact is called when its agent names none. */
   title: string;
   /** Provenance stored on the artifact row. */
@@ -54,6 +62,56 @@ const CHUNK_HEADER_LINE = /^### Chunk \S+(?: \(page \d+\))?[ \t]*\n/gm;
  */
 export function withoutChunkHeaders(text: string): string {
   return text.replace(CHUNK_HEADER_LINE, "").trim();
+}
+
+/** One grounded passage: the server's chunk id and page, the words, and the Source it is in. */
+export interface GroundedChunk {
+  id: string;
+  /** 1-based page when the server named one. */
+  page: number | null;
+  text: string;
+  /** The Source holding the passage — what its citation opens. */
+  source: { fileId: string | null; documentId: string | null; url: string | null; title: string; recordKind: SourceCitation["recordKind"] | null };
+}
+
+const CHUNK_BLOCK_HEADER = /^### Chunk (\S+)(?: \(page (\d+)\))?[ \t]*$/;
+
+/** Split a Source's grounded text into its chunks (text before the first header is not a chunk). */
+export function chunksOfText(text: string): { id: string; page: number | null; text: string }[] {
+  const out: { id: string; page: number | null; lines: string[] }[] = [];
+  for (const line of text.split("\n")) {
+    const m = CHUNK_BLOCK_HEADER.exec(line);
+    if (m) out.push({ id: m[1]!, page: m[2] ? Number.parseInt(m[2], 10) : null, lines: [] });
+    else out.at(-1)?.lines.push(line);
+  }
+  return out
+    .map((c) => ({ id: c.id, page: c.page, text: c.lines.join("\n").trim() }))
+    .filter((c) => c.text.length > 0);
+}
+
+/** Every chunk of every readable Source, each carrying the Source that holds it. */
+export function chunksOfSources(sources: readonly ResolvedSource[]): GroundedChunk[] {
+  return sources
+    .filter((s) => s.text.trim().length > 0)
+    .flatMap((s) =>
+      chunksOfText(s.text).map((c) => ({
+        ...c,
+        source: {
+          fileId: s.file_id ?? null,
+          documentId: s.processed_document_id ?? null,
+          url: s.file_id ? null : (peekHref(s.ref.resource_type, s.ref.resource_id) ?? null),
+          title: s.label,
+          recordKind: recordKindOfResourceType(s.ref.resource_type),
+        },
+      })),
+    );
+}
+
+/** The grounded text of every readable Source with its chunk markers kept (what a from-source generator reads). */
+export function groundedTextWithChunks(sources: readonly ResolvedSource[]): string {
+  const readable = sources.filter((s) => s.text.trim().length > 0);
+  if (readable.length === 1) return readable[0]!.text.trim();
+  return readable.map((s) => `## ${s.label}\n${s.text.trim()}`).join("\n\n");
 }
 
 /** The grounded text of every readable Source; several are told apart by a heading. */

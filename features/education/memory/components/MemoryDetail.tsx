@@ -28,6 +28,7 @@ import { useStudyMediaAuthReady } from "@/features/education/media/authLoad";
 import type { StudyMediaRow } from "@/features/education/media/types";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createEducationMemoryScope } from "@/features/surfaces/manifests/education-memory.manifest";
+import { itemCitationsOf, memoryItemKey } from "../itemCitations";
 import MemoryAidBlock, { type MemoryItemKind } from "@/components/mardown-display/blocks/memory-aid/MemoryAidBlock";
 import { coerceMemoryAid, coerceMemoryAidPartial, type MemoryAidPayload } from "@/features/content-ir/kinds/memory-aid";
 import { MemoryEditor } from "./MemoryEditor";
@@ -373,7 +374,10 @@ export function MemoryDetail({ mediaId, edit = false }: { mediaId: string; edit?
         {/* THE CANONICAL COMPONENT LAW: the registered `memory_aid` kind renders
             through its ONE kind component — the same pixels as the live run
             window and chat. */}
-        <MemoryAidBlock serverData={editingItem && itemDraft ? itemDraft : media.ir_envelope} controls={canEdit ? {
+        <MemoryAidBlock serverData={editingItem && itemDraft ? itemDraft : media.ir_envelope} cite={(kind, item) => {
+          const c = itemCitations[memoryItemKey(kind, item)];
+          return c ? <SourceCitations trust={{ citations: [c], confidence: "grounded" }} label={null} className="mt-2" /> : null;
+        }} controls={canEdit ? {
           onAdd: (kind) => {
             const current = coerceMemoryAidPartial(media.ir_envelope);
             void beginItem(kind, kind === "mnemonic" ? current.mnemonics.length : kind === "analogy" ? current.analogies.length : current.memory_palace.loci.length, true);

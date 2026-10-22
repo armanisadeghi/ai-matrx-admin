@@ -37,6 +37,7 @@ import { useEducationSources } from "@/features/education/create/useEducationSou
 import { useStyleDraft } from "@/features/education/create/useStyleDraft";
 import { generationSourceWrite } from "@/features/education/create/generationSourceWrite";
 import { linkMadeFrom, madeFromConfig } from "@/features/education/create/madeFrom";
+import { citeMemoryAid } from "../itemCitations";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useGenerateMemoryAid } from "../useGenerateMemoryAid";
 import { memoryAidCounts } from "../types";
@@ -118,7 +119,13 @@ export function MemoryNew() {
         mediaKind: "memory_aid",
         title,
         source: prepared.source,
-        config: { focus: focus.trim() || undefined, ...memoryAidCounts(payload), ...madeFromConfig(prepared) },
+        config: {
+        focus: focus.trim() || undefined,
+        ...memoryAidCounts(payload),
+        // Each aid cites the passage it came from (page / place), kept beside the aid by what it says.
+        itemCitations: citeMemoryAid(payload, prepared.chunks),
+        ...madeFromConfig(prepared),
+      },
         trust: prepared.trust,
         irEnvelope: payload,
         status: "ready",

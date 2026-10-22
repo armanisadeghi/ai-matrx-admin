@@ -59,7 +59,8 @@ export function useAudioStudyCreate() {
       const request = buildAudioRequest({
         format: input.format,
         sourceKind: resolved.fromSources ? "deck" : "topic",
-        content: resolved.content,
+        // What is read aloud never carries the grounding markers; audio stays cited per Source.
+        content: resolved.plainContent,
         hostCount: input.hostCount,
         language: input.language,
         weakAreaNote,

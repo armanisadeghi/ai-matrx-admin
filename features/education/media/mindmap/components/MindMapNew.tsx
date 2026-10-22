@@ -34,6 +34,7 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { studyMediaService } from "../../service";
 import { useGenerateMindMap } from "../useGenerateMindMap";
 import { linkDiagramToCards, type LinkableCard } from "../linkCards";
+import { citeDiagramNodes } from "../nodeCitations";
 import { withUniqueEdgeIds } from "../mindMapWrites";
 import { EDU_MEDIA_MANDATES } from "../mandates";
 
@@ -120,6 +121,8 @@ export function MindMapNew() {
       // Resolve nodes → source cards where we can (DoD item 3). Unmatched nodes
       // stay unlinked; a click still offers "ask the tutor about this idea".
       const { spec: linkedSpec, linkedCount } = linkDiagramToCards(spec, deckCards);
+    // Each node cites the passage it came from (its page / place), so a click opens that, not the whole Source.
+    const { spec: citedSpec, citedCount } = citeDiagramNodes(linkedSpec, prepared.chunks);
       const title = spec.title || prepared.title;
       const media = await studyMediaService.create({
         mediaKind: "mind_map",
@@ -129,10 +132,11 @@ export function MindMapNew() {
           diagramKind: "diagram_spec",
           hint: focus.trim() || undefined,
           linkedCards: linkedCount,
+        citedNodes: citedCount,
           ...madeFromConfig(prepared),
         },
         trust: prepared.trust,
-        irEnvelope: withUniqueEdgeIds(linkedSpec),
+        irEnvelope: withUniqueEdgeIds(citedSpec),
         diagramKind: "diagram_spec",
         status: "ready",
       });
