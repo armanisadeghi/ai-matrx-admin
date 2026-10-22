@@ -296,10 +296,3 @@ export function streamBatch(
 ): Promise<LineEvent[]> {
   return lineStream(`/video-variants/${projectId}/batch`, body, o, onEvent);
 }
-
-// ── money ───────────────────────────────────────────────────────────────────────────────────────────
-
-export function points(n: number | null | undefined): string {
-  if (n == null) return "—";
-  return `${Math.round(n).toLocaleString()} pts`;
-}

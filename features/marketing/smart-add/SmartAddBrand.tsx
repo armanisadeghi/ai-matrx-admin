@@ -89,7 +89,6 @@ import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
-import { useSocialSpend } from "@/features/marketing/social/cost";
 import { BrandCard, CustomAdd, situationOf } from "./SmartAddExtras";
 import { CompareDialog } from "./compare/CompareDialog";
 import { compareSlots, isAnswered } from "./compare/compareSlots";
@@ -1122,15 +1121,12 @@ export function SmartAddBrand({
   // Recent posts fetched per confirmed account after Create: its own setting (platform 30, org/person override).
   const postsKnob = Number(useSessionKnob("social.smart_add_posts_default"));
   const postsPerAccount = Number.isFinite(postsKnob) && postsKnob >= 0 ? postsKnob : 30;
-  const spendOrg = useAppSelector((st) => st.appContext?.organization_id ?? null);
   // Provision values stay on the server: the inputs capture, its window and "Capture again" are an admin's
   // debug view only (Arman, 2026-10-15/16).
   const canSeeProvision = useAppSelector(
     (st) => selectAdminFeature(st, "provision.open-any-snapshot") && Boolean(selectIsDebugMode(st)),
   );
-  const spend = useSocialSpend(spendOrg);
   const trackedAccounts = basics.accounts.filter((a) => a.platform);
-  const postsPoints = postsPerAccount ? spend.postsTotalText(trackedAccounts.map((a) => a.platform ?? ""), postsPerAccount) : null;
   const situation = situationOf(visible, rounds.length > 0 && !working);
   // One vocabulary for every found thing (web.brand_relation_kind) — the web step answers from it too.
   const { kinds: relationKinds } = useRelationKinds(relate);
@@ -2551,7 +2547,6 @@ export function SmartAddBrand({
                   basics.websiteUrl ? websiteHost(basics.websiteUrl) : null,
                   basics.accounts.length ? `${basics.accounts.length} ${basics.accounts.length === 1 ? "account" : "accounts"}` : null,
                   trackedAccounts.length && !created && postsPerAccount ? `${postsPerAccount} posts each` : null,
-                  trackedAccounts.length && !created && postsPerAccount ? postsPoints : null,
                 ]
                   .filter((f): f is string => Boolean(f))
                   .map((f, n) => (

@@ -162,7 +162,7 @@ export function BrandCompetitorDirectory() {
   const queryClient = useQueryClient();
   const brandRef = useMemo(() => ({ id: brand.id, organizationId: brand.organizationId }), [brand.id, brand.organizationId]);
   const socialActions = useCompetitorSocialActions(brandRef);
-  const { agentCostText, pointsText } = useSocialSpend(brand.organizationId);
+  const { agentCostText } = useSocialSpend(brand.organizationId);
   const [jobs, setJobs] = useState<BrandCompetitor[]>([]);
   const patchJob = useCallback((key: string, fn: (job: BrandCompetitor) => BrandCompetitor) => {
     setJobs((current) => current.map((job) => (job.key === key ? fn(job) : job)));
@@ -649,7 +649,7 @@ export function BrandCompetitorDirectory() {
           <DialogHeader>
             <DialogTitle>Find socials for {toSearch.length} {toSearch.length === 1 ? rivals.oneLower : rivals.manyLower}?</DialogTitle>
             <DialogDescription>
-              We read each website for its profile links. Nothing is tracked until you press Track{pointsText("track") ? `; each account tracked uses ${pointsText("track")}` : ""}.
+              We read each website for its profile links. Nothing is tracked until you press Track.
             </DialogDescription>
           </DialogHeader>
           <ul className="max-h-48 space-y-0.5 overflow-auto rounded-md border border-border p-2 text-xs">

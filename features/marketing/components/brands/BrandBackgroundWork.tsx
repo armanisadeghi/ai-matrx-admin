@@ -320,10 +320,10 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
     }
   };
   const fetchMissingOnce = async () => {
-    const total = defaultPosts ? spend.postsTotalText(missing.map((a) => a.kind), defaultPosts) : null;
+    const total = defaultPosts ? spend.postsNode(missing.map((a) => a.kind), defaultPosts) : null;
     const ok = await confirm({
       title: `Fetch posts for ${missing.length} accounts?`,
-      description: total ? `Uses ${total.replace(/^≈ /, "about ")}.` : undefined,
+      description: total ?? undefined,
       confirmLabel: "Fetch all posts",
     });
     if (!ok) return;
