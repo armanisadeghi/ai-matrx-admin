@@ -380,7 +380,7 @@ export default function TrashPage() {
         )}
 
         <TrashList
-          surfaceName={TRASH_SURFACE_NAME}
+          pageSurface
           scope={{
             mode: "personal",
             isVaultItem: isVaultCredentialTrashItem,

@@ -50,16 +50,16 @@ const surfaceSpecific: SurfaceValue[] = [
   v("acquisition_have_count", "Sources we have", "number", 140, "How many sources we already have from the expert.", { typicalCharCount: 3 }),
   v("acquisition_have", "What we have", "array", 150, "The sources we already have (first 40): { id, origin (library | rulebook), kind, … as the table shows }.", {
     typicalCharCount: 2500,
-    inlineUpTo: 4000,
+    inlineUpTo: 3000,
   }),
   v("acquisition_connected", "Connected through", "array", 160, "Their connections (first 30): { id, provider, ownerScope, status, account, lastSync, action, href, note }.", {
     typicalCharCount: 1500,
-    inlineUpTo: 3000,
+    inlineUpTo: 2000,
   }),
   v("acquisition_blocked_count", "Stuck", "number", 170, "How many things are stuck.", { typicalCharCount: 3 }),
   v("acquisition_blocked", "What is stuck", "array", 180, "Stuck rows (first 30): { id, origin (block | handoff), what, where, … and the one action that unsticks it }.", {
     typicalCharCount: 1500,
-    inlineUpTo: 3000,
+    inlineUpTo: 2000,
   }),
   v("acquisition_problems", "Problems", "array", 190, "One sentence per row the page refused to render, plus any read cap hit.", { typicalCharCount: 200 }),
 ];

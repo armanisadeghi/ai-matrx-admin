@@ -42,7 +42,7 @@ const surfaceSpecific: SurfaceValue[] = [
     alwaysAvailable: false,
     autoContext: true,
     typicalCharCount: 1500,
-    inlineUpTo: 4000,
+    inlineUpTo: 1500,
     sortOrder: 110,
   },
   {
@@ -64,7 +64,7 @@ const surfaceSpecific: SurfaceValue[] = [
     alwaysAvailable: false,
     autoContext: true,
     typicalCharCount: 3000,
-    inlineUpTo: 8000,
+    inlineUpTo: 5000,
     sortOrder: 130,
   },
   {
@@ -75,7 +75,7 @@ const surfaceSpecific: SurfaceValue[] = [
     alwaysAvailable: false,
     autoContext: true,
     typicalCharCount: 200,
-    inlineUpTo: 2000,
+    inlineUpTo: 1000,
     sortOrder: 140,
   },
 ];

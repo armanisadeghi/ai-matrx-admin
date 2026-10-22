@@ -41,7 +41,7 @@ export function MessagesComposerInput({
   const selection = useRef({ start: 0, end: 0 });
   // `composer_text` is declared only on matrx-user/messenger (the messages surface deliberately has no
   // write target): the box contributes its text and takes an agent's draft there, never sends.
-  const draftSurface = surfaceName === MESSENGER_SURFACE_NAME ? surfaceName : null;
+  const draftSurface = surfaceName === MESSENGER_SURFACE_NAME ? MESSENGER_SURFACE_NAME : null;
   useSurfaceScopeContribution(draftSurface, "messenger-composer", () => ({ composer_text: input.value }) as SurfaceScopePayload);
   useSurfaceWriteHandlers(draftSurface, {
     composer_text: {

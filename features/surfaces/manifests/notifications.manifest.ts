@@ -56,11 +56,11 @@ const surfaceSpecific: SurfaceValue[] = [
     "array",
     170,
     "The first 25 listed, in order: { key (the id triage_notices uses), title, preview, context, category, bucket, unread, count (notices grouped), actors, at }.",
-    { typicalCharCount: 3500, inlineUpTo: 6000 },
+    { typicalCharCount: 3500, inlineUpTo: 4500 },
   ),
   v("open_notice", "Open notice", "object", 180, "The notice shown in the detail pane: the same fields plus its body (up to 2000 characters).", {
     typicalCharCount: 800,
-    inlineUpTo: 3000,
+    inlineUpTo: 1500,
   }),
   v("checked_keys", "Checked", "array", 190, "Keys of the notices the person has ticked.", { autoContext: false, typicalCharCount: 80 }),
 ];

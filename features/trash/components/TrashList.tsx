@@ -20,6 +20,7 @@
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { useSurfaceScopeContribution, useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { TRASH_SURFACE_NAME } from "@/features/surfaces/manifests/trash.manifest";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import SearchableSelect from "@/components/matrx/SearchableSelect";
 import { Loader2, RotateCcw, Trash2 } from "lucide-react";
@@ -115,10 +116,10 @@ export interface TrashListProps {
   /** Words that narrow the rows by title (a host's search box). */
   filterText?: string;
   /**
-   * The page surface this list belongs to (`matrx-user/trash`): the list contributes `trash_items`
-   * and registers `restore_trash_items` there. Omit where the host is not that surface.
+   * True on the personal /trash page (`matrx-user/trash`): the list contributes `trash_items` and
+   * registers `restore_trash_items` there. Omit where the host is not that surface.
    */
-  surfaceName?: string | null;
+  pageSurface?: boolean;
 }
 
 const trashRowKey = (item: TrashListItem) => `${item.entity_token}:${item.id}`;
@@ -139,8 +140,9 @@ export function TrashList({
   rowClassName,
   includeKind,
   filterText,
-  surfaceName = null,
+  pageSurface = false,
 }: TrashListProps) {
+  const surfaceName = pageSurface ? TRASH_SURFACE_NAME : null;
   const org = scope.mode === "organization" ? scope : null;
   const organizationId = org?.organizationId ?? null;
   const [counts, setCounts] = useState<TrashCount[]>([]);
@@ -373,7 +375,7 @@ export function TrashList({
     if (problems.length) refuseSurfaceWrite(`${problems.join(" ")} Nothing was restored.`);
     return rows;
   };
-  useSurfaceWriteHandlers(surfaceName, {
+  useSurfaceWriteHandlers(pageSurface ? TRASH_SURFACE_NAME : null, {
     restore_trash_items: {
       validate: (value: unknown) => void parseRestore(value),
       apply: async (value: unknown) => {

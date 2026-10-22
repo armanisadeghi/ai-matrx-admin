@@ -43,7 +43,7 @@ const surfaceSpecific: SurfaceValue[] = [
   v("document_body", "Document", "string", 120, "The document's words exactly as rendered (Markdown).", {
     autoContext: true,
     typicalCharCount: 5000,
-    inlineUpTo: 10000,
+    inlineUpTo: 8000,
   }),
   v("rendered_at", "Made", "string", 130, "When the document was made.", { autoContext: true, typicalCharCount: 25 }),
   v("document_version", "Wording version", "number", 140, "The version of the template's wording it was made from."),
