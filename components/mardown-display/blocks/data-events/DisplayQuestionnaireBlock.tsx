@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
 import { Input, DisclosureHeader } from "@ai-matrx/design-system/controls";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ai-matrx/design-system";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { stageRemark } from "@ai-matrx/chat/agents/redux/execution-system/instance-resources/remarks";
 
@@ -114,7 +114,8 @@ const DisplayQuestionnaireBlock: React.FC<DisplayQuestionnaireBlockProps> = ({
                           {options.map((label) => (
                             <Button
                               key={label}
-                              variant={answers[i] === label ? "primary" : "outline"}
+                              size="sm"
+                              variant={answers[i] === label ? "default" : "outline"}
                               onClick={() => setAnswers((prev) => ({ ...prev, [i]: label }))}
                             >
                               {label}
@@ -144,7 +145,7 @@ const DisplayQuestionnaireBlock: React.FC<DisplayQuestionnaireBlockProps> = ({
               {submitted === pairsKey ? (
                 <span className="text-xs text-muted-foreground">Added to your next message</span>
               ) : null}
-              <Button variant="primary" onClick={submit} disabled={pairs.length === 0 || submitted === pairsKey}>
+              <Button size="sm" onClick={submit} disabled={pairs.length === 0 || submitted === pairsKey}>
                 {submitted ? "Update" : "Submit"}
               </Button>
             </div>
