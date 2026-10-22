@@ -10,7 +10,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Archive, Check, Copy, History, MessageCircle, Pencil, Plus, Rocket, X } from "lucide-react";
+import { Archive, BookmarkPlus, Building2, Check, Copy, History, MessageCircle, Pencil, Plus, Rocket, X } from "lucide-react";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -24,6 +24,7 @@ import { LAUNCHPAD_SURFACE_NAME } from "@/features/surfaces/manifests/launchpad.
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { toast } from "@/lib/toast";
+import { useUserRole } from "@/features/organizations/hooks";
 import { START_LAUNCHPAD_KEY, useLaunchpadHistory, useLaunchpads, versionAuthor, versionNote } from "../useLaunchpads";
 import { EMPTY_LAUNCHPAD_DOC, addWidget, applyPlacements, compatibleSources, parseLaunchpadDoc, configureWidget, readingOrder, removeWidget, resizeWidget, sameLaunchpadDoc, setBinding, summarizeEdit } from "../doc";
 import { PageBusProvider } from "../bus/react";
@@ -109,8 +110,13 @@ function LaunchpadBody({
   const [renaming, setRenaming] = useState(false);
   const [lastTouched, setLastTouched] = useState<string | null>(null);
   const save = (doc: LaunchpadDoc, note: string, opts: { byAgent?: boolean } = {}) =>
-    pads.save({ key: launchpadKey, title, doc, ...(entry ? { owner: entry.owner } : {}) }, note, opts);
-  const history = useLaunchpadHistory(entry?.recordId ?? null, panel?.kind === "history", (doc, note) => save(doc, note));
+    pads.save({ key: launchpadKey, title, doc, ...(entry ? { owner: entry.owner, organizationId: entry.organizationId } : {}) }, note, opts);
+  // AN ORGANIZATION'S LAUNCHPAD is changed only by its owner or admin (the organization Layout's gate); every
+  // other member reads it and copies it to their own. The same role decides "for the organization" choices.
+  const organizationPad = entry?.owner === "org";
+  const role = useUserRole((organizationPad ? entry.organizationId : pads.activeOrganizationId) ?? undefined);
+  const mayChange = !organizationPad || role.isAdmin;
+  const history = useLaunchpadHistory(entry ? { recordId: entry.recordId, organizationId: entry.organizationId } : null, panel?.kind === "history", (doc, note) => save(doc, note));
   const openRun = useOpenAgentRunWindow();
   const editing = draft !== null;
   const agent = useLaunchpadAgentTools(LAUNCHPAD_SURFACE_NAME, {
@@ -179,11 +185,26 @@ function LaunchpadBody({
 
   const duplicate = async () => {
     if (!saved || !pads.userId) return;
-    const copyTitle = `${title} copy`;
+    const copyTitle = organizationPad ? title : `${title} copy`;
     const key = keyFromTitle(copyTitle, pads.entries.map((e) => e.key));
     const result = await pads.save({ key, title: copyTitle, doc: saved, owner: personOwner(pads.userId) }, `Copied from ${title}`);
     if (!result.ok) return void toast.error(result.error);
     router.push(launchpadHref(key));
+  };
+  /** A copy of this launchpad that everyone in the organization sees (an owner or admin). */
+  const shareWithOrganization = async () => {
+    if (!saved) return;
+    const key = keyFromTitle(title, pads.entries.map((e) => e.key));
+    const result = await pads.save({ key, title, doc: saved, owner: "org" }, `Shared from ${title}`);
+    if (!result.ok) return void toast.error(result.error);
+    toast.success("Everyone in your organization sees this launchpad");
+    router.push(launchpadHref(key));
+  };
+  const saveAsTemplate = async (to: "mine" | "organization") => {
+    if (!saved || !entry) return;
+    const result = await pads.saveAsTemplate({ title, doc: saved, owner: entry.owner, organizationId: entry.organizationId }, to);
+    if (!result.ok) return void toast.error(result.error);
+    toast.success(to === "organization" ? "Your organization can start from this template" : "Saved to your templates");
   };
   const archive = async () => {
     if (!entry) return;
@@ -208,7 +229,9 @@ function LaunchpadBody({
     : [
         { label: "Chat", icon: MessageCircle, onPress: () => void openChat() },
         { label: "History", icon: History, showLabel: true, disabled: !entry, onPress: () => setPanel(panel?.kind === "history" ? null : { kind: "history" }) },
-        { label: "Edit", icon: Pencil, showLabel: true, disabled: !saved || pads.loading, onPress: () => void startEdit() },
+        mayChange
+          ? { label: "Edit", icon: Pencil, showLabel: true, disabled: !saved || pads.loading, onPress: () => void startEdit() }
+          : { label: "Copy to mine", icon: Copy, showLabel: true, disabled: !saved, onPress: () => void duplicate() },
       ];
 
   const configuring = panel?.kind === "configure" && draft ? draft.widgets.find((w) => w.id === panel.id) : undefined;
@@ -237,15 +260,46 @@ function LaunchpadBody({
         backHref="/launchpad"
         parents={[{ label: "Launchpads", href: "/launchpad" }]}
         record={{ name: title, ...(siblings.length > 1 ? { siblings } : {}) }}
-        status={preview ? { label: `Viewing v${preview.version}`, tone: "info" } : editing ? { label: "Editing", tone: "primary" } : undefined}
+        status={
+          preview
+            ? { label: `Viewing v${preview.version}`, tone: "info" }
+            : editing
+              ? { label: "Editing", tone: "primary" }
+              : organizationPad
+                ? { label: "Organization", tone: "info" }
+                : undefined
+        }
         actions={actions}
         menu={
           entry && !editing
             ? {
                 items: [
-                  { id: "rename", label: "Rename", icon: Pencil, onPress: () => setRenaming(true) },
-                  { id: "duplicate", label: "Duplicate", icon: Copy, onPress: () => void duplicate(), disabled: !saved },
-                  { id: "archive", label: "Archive", icon: Archive, onPress: () => void archive(), destructive: true, group: "danger" },
+                  ...(mayChange ? [{ id: "rename", label: "Rename", icon: Pencil, onPress: () => setRenaming(true) }] : []),
+                  {
+                    id: "duplicate",
+                    label: organizationPad ? "Copy to my launchpads" : "Duplicate",
+                    icon: Copy,
+                    onPress: () => void duplicate(),
+                    disabled: !saved,
+                  },
+                  { id: "template", label: "Save as template", icon: BookmarkPlus, onPress: () => void saveAsTemplate("mine"), disabled: !saved },
+                  ...(role.isAdmin
+                    ? [
+                        {
+                          id: "org-template",
+                          label: "Save as organization template",
+                          icon: BookmarkPlus,
+                          onPress: () => void saveAsTemplate("organization"),
+                          disabled: !saved,
+                        },
+                      ]
+                    : []),
+                  ...(role.isAdmin && !organizationPad
+                    ? [{ id: "share", label: "Share with organization", icon: Building2, onPress: () => void shareWithOrganization(), disabled: !saved }]
+                    : []),
+                  ...(mayChange
+                    ? [{ id: "archive", label: "Archive", icon: Archive, onPress: () => void archive(), destructive: true, group: "danger" as const }]
+                    : []),
                 ],
               }
             : undefined
@@ -277,9 +331,11 @@ function LaunchpadBody({
             title="Nothing here yet"
             line="Add widgets from across the app"
             action={
-              <Button variant="primary" icon={<Pencil />} onClick={() => void startEdit()}>
-                Edit
-              </Button>
+              mayChange ? (
+                <Button variant="primary" icon={<Pencil />} onClick={() => void startEdit()}>
+                  Edit
+                </Button>
+              ) : undefined
             }
           />
         ) : (
@@ -379,7 +435,10 @@ function LaunchpadBody({
         confirmLabel="Rename"
         onConfirm={async (next) => {
           if (!saved || !entry) return;
-          const result = await pads.save({ key: launchpadKey, title: next.trim(), doc: saved, owner: entry.owner }, `Renamed to ${next.trim()}`);
+          const result = await pads.save(
+            { key: launchpadKey, title: next.trim(), doc: saved, owner: entry.owner, organizationId: entry.organizationId },
+            `Renamed to ${next.trim()}`,
+          );
           if (!result.ok) toast.error(result.error);
           setRenaming(false);
         }}

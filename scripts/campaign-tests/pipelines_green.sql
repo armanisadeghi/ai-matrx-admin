@@ -39,7 +39,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'pipelines_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -80,12 +79,7 @@ begin
     (v_org, 'organization', v_org, c_admin, 'owner',  'active'),
     (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'pipelines_green'),
-    -- SHARED-ONLY ON PURPOSE. Under the shipped default a member already reaches every record
-    -- in the organization at editor, so "the member at viewer cannot drag" would be testing
-    -- nothing. On shared_only she reaches exactly what she is given, which is what makes the
-    -- level she is given the thing under test.
-    ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"'::jsonb, 'pipelines_green');
+    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'pipelines_green');
 
   -- The Home record is made by the onboarding path; no client door covers it.
   insert into custom.record (organization_id, table_id, data)

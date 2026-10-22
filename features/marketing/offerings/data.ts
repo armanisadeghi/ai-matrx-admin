@@ -11,10 +11,14 @@
  * - `workflow.run` of the `smart_add_brand_offerings` system run for this brand: the run to watch.
  *
  * Writes: Yes → `web.brand_offering` (+ every row of the item `confirmed`, `resolved_offering_id`);
- * No → `web.brand_exclusion` (name match, never returns) + rows `dismissed`.
+ * No → `web.brand_exclusion` (name match, never returns) + rows `dismissed`. Every answer names the person
+ * (`reviewed_at` + `reviewed_by` = the signed-in person; a cleared answer clears both): the person-only readers
+ * (aidream `person_validated_offerings`) and the DB triggers (`web._stance_follows_kept_offering`,
+ * `web._offering_no_withdraws_stances`) act only on an answer that names who gave it.
  */
 
 import { supabase } from "@/utils/supabase/client";
+import { signedInPersonId } from "@/utils/supabase/webDb";
 import type { Json } from "@/types/database.types";
 
 export type Certainty = "confirmed" | "likely" | "possible";
@@ -345,7 +349,12 @@ export async function keepOffering(brand: { id: string; organizationId: string }
   const upd = await supabase
     .schema("web")
     .from("discovered_item")
-    .update({ status: "confirmed", resolved_offering_id: offeringId })
+    .update({
+      status: "confirmed",
+      resolved_offering_id: offeringId,
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: await signedInPersonId(supabase),
+    })
     .in("id", item.rowIds);
   if (upd.error) throw new Error(`Could not mark "${item.name}" kept: ${upd.error.message}`);
   return offeringId;
@@ -370,14 +379,22 @@ export async function rejectOffering(brand: { id: string; organizationId: string
     if (ret.error) throw new Error(`Could not retire "${item.name}": ${ret.error.message}`);
   }
   if (!item.rowIds.length) return;
-  const upd = await supabase.schema("web").from("discovered_item").update({ status: "dismissed" }).in("id", item.rowIds);
+  const upd = await supabase
+    .schema("web")
+    .from("discovered_item")
+    .update({ status: "dismissed", reviewed_at: new Date().toISOString(), reviewed_by: await signedInPersonId(supabase) })
+    .in("id", item.rowIds);
   if (upd.error) throw new Error(`Could not mark "${item.name}" rejected: ${upd.error.message}`);
 }
 
 /** Undo a decision: back to undecided (a kept offering stays; its rows are pending again). */
 export async function clearDecision(item: OfferingItem): Promise<void> {
   if (!item.rowIds.length) return;
-  const upd = await supabase.schema("web").from("discovered_item").update({ status: "pending" }).in("id", item.rowIds);
+  const upd = await supabase
+    .schema("web")
+    .from("discovered_item")
+    .update({ status: "pending", reviewed_at: null, reviewed_by: null })
+    .in("id", item.rowIds);
   if (upd.error) throw new Error(`Could not clear "${item.name}": ${upd.error.message}`);
 }
 

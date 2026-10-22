@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@ai-matrx/chat/host/identity";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { supabase } from "@/utils/supabase/client";
+import { readSurfaceState, writeSurfaceState } from "@/lib/surface-state/userSurfaceState";
 import { toast } from "@/lib/toast";
 import type { Json } from "@/types/database.types";
 import type { Decision, EvidenceItem } from "./evidence";
@@ -66,8 +66,6 @@ interface Stored extends RunAnswers {
 
 /** users.user_surface_state.feature for every Smart Add session (surface_key = the session id). */
 export const SMART_ADD_FEATURE = "smart_add";
-
-const surfaceTable = () => supabase.schema("users").from("user_surface_state");
 
 export const emptyAnswers = (): RunAnswers => ({ decisions: {}, webChoices: {}, relations: {}, namesakes: [], typed: [], skipped: [], taglines: {}, webMarks: {}, separated: [], later: [] });
 
@@ -130,7 +128,10 @@ export function useRunMemory(sessionId: string | null, answers: RunAnswers, rest
     if (!sessionId || !userId || restored.current === sessionId) return;
     restored.current = sessionId;
     void (async () => {
-      const { data } = await surfaceTable().select("state").eq("user_id", userId).eq("feature", SMART_ADD_FEATURE).eq("surface_key", sessionId).is("deleted_at", null).maybeSingle();
+      const data = await readSurfaceState({ userId, feature: SMART_ADD_FEATURE, surfaceKey: sessionId }).catch((e: unknown) => {
+        toast.error("Your saved answers did not load", { description: e instanceof Error ? e.message : String(e) });
+        return null;
+      });
       const saved = unpack(data?.state);
       hasRow.current = !!data;
       if (saved) {
@@ -154,14 +155,11 @@ export function useRunMemory(sessionId: string | null, answers: RunAnswers, rest
         return null;
       });
       if (!organizationId) return;
-      const { error } = await surfaceTable().upsert(
-        { user_id: userId, created_by: userId, updated_by: userId, organization_id: organizationId, feature: SMART_ADD_FEATURE, surface_key: sessionId, state: { ...answers, at: new Date().toISOString() } as unknown as Json },
-        { onConflict: "user_id,feature,surface_key" },
-      );
+      const error = await writeSurfaceState({ userId, organizationId, feature: SMART_ADD_FEATURE, surfaceKey: sessionId, state: { ...answers, at: new Date().toISOString() } as unknown as Json });
       if (error) {
         lastSaved.current = "";
         // Said to the person, never only a console line: their answers are not on the server yet (the next change retries).
-        toast.error("Your answers are not saved yet", { description: error.message });
+        toast.error("Your answers are not saved yet", { description: error });
       } else hasRow.current = true;
     })();
   }, [body, sessionId, userId, readyFor]);

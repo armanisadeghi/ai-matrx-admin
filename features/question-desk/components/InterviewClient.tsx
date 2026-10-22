@@ -241,7 +241,7 @@ export function InterviewClient({
     [queue, currentId],
   );
 
-  const draft = useAnswerDraft(current?.id ?? null);
+  const draft = useAnswerDraft(interviewId, current?.id ?? null);
   const audio = useDictationAudio(current?.id ?? null);
   // Whether the words in the box came from the mic. It rides the ANSWER, not
   // the screen: `answer_source` is part of the record, so a spoken ruling is

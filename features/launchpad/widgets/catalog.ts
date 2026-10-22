@@ -42,6 +42,24 @@ export const MEET_MATRX_PART_OPTIONS = [
 
 export const DEFAULT_KPI_KEYS = "agents,conversations,knowledge_files,published_apps,notes,tasks";
 
+/** The counts strip on a phone: two tiles a row, each this tall, this far apart (KpisWidget draws exactly this). */
+export const KPI_PHONE_COLUMNS = 2;
+export const KPI_TILE_PX = 52;
+export const KPI_GAP_PX = 4;
+/** The frame body's bottom padding (`pb-1`, widgets/frame.tsx). */
+const BODY_PAD_PX = 4;
+
+/** How many counts a `kpis` config shows (unknown keys are skipped, as the body skips them). */
+export function kpiCount(config: Readonly<Record<string, unknown>>): number {
+  return (configText(config, "keys") || DEFAULT_KPI_KEYS).split(",").filter((k) => METRIC_CARDS.some((m) => m.key === k.trim())).length;
+}
+
+/** The counts strip's height on a phone: its rows of tiles, the gaps between them and the body's padding. */
+export function kpiPhoneBodyPx(config: Readonly<Record<string, unknown>>): number {
+  const rows = Math.max(1, Math.ceil(kpiCount(config) / KPI_PHONE_COLUMNS));
+  return rows * KPI_TILE_PX + (rows - 1) * KPI_GAP_PX + BODY_PAD_PX;
+}
+
 const recentLabel = (token: string) => RECENT_KINDS.find((k) => k.value === token)?.label ?? (token || "items");
 const metricLabel = (key: string) => METRIC_CARDS.find((c) => c.key === key)?.label ?? (key || "Metric");
 
@@ -64,6 +82,7 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
         .filter((k) => METRIC_CARDS.some((m) => m.key === k.trim())).length;
       return n ? `Your counts (${n})` : "Your counts";
     },
+    phoneBodyPx: kpiPhoneBodyPx,
   },
   {
     type: "metric",

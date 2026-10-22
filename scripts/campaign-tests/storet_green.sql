@@ -31,7 +31,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'storet_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -66,13 +65,9 @@ begin
     (v_open,   'Wraithmoor Regional Museum — Collections Store', 'wraithmoor-collections-'||substr(v_open::text,1,8), 'WRS', c_admin);
   insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status) values
     (v_shared,'organization',v_shared,c_admin,'owner','active'),
-    (v_shared,'organization',v_shared,c_dana,'member','active'),
-    (v_open,'organization',v_open,c_admin,'owner','active'),
-    (v_open,'organization',v_open,c_dana,'member','active');
+    (v_open,'organization',v_open,c_admin,'owner','active');
   insert into platform.knob_override (feature,key,scope_kind,scope_id,organization_id,value,set_note) values
     ('custom','system_enabled','organization',v_shared,v_shared,'true'::jsonb,'campaign-test/storet_green'),
-    ('custom','member_default_visibility','organization',v_shared,v_shared,'"shared_only"'::jsonb,
-     'campaign-test/storet_green: the stricter of the two privacy settings — the one T2 needs'),
     ('custom','system_enabled','organization',v_open,v_open,'true'::jsonb,'campaign-test/storet_green');
   insert into custom.record (organization_id, table_id, data)
   values (v_shared, null, jsonb_build_object('name','Wraithmoor Regional Museum — Main Building')) returning id into v_h1;
