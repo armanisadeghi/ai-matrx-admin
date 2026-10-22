@@ -6,8 +6,8 @@
  * returns `(options) => handle`, `<XController {...options} />` opens on mount — while summon owns
  * the open/close actions, the instance-id mint, the Controller and the handle.
  *
- * `useOpen` dispatches through the app store hook (works in every tree that has the app store,
- * the lab roots included); `Controller` is summon's own (needs the summon root, `AppSummonProvider`).
+ * `useOpen`, `useClose` and `Controller` dispatch through the app store hook (summon's
+ * `useDispatch` option), so they work in every tree that has the app store, the lab roots included.
  * `check:overlays` (`__tests__/openersUseCreateOpener.test.ts`) fails on a hand-written opener,
  * a hand-copied instance-id mint, or a `multi` flag that disagrees with the definition.
  */
@@ -51,7 +51,10 @@ export function appOpener<Options = Record<string, never>>(
   id: string,
   spec: AppOpenerSpec<Options> = {},
 ): AppOpener<Options> {
-  const opener = createOpener<object>(id, { multi: spec.multi === true });
+  const opener = createOpener<object>(id, {
+    multi: spec.multi === true,
+    useDispatch: useAppDispatch as () => Dispatch,
+  });
   const toOpen = (options: Options) => ({
     instanceId: spec.instanceId
       ? spec.instanceId(options)
@@ -64,10 +67,13 @@ export function appOpener<Options = Record<string, never>>(
     opener.open(dispatch, toOpen(options));
 
   function useOpen() {
-    const dispatch = useAppDispatch() as Dispatch;
+    const openData = opener.useOpen();
     // The React Compiler compiles only top-level components and hooks, never one built inside a
     // factory: the stable identity callers put in effect deps comes from this useCallback.
-    return useCallback((options?: Options) => open(dispatch, options), [dispatch]);
+    return useCallback(
+      (options?: Options) => openData(toOpen(options ?? ({} as Options))),
+      [openData],
+    );
   }
 
   function Controller(props: Options): null {
