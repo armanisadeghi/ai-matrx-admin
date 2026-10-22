@@ -257,6 +257,9 @@ surface). Say which parts you judged as authored content.
   feature is invented to fill it. A mandate opens in place.
 - **Agent feedback read first:** `pnpm surface:feedback --surface <name>` prints
   SQL — run it through the Supabase MCP; fix what agents reported or say why not.
+  A fixed row goes to `status = 'awaiting_review'` with `resolution_notes` (what
+  changed, commit sha) and `testing_instructions`: only Arman sets `resolved`
+  (a trigger refuses it without his `testing_result`).
 - **Proven with a real agent:** the probe reads the page (every visible value
   supplied, nothing undeclared, no `INERT MENU` / `VALUE MAPPING GAP`); with
   write targets, `--agent '<a real request>'` creates two, updates one,
