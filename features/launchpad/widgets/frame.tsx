@@ -5,7 +5,7 @@
 // No layout shift: a widget's box is its grid placement (GridCanvas), decided before any data arrives, and
 // a list's loading skeleton draws exactly the rows that box holds (`widgetCapacity`). Async data never
 // changes a box.
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
@@ -36,6 +36,7 @@ export function WidgetFrame({
   children,
   previewing,
   editing,
+  phoneBodyPx,
 }: {
   type: string;
   icon: LucideIcon;
@@ -46,6 +47,11 @@ export function WidgetFrame({
   previewing?: boolean;
   /** Edit mode: the header is the drag handle and holds the controls. */
   editing?: boolean;
+  /**
+   * The body's own height on a phone (the widget type's `phoneBodyPx`): reserved from the first HTML, before
+   * the body draws, so a phone box (which grows to its content) is already that tall and nothing below moves.
+   */
+  phoneBodyPx?: number | undefined;
 }) {
   return (
     <section
@@ -74,7 +80,17 @@ export function WidgetFrame({
         )}
         {controls ? <div className="flex shrink-0 items-center">{controls}</div> : null}
       </header>
-      <div className={cn("min-h-0 flex-1 overflow-hidden px-1 pb-1", editing && "pointer-events-none select-none")} inert={editing || undefined}>
+      <div
+        data-launchpad-body
+        style={phoneBodyPx ? ({ "--launchpad-phone-body": `${phoneBodyPx}px` } as CSSProperties) : undefined}
+        className={cn(
+          "min-h-0 flex-1 overflow-hidden px-1 pb-1",
+          // The grid canvas's phone test (its container under 40rem), the one place a box grows to its content.
+          phoneBodyPx && "@max-[40rem]/matrx-grid-canvas:min-h-(--launchpad-phone-body)",
+          editing && "pointer-events-none select-none",
+        )}
+        inert={editing || undefined}
+      >
         {children}
       </div>
     </section>
