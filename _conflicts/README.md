@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-22-000052/features/comparison/components/ComparisonView.tsx.held — LOCAL latest 2026-10-22 00:05; GITHUB latest 2026-10-22 00:09; LOCAL lacks 2 of GITHUB's 32 new lines; GITHUB lacks 10 of LOCAL's 40 new lines; recover: git show f85aebcf59:'features/comparison/components/ComparisonView.tsx' / 690edc1361:'features/comparison/components/ComparisonView.tsx'
 
 ## Resolution log
 - 2026-10-21 23:4x PDT — Claude release-health lane resolved `_conflicts/2026-10-21-233111/pnpm-lock.yaml.held` by keeping the live lockfile (41d2739a89): the held side carries no @ai-matrx version newer than live and lacks the `@univerjs/sheets` importer entry package.json declares; its only newer version is the transitive @grpc/grpc-js 1.14.6, which the next install resolves on its own. Verified `pnpm install --frozen-lockfile --lockfile-only` exit 0, `sync:matrx-packages` 33 at npm latest once each. Owner: none needed (lockfile).

@@ -23,9 +23,7 @@ import { cn } from "@/lib/utils";
 import type { CompareField, ComparedItem, ComparisonResult } from "../contract";
 import { comparisonCopyProps } from "../copy";
 import { barFraction, comparedItems, fieldGroups, isNumeric, headlineOf, leadsPhrase, verdictOf, whyLine } from "../verdict";
-import { hasSideBySide, isCardOnly, isRich } from "../place-facts";
 import { ItemLogo } from "./ItemLogo";
-import { ClosedFlag, ReviewsDisclosure, RichField } from "./PlaceFacts";
 
 export interface ComparisonViewProps {
   result: ComparisonResult;
@@ -95,19 +93,13 @@ export function ComparisonView({ result, factsHref, actions, onPick }: Compariso
       {/* ── field by field, grouped by source (a company's facets each get their own group) ── */}
       {compared.length > 0 ? groups.map((g) => {
         const numeric = g.fields.filter(isNumeric);
-        const rich = g.fields.filter((f) => isRich(f) && hasSideBySide(f, result));
-        const text = g.fields.filter((f) => !isNumeric(f) && !isRich(f) && !isCardOnly(f));
+        const text = g.fields.filter((f) => !isNumeric(f));
         return (
           <div key={g.key || "own"} className="space-y-3">
             {g.label ? <FacetHeading result={result} facetKey={g.key} label={g.label} /> : null}
             {numeric.length > 0 ? (
               <section className="grid gap-3 md:grid-cols-2" aria-label={g.label || "Field by field"}>
                 {numeric.map((f) => <FieldCard key={f.key} field={f} result={result} />)}
-              </section>
-            ) : null}
-            {rich.length > 0 ? (
-              <section className="grid gap-3 md:grid-cols-2" aria-label={`${g.label || "Place"} facts`}>
-                {rich.map((f) => <RichField key={f.key} field={f} result={result} />)}
               </section>
             ) : null}
             {text.length > 0 ? <DetailsTable fields={text} items={compared} label={g.label || "Details"} /> : null}
@@ -207,10 +199,13 @@ function ContenderCard({ item, primary, kind, result, factsHref, onPick }: {
       <div className="relative aspect-[4/3] w-full">
         <ItemLogo name={item.name} logoUrl={item.logo_url} website={item.website} size={72} fill={isPhoto(kind)} cover />
         {!failed && !choosing && item.rank > 0 ? (
-          <Badge tone={lead ? "primary" : "neutral"} className="absolute left-2 top-2" aria-label={`Rank ${item.rank}`}>{item.rank}</Badge>
+          <span className={cn("absolute left-2 top-2 flex h-8 min-w-8 items-center justify-center rounded-full px-2 text-base font-semibold tabular-nums shadow-sm",
+            lead ? "bg-primary text-primary-foreground" : "border border-border bg-card text-foreground")}
+          aria-label={`Rank ${item.rank}`}>
+            {item.rank}
+          </span>
         ) : null}
         {item.source_label ? <Badge className="absolute right-2 top-2">{item.source_label}</Badge> : null}
-        <ClosedFlag item={item} />
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
@@ -240,8 +235,6 @@ function ContenderCard({ item, primary, kind, result, factsHref, onPick }: {
       )}
       {!failed && !choosing && pv?.basis ? <SourceLine basis={pv.basis} /> : null}
       {!failed && !choosing && item.thin_sample ? <div><Badge tone="warning">{item.thin_sample}</Badge></div> : null}
-
-      {!failed && !choosing ? <ReviewsDisclosure item={item} /> : null}
 
       <div className="mt-auto flex items-center gap-3 pt-1">
         {facts ? (
