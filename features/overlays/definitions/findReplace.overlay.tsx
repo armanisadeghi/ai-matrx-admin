@@ -14,12 +14,20 @@
  *   (closes the overlay AND disposes the callback group) and `dispose()` (drops
  *   the group without closing).
  * - `<FindReplaceController />` — declarative wrapper.
+ *
+ * THE OVERLAY OWNS THE GROUP'S LIFETIME, never the opener. The right-click menu opens this from
+ * inside its own body, which unmounts the moment the menu closes — before the lazy overlay body
+ * reads the group. Disposing on the opener's unmount left the find bar with no target ("No
+ * results" over a composer holding three matches, 2026-10-21). The group now lives until the
+ * overlay closes (its body's close disposes it) or the same slot is opened again.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { createFindReplaceCallbackGroup } from "./callbacks/findReplace";
+import { createFindReplaceCallbackGroup, findReplaceGroupBySlot as groupBySlot } from "./callbacks/findReplace";
+
+const slotKey = (instanceId?: string) => instanceId ?? "";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "findReplace" as const;
@@ -42,22 +50,8 @@ export interface FindReplaceHandle {
   dispose: () => void;
 }
 
-type HandleRef = {
-  callbackGroupId: string;
-  dispose: () => void;
-};
-
 export function useOpenFindReplace() {
   const dispatch = useAppDispatch();
-  const handlesRef = useRef<Set<HandleRef>>(new Set());
-
-  useEffect(() => {
-    const handles = handlesRef.current;
-    return () => {
-      for (const h of handles) h.dispose();
-      handles.clear();
-    };
-  }, []);
 
   return useCallback(
     (opts: OpenFindReplaceOptions): FindReplaceHandle => {
@@ -65,6 +59,10 @@ export function useOpenFindReplace() {
         getTargetElement: opts.getTargetElement,
         onReplace: opts.onReplace,
       });
+      const key = slotKey(opts.instanceId);
+      // The slot's previous group belongs to the find bar this one replaces.
+      groupBySlot.get(key)?.dispose();
+      groupBySlot.set(key, { callbackGroupId, dispose });
 
       dispatch(
         openOverlay({
@@ -74,26 +72,18 @@ export function useOpenFindReplace() {
         }),
       );
 
-      const handleRef: HandleRef = { callbackGroupId, dispose };
-      handlesRef.current.add(handleRef);
-
-      const close = () => {
-        dispatch(
-          closeOverlay({ overlayId: OVERLAY_ID, instanceId: opts.instanceId }),
-        );
-        dispose();
-        handlesRef.current.delete(handleRef);
-      };
-
       const detach = () => {
+        if (groupBySlot.get(key)?.callbackGroupId === callbackGroupId) groupBySlot.delete(key);
         dispose();
-        handlesRef.current.delete(handleRef);
       };
 
       return {
         overlayId: OVERLAY_ID,
         callbackGroupId,
-        close,
+        close: () => {
+          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId: opts.instanceId }));
+          detach();
+        },
         dispose: detach,
       };
     },

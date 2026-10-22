@@ -24,6 +24,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { brandKindCopy, type BrandRoom } from "@/features/marketing/lib/brand-kind";
 import { BrandIdentityBuilderFeed } from "@/features/marketing/brand-guide/BrandIdentityBuilderFeed";
 import { BrandVisualSuggestions } from "@/features/marketing/brand-guide/BrandVisualSuggestions";
+import { BrandDesignBoardEntry } from "@/features/board/templates/BrandDesignBoardEntry";
 
 /**
  * Brand Identity — who this brand IS, as opposed to what it owns or what the
@@ -142,6 +143,7 @@ export default async function BrandIdentityPage({
               </Card>
             );
           })}
+          <BrandDesignBoardEntry brandId={brand.id} />
         </div>
       </div>
     </div>

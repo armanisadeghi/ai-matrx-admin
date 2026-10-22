@@ -5,10 +5,15 @@
 // and only its id rides the overlay data.
 import FindReplaceWindow from "@ai-matrx/chat/window-panels/windows/find-replace/FindReplaceWindow";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
-import { getFindReplaceCallbackGroup } from "./callbacks/findReplace";
+import { disposeFindReplaceGroup, getFindReplaceCallbackGroup } from "./callbacks/findReplace";
 
 export default function OverlayRender({ data: overlayData, close }: OverlayRenderProps) {
   const data = overlayData as Record<string, unknown> | null | undefined;
-  const group = getFindReplaceCallbackGroup(typeof data?.callbackGroupId === "string" ? data.callbackGroupId : null);
-  return <FindReplaceWindow isOpen onClose={() => close()} getTargetElement={group?.getTargetElement ?? null} onReplace={group?.onReplace ?? null} />;
+  const callbackGroupId = typeof data?.callbackGroupId === "string" ? data.callbackGroupId : null;
+  const group = getFindReplaceCallbackGroup(callbackGroupId);
+  return <FindReplaceWindow isOpen onClose={() => {
+        // The overlay owns the group: closing it drops the live target and replace handler.
+        disposeFindReplaceGroup(callbackGroupId);
+        close();
+      }} getTargetElement={group?.getTargetElement ?? null} onReplace={group?.onReplace ?? null} />;
 }

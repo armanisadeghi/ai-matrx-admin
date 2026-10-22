@@ -46,6 +46,7 @@ export function DesignBoardStartDialog({
   defaultName,
   onStart,
   progress = null,
+  defaultBrandId = null,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -54,6 +55,8 @@ export function DesignBoardStartDialog({
   onStart: (choice: BoardStartChoice) => void;
   /** Set from the press until the board opens: the dialog shows the stages instead of the form. */
   progress?: DesignBoardProgress | null;
+  /** The brand chosen when the dialog opens (opened from a brand's page). */
+  defaultBrandId?: string | null;
 }) {
   const [name, setName] = useState(defaultName);
   const [brief, setBrief] = useState("");
@@ -72,7 +75,7 @@ export function DesignBoardStartDialog({
       setBrief("");
       setStep("start");
       setPicked(null);
-      setBrandId(null);
+      setBrandId(defaultBrandId);
     }
   }
 

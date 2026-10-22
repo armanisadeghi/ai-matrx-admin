@@ -27,11 +27,14 @@ export function BoardTemplateGallery({
   open,
   onOpenChange,
   initialKey,
+  designBrandId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** The template to show first (a preset's starter). */
   initialKey?: string;
+  /** Opened from a brand: go straight to the design-system start (the pack that starts empty), brand chosen. */
+  designBrandId?: string;
 }) {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -46,13 +49,25 @@ export function BoardTemplateGallery({
     if (!open) return;
     let live = true;
     listBoardTemplates().then(
-      (all) => live && (setSaved(all), setError(null)),
+      (all) => {
+        if (!live) return;
+        setSaved(all);
+        setError(null);
+        // From a brand: the design-system start opens at once on the pack that starts empty.
+        const design = designBrandId ? all.find((t) => "startsEmpty" in t && t.startsEmpty) : undefined;
+        if (design) {
+          setPicked(design.key);
+          setStarting(true);
+        } else if (designBrandId) {
+          setError("The design system template isn't available.");
+        }
+      },
       (e: unknown) => live && setError(e instanceof Error ? e.message : "We couldn't list board templates."),
     );
     return () => {
       live = false;
     };
-  }, [open]);
+  }, [open, designBrandId]);
 
   // Until the read lands the built-ins are already usable (they need no read).
   const all = saved ?? BUILTIN_BOARD_TEMPLATES.map((t) => ({ key: t.key, title: t.title, builtin: true, doc: t.build() }));
@@ -142,6 +157,7 @@ export function BoardTemplateGallery({
       onOpenChange={setStarting}
       packKey={current?.key ?? null}
       defaultName={current?.title ?? ""}
+      defaultBrandId={designBrandId ?? null}
       progress={building}
       onStart={(choice) => void use(choice.name, choice)}
     />

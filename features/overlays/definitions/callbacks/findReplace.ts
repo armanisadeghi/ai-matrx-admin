@@ -54,6 +54,22 @@ export function createFindReplaceCallbackGroup(
   };
 }
 
+// ─── Lifetime: the OVERLAY owns a group, never the opener ───────────────────
+// The right-click menu opens Find & Replace from inside its own body, which unmounts the moment
+// the menu closes; a group dropped then left the find bar with no target ("No results").
+
+/** The group behind each open slot: replaced (and the old one dropped) when the slot opens again. */
+export const findReplaceGroupBySlot = new Map<string, { callbackGroupId: string; dispose: () => void }>();
+
+/** Drop a find bar's group (its overlay closed). Safe to call twice. */
+export function disposeFindReplaceGroup(callbackGroupId: string | null | undefined): void {
+  for (const [key, group] of findReplaceGroupBySlot) {
+    if (group.callbackGroupId !== callbackGroupId) continue;
+    findReplaceGroupBySlot.delete(key);
+    group.dispose();
+  }
+}
+
 // ─── Resolution ──────────────────────────────────────────────────────────────
 
 export function getFindReplaceCallbackGroup(
