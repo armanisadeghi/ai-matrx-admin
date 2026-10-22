@@ -34,9 +34,12 @@ export type AiOfferingRow = Database["ai"]["Tables"]["offering"]["Row"];
 /** The retiring row column (access ladder T-13): the catalog screens read the row words
  *  (`shown_to`, `published_to_web`) and never select it. */
 export type RetiredRowColumn = "visibility";
-export type AiEndpointReadRow = Omit<AiEndpointRow, RetiredRowColumn>;
+// test_run_id / test_expires_at carry no client SELECT grant on ai.endpoint or
+// ai.offering (column-granted tables): naming them made the read 403 (2026-10-22).
+export type UngrantedFixtureColumn = "test_run_id" | "test_expires_at";
+export type AiEndpointReadRow = Omit<AiEndpointRow, RetiredRowColumn | UngrantedFixtureColumn>;
 // `variant_id` has no client SELECT grant on ai.offering — a read row never carries it.
-export type AiOfferingReadRow = Omit<AiOfferingRow, RetiredRowColumn | "variant_id">;
+export type AiOfferingReadRow = Omit<AiOfferingRow, RetiredRowColumn | "variant_id" | UngrantedFixtureColumn>;
 export type AiOfferingInsert = Database["ai"]["Tables"]["offering"]["Insert"];
 export type AiOfferingUpdate = Database["ai"]["Tables"]["offering"]["Update"];
 

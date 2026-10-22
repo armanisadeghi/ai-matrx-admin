@@ -23,6 +23,7 @@ import type {
   AiOfferingReadRow,
   AiEndpointReadRow,
   RetiredRowColumn,
+  UngrantedFixtureColumn,
   AiOfferingInsert,
   AiOfferingUpdate,
   AiProvider,
@@ -550,9 +551,6 @@ const OFFERING_PUBLIC_COLUMNS =
 
 type EndpointAdminKey = "byok_secret_key" | "auth_ref" | "base_url";
 // The retiring row column is never read; the row words are (access ladder T-13).
-// test_run_id / test_expires_at carry no client SELECT grant on ai.endpoint or
-// ai.offering (column-granted tables); naming them made the read 403 (2026-10-22).
-type UngrantedFixtureColumn = "test_run_id" | "test_expires_at";
 type EndpointPublicRow = Omit<AiEndpointRow, EndpointAdminKey | RetiredRowColumn | UngrantedFixtureColumn>;
 type EndpointAdminColumns = Pick<AiEndpointRow, EndpointAdminKey>;
 // `variant_id` carries no client SELECT grant (live column_privileges, 2026-10-16), so the
