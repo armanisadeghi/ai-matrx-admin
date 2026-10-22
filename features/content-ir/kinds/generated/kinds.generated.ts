@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1685 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1689 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "db13f4cf206e";
+export const KIND_REGISTRY_FINGERPRINT = "156d907830fd";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -5624,7 +5624,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 141 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_finish_door_input, …).
+ * * Shared by 146 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_finish_door_input, …).
  */
 export type JsonValue = unknown;
 
@@ -11577,6 +11577,82 @@ export interface StrandedExample {
   is_canonical?: boolean;
   kind_version?: number | null;
   validation_status?: string | null;
+}
+
+/**
+ * ``_class``: a class the learner filed the record under.
+ *  *
+ *  * From kind `study_record_class_fact`.
+ */
+export interface StudyRecordClass {
+  id: string;
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * ``_record_fact``: what the record is (empty facts are left out).
+ *  *
+ *  * From kind `study_record_record_fact`.
+ */
+export interface StudyRecordFacts {
+  id?: string | null;
+  /**
+   * flashcard set, quiz, practice test, notes…
+   */
+  kind?: string | null;
+  title?: string | null;
+  topic?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * The day it was made, YYYY-MM-DD.
+   */
+  made_at?: string | null;
+  difficulty?: string | null;
+  description?: string | null;
+}
+
+/**
+ * ``_related``: another study item from the same material or class.
+ *  *
+ *  * From kind `study_record_related_fact`.
+ */
+export interface StudyRecordRelated {
+  id: string;
+  why?: string | null;
+  kind?: string | null;
+  type: string;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * ``_source``: one piece of material the record was made from, with its text when readable.
+ *  *
+ *  * From kind `study_record_source_fact`.
+ */
+export interface StudyRecordSource {
+  id: string;
+  text?: string | null;
+  type: string;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * How much of the text is here, or why it is not.
+   */
+  text_note?: string | null;
 }
 
 /**
@@ -28587,16 +28663,6 @@ export interface DraftCritique {
    * On a re-review: what improved since the prior review.
    */
   improved_since: string[];
-}
-
-/**
- * Kind `e2e_throwaway_preview_d74998` (registry v1).
- */
-export interface E2eThrowawayPreviewD74998 {
-  items?: string[];
-  title?: string;
-  __kind: "e2e_throwaway_preview_d74998";
-  summary?: string;
 }
 
 /**
@@ -57633,6 +57699,136 @@ export interface StudyPlanDay {
 }
 
 /**
+ * Kind `study_record_class_fact` (registry v1).
+ */
+export interface StudyRecordClassFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_class_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: StudyRecordClass[] | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
+ * Kind `study_record_content_fact` (registry v1).
+ */
+export interface StudyRecordContentFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_content_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: string | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
+ * Kind `study_record_record_fact` (registry v1).
+ */
+export interface StudyRecordRecordFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_record_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: StudyRecordFacts | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
+ * Kind `study_record_related_fact` (registry v1).
+ */
+export interface StudyRecordRelatedFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_related_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: StudyRecordRelated[] | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
+ * Kind `study_record_source_fact` (registry v1).
+ */
+export interface StudyRecordSourceFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_source_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: StudyRecordSource[] | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
  * The durable file a study kit hangs off — its id IS the kit id.
  *  *
  *  * Kind `study_source_anchor` (registry v4).
@@ -66650,7 +66846,6 @@ export type GeneratedKindSlug =
   | "domain_authority"
   | "domain_fold_report"
   | "draft_critique"
-  | "e2e_throwaway_preview_d74998"
   | "education.analytics_narrate.offer"
   | "education.card_image.offer"
   | "education.card_image_generation.offer"
@@ -67601,6 +67796,11 @@ export type GeneratedKindSlug =
   | "study_plan"
   | "study_plan_block"
   | "study_plan_day"
+  | "study_record_class_fact"
+  | "study_record_content_fact"
+  | "study_record_record_fact"
+  | "study_record_related_fact"
+  | "study_record_source_fact"
   | "study_source_anchor"
   | "study_summary"
   | "study_tip"
@@ -68338,7 +68538,6 @@ export interface KindPayloadBySlug {
   "domain_authority": DomainAuthority;
   "domain_fold_report": DomainFoldReport;
   "draft_critique": DraftCritique;
-  "e2e_throwaway_preview_d74998": E2eThrowawayPreviewD74998;
   "education.analytics_narrate.offer": EducationAnalyticsNarrateOffer;
   "education.card_image.offer": EducationCardImageOffer;
   "education.card_image_generation.offer": EducationCardImageGenerationOffer;
@@ -69289,6 +69488,11 @@ export interface KindPayloadBySlug {
   "study_plan": StudyPlan;
   "study_plan_block": StudyPlanBlock;
   "study_plan_day": StudyPlanDay;
+  "study_record_class_fact": StudyRecordClassFact;
+  "study_record_content_fact": StudyRecordContentFact;
+  "study_record_record_fact": StudyRecordRecordFact;
+  "study_record_related_fact": StudyRecordRelatedFact;
+  "study_record_source_fact": StudyRecordSourceFact;
   "study_source_anchor": StudySourceAnchor;
   "study_summary": StudySummary;
   "study_tip": StudyTip;
@@ -70030,7 +70234,6 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "domain_authority",
   "domain_fold_report",
   "draft_critique",
-  "e2e_throwaway_preview_d74998",
   "education.analytics_narrate.offer",
   "education.card_image.offer",
   "education.card_image_generation.offer",
@@ -70981,6 +71184,11 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "study_plan",
   "study_plan_block",
   "study_plan_day",
+  "study_record_class_fact",
+  "study_record_content_fact",
+  "study_record_record_fact",
+  "study_record_related_fact",
+  "study_record_source_fact",
   "study_source_anchor",
   "study_summary",
   "study_tip",
