@@ -221,10 +221,10 @@ const COMPUTED_REFS: Record<string, string> = {
     "declared in support-sessions/service.ts (live row)",
   "features/agents/agent-creators/services/agentBuilderService.ts":
     "hands `ensureEffectiveKnob` to `@ai-matrx/agents/models` resolveNewAgentModelId, which asks exactly " +
-    "AGENT_AUTHORING_DEFAULT_MODEL_KNOB (`agents.model_prefs` / `agent_authoring_default_model`; live row)",
+    "NEW_AGENT_DEFAULT_MODEL_KNOB (`agents.model_prefs` / `new_agent_default_model`; live row, migration 1512)",
   "../aidream/apps/shared/chat/src/agents/identity/new-agent-model.ts":
     "the chat package's twin of the agentBuilderService read: resolveNewAgentModelId asks exactly " +
-    "AGENT_AUTHORING_DEFAULT_MODEL_KNOB (`agents.model_prefs` / `agent_authoring_default_model`; live row)",
+    "NEW_AGENT_DEFAULT_MODEL_KNOB (`agents.model_prefs` / `new_agent_default_model`; live row, migration 1512)",
   "components/rich-content/prose/remote-image-policy.tsx":
     "one read per authorship at `rich_content.remote_images` / `autoload_${authorship}`; every " +
     "authorship in REMOTE_IMAGE_DEFAULTS is proven seeded by the 'remote images' case below",

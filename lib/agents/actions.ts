@@ -100,7 +100,7 @@ async function insertSeededDefinition(
   // never a superseded model the builder's picker would "heal" on first view (an unsaved model
   // change nobody made on a brand-new agent).
   // A seed that pins no model (the blank agent, templates) starts on the new-agent knob's model —
-  // `agents.model_prefs.agent_authoring_default_model` through the package resolver, never a literal
+  // `agents.model_prefs.new_agent_default_model` through the package resolver (successor-resolved), never a literal
   // and never null.
   if (!row.model_id) {
     const { modelId } = await resolveNewAgentModelId((fullKey) => {
@@ -109,7 +109,7 @@ async function insertSeededDefinition(
         { feature: fullKey.slice(0, dot), key: fullKey.slice(dot + 1) },
         { organizationId: row.organization_id ?? null },
       );
-    });
+    }, supabase as unknown as SuccessionClient);
     row = { ...row, model_id: modelId };
   }
   let attempt = row.model_id

@@ -49,6 +49,7 @@ import { useFileActions } from "@/features/files/components/core/FileActions/use
 import { ShareLinkDialogBody } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
 import { PermissionsDialogBody } from "@/features/files/components/core/PermissionsDialog/PermissionsDialog";
 import { useSharing } from "@/utils/permissions/hooks";
+import { useOwnerLabel } from "@/features/files/hooks/useOwnerLabel";
 import { RowControls } from "@/features/sharing/components/RowControls";
 
 export interface FileShareTabProps {
@@ -67,6 +68,7 @@ export function FileShareTab({ fileId, className }: FileShareTabProps) {
   const activeShareLinks = useAppSelector((s) =>
     selectActiveShareLinksForResource(s, fileId),
   );
+  const owner = useOwnerLabel(file?.ownerId, file?.organizationId);
   const actions = useFileActions(fileId);
   const sharing = useSharing(
     "file",
@@ -142,7 +144,8 @@ export function FileShareTab({ fileId, className }: FileShareTabProps) {
             label="Owner"
             value={
               <span className="inline-flex items-center gap-1.5">
-                <RecordId value={file.ownerId} label="Owner" />
+                <span title={file.ownerId}>{owner.label}</span>
+                {owner.resolved ? null : <RecordId value={file.ownerId} label="Owner" />}
                 {isOwner ? <OwnerBadge /> : null}
               </span>
             }

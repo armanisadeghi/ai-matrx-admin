@@ -4,7 +4,7 @@
  * healed it on first view and the unsaved-changes diff showed a model change nobody made.
  *
  * The model a NEW agent starts on is no longer a constant: the blank seed pins none (it comes from the
- * `agents.model_prefs.agent_authoring_default_model` knob through `resolveNewAgentModelId`), so the
+ * `agents.model_prefs.new_agent_default_model` knob through `resolveNewAgentModelId`), so the
  * superseded id below is test data on a seed, never read from the package.
  */
 const inserted: Array<Record<string, unknown>> = [];
@@ -26,7 +26,7 @@ const fakeSupabase = {
 const KNOB_MODEL = "3f1c9a52-7b4e-4d2a-9c61-5e8a0b2d7f15";
 jest.mock("@/lib/scoped-config/effectiveKnobs.server", () => ({
   readEffectiveKnobOnServer: async (address: { feature: string; key: string }) =>
-    `${address.feature}.${address.key}` === "agents.model_prefs.agent_authoring_default_model" ? KNOB_MODEL : undefined,
+    `${address.feature}.${address.key}` === "agents.model_prefs.new_agent_default_model" ? KNOB_MODEL : undefined,
 }));
 jest.mock("@/utils/supabase/server", () => ({ createClient: async () => fakeSupabase }));
 jest.mock("@/utils/supabase/claimsUser", () => ({ getClaimsUser: async () => ({ data: { user: { id: "me" } }, error: null }) }));

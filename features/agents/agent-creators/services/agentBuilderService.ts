@@ -5,7 +5,7 @@ import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database.types";
 import type { VariableDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
-import { resolveNewAgentModelId } from "@ai-matrx/agents/models";
+import { resolveNewAgentModelId, type SuccessionClient } from "@ai-matrx/agents/models";
 import { ensureEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
 import { stripNullish } from "@/utils/supabase/payload";
 // The ONE write-organization resolver (explicit value → the org the user
@@ -53,7 +53,7 @@ export interface AgentBuilderResult {
   error?: string;
 }
 
-// The model a new agent starts on is the `agents.model_prefs.agent_authoring_default_model`
+// The model a new agent starts on is the `agents.model_prefs.new_agent_default_model`
 // knob (organization → person → device), resolved by the package's `resolveNewAgentModelId` —
 // never a constant here. See @ai-matrx/agents/models default-model.ts.
 
@@ -174,8 +174,9 @@ export async function createAgentFromBuilder(
           ? owner.organizationId
           : await ensureOrgId(undefined);
 
-    const { modelId } = await resolveNewAgentModelId((fullKey) =>
-      ensureEffectiveKnob(organizationId, userId, fullKey),
+    const { modelId } = await resolveNewAgentModelId(
+      (fullKey) => ensureEffectiveKnob(organizationId, userId, fullKey),
+      supabase as unknown as SuccessionClient,
     );
 
     const payload = {
