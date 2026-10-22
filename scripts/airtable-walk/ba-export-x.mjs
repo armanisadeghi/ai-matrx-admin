@@ -1,0 +1,12 @@
+import { live, gotoTable, say } from "./ba-lib.mjs";
+const { browser, page, shot } = await live(false);
+await gotoTable(page, process.env.TID);
+const s = page.locator('input[placeholder="Search records"]').first();
+await s.click(); await s.pressSequentially("Bravo", { delay: 80 }); await page.waitForTimeout(4000);
+say("rows after search", await page.$$eval("tr[data-row-id]", (rs) => rs.map((r) => r.innerText.split("\n")[0])));
+const el = await page.evaluate(() => { const e = document.elementFromPoint(1570, 66)?.closest("button"); return e ? { label: e.getAttribute("aria-label"), title: e.title, html: e.outerHTML.slice(0, 200) } : null; });
+say("icon", el);
+await page.mouse.click(1570, 66); await page.waitForTimeout(2000);
+say("menu", await page.locator("[role^=menuitem],[role=option],[role=menu] button,[role=dialog] button").allInnerTexts());
+await shot("x-toolbar");
+await browser.close();
