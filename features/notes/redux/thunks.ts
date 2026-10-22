@@ -81,7 +81,7 @@ import {
   setNoteField,
 } from "./slice";
 import { defaultListFilter } from "@/lib/list-scope";
-import { excludeEmbeddedNotes } from "../service/embeddedNotes";
+import { excludeEmbeddedNotes, readEmbeddedNoteIds } from "../service/embeddedNotes";
 import {
   assertCurrentNotesUser,
   dispatchNoteEvent,
@@ -158,6 +158,7 @@ type NoteListRow = Pick<
   | "shown_to"
   | "published_to_web"
   | "version"
+  | "metadata"
 >;
 
 /**
@@ -202,7 +203,7 @@ export const fetchNotesList = createAsyncThunk<
                 // fetchNoteContent (audit N-24 — every route entry and every
                 // refresh used to download the full text of every note).
                 .select(
-                  "id, created_by, label, content_preview, home_scope_id, tags, updated_at, position, organization_id, shown_to, published_to_web, version",
+                  "id, created_by, label, content_preview, home_scope_id, tags, updated_at, position, organization_id, shown_to, published_to_web, version, metadata",
                   { count: "exact" },
                 )
                 .is("deleted_at", null);
@@ -863,7 +864,7 @@ export const fetchDeletedNotes = createAsyncThunk<
         { count: "exact" },
       )
       .not("deleted_at", "is", null);
-    trashQuery = listScope.apply(trashQuery);
+    trashQuery = excludeEmbeddedNotes(listScope.apply(trashQuery));
     const { data, error, count } = await trashQuery
       .order("deleted_at", { ascending: false })
       .order("id", { ascending: true })
@@ -964,13 +965,19 @@ export const fetchSharedNotesList = createAsyncThunk<
     // A newer fetch started while we were in flight — drop this result.
     if (seq !== sharedListFetchSeq) return;
 
-    const incomingIds = new Set((data ?? []).map((row) => row.id as string));
+    // The RPC returns no metadata, so the embedded marker is read for exactly these ids; rows a
+    // feature keeps inside itself (board tile, sticky) are not "shared notes" and never list.
+    const embeddedIds = await readEmbeddedNoteIds(supabase as unknown as Parameters<typeof readEmbeddedNoteIds>[0], (data ?? []).map((row) => row.id as string));
+    if (seq !== sharedListFetchSeq) return;
+    const sharedRows = (data ?? []).filter((row) => !embeddedIds.has(row.id as string));
+
+    const incomingIds = new Set(sharedRows.map((row) => row.id as string));
 
     // Single batched dispatch — see fetchNotesList for why a per-note loop
     // is forbidden here.
     dispatch(
       upsertNotesFromServer({
-        upserts: (data ?? []).map((row) => ({
+        upserts: sharedRows.map((row) => ({
           note: {
             id: row.id,
             label: row.label ?? "Untitled",

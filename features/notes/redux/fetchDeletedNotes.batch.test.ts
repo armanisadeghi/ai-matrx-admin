@@ -28,6 +28,7 @@ function trashQuery(rows: unknown[], count: number | null = rows.length) {
     select: jest.fn(),
     eq: jest.fn(),
     not: jest.fn(),
+    or: jest.fn(),
     order: jest.fn(),
     range: jest.fn(async () => ({ data: rows, error: null, count })),
   };
@@ -35,6 +36,7 @@ function trashQuery(rows: unknown[], count: number | null = rows.length) {
   chain.select.mockReturnValue(chain);
   chain.eq.mockReturnValue(chain);
   chain.not.mockReturnValue(chain);
+  chain.or.mockReturnValue(chain);
   chain.order.mockReturnValue(chain);
   return chain;
 }

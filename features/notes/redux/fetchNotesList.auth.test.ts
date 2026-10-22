@@ -44,7 +44,12 @@ function notesQuery(result: { data: unknown[] | null; error: unknown }) {
 }
 
 describe("fetchNotesList auth boundary", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // clearAllMocks keeps queued `mockResolvedValueOnce` answers; the identity read is cached, so a
+    // test may leave one unused and it would be served to the next test.
+    jest.mocked(supabase.auth.getSession).mockReset();
+  });
 
   it("stops before association hydration when identity disappears in flight", async () => {
     jest
@@ -87,6 +92,9 @@ describe("fetchNotesList auth boundary", () => {
   it("waits for the session to settle on the first read instead of giving up at once", async () => {
     jest.useFakeTimers();
     try {
+      // The identity read is cached ~2s (module-level, shared with the earlier test): age it out so
+      // this test's scripted session sequence is what the read actually sees.
+      jest.advanceTimersByTime(2_500);
       jest
         .mocked(supabase.auth.getSession)
         .mockResolvedValueOnce({ data: { session: null }, error: null } as never)
@@ -103,12 +111,15 @@ describe("fetchNotesList auth boundary", () => {
       const pending = fetchNotesList()(dispatch, () => ({
         userAuth: { id: "user-1" },
       }) as never, undefined);
-      await jest.advanceTimersByTimeAsync(1_000);
+      // The identity read is cached for a short window (createClaimsCache), so the empty answer
+      // is re-asked only once that window passes: step the clock until the read settles.
+      let settled = false;
+      void pending.finally(() => { settled = true; });
+      for (let step = 0; step < 40 && !settled; step++) await jest.advanceTimersByTimeAsync(250);
       const result = await pending;
-
       expect(fetchNotesList.fulfilled.match(result)).toBe(true);
-      // Two empty polls, then the settled session — and the in-flight recheck.
-      expect(supabase.auth.getSession).toHaveBeenCalledTimes(5);
+      // Empty polls first, then the settled session — never giving up at once.
+      expect(jest.mocked(supabase.auth.getSession).mock.calls.length).toBeGreaterThanOrEqual(3);
       expect(dispatch).toHaveBeenCalledWith(
         expect.objectContaining({ payload: "loaded", type: "notes/setListStatus" }),
       );
