@@ -31,7 +31,6 @@ import type {
   CxTextContent,
 } from "@ai-matrx/chat/public-chat/types/cx-tables";
 import { splitContentIntoBlocksV2 } from "@ai-matrx/rich-content/display/markdown-classification/processors/utils/content-splitter-v2";
-import { reconstructBlockMarkdown } from "@ai-matrx/chat/agents/redux/execution-system/utils/assemble-cx-content-blocks";
 import { getCatalogEntry } from "@ai-matrx/rich-content/mermaid/catalog";
 import {
   detectDiagramType,
@@ -41,12 +40,12 @@ import {
   resolveCanvasType,
   resolveArtifactDefByKind,
 } from "@/features/canvas/artifact-types/artifact-type-registry";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import {
   readEnvelope,
   reconstructRegionValue,
 } from "@ai-matrx/rich-content/kinds/redux/render-block-envelope";
-import { wrapArtifactText } from "./artifactWire";
+import { locateBlockSource } from "./blockSourceSpan";
 import {
   detectKindInJsonText,
   type KindValueDetection,
@@ -61,6 +60,12 @@ export interface PlannedArtifact {
   title: string;
   /** Raw payload string the type's renderer consumes (markdown or JSON). */
   content: string;
+  /**
+   * The block's body EXACTLY as the answer holds it — the bytes the stored `<artifact>` tag
+   * wraps. Never re-written: a structured value's compact JSON goes to the canvas row
+   * (`content` / `structured`), never into the person's answer.
+   */
+  body: string;
   /**
    * Structured (kind-IR) value for kind-detected JSON blocks — persisted AS
    * `canvas_items.content.data` (an object carrying `__kind`, zero
@@ -81,12 +86,38 @@ export interface PlannedArtifact {
 export interface ArtifactPendingMarker {
   __artifactPending: true;
   artifactIndex: number;
+  /** The block's wrapper + body exactly as written — put back if the artifact is not saved. */
+  source: string;
+  /** The text block this marker was cut from (its pieces re-join into that one block). */
+  of: CxTextContent;
 }
 
-export function isArtifactPending(
-  b: CxContentBlock | ArtifactPendingMarker,
-): b is ArtifactPendingMarker {
-  return (b as ArtifactPendingMarker).__artifactPending === true;
+/**
+ * The bytes of a text block around its materialized blocks, verbatim. Consecutive pieces and
+ * markers that share `of` re-join, with NO separator, into one text block carrying every other
+ * field of `of` (id, metadata, citations).
+ */
+export interface TextPiece {
+  type: "text";
+  text: string;
+  of: CxTextContent;
+}
+
+export function isTextPiece(b: unknown): b is TextPiece {
+  return (
+    typeof b === "object" &&
+    b !== null &&
+    (b as TextPiece).type === "text" &&
+    typeof (b as TextPiece).of === "object"
+  );
+}
+
+export function isArtifactPending(b: unknown): b is ArtifactPendingMarker {
+  return (
+    typeof b === "object" &&
+    b !== null &&
+    (b as ArtifactPendingMarker).__artifactPending === true
+  );
 }
 
 export interface MaterializationPlan {
@@ -94,10 +125,11 @@ export interface MaterializationPlan {
   artifacts: PlannedArtifact[];
   /**
    * Rewritten content. NEW artifacts are `ArtifactPendingMarker`s (id filled by
-   * the orchestrator); everything else is preserved as text runs + passthrough
-   * non-text blocks. Only consumed when `hasChanges` is true.
+   * the orchestrator); the text around them is kept as verbatim `TextPiece`s and
+   * every other block passes through as the same object. Assemble it with
+   * `assembleMaterializedContent`. Only consumed when `hasChanges` is true.
    */
-  rewrittenBlocks: (CxContentBlock | ArtifactPendingMarker)[];
+  rewrittenBlocks: (CxContentBlock | ArtifactPendingMarker | TextPiece)[];
   /** True when at least one NEW artifact was found to materialize. */
   hasChanges: boolean;
   /** UUID refs already present in the source, for the orchestrator to verify. */
@@ -226,7 +258,7 @@ export function planMaterialization(
   content: CxContentBlock[],
   options?: PlanMaterializationOptions,
 ): MaterializationPlan {
-  const rewritten: (CxContentBlock | ArtifactPendingMarker)[] = [];
+  const rewritten: (CxContentBlock | ArtifactPendingMarker | TextPiece)[] = [];
   const artifacts: PlannedArtifact[] = [];
   const materializedArtifactIds = new Set<string>();
 
@@ -234,32 +266,35 @@ export function planMaterialization(
   // materialized + new). New artifacts take their position as artifact_index.
   let position = 0;
 
-  // Accumulates faithful markdown for consecutive non-pending content so it
-  // collapses back into a single text block between pending markers.
-  let textRun = "";
-  const appendText = (s: string) => {
-    if (!s) return;
-    if (textRun.length > 0) textRun += "\n\n";
-    textRun += s;
-  };
-  const flushTextRun = () => {
-    if (textRun.length > 0) {
-      rewritten.push({ type: "text", text: textRun } as CxTextContent);
-      textRun = "";
-    }
-  };
-
   for (const block of content) {
     // Non-text blocks (thinking, tool_call, media, …) pass through verbatim —
     // they are never raw artifact markup.
     if (!isTextBlock(block)) {
-      flushTextRun();
       rewritten.push(block);
       continue;
     }
 
     const text = block.text ?? "";
-    if (!text) continue;
+    if (!text) {
+      rewritten.push(block);
+      continue;
+    }
+
+    // BYTE-EXACT (2026-10-21): only a materialized block's wrapper is replaced. Its body and
+    // every byte around it stay exactly as written — the pieces between are sliced from `text`,
+    // never re-serialized from the split blocks.
+    const pieces: (ArtifactPendingMarker | TextPiece)[] = [];
+    let cursor = 0;
+    const cut = (start: number, end: number, artifactIndex: number) => {
+      if (start > cursor) pieces.push({ type: "text", text: text.slice(cursor, start), of: block });
+      pieces.push({
+        __artifactPending: true,
+        artifactIndex,
+        source: text.slice(start, end),
+        of: block,
+      });
+      cursor = end;
+    };
 
     const splitterBlocks = splitContentIntoBlocksV2(text);
     for (const sb of splitterBlocks) {
@@ -270,7 +305,7 @@ export function planMaterialization(
       const canvasType = resolveCanvasType(sb.type, artifactType);
 
       // Already materialized (R3): a `<artifact>` carrying a real canvas UUID.
-      // Pass it through verbatim and DON'T re-materialize. Still counts toward
+      // Left exactly as written and NOT re-materialized. Still counts toward
       // position so later new artifacts get a non-colliding index. Checked
       // FIRST so a materialized structured body is never re-detected.
       const existingId =
@@ -285,26 +320,8 @@ export function planMaterialization(
         materializedArtifactIds.add(existingId as string);
         if (!options?.missingArtifactIds?.has(existingId as string)) {
           position += 1;
-          const rawXml =
-            typeof sb.metadata?.rawXml === "string"
-              ? (sb.metadata.rawXml as string)
-              : undefined;
-          appendText(
-            rawXml ??
-              wrapArtifactText({
-                canvasType,
-                id: existingId as string,
-                version:
-                  typeof sb.metadata?.version === "number"
-                    ? (sb.metadata.version as number)
-                    : 1,
-                title:
-                  typeof sb.metadata?.artifactTitle === "string"
-                    ? (sb.metadata.artifactTitle as string)
-                    : undefined,
-                body: sb.content ?? "",
-              }),
-          );
+          const span = locateBlockSource(text, cursor, sb);
+          if (span) cursor = Math.max(cursor, span.end);
           continue;
         }
       }
@@ -314,11 +331,22 @@ export function planMaterialization(
       // `<artifact>`-tagged bodies carrying a kind. When the tag's type and
       // the kind's type disagree, the tag wins (falls to the string path).
       const structuredHit = detectStructuredArtifact(sb);
-      if (
-        structuredHit &&
-        (!canvasType || canvasType === structuredHit.def.canvasType)
-      ) {
-        flushTextRun();
+      const structuredFits =
+        structuredHit !== null &&
+        (!canvasType || canvasType === structuredHit.def.canvasType);
+      if (!structuredFits && !canvasType) continue; // not an artifact — stays as written
+
+      // A block whose exact bytes cannot be placed is left as written: it is never saved from
+      // bytes the answer does not hold.
+      const span = locateBlockSource(text, cursor, sb);
+      if (!span) {
+        console.warn(
+          `[materialize] a ${sb.type} block was left as written: its exact source was not found`,
+        );
+        continue;
+      }
+
+      if (structuredFits && structuredHit) {
         position += 1;
         let structured = structuredHit.structured;
         if (structuredHit.def.canvasType === "diagram") {
@@ -339,40 +367,24 @@ export function planMaterialization(
           artifactIndex: position,
           canvasType: structuredHit.def.canvasType,
           title,
-          // Wire form: the `<artifact>` tag body is compact canonical JSON —
-          // model-readable and durable; the UI routes by UUID.
+          // The canvas row's payload: compact canonical JSON beside the structured value.
           content: JSON.stringify(structured),
+          body: span.body,
           structured,
           metadata: { kind: structuredHit.kind },
         });
-        rewritten.push({
-          __artifactPending: true,
-          artifactIndex: position,
-        } as ArtifactPendingMarker);
+        cut(span.start, span.end, position);
         continue;
       }
 
-      if (!canvasType) {
-        // Not an artifact — re-serialize to markdown and keep inline.
-        appendText(
-          reconstructBlockMarkdown({
-            type: sb.type,
-            content: sb.content ?? "",
-            data: sb.language ? { language: sb.language } : null,
-            metadata: sb.metadata ?? null,
-          }),
-        );
-        continue;
-      }
-
-      // NEW materializable artifact → flush preceding text, emit a pending
-      // marker + plan. The orchestrator fills the UUID and serializes to R1 text.
-      flushTextRun();
+      // NEW materializable artifact → a pending marker + plan. The orchestrator
+      // fills the UUID and serializes it to R1 text around the verbatim body.
+      const newCanvasType = canvasType as string;
       position += 1;
       let title = titleFor(sb.type, sb.metadata, position);
       let artifactMetadata: Record<string, unknown> | undefined;
       let structured: Record<string, unknown> | undefined;
-      if (canvasType === "mermaid") {
+      if (newCanvasType === "mermaid") {
         // Mermaid identity travels in metadata: the user-facing label is the
         // diagram type's feature name (Flowchart, Mind Map, …), never "mermaid".
         const source = sb.content ?? "";
@@ -380,7 +392,7 @@ export function planMaterialization(
         title =
           extractMermaidTitle(source) ?? getCatalogEntry(diagramType).label;
         artifactMetadata = { diagramType, title };
-      } else if (canvasType === "diagram") {
+      } else if (newCanvasType === "diagram") {
         try {
           structured = materializeDiagramValue(
             parseDiagramJSON(sb.content ?? "") as unknown as Record<
@@ -398,20 +410,23 @@ export function planMaterialization(
       }
       artifacts.push({
         artifactIndex: position,
-        canvasType,
+        canvasType: newCanvasType,
         title,
         content: sb.content ?? "",
+        body: span.body,
         structured,
         metadata: artifactMetadata,
       });
-      rewritten.push({
-        __artifactPending: true,
-        artifactIndex: position,
-      } as ArtifactPendingMarker);
+      cut(span.start, span.end, position);
     }
-  }
 
-  flushTextRun();
+    if (pieces.length === 0) {
+      rewritten.push(block);
+      continue;
+    }
+    if (cursor < text.length) pieces.push({ type: "text", text: text.slice(cursor), of: block });
+    rewritten.push(...pieces);
+  }
 
   return {
     artifacts,
@@ -419,4 +434,39 @@ export function planMaterialization(
     hasChanges: artifacts.length > 0,
     materializedArtifactIds: [...materializedArtifactIds],
   };
+}
+
+/**
+ * The stored content for a plan: each pending marker becomes the wire text `wireFor` returns
+ * (its `<artifact>` tag around the verbatim body) — or its own source again when `wireFor`
+ * returns null (an artifact that was not saved keeps its bytes). Pieces re-join into the text
+ * block they came from with no separator; every other block is the same object.
+ */
+export function assembleMaterializedContent(
+  plan: Pick<MaterializationPlan, "rewrittenBlocks">,
+  wireFor: (marker: ArtifactPendingMarker) => string | null,
+): CxContentBlock[] {
+  const out: CxContentBlock[] = [];
+  let of: CxTextContent | null = null;
+  let run = "";
+  const close = () => {
+    if (of) out.push({ ...of, text: run } as CxTextContent);
+    of = null;
+    run = "";
+  };
+  for (const b of plan.rewrittenBlocks) {
+    if (isArtifactPending(b) || isTextPiece(b)) {
+      const piece = isArtifactPending(b) ? (wireFor(b) ?? b.source) : b.text;
+      if (of !== b.of) {
+        close();
+        of = b.of;
+      }
+      run += piece;
+      continue;
+    }
+    close();
+    out.push(b);
+  }
+  close();
+  return out;
 }
