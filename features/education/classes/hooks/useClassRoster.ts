@@ -33,25 +33,31 @@ export function useClassRoster(
   enabled = true,
 ): UseClassRosterReturn {
   const [members, setMembers] = useState<ClassRosterMember[]>([]);
-  // Loading from the first render: before the read starts, "no rows" would
-  // tell the page and the agent the list is empty when it was never read.
-  const [loading, setLoading] = useState(() => Boolean(classId) && enabled);
+  // The read this hook will run (null = none). Loading is DERIVED: true exactly
+  // while that read has not finished, so it is true from the first render when
+  // the read will run, and never true when it will not (a missing input).
+  const readKey = classId && enabled ? classId : null;
+  const [doneKey, setDoneKey] = useState<string | null>(null);
+  const [inFlight, setInFlight] = useState(false);
+  const loading = readKey !== null && (inFlight || doneKey !== readKey);
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!classId || !enabled) return;
-    setLoading(true);
+    const key = readKey;
+    if (!key) return;
+    setInFlight(true);
     setError(null);
     try {
-      setMembers(await getClassRoster(classId));
+      setMembers(await getClassRoster(key));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load the roster.");
       setMembers([]);
     } finally {
-      setLoading(false);
+      setInFlight(false);
+      setDoneKey(key);
     }
-  }, [classId, enabled]);
+  }, [readKey]);
 
   useEffect(() => {
     void refresh();

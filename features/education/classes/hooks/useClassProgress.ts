@@ -38,23 +38,30 @@ export function useClassProgressOverview(
   enabled = true,
 ): UseClassProgressOverviewReturn {
   const [overview, setOverview] = useState<ClassProgressOverview | null>(null);
-  // Loading from the first render (never "empty" before the read starts).
-  const [loading, setLoading] = useState(() => Boolean(classId) && enabled);
+  // The read this hook will run (null = none). Loading is DERIVED: true exactly
+  // while that read has not finished — from the first render when it will run,
+  // never when it will not.
+  const readKey = classId && enabled ? classId : null;
+  const [doneKey, setDoneKey] = useState<string | null>(null);
+  const [inFlight, setInFlight] = useState(false);
+  const loading = readKey !== null && (inFlight || doneKey !== readKey);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
-    if (!classId || !enabled) return;
-    setLoading(true);
+    const key = readKey;
+    if (!key) return;
+    setInFlight(true);
     setError(null);
     try {
-      setOverview(await getClassProgressOverview(classId));
+      setOverview(await getClassProgressOverview(key));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load class progress.");
       setOverview(null);
     } finally {
-      setLoading(false);
+      setInFlight(false);
+      setDoneKey(key);
     }
-  }, [classId, enabled]);
+  }, [readKey]);
 
   useEffect(() => {
     void reload();
@@ -77,13 +84,19 @@ export function useMyClassProgress(
 ): UseMyClassProgressReturn {
   const userId = useAppSelector(selectUserId);
   const [progress, setProgress] = useState<AssignmentProgress[]>([]);
-  // Loading from the first render (never "empty" before the read starts).
-  const [loading, setLoading] = useState(() => Boolean(classId) && enabled);
+  // The read this hook will run (null = none: no class, not enabled, or no
+  // signed-in user yet). Loading is DERIVED: true exactly while that read has
+  // not finished, so a user id that never arrives never leaves it stuck true.
+  const readKey = classId && userId && enabled ? `${classId}:${userId}` : null;
+  const [doneKey, setDoneKey] = useState<string | null>(null);
+  const [inFlight, setInFlight] = useState(false);
+  const loading = readKey !== null && (inFlight || doneKey !== readKey);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
-    if (!classId || !userId || !enabled) return;
-    setLoading(true);
+    const key = readKey;
+    if (!key || !classId || !userId) return;
+    setInFlight(true);
     setError(null);
     try {
       setProgress(await getClassStudentProgress(classId, userId));
@@ -91,9 +104,10 @@ export function useMyClassProgress(
       setError(e instanceof Error ? e.message : "Could not load your progress.");
       setProgress([]);
     } finally {
-      setLoading(false);
+      setInFlight(false);
+      setDoneKey(key);
     }
-  }, [classId, userId, enabled]);
+  }, [readKey, classId, userId]);
 
   useEffect(() => {
     void reload();
