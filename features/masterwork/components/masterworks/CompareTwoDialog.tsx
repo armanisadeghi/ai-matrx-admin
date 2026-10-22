@@ -22,10 +22,7 @@
 import { useState } from "react";
 import { GitCompareArrows, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  firstBlockingReason,
-  GatedActionButton,
-} from "@/components/official/GatedActionButton";
+import { firstBlockingReason, GatedActionButton, Input } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -34,7 +31,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { MasterworkDictationOrigin } from "@/features/masterwork/MasterworkDictationOrigin";

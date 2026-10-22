@@ -15,7 +15,7 @@
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input, Chip } from "@ai-matrx/design-system/controls";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -34,7 +34,6 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { familyService } from "../familyService";
@@ -48,7 +47,6 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createEducationFamilyScope, type FamilyLinkEntry } from "@/features/surfaces/manifests/education-family.manifest";
 import { guardianLinkWriteHandlers } from "../guardianLinkWrites";
-import { Chip } from "@ai-matrx/design-system/controls";
 
 function displayName(link: GuardianLinkView): string {
   return link.counterpart_name?.trim() || link.counterpart_email || "Learner";

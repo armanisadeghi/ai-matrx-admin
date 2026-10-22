@@ -62,7 +62,7 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, MiddleTruncate } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -71,7 +71,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { MiddleTruncate } from "@/components/official/MiddleTruncate";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useScopeTree } from "@/features/scopes/hooks/useScopeTree";
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";

@@ -26,7 +26,8 @@ import type { DrillDefinition } from "@ai-matrx/records";
 
 const ensureEffectiveKnob = jest.fn();
 jest.mock("@/lib/scoped-config/effectiveKnobs", () => ({ ensureEffectiveKnob: (...a: unknown[]) => ensureEffectiveKnob(...a) }));
-jest.mock("@/components/official/InfoHint", () => ({ InfoHint: ({ text }: { text: string }) => <i data-hint={text} /> }));
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"), InfoHint: ({ text }: { text: string }) => <i data-hint={text} /> }));
 jest.mock("@/components/navigation/AppLink", () => ({ __esModule: true, default: ({ children }: { children: unknown }) => <a>{children as never}</a> }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/features/admin/usage-drill/useUsageDrill", () => ({ usageNameResolver: () => ({ resolve: async () => ({ ok: true, names: {} }) }) }));

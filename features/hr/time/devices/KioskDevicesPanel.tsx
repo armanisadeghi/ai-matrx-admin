@@ -29,7 +29,7 @@ import { DeviceFleetTable } from "./DeviceFleetTable";
 import { PairingCodeDialogBody } from "./PairingCodePanel";
 import type { KioskDeviceAdminSource } from "./deviceAdminSource";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 
 export function KioskDevicesPanel({ source }: { source: KioskDeviceAdminSource }) {
   const [rows, setRows] = useState<KioskDeviceRow[] | null>(null);

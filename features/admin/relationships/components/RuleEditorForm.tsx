@@ -5,12 +5,11 @@
  * the create canvas tab. Pure presentational; parent owns EditorState.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input } from "@ai-matrx/design-system/controls";
 import { TriangleAlert, Trash2 } from "lucide-react";
 import { EntityTypeChip } from "@/components/entity-types/EntityTypeChip";
 import { EntityTypeCombobox } from "@/components/entity-types/EntityTypeCombobox";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,

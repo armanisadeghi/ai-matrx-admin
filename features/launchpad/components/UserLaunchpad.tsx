@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowUpRight, Compass, RefreshCw, SearchX } from "lucide-react";
 import { PinButton } from "@/components/favorites/PinButton";
 import { usePinned } from "@/components/favorites/usePinned";
-import SearchInput from "@/components/official/SearchInput";
+import { SearchInput } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { QuickActions } from "@/features/dashboard/components/QuickActions";
 import { PinnedSection } from "@/features/dashboard/components/PinnedSection";

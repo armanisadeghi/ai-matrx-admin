@@ -30,7 +30,7 @@ import {
   X,
 } from "lucide-react";
 import type { SourceManifestEntry } from "@ai-matrx/agents/sources";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { SegmentedControl, InfoHint } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -41,7 +41,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { InfoHint } from "@/components/official/InfoHint";
 import { useStagesStatus } from "@/features/rag/hooks/useStagesStatus";
 import type { ProcessingJob } from "@/features/rag/hooks/useProcessingRunner";
 import { factsPollDelayMs } from "@/features/sources/sourceRows";

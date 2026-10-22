@@ -33,7 +33,7 @@ import {
 import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
 import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
-import CitationChip from "@/components/official/citation-chip/CitationChip";
+import { CitationChip } from "@ai-matrx/design-system/controls";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { NotesAPI } from "@/features/notes/service/notesApi";
 

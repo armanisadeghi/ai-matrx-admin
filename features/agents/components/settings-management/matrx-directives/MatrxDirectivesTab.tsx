@@ -37,7 +37,7 @@ import {
   groupDirectiveOptions,
 } from "./directiveOptions";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 
 type Policy = "default" | "auto" | "ask" | "off";
 

@@ -18,7 +18,7 @@
  * component's own org-wide mode; this lane mounts it and owns no second copy.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { useSearchParams } from "next/navigation";

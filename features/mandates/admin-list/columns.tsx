@@ -9,7 +9,7 @@
 // removed. Filter/sort values come from ./fields.ts, the one reader.
 
 import { formatCount } from "@ai-matrx/kit/format";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";

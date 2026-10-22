@@ -21,8 +21,7 @@ import type { AgentUsageHistoryCount } from "@/features/agents/redux/usages/usag
 import { DIMENSION_ORDER, HISTORY_TILE, dimensionMeta, type UsageDimension } from "./dimensions";
 import type { DimensionCount } from "./unified-rows";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Chip } from "@ai-matrx/design-system/controls";
-import { InfoHint } from "@/components/official/InfoHint";
+import { Chip, InfoHint } from "@ai-matrx/design-system/controls";
 
 export type DimensionReadState = "loading" | "failed" | "ready";
 

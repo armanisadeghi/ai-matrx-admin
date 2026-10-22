@@ -10,7 +10,7 @@
 //
 // React Compiler is on: no manual memo.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Chip } from "@ai-matrx/design-system/controls";
 import { printLivePage } from "@ai-matrx/rich-content/mermaid/lazy-draw";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,6 @@ import type {
   LearningGainRow,
 } from "../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Chip } from "@ai-matrx/design-system/controls";
 
 const SURFACE_NAME = "matrx-user/education-progress";
 /** Any quiz can be taken as a baseline ("Measure my learning gain"). */

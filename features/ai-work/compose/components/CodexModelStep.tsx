@@ -13,7 +13,7 @@
 
 import { useId } from "react";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useModels } from "@/features/ai-models/hooks/useModels";
 
 /** The catalog maker whose models Codex can run. */

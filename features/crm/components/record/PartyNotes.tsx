@@ -20,7 +20,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import {
   CollapsibleText,
   CollapsibleTextGroupControls,
-} from "@/components/official/CollapsibleText";
+} from "@ai-matrx/design-system/controls";
 import type { PlatformComment as Comment } from "@ai-matrx/associations";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

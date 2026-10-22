@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Badge as StatusBadge, EmptyState, Input, PropertyRow, RegionSkeleton, SearchField, Select, Tile, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
@@ -19,17 +19,6 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Badge as StatusBadge,
-  EmptyState,
-  Input,
-  PropertyRow,
-  RegionSkeleton,
-  SearchField,
-  Select,
-  Tile,
-  type BadgeTone,
-} from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { KpiTile } from "@/components/official/kpi/KpiTile";

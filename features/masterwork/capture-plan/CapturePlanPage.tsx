@@ -18,7 +18,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // Expert's own goal, a method's one-line ask, or a fact with an arithmetic
 // derivation behind it.
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MatrxDataTable, type MatrxColumnDef, type MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-table";
 import { Badge } from "@/components/ui/badge";

@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import React, {
   useEffect,
@@ -65,7 +65,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { toast, recordToast, dismissRecordToasts } from "@/lib/toast";
 
@@ -82,7 +81,6 @@ import {
   NewSurfaceDialog,
   type NewSurfaceDraftScope,
 } from "@/features/surfaces/components/NewSurfaceDialog";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 import {
   bulkSetSurfacesActive,

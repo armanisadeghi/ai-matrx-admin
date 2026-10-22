@@ -32,7 +32,7 @@
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 
-import { CalloutBanner } from "@/components/official/CalloutBanner";
+import { CalloutBanner } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { useAssociations } from "@/features/scopes/hooks/useAssociations";
 import { useEntityTitles } from "@/features/scopes/hooks/useEntityTitles";

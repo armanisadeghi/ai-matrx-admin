@@ -1,7 +1,6 @@
 "use client";
 
-import { PropertyRow } from "@ai-matrx/design-system/controls";
-import { InfoHint } from "@/components/official/InfoHint";
+import { PropertyRow, InfoHint } from "@ai-matrx/design-system/controls";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 /**
  * features/hr/time/shared/RuleSnapshot.tsx — the door behind every computed figure.

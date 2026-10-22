@@ -49,7 +49,7 @@ import {
 import { detailPageHref } from "@/features/window-panels/detail/DetailHost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 
 type FileRow = { id: string; file_name: string; mime_type: string | null };

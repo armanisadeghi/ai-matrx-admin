@@ -21,7 +21,7 @@
  * scroll of the page body.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 

@@ -32,7 +32,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CalloutBanner } from "@/components/official/CalloutBanner";
+import { CalloutBanner } from "@ai-matrx/design-system/controls";
 import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
 import { humanizeRelative } from "../../utils/triggerHumanize";
 import type { AgendaTask, AutoSuspendedBlock } from "../../types";

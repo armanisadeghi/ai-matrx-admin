@@ -14,7 +14,7 @@ import React, {
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { Input, Button as ControlButton, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -73,7 +73,6 @@ import { setPreference } from "@/lib/redux/preferences/userPreferencesSlice";
 import { selectPreferencesLoadStatus } from "@/lib/redux/preferences/userPreferenceSelectors";
 import type { RootState } from "@/lib/redux/store";
 import { readRetiredKey, removeRetiredKey } from "@/lib/sync/client-storage";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 // ─── App registry ─────────────────────────────────────────────────────────────
 

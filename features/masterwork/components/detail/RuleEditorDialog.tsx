@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import {
   firstBlockingReason,
   GatedActionButton,
-} from "@/components/official/GatedActionButton";
+} from "@ai-matrx/design-system/controls";
 import {
   Dialog,
   DialogContent,

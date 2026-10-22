@@ -1,6 +1,6 @@
 "use client";
 
-import { DateField } from "@ai-matrx/design-system/controls";
+import { DateField, InfoHint } from "@ai-matrx/design-system/controls";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CircleAlert,
@@ -20,7 +20,6 @@ import {
 } from "@/features/admin/codex-usage/service";
 import { useDesktopPresence } from "@ai-matrx/chat/agents/hooks/useDesktopPresence";
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatCount, formatPercent } from "@ai-matrx/kit/format";

@@ -40,8 +40,7 @@ import {
 import { createSourceRef } from "@ai-matrx/agents/sources";
 import type { CanonicalBlockIR } from "@ai-matrx/content-ir";
 import { Button } from "@/components/ui/button";
-import { Input, SegmentedControl } from "@ai-matrx/design-system/controls";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { Input, SegmentedControl, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,

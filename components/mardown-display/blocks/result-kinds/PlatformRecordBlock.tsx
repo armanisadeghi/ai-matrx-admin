@@ -56,7 +56,7 @@ import { cardTitleField } from "@ai-matrx/records-ui/helpers";
 import { withRecordsUi, type RecordsUiModule } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { PanelRightTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import InfoHint from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import {
   useTableKind,

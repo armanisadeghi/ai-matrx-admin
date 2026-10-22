@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Chip, Select } from "@ai-matrx/design-system/controls";
 import CardFaceContent from "@/components/mardown-display/blocks/flashcards/CardFaceContent";
 // features/education/media/audio/components/AudioReviewSession.tsx
 //
@@ -70,7 +70,6 @@ import type {
   FcSetRow,
 } from "@/features/flashcards/data/types";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { Chip, Select } from "@ai-matrx/design-system/controls";
 
 const ANSWER_SECONDS = 12;
 const AUDIO_REVIEW_METHOD = "audio_review";

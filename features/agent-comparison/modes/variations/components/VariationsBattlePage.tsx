@@ -60,7 +60,7 @@ import { VariationsColumn } from "./VariationsColumn";
 import { VariationsToolbar } from "./VariationsToolbar";
 import { VariationsEditorWindow } from "./VariationsEditorWindow";
 import type { VariationColumn as VariationColumnType } from "../types";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { DragCursorMonitor } from "@ai-matrx/design-system";
 
 const RUNS_WINDOW_ID = "agent-comparison-variations-runs";

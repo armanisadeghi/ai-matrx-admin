@@ -14,7 +14,7 @@
  * stopped rendering voids.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import type { HrFixtureCase } from "@/features/hr/mock/transport";
 

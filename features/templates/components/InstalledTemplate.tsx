@@ -21,7 +21,7 @@ import { ArrowUpRight, BookOpen, Database, Eye, Play, Table2 } from "lucide-reac
 import { Grid, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { CustomDataBinding } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
 import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import { CustomDataBindingPreview } from "@/features/agents/components/variables-management/custom-data/CustomDataBindingPreview";

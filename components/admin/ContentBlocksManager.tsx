@@ -114,7 +114,7 @@ import { requestRaw } from "@/lib/python-client";
 import { getUserMessage } from "@ai-matrx/api";
 import { isJsonObject } from "@/types/json";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 
 interface ContentBlocksManagerProps {
   className?: string;

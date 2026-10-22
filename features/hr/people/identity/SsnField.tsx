@@ -29,12 +29,11 @@
 // code path that can render back what was typed. `autoComplete="off"` keeps the
 // browser from offering to remember it.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { Loader2, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { cn } from "@/lib/utils";
 

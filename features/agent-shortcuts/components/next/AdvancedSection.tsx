@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Input } from "@ai-matrx/design-system/controls";
-import { PropertyRow } from "@ai-matrx/design-system/controls";
+import { Input, PropertyRow, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import {
   ShortcutFieldRow as FieldRow,
   ShortcutToggleRow as ToggleRow,
@@ -23,7 +22,6 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { StoredModelOverridesField } from "@ai-matrx/chat/agents/components/run-controls/StoredModelOverridesField";
 import type { ConversationSettingsWords } from "@ai-matrx/chat/agents/components/run-controls/ConversationModelSettings";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 /** The stored blob, or null when it is absent / not an object. */
 const asJsonObject = (value: unknown): Record<string, unknown> | null =>

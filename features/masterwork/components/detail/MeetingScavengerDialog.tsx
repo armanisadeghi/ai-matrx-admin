@@ -1,14 +1,10 @@
 "use client";
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput, firstBlockingReason, GatedActionButton, Input } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FileUp, Mic, Users } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import {
-  firstBlockingReason,
-  GatedActionButton,
-} from "@/components/official/GatedActionButton";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -18,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Switch } from "@/components/ui/switch";

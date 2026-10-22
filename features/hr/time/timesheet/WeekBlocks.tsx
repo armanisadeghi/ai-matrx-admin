@@ -24,7 +24,7 @@
  * over hours and no timestamp subtraction anywhere below — see `scripts/check-hr-time-arithmetic.ts`.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronRight, Layers, SunMoon } from "lucide-react";
 

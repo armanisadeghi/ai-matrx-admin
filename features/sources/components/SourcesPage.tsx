@@ -22,7 +22,7 @@
  * paste text · import a transcript. A row opens the document viewer.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input } from "@ai-matrx/design-system/controls";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -55,7 +55,6 @@ import {
   toArchiveFilter,
   type ArchiveFilterValue,
 } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { archiveConfirmSentence } from "@/features/trash/archiveCopy";

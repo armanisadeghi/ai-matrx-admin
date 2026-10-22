@@ -7,7 +7,8 @@ import type { VoiceTransferReceipt as Receipt } from "@/lib/communications/voice
 jest.mock("./transfer-receipt-service", () => ({
   loadTransferReceipt: jest.fn(),
 }));
-jest.mock("@/components/official/InfoHint", () => ({ InfoHint: () => null }));
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"), InfoHint: () => null }));
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;

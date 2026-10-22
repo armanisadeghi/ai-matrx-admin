@@ -1,6 +1,6 @@
 "use client";
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { FileText, ScanText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";

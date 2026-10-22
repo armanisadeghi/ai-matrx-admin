@@ -11,7 +11,7 @@
 //                 simulating the real timed drill (no AI), then auto-ends.
 // Admin-gated (selectIsAdmin). No mock, no simulation — real audio, real playback.
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CircleStop, Mic, Radio, Square, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";

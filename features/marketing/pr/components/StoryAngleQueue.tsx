@@ -43,7 +43,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SearchInput } from "@/components/official/SearchInput";
+import { SearchInput, Chip, ChipSet } from "@ai-matrx/design-system/controls";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { cn } from "@/lib/utils";
@@ -78,7 +78,6 @@ import {
   type SourceRequest,
   type StoryAngle,
 } from "@/features/marketing/pr/types";
-import { Chip, ChipSet } from "@ai-matrx/design-system/controls";
 
 // ─── Views ──────────────────────────────────────────────────────────────────
 

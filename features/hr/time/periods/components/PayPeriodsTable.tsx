@@ -15,7 +15,7 @@
  * no dates and derives no totals.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { HR_TIME_PAGE_SIZES } from "../../api/timePage";
 import { useRouter } from "next/navigation";

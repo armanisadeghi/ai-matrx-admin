@@ -56,10 +56,7 @@ import { clearUploadEntry, uploadFiles } from "@/features/files/redux/thunks";
 import { selectFailedUploadsForFolderPath } from "@/features/files/redux/selectors";
 import type { UploadState } from "@/features/files/types";
 import { Button } from "@/components/ui/button";
-import {
-  firstBlockingReason,
-  GatedActionButton,
-} from "@/components/official/GatedActionButton";
+import { firstBlockingReason, GatedActionButton, Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { AssociationCaptureToolbar } from "@ai-matrx/associations/react";
 import {
@@ -105,7 +102,6 @@ import { useLaunchGate } from "@/lib/launch-gate/useLaunchGate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { LIBRARIES_PATH } from "@/features/knowledge/modulePaths";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 /**
  * The registered source→rulebook pairs live in ONE place — `../../sourceLinks`

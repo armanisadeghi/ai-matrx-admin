@@ -4,7 +4,7 @@ import { VoiceTransferReceipt } from "./VoiceTransferReceipt";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { loadTransferContexts } from "./transfer-context-service";
 import type { TransferContextItem } from "./transfer-context";

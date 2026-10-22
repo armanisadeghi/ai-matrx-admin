@@ -7,7 +7,7 @@
 // id-based run page which owns the live stream — so the creation is persistent
 // and returnable from the very first second.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";

@@ -10,7 +10,7 @@
 // through the canonical `searchUserByEmail`.
 
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";

@@ -27,7 +27,8 @@ jest.mock("@/components/cost/costUnit", () => ({ selectCostUnit: () => "points",
 jest.mock("@/components/cost/pointsRate.client", () => ({ usePointsRate: () => 20_000 }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: () => "87a6e699-3622-4869-8843-d0867456c0dd" }));
 jest.mock("@/lib/redux/preferences/userPreferencesSlice", () => ({ setModulePreferences: (p: unknown) => ({ type: "prefs", payload: p }) }));
-jest.mock("@/components/official/InfoHint", () => ({ InfoHint: ({ text }: { text: string }) => <i data-hint={text} /> }));
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"), InfoHint: ({ text }: { text: string }) => <i data-hint={text} /> }));
 jest.mock("@/components/navigation/AppLink", () => ({ __esModule: true, default: ({ children }: { children: unknown }) => <a>{children as never}</a> }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 

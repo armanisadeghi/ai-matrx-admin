@@ -31,7 +31,7 @@
  * this file never invents an explanation for a page.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { OrganizationTag } from "@/features/commerce-review/components/OrganizationTag";
 import {
   AlertTriangle,

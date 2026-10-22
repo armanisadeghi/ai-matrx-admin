@@ -34,7 +34,7 @@ import { Button } from "@/components/ui/button";
 import {
   firstBlockingReason,
   GatedActionButton,
-} from "@/components/official/GatedActionButton";
+} from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { LoadingSpinner } from "@ai-matrx/design-system";
 import { knobInt } from "@/lib/knobs/featureKnobs";

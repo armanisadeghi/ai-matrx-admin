@@ -13,7 +13,7 @@
 // active registry tokens (server prop) against the generated vocabulary and
 // stays up until they match again.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useEffect, useMemo, useState, useTransition } from "react";

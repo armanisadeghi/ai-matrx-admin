@@ -19,7 +19,7 @@
 
 import { GitBranch } from "lucide-react";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 
 /** SPEC-EMPLOYEES §1.5's flow types, with the routing that applies when nobody overrides it. */

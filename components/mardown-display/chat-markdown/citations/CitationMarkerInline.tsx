@@ -20,7 +20,7 @@ import {
   PopoverTrigger,
 } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
-import { CitationPopoverBody } from "@/components/official/citation-chip/CitationChip";
+import { CitationPopoverBody, Button } from "@ai-matrx/design-system/controls";
 import {
   citationSourceDisplayKind,
   type MessageCitationSource,
@@ -32,7 +32,6 @@ import {
   citationSourceLocator,
 } from "@ai-matrx/chat/agents/components/messages-display/citations/citation-source";
 import { useOpenCitationSource } from "./useOpenCitationSource";
-import { Button } from "@ai-matrx/design-system/controls";
 
 interface CitationMarkerInlineProps {
   "data-n"?: string | number;

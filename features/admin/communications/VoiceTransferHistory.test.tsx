@@ -36,7 +36,8 @@ jest.mock("./transfer-context-service", () => ({
   ],
 }));
 
-jest.mock("@/components/official/InfoHint", () => ({
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"),
   InfoHint: () => null,
 }));
 

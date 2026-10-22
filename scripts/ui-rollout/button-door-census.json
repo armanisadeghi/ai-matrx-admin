@@ -118,7 +118,6 @@
   "components/matrx/navigation/module-header/ModuleHeader.tsx:86  icon-only-no-label",
   "components/matrx/pagination/index.tsx:45  icon-only-non-glyph-children",
   "components/matrx/pagination/index.tsx:63  icon-only-non-glyph-children",
-  "components/official/GatedActionButton.tsx:141  button-wrapper-type",
   "components/official/IconSelect.tsx:78  icon-only-non-glyph-children",
   "components/official/MobileOverlayWrapper.tsx:82  icon-only-no-label",
   "components/official/cards/EmptyStateCard.tsx:70  dynamic-variant",

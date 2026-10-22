@@ -9,7 +9,7 @@
  * explicitly rather than pretending.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Captions, CaptionsOff, CircleDashed, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Muted, timeCell, type EntityColumnSpec } from "@/lib/entity-list/columns";

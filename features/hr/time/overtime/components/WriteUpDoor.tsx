@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { UNAPPROVED_OT_IS_PAID } from "../overtimeVocabulary";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 
 export interface WriteUpDoorProps {
   /** Employee-relations authority over THIS subject. Without it the door does not render at all. */

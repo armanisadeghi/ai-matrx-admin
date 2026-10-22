@@ -30,7 +30,7 @@
 
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import { AlertTriangle, Infinity as InfinityIcon, ArrowUpRight } from "lucide-react";
 

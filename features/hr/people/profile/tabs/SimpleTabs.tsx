@@ -31,7 +31,7 @@ import { useState } from "react";
 import { FileWarning, Info, ShieldAlert, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { cn } from "@/lib/utils";
 import { NewCorrectiveActionDialog } from "@/features/hr/people/relations/components/NewCorrectiveActionDialog";

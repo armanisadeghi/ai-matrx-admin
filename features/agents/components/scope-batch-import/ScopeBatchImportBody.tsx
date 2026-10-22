@@ -73,7 +73,7 @@ import {
 } from "@ai-matrx/chat/agents/utils/agent-edit-access";
 import { contextItemBindingOf } from "@ai-matrx/chat/agents/utils/variable-binding";
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 
 interface ScopeBatchImportBodyProps {
   agentId: string;

@@ -18,7 +18,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowUpRight, Workflow } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { SearchInput } from "@/components/official/SearchInput";
+import { SearchInput } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";

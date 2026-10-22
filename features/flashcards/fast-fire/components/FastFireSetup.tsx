@@ -31,7 +31,7 @@ import {
   HelpCircle,
   type LucideIcon,
 } from "lucide-react";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Button as SurfaceButton } from "@ai-matrx/design-system";
@@ -68,7 +68,6 @@ import { FastFireDeckPicker } from "./FastFireSetPicker";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
 import { loadFastFireDecks } from "./fastfire-initial-load";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
 
 export function FastFireSetup() {
   const dispatch = useAppDispatch();

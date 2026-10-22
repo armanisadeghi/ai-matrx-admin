@@ -15,7 +15,7 @@
 // dimension-matched skeleton: the page chrome paints instantly and the rows
 // stream into a hole of the same size, so nothing shifts.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 

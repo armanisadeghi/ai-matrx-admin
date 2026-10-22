@@ -79,7 +79,7 @@
  *    data" that hides what was asked for.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Button, Input } from "@ai-matrx/design-system/controls";
 import { displayLabel } from "@ai-matrx/kit/text-case";
 import React from "react";
 import {
@@ -99,7 +99,6 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button, Input } from "@ai-matrx/design-system/controls";
 import {
   DropdownMenu,
   DropdownMenuContent,

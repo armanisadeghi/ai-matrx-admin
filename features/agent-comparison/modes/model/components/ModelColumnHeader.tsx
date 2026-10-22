@@ -9,7 +9,7 @@
  * are many tunable knobs).
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import {
   ChevronsLeftRight,

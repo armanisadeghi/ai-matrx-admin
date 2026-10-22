@@ -11,7 +11,7 @@ import {
 import { DEFAULT_AGENT_CATALOG_LABELS } from "@ai-matrx/agents/catalog";
 import { saveAgentField } from "@/features/agents/redux/builder-write.thunks";
 import { openOverlay } from "@ai-matrx/summon/open";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import { AgentCategoryPicker } from "@/features/agents/components/settings/AgentCategoryPicker";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -41,7 +41,6 @@ import { supabase } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { VoiceTextarea } from "@/components/official/VoiceTextarea";
-import { InfoHint } from "@/components/official/InfoHint";
 import { EngagementPicker } from "@/features/scopes/components/active-context/engagement/EngagementPicker";
 import { EMPTY_ENGAGEMENT_SELECTION } from "@/features/scopes/components/active-context/quick-pick/engine";
 import { useState, useEffect, useMemo, useRef } from "react";

@@ -13,7 +13,7 @@ import { GovernedActionDialog } from "@/features/access-gate/components/Governed
 import { fetchAccessDeniedContext } from "@/features/access-gate/service/accessDeniedContext";
 import { actionAuthority } from "@/features/access-gate/service/actionAuthority";
 import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -28,7 +28,6 @@ import { useMarketingSite } from "@/features/marketing/components/site/Marketing
 import { updateSiteSettings } from "@/features/marketing/data/settings-service";
 import { useDeleteSite } from "@/features/marketing/data/hooks";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import {
   cancelCrawl,
   type CrawlStartOptions,

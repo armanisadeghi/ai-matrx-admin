@@ -17,7 +17,7 @@
 //    standalone here. Sending them into the nested route would hand them an
 //    AccessGate for a BRAND they were never given, defeating the share.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 

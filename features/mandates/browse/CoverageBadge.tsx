@@ -19,7 +19,7 @@
 // (./useCoverageList.tsx → ./service.ts); the active narrowing shows as a
 // strip with a Clear button above the list.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { createContext, useContext, useEffect, useState } from "react";
 import { CircleAlert, CircleDashed } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

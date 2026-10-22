@@ -20,7 +20,7 @@
  */
 
 import { MatrxDetailGrid } from "@ai-matrx/design-system/data-table";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useMemo, useState } from "react";
 import {
   Brain,

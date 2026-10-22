@@ -20,7 +20,7 @@
  * paste text · import a transcript. A row opens the document viewer.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -44,7 +44,6 @@ import {
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
 import { Textarea } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime, formatCount } from "@ai-matrx/kit/format";
 import { useEntityTitles } from "@ai-matrx/associations/react";
 import { TapTargetButton, TapTargetButtonSolid } from "@ai-matrx/design-system/tap-target";

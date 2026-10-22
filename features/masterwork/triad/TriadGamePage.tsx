@@ -55,7 +55,7 @@ import { Button } from "@/components/ui/button";
 import {
   firstBlockingReason,
   GatedActionButton,
-} from "@/components/official/GatedActionButton";
+} from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { WorkingNotice } from "@/lib/progress/WorkingNotice";
 import { cn } from "@/lib/utils";

@@ -5,14 +5,10 @@ import Link from "next/link";
 import { CheckCircle2, Hammer, PenLine, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, firstBlockingReason, GatedActionButton } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@ai-matrx/design-system";
 import { Field } from "@/components/official/Field";
-import {
-  firstBlockingReason,
-  GatedActionButton,
-} from "@/components/official/GatedActionButton";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { LiveRunProgress } from "@ai-matrx/chat/agents/components/live-run/LiveRunProgress";
 import { BuildProgress } from "@/features/agents/factory/components/BuildProgress";

@@ -12,11 +12,10 @@ import { ExternalLink, Loader2, Play, Trash2, Webhook, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast-service";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Button as ControlButton, InfoHint } from "@ai-matrx/design-system/controls";
 import { Switch } from "@/components/ui/switch";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { removeAgentFromOrchestra, saveMemberMeta } from "@/features/agents/redux/orchestras/thunks";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { AgentPeekButton } from "./AgentPeekButton";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { AgentIODetails } from "./AgentIODetails";
@@ -31,7 +30,6 @@ import {
 } from "../constants";
 import type { OrchestraMember } from "../types";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { InfoHint } from "@/components/official/InfoHint";
 import { useAgentView } from "@ai-matrx/chat/agents/identity/agent-identity";
 
 export interface MemberInspectorProps {
