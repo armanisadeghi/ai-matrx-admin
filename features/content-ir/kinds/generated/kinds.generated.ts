@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1719 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1721 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "b007e529e149";
+export const KIND_REGISTRY_FINGERPRINT = "c60c3ee5b57d";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -3606,6 +3606,107 @@ export interface DesignRowWritten {
    * The row's version after the write.
    */
   version?: number | null;
+}
+
+/**
+ * * From kind `design_starter_list`.
+ */
+export interface DesignStarter {
+  mood?: string[];
+  /**
+   * Type style → font, weight, size.
+   */
+  type?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  title?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * Motion steps: name, value (duration, easing).
+   */
+  motion?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Corner radius steps: name, value (px).
+   */
+  radius?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Shadow steps: name, value (light and dark).
+   */
+  shadow?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  for_who?: string | null;
+  /**
+   * Opacity steps: name, value (0-1).
+   */
+  opacity?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Color role → its value (light and dark).
+   */
+  palette?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  /**
+   * Spacing steps: name, value (px).
+   */
+  spacing?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Component families: name, group.
+   */
+  components?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Every color row: name, group, value, reads_on.
+   */
+  color_roles?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  description?: string | null;
+  template_id: string;
+  catalogue_id: string;
+  /**
+   * Scale keys left out of this offer to keep it within its size budget (knob starter_detail_max_chars).
+   */
+  detail_omitted?: string[];
 }
 
 /**
@@ -14331,7 +14432,7 @@ export interface AgentFactoryInstructionsStepOffer {
 }
 
 /**
- * Kind `agent_factory.proof_step.offer` (registry v12).
+ * Kind `agent_factory.proof_step.offer` (registry v13).
  */
 export interface AgentFactoryProofStepOffer {
   /**
@@ -14370,9 +14471,43 @@ export interface AgentFactoryProofStepOffer {
     accepts_user_input: boolean;
   };
   /**
-   * The locked job both answers are judged against: the job, output kind, required keys, output schema, the person's requested format and the rules code enforces downstream.
+   * The LOCKED job the proof judge scores both blind answers against (``agent_factory.proof_review``'s
+   * ``goal_spec``). Never the goal spec the candidate was written from: the baseline never saw that spec, so
+   * scoring both against it would be circular (``agent_factory.pipeline._judge_variables``).
    */
-  goal_spec: unknown;
+  goal_spec: {
+    /**
+     * The backing mandate's goal, else the request's purpose.
+     */
+    job: string;
+    /**
+     * How the judge reads this rubric.
+     */
+    note?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "agent_factory_judging_rubric";
+    /**
+     * The locked output kind, when one is chosen.
+     */
+    output_kind?: string | null;
+    /**
+     * The locked output schema: the contract.
+     */
+    output_schema?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+    /**
+     * The person's own words for the format.
+     */
+    requested_format?: string | null;
+    required_output_keys?: string[];
+    downstream_rules_enforced_in_code?: string[];
+  };
   /**
    * The model id the caller pinned. LOCKED: it wins over the profile class. When absent: code maps the profile class through the live catalog.
    */
@@ -28236,6 +28371,19 @@ export interface DescribedLinks {
     __kind?: string;
     [key: string]: JsonValue | string | undefined;
   })[];
+}
+
+/**
+ * The published design-system starter templates (SP0490–SP0499): who each is for, its mood, palette and type.
+ *  *
+ *  * Kind `design_starter_list` (registry v4).
+ */
+export interface DesignStarterList {
+  items?: DesignStarter[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "design_starter_list";
 }
 
 /**
@@ -47828,6 +47976,24 @@ export interface ProofRunsJudgeCaseOffer {
    * The output being judged.
    */
   actual_output: string;
+}
+
+/**
+ * One payload exactly as a provider returned it or as a row was stored, every key kept as it came.
+ *
+ * Offered where a point holds a raw answer whose keys belong to the source, not to us: a store's public
+ * catalog, the homepage's navigation menus, crawl coverage, a Google Business Profile answer, a brand's
+ * stored profile keys, a coverage verdict and its reader checks, a commerce intake row or step result.
+ * No key is promised, because each source's keys differ; the clean, fact-only form of a provider answer
+ * is ``provider_section_list``. Producers send the payload's own keys at the top level beside ``__kind``.
+ *  *
+ *  * Kind `provider_payload` (registry v1).
+ */
+export interface ProviderPayload {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "provider_payload";
 }
 
 /**
@@ -67554,6 +67720,7 @@ export type GeneratedKindSlug =
   | "deferred_work_result"
   | "department_plan"
   | "described_links"
+  | "design_starter_list"
   | "design_system_build_result"
   | "desktop_tools_load_result"
   | "diagram_diagnostics"
@@ -68224,6 +68391,7 @@ export type GeneratedKindSlug =
   | "proof_result"
   | "proof_run_judgement"
   | "proof_runs.judge_case.offer"
+  | "provider_payload"
   | "provider_run_receipt"
   | "provider_section_list"
   | "publish_preflight"
@@ -69276,6 +69444,7 @@ export interface KindPayloadBySlug {
   "deferred_work_result": DeferredWorkResult;
   "department_plan": DepartmentPlan;
   "described_links": DescribedLinks;
+  "design_starter_list": DesignStarterList;
   "design_system_build_result": DesignSystemBuildResult;
   "desktop_tools_load_result": DesktopToolsLoadResult;
   "diagram_diagnostics": DiagramDiagnostics;
@@ -69946,6 +70115,7 @@ export interface KindPayloadBySlug {
   "proof_result": ProofResult;
   "proof_run_judgement": ProofRunJudgement;
   "proof_runs.judge_case.offer": ProofRunsJudgeCaseOffer;
+  "provider_payload": ProviderPayload;
   "provider_run_receipt": ProviderRunReceipt;
   "provider_section_list": ProviderSectionList;
   "publish_preflight": PublishPreflight;
@@ -71002,6 +71172,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "deferred_work_result",
   "department_plan",
   "described_links",
+  "design_starter_list",
   "design_system_build_result",
   "desktop_tools_load_result",
   "diagram_diagnostics",
@@ -71672,6 +71843,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "proof_result",
   "proof_run_judgement",
   "proof_runs.judge_case.offer",
+  "provider_payload",
   "provider_run_receipt",
   "provider_section_list",
   "publish_preflight",
