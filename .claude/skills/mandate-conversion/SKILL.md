@@ -141,7 +141,7 @@ Re-run **the same input** from step 1. Then produce, in the report:
 2. **The consumer check**: for each row of the step-2 census, does that read still resolve?
 3. **A content read.** `success: true` is not evidence. Read the output and judge it against
    the job. If quality dropped, that is a finding — report it, do not bury it.
-4. **The gate results**: `output_kind_ok`, schema validation, the test suites.
+4. **The gate results**: `output_kind_ok`, schema validation, the test suites. Then the live real test: `safety-net` skill.
 
 ### 6. Batch discipline
 
