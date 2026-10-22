@@ -159,6 +159,7 @@ export interface MarketplaceAccountRow {
   id: string;
   organization_id: string;
   marketplace_provider: string;
+  health_status: string;
   store_name: string | null;
   username_observed: string | null;
   deleted_at: string | null;
