@@ -13,12 +13,13 @@
 //      `ensureTable`, as her, in the Applet's organization) when she presses "Use it" — never an
 //      unrelated table, never "make a table and come back".
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { makeNewTables, type MadeTable } from "@ai-matrx/applets/platform";
-import type { AppletSource, NewTableDeclaration } from "@ai-matrx/applets";
+import { layoutOf, makeNewTables, type MadeTable } from "@ai-matrx/applets/platform";
+import type { AppletLayout, AppletSource, NewTableDeclaration } from "@ai-matrx/applets";
 
 import type { Database, Json } from "@/types/database.types";
 import { isReservedAppletSlug } from "@/features/applets/reserved-slugs";
 import { appletAudiencePatch } from "@/features/applets/lib/publication";
+import { LAYOUT_ENTRY, layoutSource } from "./layout-source";
 
 
 type Client = SupabaseClient<Database>;
@@ -39,6 +40,11 @@ export interface BuilderApplet {
   pages: { path: string; title: string; file: string; parent?: string; space?: string }[];
   sources: BuilderSource[];
   mandates: { alias: string; key: string }[];
+  /**
+   * The stock layout a layout Applet stores (`layout_config`, CONTRACTS 2.12) — set only on the stored record
+   * read for a change, which then shows the builder that layout as its one entry file (`./layout-source.ts`).
+   */
+  layout?: AppletLayout;
 }
 
 /** One source as the builder writes it: her table, a platform record type, or a table to make. */
@@ -280,14 +286,26 @@ export async function readBuilderApplet(client: Client, appletId: string): Promi
   const { data, error } = await client
     .schema("app")
     .from("definition")
-    .select("id, organization_id, slug, name, description, entry, files, pages, sources, mandates")
+    .select("id, organization_id, slug, name, description, entry, files, pages, sources, mandates, layout_config")
     .eq("id", appletId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) throw new Error("That Applet is not there, or it has not been shared with you.");
-  const files = isRecord(data.files) ? Object.entries(data.files).flatMap(([name, source]) => (typeof source === "string" ? [{ name, source }] : [])) : [];
-  const answer = coerceBuildAnswer({ applet: { ...data, files }, note: "" });
-  return { applet: answer.applet, organizationId: data.organization_id, slug: data.slug };
+  const { layout_config, ...row } = data;
+  // A LAYOUT APPLET (no code, a declared stock layout) opens as that layout: its one entry file renders the
+  // stored layout with its options, so the builder changes what is there instead of starting over.
+  const declared = row.entry ? null : layoutOf(layout_config);
+  const layout = declared && !("unknown" in declared) ? declared : null;
+  if (layout) {
+    const applet = coerceBuildAnswer({
+      applet: { ...row, entry: LAYOUT_ENTRY, files: [{ name: LAYOUT_ENTRY, source: layoutSource(layout) }], pages: [{ path: "/", title: row.name, file: LAYOUT_ENTRY }] },
+      note: "",
+    }).applet;
+    return { applet: { ...applet, layout }, organizationId: row.organization_id, slug: row.slug };
+  }
+  const files = isRecord(row.files) ? Object.entries(row.files).flatMap(([name, source]) => (typeof source === "string" ? [{ name, source }] : [])) : [];
+  const answer = coerceBuildAnswer({ applet: { ...row, files }, note: "" });
+  return { applet: answer.applet, organizationId: row.organization_id, slug: row.slug };
 }
 
 /**
@@ -350,9 +368,37 @@ export function slugCandidate(base: string, attempt: number, taken: ReadonlySet<
 /** Write the answer as her: a new draft Applet, or a new version of the one she is changing. */
 export async function saveBuiltApplet(
   client: Client,
-  input: { organizationId: string; appletId: string | null; current: BuilderApplet | null; answer: BuildAnswer; request: string; conversationId: string | null },
+  input: {
+    organizationId: string;
+    appletId: string | null;
+    current: BuilderApplet | null;
+    answer: BuildAnswer;
+    request: string;
+    conversationId: string | null;
+    /** The stock layout the answer still is (`./layout-code.ts`), for a layout Applet being changed. */
+    layout?: AppletLayout | null;
+  },
 ): Promise<SavedApplet> {
   const { applet } = input.answer;
+  // A LAYOUT APPLET STAYS A LAYOUT while the answer is still only a stock layout: the change is written to
+  // `layout_config` and its job, never as code. An answer that needs code turns it into a code Applet, and
+  // its stored layout is cleared so the record says what it is.
+  if (input.appletId && input.current?.layout && input.layout) {
+    const { data, error } = await client
+      .schema("app")
+      .from("definition")
+      .update({
+        name: applet.name,
+        description: applet.description || input.current.description || null,
+        mandates: applet.mandates,
+        layout_config: JSON.parse(JSON.stringify(input.layout)) as Json,
+      })
+      .eq("id", input.appletId)
+      .select(SAVED_APPLET_COLUMNS)
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
   const content = {
     name: applet.name,
     // What the Applet IS: a round that answers without one (a repair) keeps the description it had.
@@ -362,6 +408,7 @@ export async function saveBuiltApplet(
     pages: keepSpacePages(applet.pages, input.current?.pages ?? null),
     sources: scopeEntitySources(applet.sources, input.organizationId),
     mandates: applet.mandates,
+    ...(input.current?.layout ? { layout_config: {} } : {}),
   };
   // The request, its run and the note live in the build's request history (metadata.build, written by
   // ./build-session.ts) — never overwrite `metadata` here. A draft born empty at Build (no stored app
