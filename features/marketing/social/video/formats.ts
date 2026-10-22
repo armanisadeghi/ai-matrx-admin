@@ -46,7 +46,7 @@ export interface FormatInfo {
 export interface FormatInputs {
   items?: Array<{ label: string; emoji?: string }>;
   question?: string;
-  answers?: Array<{ emoji: string; label?: string }>;
+  answers?: Array<{ emoji?: string; label?: string }>;
   points?: string[];
   comment?: { username: string; text: string; likes?: string };
   hostName?: string;

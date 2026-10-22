@@ -13,6 +13,7 @@
  */
 
 import { parseSummary, type ChangeSummary } from "./changes";
+import { plainField } from "./inputWords";
 
 export type DataSourceInputKind = "url" | "keyword";
 
@@ -511,17 +512,30 @@ export function optionLabel(name: string): string {
 }
 
 /** The ways a source can be asked without a link ("By search"): empty for a link-only source. */
-export function searchOptions(source: Pick<DataSource, "input">): { name: string; fields: DataSourceField[] }[] {
+export function searchOptions(
+  source: Pick<DataSource, "input"> & Partial<Pick<DataSource, "search_filters">>,
+): { name: string; fields: DataSourceField[] }[] {
   if (source.input.kind !== "url") return [];
   // The option people usually want first: one that takes words (keyword, query, search), then a place (location, country).
   const rank = (names: string[]) => (names.some((n) => /keyword|query|search/i.test(n)) ? 0 : names.some((n) => /location|country|city/i.test(n)) ? 1 : 2);
+  // A field the source itself declares optional with a fixed list of values ("For sale or rent", "Home type") is an
+  // optional choice of its search: "Any" by default, and then nothing is sent (the request stays exactly the plain
+  // one). Never forced required. A switched provider lists its own filters instead (`search_filters`), so none ride then.
+  const choice = (f: DataSourceField) => f.name !== "url" && f.required === false && plainField(f).choices != null;
+  const extras = (source.search_filters ?? []).length > 0 ? [] : source.input.fields.filter(choice);
   return Object.entries(source.input.discover_options ?? {})
     .map(([name, names], i) => ({ name, names, i }))
     .sort((x, y) => rank(x.names) - rank(y.names) || x.i - y.i)
-    .map(({ name, names }) => ({
-      name,
-      fields: names.map((n) => source.input.fields.find((f) => f.name === n) ?? { name: n, label: optionLabel(n), required: true, example: null }).map((f) => ({ ...f, required: true })),
-    }));
+    .map(({ name, names }) => {
+      const asked = names.map((n) => source.input.fields.find((f) => f.name === n) ?? { name: n, label: optionLabel(n), required: true, example: null });
+      return {
+        name,
+        fields: [
+          ...asked.map((f) => ({ ...f, required: !choice(f) })),
+          ...extras.filter((f) => !names.includes(f.name)).map((f) => ({ ...f, required: false })),
+        ],
+      };
+    });
 }
 
 /** The fields to ask for: the chosen search option's, else (a link) the link field, else all. */

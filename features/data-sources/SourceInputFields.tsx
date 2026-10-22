@@ -18,6 +18,8 @@ import { inputFieldsFor, searchOptions, type DataSource, type DataSourceField } 
 import { countryName, countryOptions, defaultCountry, plainField, plainOption } from "./inputWords";
 import { NameFinder } from "./NameFinder";
 import { nameFinderFor } from "./nameFinders";
+import { SearchFilters } from "./SearchFilters";
+import { ANY } from "./filterChoices";
 
 export type InputMode = "link" | "search";
 
@@ -80,12 +82,25 @@ function FieldBox({
           onChange={(code) => onValues({ ...values, [f.name]: code })}
         />
       ) : plain.choices ? (
-        <Select
-          aria-label={plain.label}
-          value={values[f.name] || plain.choices[0].value}
-          options={plain.choices}
-          onValueChange={(v) => onValues({ ...values, [f.name]: v })}
-        />
+        f.required ? (
+          <Select
+            aria-label={plain.label}
+            value={values[f.name] || plain.choices[0].value}
+            options={plain.choices}
+            onValueChange={(v) => onValues({ ...values, [f.name]: v })}
+          />
+        ) : (
+          // Optional: "Any" holds no value, so nothing is sent for it.
+          <Select
+            aria-label={plain.label}
+            value={values[f.name] || ANY}
+            options={[{ value: ANY, label: "Any" }, ...plain.choices]}
+            onValueChange={(v) => {
+              const { [f.name]: _drop, ...rest } = values;
+              onValues(v === ANY ? rest : { ...rest, [f.name]: v });
+            }}
+          />
+        )
       ) : (
         <ProInput
           value={values[f.name] ?? ""}
@@ -151,7 +166,7 @@ export function SourceInputFields({
     const plain = plainField(f, source.key);
     if (values[f.name]) return [];
     if (plain.picker === "country") return [[f.name, homeCountry] as const];
-    if (plain.choices) return [[f.name, plain.choices[0].value] as const];
+    if (plain.choices && f.required) return [[f.name, plain.choices[0].value] as const];
     return [];
   });
   useEffect(() => {
@@ -198,6 +213,9 @@ export function SourceInputFields({
           <FieldBox key={f.name} f={f} sourceKey={source.key} values={values} onValues={searchValues} onBlur={onBlur} placeholder={plain.placeholder ?? ""} homeCountry={homeCountry} countries={countries} voice />
         );
       })}
+      {current.mode === "search" && !usingTechnical && primaryFields.length > 0 && (
+        <SearchFilters source={source} values={values} onValues={searchValues} />
+      )}
       {linkIsPrimary && linkField && box(linkField, linkPlaceholder, false)}
       {hasAdvanced && (
         <div className="flex flex-col gap-3" data-advanced={advanced ? "open" : "closed"}>

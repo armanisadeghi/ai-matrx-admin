@@ -122,7 +122,7 @@ try {
   await page.waitForTimeout(700);
   await page.goto(`${origin}/chat/a/${AGENT}`, { waitUntil: "load", timeout: 300000 });
   await page.waitForTimeout(12000);
-  await page.goBack({ waitUntil: "load" });
+  await page.evaluate(() => history.back());
   await page.waitForTimeout(15000);
   await shot(page, "4-after-switch-back");
   check("after switching away mid-stream and back: answer complete, no orb", (await orbCount(page)) === 0);

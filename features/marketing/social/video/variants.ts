@@ -2,6 +2,7 @@
 
 import type { ParamSet } from "./clone";
 import { nameWithSuffix } from "./estimate";
+import { plainRenderMessage } from "./render-errors";
 
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
@@ -169,3 +170,33 @@ export function batchStanding(b: { status: string; createdAt: string; heartbeatA
   const quiet = now - (Number.isFinite(last) ? last : 0);
   return quiet > (b.heartbeatAt ? 90_000 : 600_000) ? "stopped" : "running";
 }
+
+export interface ItemOutcome {
+  status: string;
+  stage?: string | null;
+  error?: string | null;
+  fileId?: string | null;
+}
+
+/**
+ * What this page knows of a batch (its own stream) laid over what the server's run record says. The stream wins where it has
+ * spoken; the record fills in a reloaded page. A variant the record has not finished is "queued" while the batch runs and
+ * "stopped" when the batch stopped under us, never a bare "ready" beside a dead run.
+ */
+export function withServerBatch(local: Record<string, ItemOutcome>, batch: { rows: Array<{ variant_id: string; status: string; stage?: string | null; message?: string | null; error?: string | null }>; variantIds: string[] } | null, standing: BatchStanding): Record<string, ItemOutcome> {
+  if (!batch || standing === "none") return local;
+  const out = { ...local };
+  const byId = new Map(batch.rows.map((r) => [r.variant_id, r]));
+  for (const id of batch.variantIds) {
+    if (out[id]) continue;
+    const r = byId.get(id);
+    if (r?.status === "rendered") out[id] = { status: "rendered" };
+    else if (r?.status === "failed") out[id] = { status: "failed", stage: r.stage ?? "", error: plainRenderMessage(null, r.message ?? r.error ?? null) };
+    // The record says where each one stands (rendering vs waiting); a reload must show that, not "all waiting at 0%".
+    else if (r?.status === "rendering" && standing === "running") out[id] = { status: "rendering" };
+    else if (standing === "running") out[id] = { status: "queued" };
+    else if (standing === "stopped") out[id] = { status: "stopped" };
+  }
+  return out;
+}
+

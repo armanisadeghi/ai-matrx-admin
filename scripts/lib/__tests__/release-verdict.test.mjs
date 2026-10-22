@@ -19,6 +19,13 @@ function plantedDist(kind) {
     writeFileSync(join(dist, "server", "chunks", "app_0abcdef.js"), "");
   } else if (kind === "bindings") {
     mkdirSync(join(dist, "static"), { recursive: true }); // no client chunks: the check throws
+  } else if (kind === "bindings-leak") {
+    // The v0.4.3449 live shape: a chunk that compiled, with one raw binding in an export getter.
+    mkdirSync(join(dist, "static", "chunks"), { recursive: true });
+    writeFileSync(
+      join(dist, "static", "chunks", "17p76-6melrad.js"),
+      'e.s(["VisualElement",()=>__TURBOPACK__imported__module__60386__.F,"wrap",()=>et.f],7583957)',
+    );
   } else {
     mkdirSync(join(root, "migrations"), { recursive: true });
     mkdirSync(join(dist, "server", "app"), { recursive: true });
@@ -30,6 +37,7 @@ function plantedDist(kind) {
 const CHECKS = [
   ["check-turbopack-chunk-identities.mjs", "identities"],
   ["check-turbopack-unbound-bindings.mjs", "bindings"],
+  ["check-turbopack-unbound-bindings.mjs", "bindings-leak"],
   ["check-server-trace-scope.mjs", "trace"],
 ];
 const CLEAN = { ...process.env, VERCEL: "", CI: "", MATRX_RELEASE_PATH: "" };
@@ -37,11 +45,11 @@ const CLEAN = { ...process.env, VERCEL: "", CI: "", MATRX_RELEASE_PATH: "" };
 for (const [script, kind] of CHECKS) {
   const run = (extra) =>
     spawnSync(process.execPath, [join(SCRIPTS, script)], { env: { ...CLEAN, NEXT_DISTDIR: plantedDist(kind), ...extra }, encoding: "utf8" });
-  test(`${script} fails locally on a planted failure`, () => {
+  test(`${script} fails locally on a planted ${kind} failure`, () => {
     assert.equal(run({}).status, 1);
   });
   for (const extra of [{ VERCEL: "1" }, { CI: "true" }, { MATRX_RELEASE_PATH: "1" }]) {
-    test(`${script} screams and exits 0 with ${Object.keys(extra)[0]}`, () => {
+    test(`${script} (${kind}) screams and exits 0 with ${Object.keys(extra)[0]}`, () => {
       const r = run(extra);
       assert.equal(r.status, 0, r.stderr);
       assert.match(r.stderr, /RELEASE WARNING/);

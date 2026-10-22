@@ -35,9 +35,11 @@
  *   R7 a kit points call whose `rate` is a number literal — a second copy of
  *      the setting that an organization's rate (or the platform's) never reaches.
  *
- * AND WHERE (Arman, 2026-10-18 — law 14, common-docs/policies/points-and-money-in-the-ui.md):
- *   P1 a price only where the person is DECIDING OR INVESTIGATING, never where
- *      they are DOING. A file shows a price when it uses a `components/cost`
+ * AND WHERE (owner ruling 2026-10-22, common-docs/policies/points-and-money-in-the-ui.md):
+ *   P1 points printed only where cost is the surface's PURPOSE (billing, usage,
+ *      budgets, battles), on the admin site, in an out-of-points block, or in a
+ *      panel opened by clicking a usage control; everywhere else the price sits
+ *      inside a `<CostDoor>` (or an `<AdminOnly>` block), which P1 skips. A file shows a price when it uses a `components/cost`
  *      render export, a kit points call, a PRICE_HELPERS name or a DERIVED
  *      helper (an exported price/cost/points/estimate-named function whose own
  *      body shows a price, followed through imports to a fixpoint), or literal
@@ -63,6 +65,10 @@
  *   pnpm check:cost-display --self-test   # every rule fires on a planted line
  *   pnpm check:cost-display --sites <file…>  # print a file's P1 (price) lines
  *   pnpm check:cost-display --counts      # every file's current counts, as JSON
+ *   pnpm check:cost-display --census      # every file that shows a price + the entry it rides
+ *
+ * P2 (same ruling): a bare dollar helper (formatAdminUsd, formatSpendUsd, formatAdminCost, …, or
+ * formatViewerCost told unit "usd") off the admin site (ADMIN_SITE), outside a door element.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -120,11 +126,11 @@ export const DOMAIN_MONEY: Record<string, string> = {
   "features/admin/dated-changes/describe.ts": "the provider's per-million-token USD price schedule, shown only in the admin attention queue",
   "../aidream/apps/shared/chat/src/action-requests/components/spendAmount.ts": "the approve-spend amount box's dollar text, reached ONLY when the viewer's unit is usd (a system admin's switch); members type points",
   "features/tool-call-visualization/admin/ToolTestSamplesViewer.tsx": "the provider's per-million-token USD price list, shown to an admin debugging a tool-test sample's cost estimate",
-  "app/(core)/organizations/[orgId]/settings/payments/page.tsx": "an amount the organization asks a customer to pay through its own payment account",
+  "app/(core)/organizations/[orgId]/settings/payments/PaymentsSettings.tsx": "an amount the organization asks a customer to pay through its own payment account",
+  "features/content-ir/studio/playground/demos/reader-locale.ts": "a playground demo's sample amount in the reader's locale (a kind's own currency field)",
   "features/payments/server.ts": "an amount the organization asks a customer to pay through its own payment account",
   "features/marketing/seo/domain-research/summaries.ts": "a domain's estimated organic value and ad budget in the ad market, in real dollars",
   "features/admin/attention/sources/tool-health.ts": "the vendor's published price book entry, shown only in the admin attention queue",
-  "features/admin/tool-control/ToolAlertRecord.tsx": "the vendor's published price book entry, shown only on the admin tool alert record",
   "features/tool-battle/derive.ts": "a tool's measured cost per success in the admin-only tool battle",
 };
 
@@ -160,6 +166,7 @@ export function countCostSites(source: string): number {
       }
     }
   });
+  for (const l of productPriceLines(source)) lines.delete(l);
   return lines.size;
 }
 
@@ -262,77 +269,67 @@ export const PLACEMENT_CASES = [
  * belong here.
  */
 export const ALLOWED_PLACES: Record<string, string> = {
+  // Owner ruling 2026-10-22: points only where the surface's purpose is cost, or after a click to ask.
+  // Everything else puts its price in a <CostDoor> (and needs no entry here).
   // admin-gated — cost views only an admin or a builder's dev panel reaches
   "app/(admin)/**": "admin-gated: the admin route group",
   "app/(dev)/**": "admin-gated: the dev route group",
   "features/admin/**": "admin-gated: admin feature screens",
   "features/administration/**": "admin-gated: the administration console",
   "features/cx-dashboard/**": "admin-gated: the conversation admin dashboard",
-  "features/organizations/admin/**": "info/details: an organization admin's member and spend screens, in points only (org admins are users: no dollars)",
   "features/mandates/admin*/**": "admin-gated: mandate admin screens",
-  "features/builder-panel/**": "admin-gated: the builder's dev panel",
+  "features/mandates/run-history/format.ts": "admin-gated: costWords is read only by the mandate admin Try-it panel",
+  "features/builder-panel/**": "admin-gated: the builder's dev panel (its dollar cells sit in <AdminOnly>)",
   "features/proof-runs/**": "admin-gated: proof-run operator screens",
   "features/ai-test-mode/admin/**": "admin-gated: test-mode admin",
   "features/ai-watch/**": "admin-gated: the AI watch dev panel",
   "features/tool-battle/**": "admin-gated: the tool battle (an admin comparison of tools)",
   "features/scheduling/components/admin/**": "admin-gated: the scheduler's system-jobs admin",
-  "app/(core)/organizations/[orgId]/admin/automations/**": "info/details: one automation's page under organization admin",
-  // model picker
-  "features/ai-models/components/AiModelDetailPanel.tsx": "model picker: a model's price is part of choosing it",
+  "features/ai-models/components/AiModelDetailPanel.tsx": "admin-gated: opened only from the admin AI models pages",
+  "features/hindsight/components/HindsightPage.tsx": "admin-gated: reached only from the admin hindsight page",
+  "features/hindsight/components/EnrollmentDetailPanel.tsx": "admin-gated: a panel of the admin hindsight page",
+  "features/hindsight/components/FindingEffectivenessPanel.tsx": "admin-gated: a panel of the admin hindsight page",
+  "features/data-sources/library/UnderTheHood.tsx":
+    "admin-gated: the under-the-hood block renders only for an admin in admin debug view, under its Admin only tag",
   // battle
   "features/agents/studio/components/StudioBattle.tsx": "battle: what a battle round costs before it runs",
   "features/agents/studio/components/StudioCases.tsx": "battle: what running the battle cases costs before they run",
   "features/agent-comparison/**": "battle: agent battles and comparisons, price per arm is part of the verdict",
   "features/workflow-comparison/**": "battle: workflow battles, price per arm is part of the verdict",
   "features/workflow-runtime/bakeoff/**": "battle: workflow bake-offs, price per entrant is part of the verdict",
-  "features/comparison/**": "battle: comparing options side by side, price is part of the choice",
   "features/masterwork/encore/**": "battle: the encore bench and auditions compare entrants, price per entrant is part of the verdict",
   "features/mandates/candidates/**": "battle: a mandate's live vs candidate comparison",
   "features/mandates/record-next/MandateCandidatesPanel.tsx": "battle: a mandate's live vs candidate comparison",
-  "features/ai-models/decisions/**": "model picker: the decision playground weighs models, price included",
-  // info/details — a run's, agent's or session's own facts, looked up
+  "features/data-sources/lab/DataToModelLab.tsx":
+    "battle: the lab compares handing data over against the model fetching it, price is part of the verdict",
+  "features/data-sources/unlock/UnlockPage.tsx":
+    "battle: the unlock page compares unlockers side by side with a verdict, cost per arm is part of it",
+  "features/data-sources/library/hooks.ts":
+    "battle: usePriceText (points only) is read only by the lab and unlock battles; every other surface uses sourceCostRow in a CostDoor",
+  "features/data-sources/library/catalog.ts":
+    "battle: pointsFor/pointsPerRecord feed the lab and unlock battles and the CostDoor rows",
+  // usage door — a panel the person opens only by clicking a usage/stats control, or a helper read only inside a CostDoor
   "../aidream/apps/shared/chat/src/agents/components/run-controls/panels/**":
-    "info/details: a request's and a session's stats panels, opened to look things up",
-  "app/(core)/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]/**": "info/details: one trigger run's details page",
-  "features/hindsight/**": "info/details: hindsight reviews and replays past runs, what each cost is a fact under review",
-  "features/agents/decision-review/**": "info/details: a reviewer inspects one decision and its reference run",
-  "features/agents/run-review/**": "info/details: a run's review card",
-  "features/agents/org-chart/components/AgentOrgCard.tsx": "info/details: an agent's info card (its own and its branch's spend)",
-  "features/podcasts/studio/components/RunTruthInspector.tsx": "info/details: the run inspector",
-  "features/cloud-browser/components/TelemetrySurface.tsx": "info/details: a browser session's telemetry",
-  "features/mandates/runs/**": "info/details: a mandate run's facts",
-  // history table
-  "features/mandates/run-history/**": "history table: a mandate's run history",
-  "features/agents/factory/components/FactoryBuildsPage.tsx": "history table: the factory's past builds",
-  "features/scheduling/components/triggers/TriggerRunsTable.tsx": "history table: a trigger's past runs",
-  "features/marketing/seo/run-console/RunHistoryPanel.tsx": "history table: the SEO run console's run history",
-  "features/marketing/content-plan/components/PlanAiRunsView.tsx": "history table: a content plan's past AI runs",
-  // bulk/repeating confirm
-  "features/marketing/content-plan/setup/components/SetupBridgeSection.tsx":
-    "bulk/repeating confirm: the estimate before a content plan's bulk run starts",
-  "features/marketing/content-plan/components/RunPipelineBulkAction.tsx":
-    "bulk/repeating confirm: the estimate before a bulk pipeline run",
-  "features/marketing/components/backlinks/SerpProspectsTab.tsx":
-    "bulk/repeating confirm: what measuring the prospects costs before anything is spent",
-  "features/marketing/search-console/intake/SiteIntakeWizard.tsx":
-    "bulk/repeating confirm: the classify estimate before apply",
-  "features/rag/components/library/KnowledgeAssetPanel.tsx": "bulk/repeating confirm: a heavy rebuild's estimate",
-  "features/source-library/components/ActionRunDialog.tsx": "bulk/repeating confirm: the spend cap before a job starts",
-  "features/marketing/local/rank-grid/RankGridWorkspace.tsx":
-    "bulk/repeating confirm: a rank grid preview states what the multi-point run costs before Run grid (a 3x3 under the org threshold never shows the approve-spend dialog)",
-  // schedule setup
-  "features/spaces/data/Automations.tsx": "schedule setup: an automation's per-check and monthly estimate",
-  "features/marketing/monitor-setup/MonitorSetupEditor.tsx":
-    "schedule setup: a monitor's per-run cost, monthly projection and ceiling",
-  "features/scheduling/components/triggers/TriggersManager.tsx": "schedule setup: a trigger's 30-day cost and monthly estimate while setting it up",
-  "features/marketing/monitor-setup/inputs/**": "schedule setup: a monitor's inputs, priced per run while setting it up",
+    "usage door: opened only by clicking the Request or Session stats tab in the Creator run panel",
+  "../aidream/apps/shared/records-ui/src/pointsCost.ts": "usage door: costInPoints read only inside a CostDoor",
+  "../aidream/apps/shared/records-ui/src/Enrich.tsx":
+    "usage door: every printed figure sits in host.CostDoor; the remaining lines compute the estimate the door shows",
+  "features/scheduling/components/triggers/TriggersManager.tsx":
+    "usage door: its cost columns start hidden; showing one from the column picker is asking for usage, stats sit in a CostDoor",
+  "features/marketing/social/cost.ts":
+    "usage door: reads points to gate confirms and feed CostDoor rows; agentCostText still feeds the package's agent approve-spend card",
+  "features/marketing/seo/ai-visibility/brand/RunCheckButton.tsx":
+    "usage door: toPoints only gates the confirm; the price prints in a CostDoor",
+  // billing/usage/pricing/budget — surfaces whose purpose is cost
+  "features/organizations/admin/**":
+    "billing/usage/pricing/budget: an organization's member spend and budgets screens, in points only (org admins are users: no dollars)",
+  "app/(core)/organizations/[orgId]/admin/automations/**":
+    "billing/usage/pricing/budget: the organization's automation cost page",
   "features/scheduling/components/costs/**": "billing/usage/pricing/budget: the automation cost page",
-  "features/scheduling/service/automationCosts.ts": "billing/usage/pricing/budget: the automation cost page's data",
   "features/applets/format.ts": "billing/usage/pricing/budget: an app's usage KPIs on its analytics",
   "features/applets/route/AppletSettingsContent.tsx": "billing/usage/pricing/budget: an app's usage on its settings",
   "lib/entity-list/usageColumns.tsx": "billing/usage/pricing/budget: the usage columns of an entity list",
   "features/scheduling/components/limits/AutomationLimitsSection.tsx": "billing/usage/pricing/budget: automation limits",
-  // billing/usage/pricing/budget
   "features/entitlements/**": "billing/usage/pricing/budget: plans, usage, wallet, usage history",
   "features/settings/tabs/PlanUsageTab.tsx": "billing/usage/pricing/budget: the plan and usage settings tab",
   "app/api/education/coppa-verification/**": "billing/usage/pricing/budget: a guardian's real card authorization, voided",
@@ -343,105 +340,16 @@ export const ALLOWED_PLACES: Record<string, string> = {
   "features/organizations/components/OrgPrivacyTab.tsx": "billing/usage/pricing/budget: the organization's daily budget",
   "features/marketing/components/operations/SeoSpendPanel.tsx": "billing/usage/pricing/budget: the SEO spend dashboard",
   "features/marketing/components/operations/SeoSpendChart.tsx": "billing/usage/pricing/budget: the SEO spend dashboard",
-  "features/research/components/costs/**": "billing/usage/pricing/budget: the research cost dashboard",
-  "components/official/drill-explorer/**": "billing/usage/pricing/budget: the usage explorer",
-  // zero-baseline pass (Arman, 2026-10-18): each file below sits at a deciding or investigating moment
-  "../aidream/apps/shared/chat/src/agents/components/inputs/smart-input/CatalogToolsSection.tsx":
-    "option picker: the add-a-tool picker shows each tool's price hint, part of choosing it",
-  "../aidream/apps/shared/matrx-agents/tools/catalog-search.ts":
-    "option picker: the tool price hint the add-a-tool picker and tool info cards read",
-  "../aidream/apps/shared/chat/src/agents/components/observational-memory/components/format.ts":
-    "info/details: the memory inspector's cost formatter",
-  "../aidream/apps/shared/chat/src/agents/components/observational-memory/components/MemoryCostCard.tsx":
-    "info/details: the memory inspector's cost card",
-  "../aidream/apps/shared/chat/src/agents/components/observational-memory/components/MemoryEventTimeline.tsx":
-    "info/details: the memory inspector's event timeline, opened to look up what memory work cost",
-  "../aidream/apps/shared/chat/src/agents/components/observational-memory/ObservationalMemoryCore.tsx":
-    "info/details: the memory inspector",
-  "../aidream/apps/shared/records-ui/src/Enrich.tsx":
-    "info/details: an enrichment field's settings and run history line (runs, spend so far, per row)",
-  "../aidream/apps/shared/records-ui/src/pointsCost.ts":
-    "info/details: the points formatter for the enrichment settings and history line",
-  "features/agent-tests/components/TestCost.tsx":
-    "history table: the cost cell of the agent tests' run and result history",
-  "features/agent-tests/components/AgentTestsPlatformPage.tsx":
-    "history table: the platform's agent test runs table",
-  "features/agent-tests/components/AgentTestTables.tsx":
-    "history table: one agent's test runs and results tables",
-  "features/agent-tests/components/ResultDetail.tsx":
-    "info/details: one test result's details page",
-  "features/agents/components/shared/AgentOptionsMenu.tsx":
-    "admin-gated: the super-admin-only conversation cost row in an agent's options menu",
-  "features/audio/limits.ts":
-    "bulk/repeating confirm: the length, cost and time estimate shown before a long transcription spends",
-  "features/audio/transcriptionSpendGate.ts":
-    "bulk/repeating confirm: the estimate dialog before a long transcription runs",
-  "features/board/data-fetch/GetDataBody.tsx":
-    "bulk/repeating confirm: the points estimate for the chosen record count beside Fetch, before records are pulled",
-  "features/chat-tool-renderers/renderers/compare/CompareInline.tsx":
-    "bulk/repeating confirm: the compare quote shown on the confirm step, before the comparison runs",
-  "features/crm/components/record/ContactCandidatesCard.tsx":
-    "bulk/repeating confirm: the Find contact info dialog names the paid lookup's cost before it runs",
-  "features/crm/media-research/MediaResearchPreviewCard.tsx":
-    "bulk/repeating confirm: the research preview's maximum cost before Run it",
-  "features/data-sources/ChangesPanel.tsx":
-    "history table: a data source's refresh history (when, counts, points spent)",
-  "features/data-sources/hooks.ts":
-    "option picker: the data-source price text the library and Get data estimate read",
-  "features/data-sources/lab/DataToModelLab.tsx":
-    "battle: the lab compares handing data over against the model fetching it, price is part of the verdict",
-  "features/data-sources/library/catalog.ts":
-    "option picker: each data source's own price per record, part of choosing a source",
-  "features/data-sources/library/DataLibraryPage.tsx":
-    "option picker: the data library lists each source with its price per record",
-  "features/data-sources/library/hooks.ts":
-    "option picker: the price text for a source in the data library",
-  "features/data-sources/library/SourceDetail.tsx":
-    "info/details: a data source's detail page with its unit price and the total before Get data",
-  "features/data-sources/live-column/LiveDataColumnButton.tsx":
-    "bulk/repeating confirm: the points preview for filling a column, before anything is fetched",
-  "features/data-sources/unlock/UnlockPage.tsx":
-    "battle: the unlock page compares unlockers side by side with a verdict, cost per arm is part of it",
-  "features/marketing/content-plan/format.ts":
-    "history table: one past AI run's line in the content plan's AI runs history",
   "features/marketing/data/operations-format.ts":
-    "billing/usage/pricing/budget: the SEO spend panel's runtime cost formatter",
-  "features/marketing/news-monitor/CostBanner.tsx":
-    "billing/usage/pricing/budget: the news monitor's monthly run-cost ceiling and month-to-date spend",
-  "features/marketing/news-monitor/NewsMonitorRunView.tsx":
-    "billing/usage/pricing/budget: the monitor's monthly run-cost ceiling banner mounted on its run view",
-  "features/marketing/offerings/BrandOfferingsPanel.tsx":
-    "bulk/repeating confirm: the refresh quote confirm names the points before paid sources run",
-  "features/marketing/seo/ai-visibility/brand/RunCheckButton.tsx":
-    "bulk/repeating confirm: a costly manual check asks first, naming the points",
-  "features/marketing/seo/ai-visibility/panels/format.ts":
-    "bulk/repeating confirm: the wave cost formatter for the gate review",
-  "features/marketing/seo/ai-visibility/panels/GateReviewCard.tsx":
-    "bulk/repeating confirm: the gate review shows the cost of one wave before the next is approved",
-  "features/marketing/smart-add/helpers/HelperPanel.tsx":
-    "admin-gated: the helper's admin block (estimate and measured cost), plus the expensive-search confirm",
+    "billing/usage/pricing/budget: formatRuntimeCost is read only by the SEO spend dashboard",
   "features/marketing/social/components/SocialProviderCard.tsx":
     "billing/usage/pricing/budget: Operations > Connections shows the social provider's monthly spend",
-  "features/marketing/social/components/video/StudioParts.tsx":
-    "bulk/repeating confirm: the video studio's estimate line before anything is made",
-  "features/marketing/social/components/video/VideoFormatNew.tsx":
-    "bulk/repeating confirm: the planned video's estimate before it is made",
-  "features/marketing/social/components/video/VideoProjectStudio.tsx":
-    "bulk/repeating confirm: the Make it panel's estimate before a video is made",
-  "features/marketing/social/cost.ts":
-    "bulk/repeating confirm: the social spend confirm steps and agent approval cards name the points before spending",
-  "features/marketing/social/video/clone.ts":
-    "bulk/repeating confirm: the points formatter for the video estimate",
-  "features/marketing/social/video/estimate.ts":
-    "bulk/repeating confirm: the video estimate and the line telling when the studio stops to ask",
-  "features/masterwork/components/masterworks/MasterworksPage.tsx":
-    "history table: a masterwork's recent runs list",
-  "features/research/components/analysis/AnalysisList.tsx":
-    "info/details: an analysis's usage details",
-  "features/research/components/document/DocumentViewer.tsx":
-    "info/details: a document's token usage and cost details panel",
-  "features/source-library/components/JobPanel.tsx":
-    "info/details: a library job's own page with its promised cost, and the cancel confirm",
+  "features/marketing/news-monitor/NewsMonitorRunView.tsx":
+    "out of points: mounts the CostBanner ceiling-reached block on the monitor's run view",
+  "features/marketing/news-monitor/CostBanner.tsx":
+    "out of points: the monthly news ceiling reached / near-limit block with Resume",
+  "features/research/components/costs/**": "billing/usage/pricing/budget: the research cost dashboard",
+  "components/official/drill-explorer/**": "billing/usage/pricing/budget: the usage explorer",
 };
 
 /** P2 — the components/cost helpers that hand back a BARE dollar string (no "Admin only" tag can ride a
@@ -452,10 +360,25 @@ export const DOLLAR_TEXT_NAMES = new Set([
   "formatAdminUsd",
   "formatAdminCost",
   "formatAdminUsdAxisTick",
-  "formatViewerCost",
 ]);
+/** `formatViewerCost` prints dollars only when told `unit: "usd"`; a unit taken from
+ *  `useCostDisplay().unit` / `currentCostUnit()` is already points off the admin site. */
+const VIEWER_COST = "formatViewerCost";
 /** The admin site: manage.aimatrx.com and the dev site, where the whole site is the admin label. */
-export const ADMIN_SITE = ["app/(admin)/**", "app/(dev)/**", "features/admin/**", "features/administration/**"];
+export const ADMIN_SITE = [
+  "app/(admin)/**",
+  "app/(dev)/**",
+  "features/admin/**",
+  "features/administration/**",
+  // reached only from app/(admin) routes (route evidence: cost-display sweep, 2026-10-22)
+  "features/cx-dashboard/**",
+  "features/tool-battle/**",
+  "features/ai-test-mode/admin/**",
+  "features/mandates/admin-list/**",
+  "features/mandates/admin/**",
+  "features/mandates/run-history/format.ts",
+  "features/hindsight/components/FindingEffectivenessPanel.tsx",
+];
 
 /** P2 — lines using a bare-dollar helper outside a door element. Pure. */
 export function bareDollarSites(source: string): number[] {
@@ -463,8 +386,12 @@ export function bareDollarSites(source: string): number[] {
     source,
     (spec, name) => /(^|\/)components\/cost\/\w+$/.test(spec) && DOLLAR_TEXT_NAMES.has(name),
   );
-  if (locals.length === 0) return [];
-  const uses = locals.map((name) => new RegExp(`(?<![\\w.])${name}\\s*\\(`));
+  const viewer = importedLocalsWhere(source, (spec, name) => /(^|\/)components\/cost\/\w+$/.test(spec) && name === VIEWER_COST);
+  if (locals.length === 0 && viewer.length === 0) return [];
+  const uses = [
+    ...locals.map((name) => new RegExp(`(?<![\\w.])${name}\\s*\\(`)),
+    ...viewer.map((name) => new RegExp(`(?<![\\w.])${name}\\s*\\([^)]*unit:\\s*["'\`]usd["'\`]`)),
+  ];
   const behindDoor = doorLines(source);
   const hits: number[] = [];
   codeLines(source).forEach((code, i) => {
@@ -502,7 +429,7 @@ const KIT_RENDER_NAMES = new Set(["formatCost", "formatPoints", "usdToPoints"]);
 /** Literal price text that is a price on its own, wherever it appears. */
 const LITERAL_ALWAYS: RegExp[] = [
   // "3 pts", `${n} pts` — "pts" is only ever our price unit
-  /(?:\d[\d,.]*|\})\s*pts\b/,
+  /(?:\d[\d,.]*|\})\s*pts\b(?!\s*=)/, // (not a JSX prop named pts: `{x} pts={n}`)
   // "{n} points used", "20 points a check", "5 points left"
   /(?:\d[\d,.]*|\})\s*(?:AI\s+)?points?\s+(?:used|left|charged|spent|remaining|each|per\b|a\s+(?:check|run|month|day|week|call|record))/i,
   // a free-of-charge claim: "You were not charged", "nothing was charged", "costs nothing"
@@ -515,10 +442,25 @@ const LITERAL_ALWAYS: RegExp[] = [
   // "Free trial", "free text", "free-form" do not fire
   /(?:["'`]|>)\s*Free\s*(?:["'`<]|[,.·—–:;!](?!\w))/,
   /^\s*Free\s*$/,
+  // "credits" is not our word for the price (policy: points); a count of them is a price
+  /(?:\d[\d,.]*|\})\s*credits?\b/i,
+  // a spend toast / receipt: "Used 12 points.", "Spent ${n} points", "Charged 3 pts"
+  /\b(?:used|spent|charged|costs?)\s+(?:about\s+|up to\s+)?(?:\d[\d,.]*|\$?\{[^}]*\})\s*(?:points?|pts)\b/i,
   // a free allowance counted out ("3 free comparisons", `${n} free runs left`) — telling a person about
   // points and spend (owner ruling 2026-10-22)
   /(?:\d[\d,.]*|\})\s+free\s+(?:comparisons?|runs?|searches|search|checks?|lookups?|records?|uses?|tries|credits?|points?)\b/i,
 ];
+/** Runtime-built points units ("point${plural}", `${n} ${"pts"}`, `{n}pt`, a `unit = … "points"` variable): a price
+ *  only beside a money word or "up to"/"at most"/"maximum" ("N key points" and typographic "12pt" are not). */
+const LITERAL_RUNTIME: RegExp[] = [
+  /\bpoint\$\{/,
+  /["'`]point["'`]\s*\+/,
+  /\$\{\s*["'`](?:pts?|points?|credits?)["'`]\s*\}/,
+  /\}\s*pt\b(?!\s*=)/,
+  /\b\w*[uU]nit\w*\s*=\s*[^;\n]*["'`](?:points?|pts|credits?)["'`]/,
+];
+const MONEY_OR_CAP = /cost|spen[dt]|price|charge|budget|wallet|credit|estimat|usd|up\s*to|at\s+most|maximum|\bmax\b|\bquote/i;
+
 /** "N points" is a price only beside a money word ("12 data points", a score's "+5 points" are not). */
 const LITERAL_POINTS = /(?:\d[\d,.]*|\})\s*(?:AI\s+)?points?\b(?!\s*[.(\[=:?])(?!\s+(?:at|to)\b)/;
 const MONEY_WORD = /cost|spen[dt]|price|charge|budget|wallet|credit|estimat|usd|points_?per|pointsPer/i;
@@ -526,6 +468,7 @@ const MONEY_WORD = /cost|spen[dt]|price|charge|budget|wallet|credit|estimat|usd|
 /** True when a code line carries a literal price string. Pure. */
 export function literalPriceOn(code: string): boolean {
   if (LITERAL_ALWAYS.some((re) => re.test(code))) return true;
+  if (MONEY_OR_CAP.test(code) && LITERAL_RUNTIME.some((re) => re.test(code))) return true;
   return MONEY_WORD.test(code) && LITERAL_POINTS.test(code);
 }
 
@@ -541,9 +484,6 @@ export function literalPriceOn(code: string): boolean {
  */
 export const PRICE_HELPERS: Record<string, string> = {
   usePriceText: "features/data-sources/library/hooks.ts — a source's price text",
-  useFetchEstimate: "features/data-sources/hooks.ts — \"≈ N points\" for a fetch",
-  CostLine: "features/marketing/social/components/video/StudioParts.tsx — the studio's cost line",
-  toolPriceText: "@ai-matrx/agents/tools catalog-search — a catalog tool's price (\"Free\" / \"N pts\")",
 };
 export const PRODUCER_NAME = /price|cost|points?|estimat|charge/i;
 
@@ -614,9 +554,30 @@ export const DOOR_ELEMENTS = ["CostDoor", "AdminOnly"] as const;
 /** Line numbers (1-based) covered by a `<CostDoor …/>` / `<CostDoor>…</CostDoor>` / `<AdminOnly>…</AdminOnly>`
  *  element, props included. Pure. */
 export function doorLines(source: string): Set<number> {
+  const covered = elementLines(source, DOOR_ELEMENTS);
+  for (const l of productPriceLines(source)) covered.add(l);
+  return covered;
+}
+
+/** THE PRODUCT-PRICE MARKER (owner ruling 2026-10-22): a price that is a brand's OWN content (an
+ *  offering's price, a listing) is not what the platform charged. It is marked, in the code, by the
+ *  typed `<ProductPrice>` element or the `asProductPrice(text)` call from `components/cost/ProductPrice`
+ *  — never by a file list. Lines inside the element, or holding the call, are skipped by P1, P2 and the
+ *  dollar rules. */
+export const PRODUCT_PRICE_ELEMENTS = ["ProductPrice"] as const;
+export function productPriceLines(source: string): Set<number> {
+  const covered = elementLines(source, PRODUCT_PRICE_ELEMENTS);
+  source.split("\n").forEach((line, i) => {
+    if (/\basProductPrice\(/.test(line)) covered.add(i + 1);
+  });
+  return covered;
+}
+
+/** Line numbers (1-based) covered by any of the named JSX elements, props included. Pure. */
+export function elementLines(source: string, names: readonly string[]): Set<number> {
   const covered = new Set<number>();
   const lineOf = (i: number) => source.slice(0, i).split("\n").length;
-  const open = new RegExp(`<(${DOOR_ELEMENTS.join("|")})\\b`, "g");
+  const open = new RegExp(`<(${names.join("|")})\\b`, "g");
   let m: RegExpExecArray | null;
   while ((m = open.exec(source))) {
     const name = m[1];
@@ -646,6 +607,38 @@ export function doorLines(source: string): Set<number> {
   return covered;
 }
 
+/**
+ * SERVER COST FIELDS (S1, owner ruling 2026-10-22): fields the server fills with a ready-made cost
+ * sentence ("up to 200 points each", "estimated cost: about 30 points"). The
+ * client cannot see the text, but it can see the FIELD being rendered, so reading one is a price on
+ * screen exactly like a literal: it must sit inside a door, a click-to-open `<details>`, or a file in
+ * ALLOWED_PLACES. Add a field here the day the server starts sending a new cost sentence.
+ */
+export const SERVER_COST_FIELDS: RegExp[] = [
+  /\.cost\??\.lines\b/, // media-research preview: "up to N points each" per search line
+  /(?:\?\.|\.|\[["'])(?:compute_cost_note|estimated_cost_note|cost_note|cost_sentence|cost_lines?)\b/, // read, not declared
+];
+
+/** Does a code line read a server field that carries a cost sentence? Pure. */
+export function serverCostFieldOn(code: string): boolean {
+  return SERVER_COST_FIELDS.some((re) => re.test(code));
+}
+
+/** Line numbers (1-based) inside a `<details>…</details>` element: a section the person opens by
+ *  clicking its summary, which is a door in effect (the only place a server cost line may print). Pure. */
+export function detailsLines(source: string): Set<number> {
+  const covered = new Set<number>();
+  const lineOf = (i: number) => source.slice(0, i).split("\n").length;
+  const open = /<details\b/g;
+  let m: RegExpExecArray | null;
+  while ((m = open.exec(source))) {
+    const close = source.indexOf("</details>", m.index);
+    if (close === -1) continue;
+    for (let l = lineOf(m.index); l <= lineOf(close); l++) covered.add(l);
+  }
+  return covered;
+}
+
 /** P1 — lines where a file puts a price on screen: a use of a cost-rendering
  *  export of `components/cost/*`, a kit points call, a PRICE_HELPERS name or a
  *  derived price helper, or a literal price string. Comments and import lines
@@ -661,10 +654,13 @@ export function costRenderSites(source: string, file = "", isProducer?: Producer
   );
   const uses = locals.map((name) => new RegExp(`(?<![\\w.])${name}\\b(?!\\s*:)`));
   const behindDoor = doorLines(source);
+  const inDetails = detailsLines(source);
   const hits: number[] = [];
   codeLines(source).forEach((code, i) => {
     if (behindDoor.has(i + 1)) return;
-    if (code && (uses.some((re) => re.test(code)) || literalPriceOn(code))) hits.push(i + 1);
+    if (!code) return;
+    if (uses.some((re) => re.test(code)) || literalPriceOn(code)) hits.push(i + 1);
+    else if ((!file || /\.tsx$/.test(file)) && serverCostFieldOn(code) && !inDetails.has(i + 1)) hits.push(i + 1);
   });
   return hits;
 }
@@ -1068,21 +1064,6 @@ function selfTest(): number {
       bad: `import { usePriceText } from "@/features/data-sources/library/hooks";\nconst price = usePriceText();`,
       fixed: `import { useLibrary } from "@/features/data-sources/library/hooks";\nconst lib = useLibrary();`,
     },
-    {
-      name: "useFetchEstimate",
-      bad: `import { useFetchEstimate } from "../hooks";\nconst est = useFetchEstimate();`,
-      fixed: `import { useFetchSpec } from "../hooks";\nconst spec = useFetchSpec();`,
-    },
-    {
-      name: "CostLine",
-      bad: `import { CostLine } from "./StudioParts";\n<CostLine label={l} pts={p} />`,
-      fixed: `import { RunLog } from "./StudioParts";\n<RunLog steps={s} />`,
-    },
-    {
-      name: "toolPriceText",
-      bad: `import { toolPriceText } from "@ai-matrx/agents/tools";\nnote: toolPriceText(hit) ?? undefined,`,
-      fixed: `import { toolTitle } from "@ai-matrx/agents/tools";\nnote: toolTitle(hit),`,
-    },
   ];
   for (const p of probes) {
     const bad = costRenderSites(p.bad).length;
@@ -1117,6 +1098,35 @@ function selfTest(): number {
       want: 0,
     },
     { name: "a free allowance", source: "const s = `${n} free comparisons a day`;", want: 1 },
+    { name: "H1 runtime plural unit", source: "const t = `Up to ${n} point${n === 1 ? \"\" : \"s\"}`;", want: 1 },
+    { name: "H1 unit variable", source: "const costUnit = n === 1 ? \"point\" : \"points\";", want: 1 },
+    { name: "H1 templated pts unit", source: "const t = `Cost ${n} ${\"pts\"}`;", want: 1 },
+    { name: "H1 credits count", source: "<Button>Run ({n} credits)</Button>", want: 1 },
+    { name: "H1 spend toast", source: "toast.success(`Used ${n} points.`);", want: 1 },
+    { name: "H1 a key-points count is not a price", source: "const t = `${n} key point${n === 1 ? \"\" : \"s\"}`;", want: 0 },
+    { name: "H1 a typographic pt is not a price", source: "const size = `${w}pt ${h}pt`;", want: 0 },
+    { name: "PP a brand's own price inside <ProductPrice>", source: "export const F = ({ p }: { p: number }) => (\n  <ProductPrice>{`${p} points`}</ProductPrice>\n);", want: 0 },
+    { name: "PP a brand's own price through asProductPrice()", source: "const line = asProductPrice(`Up to ${n} point${n === 1 ? \"\" : \"s\"}`);", want: 0 },
+    {
+      name: "S1 a server cost sentence printed bare",
+      source: `export const F = ({ p }: { p: { cost: { lines: string[] } } }) => (\n  <ul>{p.cost.lines.map((l) => <li key={l}>{l}</li>)}</ul>\n);`,
+      want: 1,
+    },
+    {
+      name: "S1 a server cost note printed bare",
+      source: `export const F = ({ r }: { r: { estimated_cost_note: string } }) => <p>{r.estimated_cost_note}</p>;`,
+      want: 1,
+    },
+    {
+      name: "S1 the same server lines inside a click-to-open details",
+      source: `export const F = ({ p }: { p: { cost: { lines: string[] } } }) => (\n  <details>\n    <summary>What it covers</summary>\n    <ul>{p.cost.lines.map((l) => <li key={l}>{l}</li>)}</ul>\n  </details>\n);`,
+      want: 0,
+    },
+    {
+      name: "S1 a server cost note inside a CostDoor row",
+      source: `import { CostDoor } from "@/components/cost/CostDoor";\nexport const F = ({ r }: { r: { cost_note: string } }) => (\n  <CostDoor\n    rows={[{ label: "Note", text: r.cost_note }]}\n  />\n);`,
+      want: 0,
+    },
   ];
   for (const p of doorProbes) {
     const got = costRenderSites(p.source).length;
@@ -1128,6 +1138,16 @@ function selfTest(): number {
       name: "a bare dollar string",
       source: `import { formatAdminUsd } from "@/components/cost/formatAdminCost";\nexport const t = (u: number) => \`\${formatAdminUsd(u)}\`;`,
       want: 1,
+    },
+    {
+      name: "formatViewerCost told usd",
+      source: `import { formatViewerCost } from "@/components/cost/formatAdminCost";\nconst t = formatViewerCost(u, { unit: "usd", rate });`,
+      want: 1,
+    },
+    {
+      name: "formatViewerCost with the viewer's unit",
+      source: `import { formatViewerCost } from "@/components/cost/formatAdminCost";\nconst t = formatViewerCost(u, { unit, rate });`,
+      want: 0,
     },
     {
       name: "the dollar string inside <AdminOnly>",

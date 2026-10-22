@@ -21,7 +21,7 @@ describe("music choice", () => {
   });
   it("prices the bed line", () => {
     const line = { media_id: "music", capability: "music", model: "lyria-3.5", unit: "track", quantity: 1, unit_price_usd: 0.08, cost_usd: 0.08, points: 1600, note: null };
-    expect(musicCostLine({ lines: [line], cached: [] })).toBe("Music bed 1,600 points");
+    expect(musicCostLine({ lines: [line], cached: [] })).toBe("Music bed");
     expect(musicCostLine({ lines: [], cached: ["music"] })).toBe("Music bed reused");
     expect(musicCostLine({ lines: [], cached: [] })).toBeNull();
   });

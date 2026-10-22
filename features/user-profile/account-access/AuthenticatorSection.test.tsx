@@ -122,6 +122,27 @@ describe("authenticator management lifecycle", () => {
     expect(container.textContent).toContain("Recovery code verified.");
     expect(container.querySelector("#recovery-code")).toBeNull();
   });
+  it("challenge mode opens the code box for the verified factor and reports aal2", async () => {
+    const elevated = jest.fn();
+    mockVerify.mockResolvedValue(undefined);
+    mockRead.mockResolvedValue({ ...initial, factors: [{ id: "primary", name: "Primary", verified: true }] });
+    await act(async () => root.render(<AuthenticatorSection challenge onElevated={elevated} />));
+    expect(container.querySelector("#authenticator-code")).not.toBeNull();
+    // aal1 cannot add a factor beside a verified one (Auth refuses): not offered.
+    expect(container.textContent).not.toContain("Add authenticator");
+    await act(async () => input("authenticator-code", "654321"));
+    mockRead.mockResolvedValue({ ...initial, elevated: true, factors: [{ id: "primary", name: "Primary", verified: true }] });
+    await act(async () => container.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
+    expect(mockVerify).toHaveBeenCalledWith("owned-user", "primary", "654321");
+    expect(elevated).toHaveBeenCalledTimes(1);
+  });
+  it("challenge mode with no authenticator offers enrollment and never reports aal2 early", async () => {
+    const elevated = jest.fn();
+    await act(async () => root.render(<AuthenticatorSection challenge onElevated={elevated} />));
+    expect(container.querySelector("#authenticator-code")).toBeNull();
+    expect(button("Add authenticator")).toBeTruthy();
+    expect(elevated).not.toHaveBeenCalled();
+  });
 
 });
 

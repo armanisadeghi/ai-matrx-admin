@@ -3,7 +3,7 @@
 /**
  * The filters of a source's search (price, beds, baths, home type, for sale / rent / sold) as plain
  * controls. Only the filters the server lists for this source and organization (`search_filters`)
- * appear — a control that would do nothing is never drawn (`./searchFilters`). Values live in the
+ * appear — a control that would do nothing is never drawn (`./filterChoices`). Values live in the
  * form's own `values` under the server's filter names, so a run, a refill and the plain-language
  * box all speak the same fields.
  */
@@ -24,7 +24,7 @@ import {
   withBeds,
   withChoice,
   type FilterName,
-} from "./searchFilters";
+} from "./filterChoices";
 
 function Labeled({ label, children }: { label: string; children: React.ReactNode }) {
   return (

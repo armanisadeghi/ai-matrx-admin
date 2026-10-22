@@ -51,7 +51,7 @@ jest.mock("@ai-matrx/chat/agents/identity/tool-search", () => ({
   useOwnToolSearch: () => ({ status: "ready", known: {}, hits: [] }),
 }));
 jest.mock("@/features/shell/components/header/templates/RecordPageHeader", () => ({
-  RecordPageHeader: ({ record }: { record: { name: string } }) => <h1 data-testid="title">{record.name}</h1>,
+  RecordPageHeader: ({ record, level }: { record?: { name: string }; level?: { name: string } }) => <h1 data-testid="title">{(record ?? level)?.name}</h1>,
 }));
 jest.mock("@/components/cost/useCostDisplay", () => ({ useCostDisplay: () => ({ rate: null }), useSeesDollars: () => false }));
 jest.mock("@/components/cost/CostDoor", () => ({ CostDoor: () => <span data-testid="cost-door" /> }));

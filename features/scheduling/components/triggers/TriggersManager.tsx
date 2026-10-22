@@ -229,7 +229,18 @@ export function TriggersManager({
   };
 
   const costCols = automationCostColumns<ManagedTrigger>((t) => t.cost, seat, orgSlug);
-  const pick = (ids: string[]) => ids.flatMap((id) => costCols.filter((c) => String(c.id) === id));
+  // Cost columns start HIDDEN (owner ruling 2026-10-22: points only when the person asks): the
+  // column picker is the door — showing a cost column is asking for usage. Sorting and filters stay.
+  const COST_MONEY_COLUMNS = new Set([
+    "cost_total", "cost_total_points", "cost_est_month", "cost_est_month_points", "cost_7d", "cost_7d_points",
+    "cost_last_run", "cost_last_run_points", "cost_avg_run", "cost_avg_run_points", "cost_max_run", "cost_max_run_points",
+  ]);
+  const pick = (ids: string[]) =>
+    ids.flatMap((id) =>
+      costCols
+        .filter((c) => String(c.id) === id)
+        .map((c) => (COST_MONEY_COLUMNS.has(String(c.id)) ? { ...c, hidden: true } : c)),
+    );
 
   const unordered: MatrxColumnDef<ManagedTrigger>[] = [
     {
@@ -417,6 +428,9 @@ export function TriggersManager({
   const stateOne = (action: TriggerAction) => async (id: string) => {
     await setWorkflowTriggerState(id, action);
   };
+  /** What the paused triggers cost a month together (only the ones firing now). */
+  const monthlyOf = (rows: ManagedTrigger[]) =>
+    rows.reduce((sum, r) => sum + (r.overview.is_active ? r.cost.est_monthly_cost : 0), 0);
   const triggersLabel = (n: number) => `${n} ${n === 1 ? "trigger" : "triggers"}`;
   const { rowActionDefs, bulkActions } = defineRowVerbs<ManagedTrigger>(
     [
@@ -456,6 +470,7 @@ export function TriggersManager({
           confirm: (t) => ({
             title: `Pause ${triggersLabel(t.ids.length)}?`,
             description: "They stop firing on their own right now. Runs already started finish and Resume turns them back on.",
+            cost: { label: "Cost", rows: [{ label: "Per month combined", usd: monthlyOf(t.rows), prefix: "~" }] },
             confirmLabel: "Pause",
           }),
           runOne: stateOne("pause"),

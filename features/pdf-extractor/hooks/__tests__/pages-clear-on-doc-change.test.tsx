@@ -5,11 +5,11 @@ import { createRoot } from "react-dom/client";
 
 const A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
-let releaseB: (() => void) | null = null;
 
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "u1" }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: () => "u1" }));
+// Parent-doc guard (docproc): the doc is live.
 jest.mock("@/utils/supabase/docprocDb", () => {
   let docId = "";
   const chain: Record<string, unknown> = {};
@@ -20,16 +20,28 @@ jest.mock("@/utils/supabase/docprocDb", () => {
     return chain;
   };
   chain.maybeSingle = async () => ({ data: { id: docId }, error: null });
-  chain.order = async () => {
-    const n = docId === "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" ? 48 : 1;
-    if (docId.startsWith("b")) await new Promise<void>((r) => { releaseB = r; });
-    return {
-      data: Array.from({ length: n }, (_, i) => ({ id: `${docId}-${i}`, page_index: i, page_number: i + 1 })),
-      error: null,
-    };
-  };
   return { docprocDb: () => ({ from: () => chain }) };
 });
+// THE PDF page reader: rpc pdf.pdf_pages. B's read is held until released.
+jest.mock("@/utils/supabase/pdfDb", () => ({
+  pdfDb: () => ({
+    rpc: (_fn: string, args: { p_processed_document_id: string }) => ({
+      select: async () => {
+        const docId = args.p_processed_document_id;
+        const n = docId === "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" ? 48 : 1;
+        if (docId.startsWith("b")) {
+          await new Promise<void>((r) => {
+            (globalThis as { mockReleaseB?: () => void }).mockReleaseB = r;
+          });
+        }
+        return {
+          data: Array.from({ length: n }, (_, i) => ({ page_id: `${docId}-${i}`, page_index: i, page_number: i + 1 })),
+          error: null,
+        };
+      },
+    }),
+  }),
+}));
 
 import { useProcessedDocumentPages } from "../useProcessedDocumentPages";
 
@@ -48,6 +60,6 @@ it("pages clear the moment the doc changes, and show only the new doc's rows", a
   await act(async () => root.render(createElement(Probe, { id: B })));
   // B's read is still pending: no render for B may carry A's 48 pages.
   expect(seen.filter((s) => s.doc === B).every((s) => s.n === 0)).toBe(true);
-  await act(async () => { releaseB?.(); await new Promise((r) => setTimeout(r, 10)); });
+  await act(async () => { (globalThis as { mockReleaseB?: () => void }).mockReleaseB?.(); await new Promise((r) => setTimeout(r, 10)); });
   expect(seen[seen.length - 1]).toEqual({ doc: B, n: 1 });
 });

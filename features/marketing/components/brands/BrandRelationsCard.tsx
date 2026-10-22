@@ -47,6 +47,7 @@ import {
 import { clearStashedRetraction, restoreRetraction, type RetractionSummary } from "@/features/marketing/data/retraction";
 import type { MarketingBrand } from "@/features/marketing/types";
 import { linkPersonToBrand } from "@/features/marketing/smart-add/relations";
+import { brandPeopleKey } from "@/features/marketing/photos/spokespeople";
 
 type GroupKey =
   | "names"
@@ -353,6 +354,8 @@ export function BrandRelationsCard({ brand, canEdit }: { brand: MarketingBrand; 
       queryClient.invalidateQueries({ queryKey: ["marketing", "brand-kept-properties", brand.id] }),
       queryClient.invalidateQueries({ queryKey: ["marketing", "brand-exclusions", brand.id] }),
       queryClient.invalidateQueries({ queryKey: ["marketing", "brand", brand.id] }),
+      // A person added or removed here shows (or leaves) the Spokespeople card without a reload.
+      queryClient.invalidateQueries({ queryKey: brandPeopleKey(brand.id) }),
     ]);
   };
 

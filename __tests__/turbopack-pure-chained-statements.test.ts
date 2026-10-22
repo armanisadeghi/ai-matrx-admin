@@ -1,35 +1,38 @@
 /**
  * LIVE DEFECT (2026-10-22, www.aimatrx.com): after a sheet row insert =F13*10 stayed =F13*10 and
- * =SUM(F11:F15) did not widen. Turbopack's PRODUCTION minifier deletes a statement of the form
+ * =SUM(F11:F15) did not widen. Turbopack's PRODUCTION build deletes the callback work of a statement of the form
  *   (<pure annotation> new Set(...)).forEach(cb)
- * because the annotation makes the whole call look side-effect-free. @univerjs/sheets-formula is written
- * that way, so the shipped bundle returned empty redo data. Dev builds and tests are unminified, so they passed.
+ * because the annotation makes the whole call look side-effect-free. @univerjs/sheets-formula's refRangeFormula is
+ * written that way, so the shipped bundle returned empty redo data. Dev builds and tests are unminified, so they passed.
+ * (Reproduced with a one-page `next build --turbopack`: unpatched, refRangeFormula compiles to
+ * `return{redoFormulaData:t,undoFormulaData:n}` with both loops gone; patched, both loops ship.)
+ *
+ * The fix is a pnpm patch per package (pnpm-workspace.yaml patchedDependencies, patches/*.patch) that drops the
+ * annotation from those statements, so no build-time loader is needed (a turbopack.rules loader was the prime
+ * suspect for two 17-minute production compile stalls and was removed in v0.4.3451).
  *
  * Class guard: scan EVERY installed package's client-facing JS (node_modules/.pnpm, all @ai-matrx/* included).
- * Every such statement in a file a bundler would import must be covered by a turbopack.rules entry in
- * next.config.js that runs scripts/turbopack-pure-loop-loader.cjs. A new hit names the package and line.
- * Upstream issue text + sweep evidence: see the commit that added this file.
+ * A hit names the package and line: patch it the same way (pnpm patch, remove the annotation, patch-commit).
  */
 import fs from "fs";
 import path from "path";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const micromatch = require("micromatch");
 
 const root = path.resolve(__dirname, "..");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { findPureChainedStatements, PURE_RESULT_METHODS } = require(path.join(root, "scripts/scan-pure-chained-statements.cjs"));
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const loader: (s: string) => string = require(path.join(root, "scripts/turbopack-pure-loop-loader.cjs"));
-const nextConfigSource = fs.readFileSync(path.join(root, "next.config.js"), "utf8");
 
-/** Globs of the turbopack rules that name the pure-loop loader, read from next.config.js text. */
-function ruleGlobs(): string[] {
-  const globs: string[] = [];
-  const re = /"([^"\n]+)":\s*\{\s*loaders:\s*\[require\.resolve\("\.\/scripts\/turbopack-pure-loop-loader\.cjs"\)\]/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(nextConfigSource))) globs.push(m[1]);
-  return globs;
-}
+/** The files the live defect shipped through; each is patched in pnpm-workspace.yaml patchedDependencies. */
+const PATCHED_FILES = [
+  "@univerjs/sheets-formula/lib/es/index.js",
+  "@univerjs/sheets-formula/lib/index.js",
+  "@univerjs/docs-ui/lib/es/index.js",
+  "@univerjs/docs-ui/lib/index.js",
+  "@tiptap/react/dist/menus/index.js",
+];
+
+type ScanHit = { line: number; method: string; snippet: string };
+const unsafeHits = (src: string): ScanHit[] =>
+  (findPureChainedStatements(src) as ScanHit[]).filter((h) => !PURE_RESULT_METHODS.has(h.method));
 
 type Hit = { pkg: string; file: string; line: number; method: string; snippet: string };
 
@@ -85,8 +88,8 @@ function reachesBundler(file: string, t: { exact: Set<string>; prefixes: string[
   return t.exact.has(file) || t.prefixes.some((p) => file.startsWith(p));
 }
 
-/** Every pure-annotated chained statement in client-facing files that no loader rule covers. */
-function findUncovered(pnpmDir: string, globs: string[]): Hit[] {
+/** Every pure-annotated chained statement in client-facing installed files. */
+function findUncovered(pnpmDir: string): Hit[] {
   const out: Hit[] = [];
   for (const entry of fs.readdirSync(pnpmDir)) {
     const nm = path.join(pnpmDir, entry, "node_modules");
@@ -107,7 +110,6 @@ function findUncovered(pnpmDir: string, globs: string[]): Hit[] {
           for (const h of findPureChainedStatements(src) as Array<{ line: number; method: string; snippet: string }>) {
             if (PURE_RESULT_METHODS.has(h.method)) continue;
             if (!reachesBundler(file, targets)) continue;
-            if (micromatch.isMatch(file, globs, { dot: true })) continue;
             out.push({ pkg: path.relative(nm, pkgDir), file: path.relative(root, file), line: h.line, method: h.method, snippet: h.snippet });
           }
         }
@@ -118,52 +120,41 @@ function findUncovered(pnpmDir: string, globs: string[]): Hit[] {
 }
 
 const describeHit = (h: Hit) =>
-  `${h.pkg}  ${h.file}:${h.line}  .${h.method}()  ${h.snippet}\n  -> add a turbopack.rules entry for this file using scripts/turbopack-pure-loop-loader.cjs in next.config.js`;
+  `${h.pkg}  ${h.file}:${h.line}  .${h.method}()  ${h.snippet}\n  -> pnpm-patch this package to drop the annotation (see patches/@univerjs__sheets-formula@1.0.4.patch)`;
 
-describe("Turbopack deletes (/* pure */ new X()).method() statements: every client-facing one must be loader-covered", () => {
-  const globs = ruleGlobs();
-
-  test("rules exist and the known live-defect package is covered", () => {
-    expect(globs).toContain("**/@univerjs/sheets-formula/lib/es/index.js");
+describe("Turbopack deletes (/* pure */ new X()).method() statements: no installed client-facing file may ship one", () => {
+  test.each(PATCHED_FILES)("%s is installed patched (no unsafe pure-annotated chained statement)", (rel) => {
+    const file = path.join(root, "node_modules", rel);
+    expect(fs.realpathSync(file)).toContain("patch_hash=");
+    expect(unsafeHits(fs.readFileSync(file, "utf8")).map((h) => `${rel}:${h.line} ${h.snippet}`)).toEqual([]);
   });
 
-  test("no installed package ships an uncovered pure-annotated chained statement", () => {
-    const hits = findUncovered(path.join(root, "node_modules/.pnpm"), globs);
+  test("the sheets-formula patch keeps both refRangeFormula loops and only drops the annotation", () => {
+    const src = fs.readFileSync(path.join(root, "node_modules/@univerjs/sheets-formula/lib/es/index.js"), "utf8");
+    expect(src).toContain("(new Set([...Object.keys(oldFormulaData), ...Object.keys(newFormulaData)])).forEach((unitId) => {");
+    expect(src).toContain("(new Set([...Object.keys(oldFormulaData[unitId] || {}), ...Object.keys(newFormulaData[unitId] || {})])).forEach((currentSheetId) => {");
+  });
+
+  test("no installed package ships an unpatched pure-annotated chained statement", () => {
+    const hits = findUncovered(path.join(root, "node_modules/.pnpm"));
     expect(hits.map(describeHit)).toEqual([]);
   }, 180_000);
-
-  test("the loader removes the annotation from the statements it covers and leaves others alone", () => {
-    const src = [
-      "function f(a,b){",
-      "  (/* @__PURE__ */ new Set([...Object.keys(a), ...Object.keys(b)])).forEach((k) => { out[k] = 1; });",
-      "  (/* @__PURE__ */ new Map(x)).set(1, 2);",
-      "  const t = (/* @__PURE__ */ new Date()).toISOString();",
-      "  const id = /* @__PURE__ */ make(\"x\");",
-      "  log(`${(/* @__PURE__ */ new Date()).toISOString()}`);",
-      "}",
-    ].join("\n");
-    const out = loader(src);
-    expect(findPureChainedStatements(src).length).toBeGreaterThanOrEqual(2);
-    expect(out).toContain("(new Set([...Object.keys(a)");
-    expect(out).toContain("(new Map(x)).set(1, 2)");
-    expect(out).toContain("/* @__PURE__ */ new Date()).toISOString();");
-    expect(out).toContain('/* @__PURE__ */ make("x")');
-    expect(findPureChainedStatements(out).filter((h: { method: string }) => !PURE_RESULT_METHODS.has(h.method))).toEqual([]);
-  });
 
   test("RED PROOF: a planted package with the pattern is reported with its package name and line", () => {
     const tmp = fs.mkdtempSync(path.join(require("os").tmpdir(), "pure-loop-"));
     const pkg = path.join(tmp, "zz+planted@1.0.0/node_modules/zz-planted");
     fs.mkdirSync(path.join(pkg, "dist"), { recursive: true });
     fs.writeFileSync(path.join(pkg, "package.json"), JSON.stringify({ name: "zz-planted", exports: { ".": { import: "./dist/index.js" } } }));
-    fs.writeFileSync(path.join(pkg, "dist/index.js"), "export function f(a){\n  (/* @__PURE__ */ new Set(a)).forEach((x) => { sideEffect(x); });\n}\n");
+    const planted = "export function f(a){\n  (/* @__PURE__ */ new Set(a)).forEach((x) => { sideEffect(x); });\n}\n";
+    fs.writeFileSync(path.join(pkg, "dist/index.js"), planted);
     try {
-      const hits = findUncovered(tmp, globs);
+      const hits = findUncovered(tmp);
       expect(hits).toHaveLength(1);
       expect(describeHit(hits[0])).toContain("zz-planted");
       expect(hits[0].line).toBe(2);
-      // and a rule glob that matches the file turns it green
-      expect(findUncovered(tmp, ["**/zz-planted/dist/index.js"])).toEqual([]);
+      // the same edit the pnpm patches make turns it green
+      fs.writeFileSync(path.join(pkg, "dist/index.js"), planted.replace("/* @__PURE__ */ ", ""));
+      expect(findUncovered(tmp)).toEqual([]);
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
     }

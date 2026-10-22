@@ -144,7 +144,8 @@ import { notSharedNotice, seatRefusal } from "@/lib/collab/seat-notices";
 import { useCommentAccess } from "@/features/rich-document/annotations/useCommentAccess";
 import { showOfflineNotice } from "@/lib/collab/offlineNotice";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
-import { documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
+import { DOCUMENT_HISTORY_KIND, documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
+import { useHistorySubject } from "@/features/canvas/host/historySubject";
 import { DocumentPageReferenceCopyButton } from "@/features/documents/components/DocumentPageReferenceCopyButton";
 import { DocumentGoogleLink, useDocumentGoogleLink } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { copyCompoundReference } from "@/features/matrx-envelope/components/CompoundReferenceCopyButton";
@@ -276,6 +277,7 @@ export default function DocumentEditor({
     ) ?? "idle";
   // Snapshot history is a canvas tab beside the editor; the button toggles it.
   const snapshotHistory = useToolToggle(documentHistoryToggleInput(documentId, editable, documentName));
+  useHistorySubject(DOCUMENT_HISTORY_KIND, documentId);
 
   // Univer boots ONCE per documentId (see boot effect). `editable` and
   // `collab` can change AFTER boot, so the model reads them through refs —

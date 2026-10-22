@@ -132,7 +132,8 @@ import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/Surface
 import { isServiceFailure } from "@ai-matrx/records/core";
 import { downloadUniverAsXlsx } from "@ai-matrx/office/sheets/xlsx";
 import { resolveExportImage } from "@ai-matrx/office/univer";
-import { workbookHistoryToggleInput } from "@ai-matrx/office/univer/history";
+import { WORKBOOK_HISTORY_KIND, workbookHistoryToggleInput } from "@ai-matrx/office/univer/history";
+import { useHistorySubject } from "@/features/canvas/host/historySubject";
 import { copyActiveSheetReference } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
 import { useWorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
 import type { OpOfflineState } from "@ai-matrx/data/realtime/collab";
@@ -249,6 +250,7 @@ export default function WorkbookEditor({
   const [collabOffline, setCollabOffline] = useState<OpOfflineState | "reconnecting" | null>(null);
   // Snapshot history is a canvas tab beside the editor; the button toggles it.
   const snapshotHistory = useToolToggle(workbookHistoryToggleInput(workbookId, editable, workbookName));
+  useHistorySubject(WORKBOOK_HISTORY_KIND, workbookId);
   const router = useRouter();
   const menuBar = useMenuBarState();
   const [formulaBarHidden, setFormulaBarHidden] = useState(false);

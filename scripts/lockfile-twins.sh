@@ -102,22 +102,8 @@ if ! (cd "$WORK" && MATRX_INSTALL_GATE_DISABLE=1 pnpm install --frozen-lockfile 
     tail -15 "$WORK/.frozen" >&2
     exit 1
 fi
-# THE ADOPTION GATE: install the collapsed set and judge every package-to-package import in it.
-reject() {  # $1 = why; restore exactly what sync:matrx-packages restores, say it, exit 4
-    cp "$WORK/.before" "$WORK/pnpm-lock.yaml"
-    [[ -f "$WORK/.before-package.json" ]] && cp "$WORK/.before-package.json" "$WORK/package.json"
-    echo "$1" >&2
-    exit 4
-}
-[[ -f "$IMPORTS_CHECKER" ]] || reject "NOT ADOPTED — the imports gate is missing ($IMPORTS_CHECKER), so the collapsed set could not be judged; the lockfile stays as it was"
-if ! (cd "$WORK" && MATRX_INSTALL_GATE_DISABLE=1 pnpm install --frozen-lockfile --ignore-scripts) >"$WORK/.install" 2>&1; then
-    reject "NOT ADOPTED — the collapsed set could not be installed to judge it (pnpm install --frozen-lockfile: $(tail -3 "$WORK/.install" | tr '\n' ' ')); the lockfile stays as it was"
-fi
-if ! node "$IMPORTS_CHECKER" --packages --root "$WORK" >"$WORK/.imports" 2>&1; then
-    reject "NOT ADOPTED — the newest @ai-matrx set breaks one package's import of another (check-matrx-imports --packages):
-$(grep -E '^\s+@ai-matrx/|\[FAIL\]|could not run|INSTALL INCOMPLETE' "$WORK/.imports" | head -8)
-the lockfile stays as it was"
-fi
+# (2026-10-22, Arman: "never ever ever during a release") no import gate here: this runs inside the
+# release. Package-to-package imports are judged when agents write and commit, never on this path.
 cp "$WORK/pnpm-lock.yaml" "$OUT"
 # The versions it moved, for the finding: "@ai-matrx/x a,b -> c".
 node - "$WORK/.before" "$WORK/pnpm-lock.yaml" <<'JS'

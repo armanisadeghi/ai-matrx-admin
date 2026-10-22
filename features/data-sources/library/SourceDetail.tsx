@@ -43,6 +43,7 @@ import {
   useLibraryOrganizationId,
   sourceCostRow,
 } from "./hooks";
+import { takeAskRun } from "./askRun";
 import { PastRuns } from "./PastRuns";
 import { PAST_RUNS_PREFIX, isOpenStatus, useDataFetchJob, useOpenJob } from "./runHistory";
 import { LiveRunResults, SavedRunResults } from "./SourceResults";
@@ -66,8 +67,23 @@ export function refillFromInputs(
   }
   if (Object.keys(values).length === 0) return null;
   if (values.url) return { values, option: LINK_OPTION };
-  const option = searchOptions(source).find((o) => o.fields.every((f) => f.name in values))?.name ?? null;
+  const option = searchOptions(source).find((o) => o.fields.every((f) => !f.required || f.name in values))?.name ?? null;
   return { values, option };
+}
+
+/** A sentence the plain-language box read: the form opens filled with it, and runs when `run` is set. */
+export interface SourceAsk {
+  /** The ask's id (`./askRun`): a new ask opens the form fresh, and an armed one runs at most once, ever. */
+  nonce: number;
+  values: Record<string, string>;
+  option: string | null;
+  run: boolean;
+  /** What the person said that this source cannot apply (said, never silently dropped). */
+  unapplied: string[];
+  /** The fill is complete, so "Run anyway" can run it as it stands. */
+  canRunAnyway?: boolean;
+  /** A source of the same task that takes everything asked. */
+  alternative?: { key: string; label: string } | null;
 }
 
 export interface SourceDetailProps {
@@ -79,10 +95,14 @@ export interface SourceDetailProps {
   onJob?: (jobId: string | null, opts?: { replace?: boolean }) => void;
   /** Reopen a past run of another source (a task's list) — the page moves to that source. */
   onOpenRun?: (run: { id: string; sourceKey: string }) => void;
+  /** The plain-language box's reading for this source, if that is how it was opened. */
+  ask?: SourceAsk;
+  /** Open the ask on `ask.alternative` instead. */
+  onSwitchAsk?: () => void;
 }
 
 /** The source on the page: reads the library (cached) and shows the one source. */
-export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun }: SourceDetailProps) {
+export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun, ask, onSwitchAsk }: SourceDetailProps) {
   const organizationId = useLibraryOrganizationId();
   const library = useLibrary(organizationId);
   if (library.isLoading) {
@@ -125,6 +145,8 @@ export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, on
       onJob={onJob ?? (() => {})}
       onOpenRun={onOpenRun}
       labelOf={labelOf}
+      ask={ask}
+      onSwitchAsk={onSwitchAsk}
     />
   );
 }
@@ -138,6 +160,8 @@ function SourceRun({
   onJob,
   onOpenRun,
   labelOf,
+  ask,
+  onSwitchAsk,
 }: {
   source: LibrarySource;
   library: Library;
@@ -147,6 +171,8 @@ function SourceRun({
   onJob: NonNullable<SourceDetailProps["onJob"]>;
   onOpenRun?: SourceDetailProps["onOpenRun"];
   labelOf: (key: string) => string;
+  ask?: SourceAsk;
+  onSwitchAsk?: () => void;
 }) {
   const key = libraryRunKey(source.key);
   const run = useRun(key);
@@ -205,12 +231,19 @@ function SourceRun({
   return (
     <div className="flex flex-col gap-6">
       <SourceForm
-        key={refill ? `run:${jobId}` : "new"}
+        key={refill ? `run:${jobId}` : ask ? `ask:${ask.nonce}` : "new"}
         source={source}
         library={library}
         organizationId={organizationId}
-        initialValues={refill?.values ?? initialValues}
-        initialOption={refill?.option ?? null}
+        initialValues={refill?.values ?? ask?.values ?? initialValues}
+        initialOption={refill?.option ?? ask?.option ?? null}
+        unapplied={refill ? [] : (ask?.unapplied ?? [])}
+        autoRunId={!refill && ask?.run === true ? ask.nonce : null}
+        askChoice={
+          !refill && ask && !ask.run && ask.unapplied.length > 0
+            ? { runAnyway: ask.canRunAnyway === true, alternative: ask.alternative ?? null, onSwitch: onSwitchAsk }
+            : null
+        }
         busy={run.status === "running"}
         onFetch={(input, count) => {
           if (runState(key).status === "running") return;
@@ -312,6 +345,9 @@ function SourceForm({
   organizationId,
   initialValues,
   initialOption = null,
+  unapplied = [],
+  autoRunId = null,
+  askChoice = null,
   busy,
   onFetch,
 }: {
@@ -321,6 +357,12 @@ function SourceForm({
   initialValues?: Record<string, string>;
   /** The search option a refilled run used (null = by link). */
   initialOption?: string | null;
+  /** What the person said that this source cannot apply. */
+  unapplied?: string[];
+  /** The plain-language box's one-time run ticket (`./askRun`): runs once, when the ticket is still unspent. */
+  autoRunId?: number | null;
+  /** An ask that stopped because something asked was not applied: run it anyway, or switch source. */
+  askChoice?: { runAnyway: boolean; alternative: { key: string; label: string } | null; onSwitch?: () => void } | null;
   /** A run of this source is going: Get data waits for it. */
   busy: boolean;
   onFetch: (
@@ -344,6 +386,22 @@ function SourceForm({
   const settingHref = limit
     ? limitSettingHref(organizationId, limit.setting)
     : null;
+
+  // The plain-language box runs the ask once, after the inputs below have settled their own defaults.
+  const latest = useRef({ input: built.input, count, busy, onFetch });
+  useEffect(() => {
+    latest.current = { input: built.input, count, busy, onFetch };
+  });
+  useEffect(() => {
+    // The ticket is spent here, on first sight: a later mount for the same ask (Back and reopen) never runs.
+    if (!takeAskRun(autoRunId)) return;
+    const timer = setTimeout(() => {
+      const now = latest.current;
+      if (now.busy || !now.input) return;
+      now.onFetch(now.input, now.count);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [autoRunId]);
 
   return (
     <form
@@ -389,6 +447,22 @@ function SourceForm({
       >
         <WhatYouGet sourceKey={source.key} fields={source.outputFields} />
       </Section>
+
+      {unapplied.length > 0 && (
+        <div className="-mt-2 flex flex-wrap items-center gap-2" data-ask-unapplied="">
+          <span className="text-xs text-muted-foreground">Not applied here: {unapplied.join(", ")}</span>
+          {askChoice?.runAnyway && built.input && (
+            <Button type="button" variant="outline" disabled={busy} onClick={() => built.input && onFetch(built.input, count)} data-ask-run-anyway="">
+              Run anyway
+            </Button>
+          )}
+          {askChoice?.alternative && askChoice.onSwitch && (
+            <Button type="button" variant="quiet" onClick={askChoice.onSwitch} data-ask-switch={askChoice.alternative.key}>
+              Use {askChoice.alternative.label}
+            </Button>
+          )}
+        </div>
+      )}
 
       <Section title="What to enter">
         <SourceInputFields

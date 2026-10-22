@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1714 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1735 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "d5ba16a4a3b3";
+export const KIND_REGISTRY_FINGERPRINT = "8e9ce5353662";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -126,6 +126,18 @@ export interface AdItem {
   thumbnail_url?: string | null;
   platform_ad_id: string;
   advertiser_name?: string | null;
+}
+
+/**
+ * * From kind `seo_competitor_ads`.
+ */
+export interface AdLibraryPosture {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  themes?: string[];
+  active_ads?: number | null;
 }
 
 /**
@@ -2306,7 +2318,7 @@ export interface Cadence {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer).
+ * * Shared by 3 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer, seo_page_analyses_by_page).
  */
 export interface CannibalizationRisk {
   why?: string;
@@ -3029,7 +3041,7 @@ export interface CondensedRange {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer).
+ * * Shared by 3 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer, seo_page_analyses_by_page).
  */
 export interface ContentGap {
   gap: string;
@@ -3609,6 +3621,107 @@ export interface DesignRowWritten {
 }
 
 /**
+ * * From kind `design_starter_list`.
+ */
+export interface DesignStarter {
+  mood?: string[];
+  /**
+   * Type style → font, weight, size.
+   */
+  type?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  title?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * Motion steps: name, value (duration, easing).
+   */
+  motion?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Corner radius steps: name, value (px).
+   */
+  radius?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Shadow steps: name, value (light and dark).
+   */
+  shadow?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  for_who?: string | null;
+  /**
+   * Opacity steps: name, value (0-1).
+   */
+  opacity?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Color role → its value (light and dark).
+   */
+  palette?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  /**
+   * Spacing steps: name, value (px).
+   */
+  spacing?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Component families: name, group.
+   */
+  components?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * Every color row: name, group, value, reads_on.
+   */
+  color_roles?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  description?: string | null;
+  template_id: string;
+  catalogue_id: string;
+  /**
+   * Scale keys left out of this offer to keep it within its size budget (knob starter_detail_max_chars).
+   */
+  detail_omitted?: string[];
+}
+
+/**
  * One engine finding, in Archify's frozen shape (PLAN § Contracts: Diagnostic).
  *  *
  *  * From kind `diagram_diagnostics`.
@@ -3846,6 +3959,25 @@ export interface EditError {
    */
   __kind?: string;
   message: string;
+}
+
+/**
+ * * From kind `education_card`.
+ */
+export interface EducationCardDetailLayer {
+  kind: string;
+  text: string;
+  __kind?: string;
+  generation_status: string;
+}
+
+/**
+ * * From kind `education_card`.
+ */
+export interface EducationCardPair {
+  left: string;
+  right: string;
+  __kind?: string;
 }
 
 /**
@@ -4900,6 +5032,28 @@ export interface GeneratedVideo {
 }
 
 /**
+ * * From kind `seo_competitor_google_business`.
+ */
+export interface GoogleBusinessProfile {
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  rating?: number | null;
+  address?: string | null;
+  category?: string | null;
+  work_hours?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+  price_level?: string | null;
+  reviews_count?: number | null;
+}
+
+/**
  * Mirrors ``GoogleImageResult`` — closed post-validation (the node's own
  * schema is ``extra="ignore"``, so unknown the search provider keys never survive).
  *  *
@@ -4918,6 +5072,51 @@ export interface GoogleImageSearchResult {
   thumbnail?: string | null;
   original_width?: number | null;
   original_height?: number | null;
+}
+
+/**
+ * * From kind `seo_competitor_google_qa`.
+ */
+export interface GoogleQuestion {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  answer?: string | null;
+  question: string;
+  answered_by?: string | null;
+}
+
+/**
+ * * From kind `seo_competitor_google_reviews`.
+ */
+export interface GoogleReview {
+  date?: string | null;
+  text?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  rating?: number | null;
+  owner_reply?: string | null;
+}
+
+/**
+ * * From kind `seo_competitor_google_reviews`.
+ */
+export interface GoogleReviewSummary {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  recent?: GoogleReview[];
+  rating_distribution?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: number | string | undefined;
+  };
 }
 
 /**
@@ -5702,6 +5901,21 @@ export interface JobHighlight {
 }
 
 /**
+ * * From kind `seo_competitor_job_openings`.
+ */
+export interface JobOpenings {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  source?: string | null;
+  titles?: string[];
+  locations?: string[];
+  open_count?: number | null;
+  newest_posted?: string | null;
+}
+
+/**
  * * Shared by 146 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_finish_door_input, …).
  */
 export type JsonValue = unknown;
@@ -5827,7 +6041,7 @@ export interface KeywordGapRow {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer).
+ * * Shared by 3 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer, seo_page_analyses_by_page).
  */
 export interface KeywordRef {
   __kind?: "keyword_ref_v1";
@@ -7897,7 +8111,7 @@ export interface OverruledFinding {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * Shared by 3 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer, seo_keyword_maps_by_topic).
  */
 export interface PageConflict {
   urls?: string[];
@@ -7985,7 +8199,7 @@ export interface PageOnManyTopics {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * Shared by 3 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer, seo_keyword_maps_by_topic).
  */
 export interface PagePlan {
   page: PageRef_PageKeywordMapV1;
@@ -7998,7 +8212,7 @@ export interface PagePlan {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * Shared by 3 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer, seo_keyword_maps_by_topic).
  */
 export interface PageRef_PageKeywordMapV1 {
   __kind?: "page_ref_v1";
@@ -8820,7 +9034,7 @@ export interface ProposedAgentConfig {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * Shared by 3 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer, seo_keyword_maps_by_topic).
  */
 export interface ProposedPage {
   title: string;
@@ -9556,6 +9770,19 @@ export interface ReviewRow {
   verified?: boolean | null;
   review_id: string;
   app_version?: string | null;
+}
+
+/**
+ * * From kind `seo_competitor_third_party_reviews`.
+ */
+export interface ReviewSiteStanding {
+  url?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  rating?: number | null;
+  reviews_count?: number | null;
 }
 
 /**
@@ -11102,7 +11329,7 @@ export interface SkippedFoldRow {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer).
+ * * Shared by 3 kinds (page_keyword_map_v1, seo.competitor_page_autopsy.offer, seo_keyword_maps_by_topic).
  */
 export interface SkippedKeyword {
   __kind?: "skipped_keyword_v1";
@@ -11946,7 +12173,7 @@ export interface TableSource {
 }
 
 /**
- * * Shared by 2 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer).
+ * * Shared by 3 kinds (page_keyword_analysis_v1, seo.competitor_page_autopsy.offer, seo_page_analyses_by_page).
  */
 export interface TargetAlignment {
   notes?: string;
@@ -14312,7 +14539,7 @@ export interface AgentFactoryInstructionsStepOffer {
 }
 
 /**
- * Kind `agent_factory.proof_step.offer` (registry v12).
+ * Kind `agent_factory.proof_step.offer` (registry v13).
  */
 export interface AgentFactoryProofStepOffer {
   /**
@@ -14351,9 +14578,43 @@ export interface AgentFactoryProofStepOffer {
     accepts_user_input: boolean;
   };
   /**
-   * The locked job both answers are judged against: the job, output kind, required keys, output schema, the person's requested format and the rules code enforces downstream.
+   * The LOCKED job the proof judge scores both blind answers against (``agent_factory.proof_review``'s
+   * ``goal_spec``). Never the goal spec the candidate was written from: the baseline never saw that spec, so
+   * scoring both against it would be circular (``agent_factory.pipeline._judge_variables``).
    */
-  goal_spec: unknown;
+  goal_spec: {
+    /**
+     * The backing mandate's goal, else the request's purpose.
+     */
+    job: string;
+    /**
+     * How the judge reads this rubric.
+     */
+    note?: string;
+    /**
+     * The registered kind this payload is an instance of.
+     */
+    __kind?: "agent_factory_judging_rubric";
+    /**
+     * The locked output kind, when one is chosen.
+     */
+    output_kind?: string | null;
+    /**
+     * The locked output schema: the contract.
+     */
+    output_schema?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+    /**
+     * The person's own words for the format.
+     */
+    requested_format?: string | null;
+    required_output_keys?: string[];
+    downstream_rules_enforced_in_code?: string[];
+  };
   /**
    * The model id the caller pinned. LOCKED: it wins over the profile class. When absent: code maps the profile class through the live catalog.
    */
@@ -14822,6 +15083,47 @@ export interface AgentFactoryInstructions {
    * Every input name the user message places — the guard checks it equals the contract's inputs.
    */
   placed_variables: string[];
+}
+
+/**
+ * The LOCKED job the proof judge scores both blind answers against (``agent_factory.proof_review``'s
+ * ``goal_spec``). Never the goal spec the candidate was written from: the baseline never saw that spec, so
+ * scoring both against it would be circular (``agent_factory.pipeline._judge_variables``).
+ *  *
+ *  * Kind `agent_factory_judging_rubric` (registry v1).
+ */
+export interface AgentFactoryJudgingRubric {
+  /**
+   * The backing mandate's goal, else the request's purpose.
+   */
+  job: string;
+  /**
+   * How the judge reads this rubric.
+   */
+  note?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_factory_judging_rubric";
+  /**
+   * The locked output kind, when one is chosen.
+   */
+  output_kind?: string | null;
+  /**
+   * The locked output schema: the contract.
+   */
+  output_schema?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+  /**
+   * The person's own words for the format.
+   */
+  requested_format?: string | null;
+  required_output_keys?: string[];
+  downstream_rules_enforced_in_code?: string[];
 }
 
 /**
@@ -28179,6 +28481,19 @@ export interface DescribedLinks {
 }
 
 /**
+ * The published design-system starter templates (SP0490–SP0499): who each is for, its mood, palette and type.
+ *  *
+ *  * Kind `design_starter_list` (registry v4).
+ */
+export interface DesignStarterList {
+  items?: DesignStarter[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "design_starter_list";
+}
+
+/**
  * What the design-system Conductor did on one board: a short summary, every row it wrote, whether it wrote
  * the cover, and anything it left open.
  *  *
@@ -29671,6 +29986,68 @@ export interface EducationActivePlan {
 }
 
 /**
+ * One card of the open set or deck, as the set, study and editor screens send it.
+ *  *
+ *  * Kind `education_card` (registry v1).
+ */
+export interface EducationCard {
+  id: string;
+  back: string | null;
+  front: string;
+  /**
+   * Matching cards only.
+   */
+  pairs: EducationCardPair[] | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_card";
+  /**
+   * The editor sends the row version.
+   */
+  version?: number | null;
+  position: number;
+  card_kind: string;
+  /**
+   * The set and study screens send the card's detail layers.
+   */
+  detail_layers?: EducationCardDetailLayer[] | null;
+}
+
+/**
+ * How well the learner knows one card (only cards with review history are sent).
+ *  *
+ *  * Kind `education_card_mastery` (registry v1).
+ */
+export interface EducationCardMastery {
+  tier: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_card_mastery";
+  lapses: number;
+  card_id: string;
+  attempts: number;
+  recall_pct: number | null;
+}
+
+/**
+ * One citation behind the material on a summary or mind map screen.
+ *  *
+ *  * Kind `education_citation_summary` (registry v1).
+ */
+export interface EducationCitationSummary {
+  title: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_citation_summary";
+  excerpt: string | null;
+  sourceId: string;
+  sourceKind: string;
+}
+
+/**
  * One deck (or document) the learner picked as the source on a creation screen.
  *  *
  *  * Kind `education_deck_choice` (registry v1).
@@ -30109,6 +30486,21 @@ export interface EducationTopicStat {
   answered?: number | null;
   masteryPct: number;
   struggling: number;
+}
+
+/**
+ * One of the learner's own tutor conversations (``OwnedTutorConversation``).
+ *  *
+ *  * Kind `education_tutor_conversation` (registry v1).
+ */
+export interface EducationTutorConversation {
+  id: string;
+  title: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_tutor_conversation";
+  status: string;
 }
 
 /**
@@ -47694,6 +48086,24 @@ export interface ProofRunsJudgeCaseOffer {
 }
 
 /**
+ * One payload exactly as a provider returned it or as a row was stored, every key kept as it came.
+ *
+ * Offered where a point holds a raw answer whose keys belong to the source, not to us: a store's public
+ * catalog, the homepage's navigation menus, crawl coverage, a Google Business Profile answer, a brand's
+ * stored profile keys, a coverage verdict and its reader checks, a commerce intake row or step result.
+ * No key is promised, because each source's keys differ; the clean, fact-only form of a provider answer
+ * is ``provider_section_list``. Producers send the payload's own keys at the top level beside ``__kind``.
+ *  *
+ *  * Kind `provider_payload` (registry v1).
+ */
+export interface ProviderPayload {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "provider_payload";
+}
+
+/**
  * What one paid call to an external provider cost and produced.
  *
  * Replaces the family's only raw bag — `RankCheckOutput.receipt` was
@@ -54816,6 +55226,25 @@ export interface SeoBacklinkEnrichmentResult {
 }
 
 /**
+ * The provider's referring-domain / backlink record per domain (owned site and every competitor),
+ * keyed by domain; each record exactly as the provider returned it.
+ *  *
+ *  * Kind `seo_backlink_metrics_by_domain` (registry v1).
+ */
+export interface SeoBacklinkMetricsByDomain {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_backlink_metrics_by_domain";
+  [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | "seo_backlink_metrics_by_domain" | undefined;
+}
+
+/**
  * Output of ``seo.backlinks.refresh`` — collection receipt plus optional enrichment.
  *  *
  *  * Kind `seo_backlink_refresh_result` (registry v8).
@@ -54846,6 +55275,26 @@ export interface SeoCollectionReceipts {
     __kind?: string;
     [key: string]: JsonValue | string | undefined;
   })[];
+}
+
+/**
+ * Each competitor's active advertising per ad library (meta, google, linkedin, tiktok), keyed by
+ * domain; a library with nothing is null.
+ *  *
+ *  * Kind `seo_competitor_ads` (registry v1).
+ */
+export interface SeoCompetitorAds {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_competitor_ads";
+  [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: AdLibraryPosture | null | string | undefined;
+  } | "seo_competitor_ads" | undefined;
 }
 
 /**
@@ -54893,6 +55342,103 @@ export interface SeoCompetitorDiscoveryResult {
   __kind?: "seo_competitor_discovery_result";
   limitations?: string[];
   competitor_ids?: string[];
+}
+
+/**
+ * Each competitor's Google Business profile, keyed by competitor domain.
+ *  *
+ *  * Kind `seo_competitor_google_business` (registry v1).
+ */
+export interface SeoCompetitorGoogleBusiness {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_competitor_google_business";
+  [key: string]: GoogleBusinessProfile | "seo_competitor_google_business" | undefined;
+}
+
+/**
+ * The questions asked on each competitor's Google profile and the answers, keyed by domain.
+ *  *
+ *  * Kind `seo_competitor_google_qa` (registry v1).
+ */
+export interface SeoCompetitorGoogleQa {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_competitor_google_qa";
+  [key: string]: GoogleQuestion[] | "seo_competitor_google_qa" | undefined;
+}
+
+/**
+ * Each competitor's Google star distribution and most recent reviews, keyed by domain.
+ *  *
+ *  * Kind `seo_competitor_google_reviews` (registry v1).
+ */
+export interface SeoCompetitorGoogleReviews {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_competitor_google_reviews";
+  [key: string]: GoogleReviewSummary | "seo_competitor_google_reviews" | undefined;
+}
+
+/**
+ * Each competitor's current hiring, keyed by domain.
+ *  *
+ *  * Kind `seo_competitor_job_openings` (registry v1).
+ */
+export interface SeoCompetitorJobOpenings {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_competitor_job_openings";
+  [key: string]: JobOpenings | "seo_competitor_job_openings" | undefined;
+}
+
+/**
+ * Each competitor's company-level facts per social platform (employees, followers, industry,
+ * posting cadence), keyed by domain then platform.
+ *  *
+ *  * Kind `seo_competitor_social_profiles` (registry v1).
+ */
+export interface SeoCompetitorSocialProfiles {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_competitor_social_profiles";
+  [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | string | undefined;
+  } | "seo_competitor_social_profiles" | undefined;
+}
+
+/**
+ * Each competitor's standing per review platform (trustpilot, g2, glassdoor …), keyed by domain;
+ * a platform that does not apply is null.
+ *  *
+ *  * Kind `seo_competitor_third_party_reviews` (registry v1).
+ */
+export interface SeoCompetitorThirdPartyReviews {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_competitor_third_party_reviews";
+  [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: ReviewSiteStanding | null | string | undefined;
+  } | "seo_competitor_third_party_reviews" | undefined;
 }
 
 /**
@@ -55016,6 +55562,19 @@ export interface SeoKeywordClassifyResult {
   missing_keyword_ids?: string[];
   rejected_unknown_value?: string[];
   facet_dimensions_skipped?: string[];
+}
+
+/**
+ * Topic keyword maps (``page_keyword_map_v1``) produced this run, keyed by topic slug.
+ *  *
+ *  * Kind `seo_keyword_maps_by_topic` (registry v1).
+ */
+export interface SeoKeywordMapsByTopic {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_keyword_maps_by_topic";
+  [key: string]: PageKeywordMapV1 | "seo_keyword_maps_by_topic" | undefined;
 }
 
 /**
@@ -55311,6 +55870,54 @@ export interface SeoMetaTags {
 }
 
 /**
+ * Owned-site backlink facts.
+ *  *
+ *  * Kind `seo_owned_backlinks` (registry v1).
+ */
+export interface SeoOwnedBacklinks {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_owned_backlinks";
+  active_count: number;
+}
+
+/**
+ * One active owned web.page in scope, content stripped.
+ *  *
+ *  * Kind `seo_owned_page` (registry v1).
+ */
+export interface SeoOwnedPage {
+  id: string;
+  url?: string | null;
+  path?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_owned_page";
+  link_score?: number | null;
+  desired_title?: string | null;
+  target_keyword?: string | null;
+}
+
+/**
+ * The owned web.site a competitor run is for: id, domain, name, description and page count.
+ *  *
+ *  * Kind `seo_owned_site` (registry v1).
+ */
+export interface SeoOwnedSite {
+  id: string;
+  name?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_owned_site";
+  domain: string;
+  page_count?: number | null;
+  description?: string | null;
+}
+
+/**
  * Kind `seo_package` (registry v6).
  */
 export interface SeoPackage {
@@ -55356,6 +55963,19 @@ export interface SeoPackage {
      */
     __kind?: string;
   };
+}
+
+/**
+ * Owned-page analyst artifacts (``page_keyword_analysis_v1``), keyed by page id.
+ *  *
+ *  * Kind `seo_page_analyses_by_page` (registry v1).
+ */
+export interface SeoPageAnalysesByPage {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_page_analyses_by_page";
+  [key: string]: PageKeywordAnalysisV1 | "seo_page_analyses_by_page" | undefined;
 }
 
 /**
@@ -55583,6 +56203,27 @@ export interface SeoProspectImportReport {
   skipped?: number;
   enriched?: number;
   unmeasured?: number;
+}
+
+/**
+ * One competitor the discovery provider returned: its seo.competitor id, domain, and the
+ * provider's own record on it exactly as returned.
+ *  *
+ *  * Kind `seo_provider_competitor` (registry v1).
+ */
+export interface SeoProviderCompetitor {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_provider_competitor";
+  domain: string;
+  evidence?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  competitor_id: string;
 }
 
 /**
@@ -67034,6 +67675,7 @@ export type GeneratedKindSlug =
   | "agent_factory_build"
   | "agent_factory_contract"
   | "agent_factory_instructions"
+  | "agent_factory_judging_rubric"
   | "agent_factory_proof_review"
   | "agent_factory_tool_choice"
   | "agent_foundry_report"
@@ -67416,6 +68058,7 @@ export type GeneratedKindSlug =
   | "deferred_work_result"
   | "department_plan"
   | "described_links"
+  | "design_starter_list"
   | "design_system_build_result"
   | "desktop_tools_load_result"
   | "diagram_diagnostics"
@@ -67459,6 +68102,9 @@ export type GeneratedKindSlug =
   | "education.voice_tutor.offer"
   | "education_accuracy_trend"
   | "education_active_plan"
+  | "education_card"
+  | "education_card_mastery"
+  | "education_citation_summary"
   | "education_deck_choice"
   | "education_gain_pair"
   | "education_generation_request"
@@ -67482,6 +68128,7 @@ export type GeneratedKindSlug =
   | "education_spoken_grade"
   | "education_study_goal"
   | "education_topic_stat"
+  | "education_tutor_conversation"
   | "electronics_intake_analysis"
   | "email_candidates"
   | "email_verdict"
@@ -68082,6 +68729,7 @@ export type GeneratedKindSlug =
   | "proof_result"
   | "proof_run_judgement"
   | "proof_runs.judge_case.offer"
+  | "provider_payload"
   | "provider_run_receipt"
   | "provider_section_list"
   | "publish_preflight"
@@ -68276,16 +68924,25 @@ export type GeneratedKindSlug =
   | "seo_authority_route_analysis"
   | "seo_authority_route_result"
   | "seo_backlink_enrichment_result"
+  | "seo_backlink_metrics_by_domain"
   | "seo_backlink_refresh_result"
   | "seo_collection_receipts"
+  | "seo_competitor_ads"
   | "seo_competitor_classification_proposal"
   | "seo_competitor_discovery_result"
+  | "seo_competitor_google_business"
+  | "seo_competitor_google_qa"
+  | "seo_competitor_google_reviews"
+  | "seo_competitor_job_openings"
+  | "seo_competitor_social_profiles"
+  | "seo_competitor_third_party_reviews"
   | "seo_finding_fix_context"
   | "seo_finding_fix_proposal"
   | "seo_finding_fix_result"
   | "seo_google_listing_check_result"
   | "seo_gsc_search_performance_receipt"
   | "seo_keyword_classify_result"
+  | "seo_keyword_maps_by_topic"
   | "seo_keyword_relationship_research_result"
   | "seo_keyword_rows"
   | "seo_keyword_serp_intent_analysis"
@@ -68298,7 +68955,11 @@ export type GeneratedKindSlug =
   | "seo_link_gap_site_receipt"
   | "seo_meta_options"
   | "seo_meta_tags"
+  | "seo_owned_backlinks"
+  | "seo_owned_page"
+  | "seo_owned_site"
   | "seo_package"
+  | "seo_page_analyses_by_page"
   | "seo_page_analysis_result"
   | "seo_page_audit_result"
   | "seo_page_batch_submit_result"
@@ -68309,6 +68970,7 @@ export type GeneratedKindSlug =
   | "seo_prospect_capture_result"
   | "seo_prospect_import_preview"
   | "seo_prospect_import_report"
+  | "seo_provider_competitor"
   | "seo_rank_check_result"
   | "seo_rank_history"
   | "seo_rank_portfolio"
@@ -68751,6 +69413,7 @@ export interface KindPayloadBySlug {
   "agent_factory_build": AgentFactoryBuild;
   "agent_factory_contract": AgentFactoryContract;
   "agent_factory_instructions": AgentFactoryInstructions;
+  "agent_factory_judging_rubric": AgentFactoryJudgingRubric;
   "agent_factory_proof_review": AgentFactoryProofReview;
   "agent_factory_tool_choice": AgentFactoryToolChoice;
   "agent_foundry_report": AgentFoundryReport;
@@ -69133,6 +69796,7 @@ export interface KindPayloadBySlug {
   "deferred_work_result": DeferredWorkResult;
   "department_plan": DepartmentPlan;
   "described_links": DescribedLinks;
+  "design_starter_list": DesignStarterList;
   "design_system_build_result": DesignSystemBuildResult;
   "desktop_tools_load_result": DesktopToolsLoadResult;
   "diagram_diagnostics": DiagramDiagnostics;
@@ -69176,6 +69840,9 @@ export interface KindPayloadBySlug {
   "education.voice_tutor.offer": EducationVoiceTutorOffer;
   "education_accuracy_trend": EducationAccuracyTrend;
   "education_active_plan": EducationActivePlan;
+  "education_card": EducationCard;
+  "education_card_mastery": EducationCardMastery;
+  "education_citation_summary": EducationCitationSummary;
   "education_deck_choice": EducationDeckChoice;
   "education_gain_pair": EducationGainPair;
   "education_generation_request": EducationGenerationRequest;
@@ -69199,6 +69866,7 @@ export interface KindPayloadBySlug {
   "education_spoken_grade": EducationSpokenGrade;
   "education_study_goal": EducationStudyGoal;
   "education_topic_stat": EducationTopicStat;
+  "education_tutor_conversation": EducationTutorConversation;
   "electronics_intake_analysis": ElectronicsIntakeAnalysis;
   "email_candidates": EmailCandidates;
   "email_verdict": EmailVerdict;
@@ -69799,6 +70467,7 @@ export interface KindPayloadBySlug {
   "proof_result": ProofResult;
   "proof_run_judgement": ProofRunJudgement;
   "proof_runs.judge_case.offer": ProofRunsJudgeCaseOffer;
+  "provider_payload": ProviderPayload;
   "provider_run_receipt": ProviderRunReceipt;
   "provider_section_list": ProviderSectionList;
   "publish_preflight": PublishPreflight;
@@ -69993,16 +70662,25 @@ export interface KindPayloadBySlug {
   "seo_authority_route_analysis": SeoAuthorityRouteAnalysis;
   "seo_authority_route_result": SeoAuthorityRouteResult;
   "seo_backlink_enrichment_result": SeoBacklinkEnrichmentResult;
+  "seo_backlink_metrics_by_domain": SeoBacklinkMetricsByDomain;
   "seo_backlink_refresh_result": SeoBacklinkRefreshResult;
   "seo_collection_receipts": SeoCollectionReceipts;
+  "seo_competitor_ads": SeoCompetitorAds;
   "seo_competitor_classification_proposal": SeoCompetitorClassificationProposal;
   "seo_competitor_discovery_result": SeoCompetitorDiscoveryResult;
+  "seo_competitor_google_business": SeoCompetitorGoogleBusiness;
+  "seo_competitor_google_qa": SeoCompetitorGoogleQa;
+  "seo_competitor_google_reviews": SeoCompetitorGoogleReviews;
+  "seo_competitor_job_openings": SeoCompetitorJobOpenings;
+  "seo_competitor_social_profiles": SeoCompetitorSocialProfiles;
+  "seo_competitor_third_party_reviews": SeoCompetitorThirdPartyReviews;
   "seo_finding_fix_context": SeoFindingFixContext;
   "seo_finding_fix_proposal": SeoFindingFixProposal;
   "seo_finding_fix_result": SeoFindingFixResult;
   "seo_google_listing_check_result": SeoGoogleListingCheckResult;
   "seo_gsc_search_performance_receipt": SeoGscSearchPerformanceReceipt;
   "seo_keyword_classify_result": SeoKeywordClassifyResult;
+  "seo_keyword_maps_by_topic": SeoKeywordMapsByTopic;
   "seo_keyword_relationship_research_result": SeoKeywordRelationshipResearchResult;
   "seo_keyword_rows": SeoKeywordRows;
   "seo_keyword_serp_intent_analysis": SeoKeywordSerpIntentAnalysis;
@@ -70015,7 +70693,11 @@ export interface KindPayloadBySlug {
   "seo_link_gap_site_receipt": SeoLinkGapSiteReceipt;
   "seo_meta_options": SeoMetaOptions;
   "seo_meta_tags": SeoMetaTags;
+  "seo_owned_backlinks": SeoOwnedBacklinks;
+  "seo_owned_page": SeoOwnedPage;
+  "seo_owned_site": SeoOwnedSite;
   "seo_package": SeoPackage;
+  "seo_page_analyses_by_page": SeoPageAnalysesByPage;
   "seo_page_analysis_result": SeoPageAnalysisResult;
   "seo_page_audit_result": SeoPageAuditResult;
   "seo_page_batch_submit_result": SeoPageBatchSubmitResult;
@@ -70026,6 +70708,7 @@ export interface KindPayloadBySlug {
   "seo_prospect_capture_result": SeoProspectCaptureResult;
   "seo_prospect_import_preview": SeoProspectImportPreview;
   "seo_prospect_import_report": SeoProspectImportReport;
+  "seo_provider_competitor": SeoProviderCompetitor;
   "seo_rank_check_result": SeoRankCheckResult;
   "seo_rank_history": SeoRankHistory;
   "seo_rank_portfolio": SeoRankPortfolio;
@@ -70472,6 +71155,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_factory_build",
   "agent_factory_contract",
   "agent_factory_instructions",
+  "agent_factory_judging_rubric",
   "agent_factory_proof_review",
   "agent_factory_tool_choice",
   "agent_foundry_report",
@@ -70854,6 +71538,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "deferred_work_result",
   "department_plan",
   "described_links",
+  "design_starter_list",
   "design_system_build_result",
   "desktop_tools_load_result",
   "diagram_diagnostics",
@@ -70897,6 +71582,9 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "education.voice_tutor.offer",
   "education_accuracy_trend",
   "education_active_plan",
+  "education_card",
+  "education_card_mastery",
+  "education_citation_summary",
   "education_deck_choice",
   "education_gain_pair",
   "education_generation_request",
@@ -70920,6 +71608,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "education_spoken_grade",
   "education_study_goal",
   "education_topic_stat",
+  "education_tutor_conversation",
   "electronics_intake_analysis",
   "email_candidates",
   "email_verdict",
@@ -71520,6 +72209,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "proof_result",
   "proof_run_judgement",
   "proof_runs.judge_case.offer",
+  "provider_payload",
   "provider_run_receipt",
   "provider_section_list",
   "publish_preflight",
@@ -71714,16 +72404,25 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "seo_authority_route_analysis",
   "seo_authority_route_result",
   "seo_backlink_enrichment_result",
+  "seo_backlink_metrics_by_domain",
   "seo_backlink_refresh_result",
   "seo_collection_receipts",
+  "seo_competitor_ads",
   "seo_competitor_classification_proposal",
   "seo_competitor_discovery_result",
+  "seo_competitor_google_business",
+  "seo_competitor_google_qa",
+  "seo_competitor_google_reviews",
+  "seo_competitor_job_openings",
+  "seo_competitor_social_profiles",
+  "seo_competitor_third_party_reviews",
   "seo_finding_fix_context",
   "seo_finding_fix_proposal",
   "seo_finding_fix_result",
   "seo_google_listing_check_result",
   "seo_gsc_search_performance_receipt",
   "seo_keyword_classify_result",
+  "seo_keyword_maps_by_topic",
   "seo_keyword_relationship_research_result",
   "seo_keyword_rows",
   "seo_keyword_serp_intent_analysis",
@@ -71736,7 +72435,11 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "seo_link_gap_site_receipt",
   "seo_meta_options",
   "seo_meta_tags",
+  "seo_owned_backlinks",
+  "seo_owned_page",
+  "seo_owned_site",
   "seo_package",
+  "seo_page_analyses_by_page",
   "seo_page_analysis_result",
   "seo_page_audit_result",
   "seo_page_batch_submit_result",
@@ -71747,6 +72450,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "seo_prospect_capture_result",
   "seo_prospect_import_preview",
   "seo_prospect_import_report",
+  "seo_provider_competitor",
   "seo_rank_check_result",
   "seo_rank_history",
   "seo_rank_portfolio",

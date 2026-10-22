@@ -7,7 +7,7 @@
  */
 
 import { formatCount } from "@ai-matrx/kit/format";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Globe, Layers, MapPin, Store, Swords, Wrench } from "lucide-react";
 import { withReferral } from "@ai-matrx/kit/outbound";
@@ -17,7 +17,7 @@ import { PlatformMark, platformLabel } from "@/features/marketing/social/compone
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { avatarInitial } from "../avatarInitial";
-import { brightnessOf, LOGO_TILE_BG, shadeForBrightness } from "../logo-shade";
+import { ShadedLogo } from "../ShadedLogo";
 import { Shared } from "../stage/Shared";
 import { shownHost, type FoundAccount, type FoundCards } from "./foundCards";
 import { FitText } from "./FitText";
@@ -82,17 +82,7 @@ export function Slot({
 
 /** A logo, raw, on the tile its own brightness asks for (the same light / dark / checker tiles as Smart Add's logo choices). */
 function LogoTile({ url }: { url: string }) {
-  const [shade, setShade] = useState<"light" | "dark" | "checker">("checker");
-  return (
-    <span className={`flex size-14 items-center justify-center overflow-hidden rounded-2xl p-1.5 ${LOGO_TILE_BG[shade]}`}>
-      <img
-        src={browserImageUrl(url)}
-        alt=""
-        className="max-h-full max-w-full object-contain"
-        onLoad={(e) => setShade(shadeForBrightness(brightnessOf(e.currentTarget)))}
-      />
-    </span>
-  );
+  return <ShadedLogo url={url} tile="always" className="size-14 rounded-2xl p-1.5" />;
 }
 
 export function CardBody({ label, icon, value, sub, art, dark }: { label: string; icon?: ReactNode; value: ReactNode; sub?: ReactNode; art?: ReactNode; dark?: boolean }) {

@@ -28,17 +28,33 @@ const PERMISSIONS_POLICY = [
     "browsing-topics=()",
 ].join(", ");
 
+const DESKTOP_FRAME_ANCESTORS_VALUE =
+    "frame-ancestors 'self' tauri://localhost http://tauri.localhost https://tauri.localhost http://localhost:1420";
+
+// HSTS with includeSubDomains only on our own aimatrx.com hosts. Customer custom
+// domains are served by this same app; pinning every subdomain they own to HTTPS
+// for two years is not ours to decide (Vercel's own default HSTS still applies there).
+const OWN_HOST_HSTS_RULE = {
+    source: "/:path*",
+    has: [{ type: "host", value: "(?:.*\\.)?aimatrx\\.com" }],
+    headers: [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }],
+};
+
 const GLOBAL_SECURITY_HEADERS = [
-    { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     { key: "Permissions-Policy", value: PERMISSIONS_POLICY },
 ];
 
-/** Same-origin framing only (clickjacking). CSP is frame-ancestors ONLY — no script-src rollout here. */
+/**
+ * Clickjacking guard: only our own pages and the Matrx Local desktop app may frame us.
+ * The desktop app's in-app browser (matrx-local desktop/src/pages/BrowserPage.tsx)
+ * frames any aimatrx.com page from its webview origin, so this is CSP
+ * `frame-ancestors` alone — `X-Frame-Options` cannot name those origins and
+ * would refuse them. CSP is frame-ancestors ONLY — no script-src rollout here.
+ */
 const SAME_ORIGIN_FRAMING = [
-    { key: "X-Frame-Options", value: "SAMEORIGIN" },
-    { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+    { key: "Content-Security-Policy", value: DESKTOP_FRAME_ANCESTORS_VALUE },
 ];
 
 // Pages a stranger's site embeds, each only in its embed mode (`?embed=…`):
@@ -51,8 +67,7 @@ const THIRD_PARTY_EMBED_PREFIXES = ["applets", "f", "site"];
 // The Matrx Local desktop app frames this page from its own webview origin
 // (matrx-local desktop/src/pages/AiMatrx.tsx → <web origin>/demos/local-tools).
 const DESKTOP_EMBED_PATH = "demos/local-tools";
-const DESKTOP_FRAME_ANCESTORS =
-    "frame-ancestors 'self' tauri://localhost http://tauri.localhost https://tauri.localhost http://localhost:1420";
+const DESKTOP_FRAME_ANCESTORS = DESKTOP_FRAME_ANCESTORS_VALUE;
 
 const OWN_FRAME_POLICY_ROUTES = ["kind-sandbox", "auth/extension-callback", "api/image-proxy"];
 
@@ -67,10 +82,11 @@ const FRAME_RULE_EXCLUSIONS = [
 // routes get only the keys they never set themselves.
 const OWN_POLICY_EXCLUSION = OWN_FRAME_POLICY_ROUTES.map((p) => `${p}(?:/|$)`).join("|");
 const TRANSPORT_AND_FEATURES = GLOBAL_SECURITY_HEADERS.filter(
-    (h) => h.key === "Strict-Transport-Security" || h.key === "Permissions-Policy",
+    (h) => h.key === "Permissions-Policy",
 );
 
 const securityHeaders = () => [
+    OWN_HOST_HSTS_RULE,
     { source: `/:path((?!${OWN_POLICY_EXCLUSION}).*)`, headers: GLOBAL_SECURITY_HEADERS },
     ...OWN_FRAME_POLICY_ROUTES.map((p) => ({ source: `/${p}/:path*`, headers: TRANSPORT_AND_FEATURES })),
     { source: `/:path((?!${FRAME_RULE_EXCLUSIONS}).*)`, headers: SAME_ORIGIN_FRAMING },

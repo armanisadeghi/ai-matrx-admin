@@ -9,6 +9,7 @@ import {
 } from '@/utils/supabase/userSessionData';
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { requireAdminLane } from "@/utils/auth/adminLaneServer";
+import { AdminMfaRequiredError, adminMfaAllows, readAdminMfaVerdict } from "@/utils/auth/adminMfa";
 
 /**
  * Server-side Admin Utilities
@@ -68,6 +69,9 @@ export async function requireSuperAdmin(): Promise<string> {
   if (status.level !== 'super_admin') {
     throw new Error('Forbidden: Super Admin required');
   }
+  // Administrator MFA (knob-gated; utils/auth/adminMfa.ts) — last, so a
+  // non-admin never pays the read and still gets the plain level refusal.
+  if (!adminMfaAllows(await readAdminMfaVerdict())) throw new AdminMfaRequiredError();
 
   return status.userId;
 }
@@ -90,6 +94,7 @@ export async function requireAdmin(): Promise<string> {
   if (!status.isAdmin) {
     throw new Error('Forbidden: User is not an admin');
   }
+  if (!adminMfaAllows(await readAdminMfaVerdict())) throw new AdminMfaRequiredError();
 
   return status.userId;
 }

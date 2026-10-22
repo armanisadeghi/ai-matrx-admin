@@ -237,7 +237,7 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
     for (const spec of info.inputs) {
       const raw = text[spec.key] ?? "";
       if (spec.key === "items") out.items = parseEmojiLines(raw).map((i) => ({ label: i.label, ...(i.emoji ? { emoji: i.emoji } : {}) }));
-      else if (spec.key === "answers") out.answers = parseEmojiLines(raw).map((i) => ({ emoji: i.emoji ?? "", ...(i.label ? { label: i.label } : {}) }));
+      else if (spec.key === "answers") out.answers = parseEmojiLines(raw).map((i) => ({ ...(i.emoji ? { emoji: i.emoji } : {}), ...(i.label ? { label: i.label } : {}) }));
       else if (spec.key === "points") out.points = parseLines(raw);
       else if (spec.key === "question" && raw.trim()) out.question = raw.trim();
       else if (spec.key === "hostName" && raw.trim()) out.hostName = raw.trim();

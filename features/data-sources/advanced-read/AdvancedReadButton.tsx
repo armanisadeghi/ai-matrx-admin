@@ -6,7 +6,9 @@ import { Button, Switch } from "@ai-matrx/design-system/controls";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useLibraryOrganizationId } from "../library/hooks";
-import { aboutTime, parseCoverageList, slowCoverage, upToPoints, type AdvancedAllow, type AdvancedItem } from "./contract";
+import { aboutTime, parseCoverageList, slowCoverage, type AdvancedAllow, type AdvancedItem } from "./contract";
+import { CostDoor } from "@/components/cost/CostDoor";
+import { confirmAdvancedRead, useConfirmOverPoints } from "./confirmAdvancedRead";
 import { AdvancedReadResult } from "./AdvancedReadResult";
 import { startAdvancedRead, useReadEntry } from "./store";
 import { useAdvancedQuote } from "./useAdvanced";
@@ -27,6 +29,7 @@ export interface AdvancedReadButtonProps {
  */
 export function AdvancedReadButton({ url, coverage, onItem, className }: AdvancedReadButtonProps) {
   const organizationId = useLibraryOrganizationId();
+  const confirmOver = useConfirmOverPoints();
   const entry = useReadEntry(url);
   const [slow, setSlow] = useState(false);
   const declaredEmpty = Array.isArray(coverage) && parseCoverageList(coverage).length === 0;
@@ -45,7 +48,11 @@ export function AdvancedReadButton({ url, coverage, onItem, className }: Advance
       </div>
     );
   }
-  const go = () => organizationId && startAdvancedRead({ organizationId, urls: [url], allow, onItem });
+  const go = async () => {
+    if (!organizationId) return;
+    if (!(await confirmAdvancedRead(item?.pointsUpTo, confirmOver, "Try the advanced reader?"))) return;
+    startAdvancedRead({ organizationId, urls: [url], allow, onItem });
+  };
   if (entry?.status === "running") {
     return (
       <div className={className} data-advanced-read={url}>
@@ -75,9 +82,9 @@ export function AdvancedReadButton({ url, coverage, onItem, className }: Advance
         >
           {entry?.status === "failed" || entry?.status === "done" ? "Try again" : "Try advanced reader"}
         </Button>
-        {upToPoints(item?.pointsUpTo) ? (
-          <span className="text-xs text-muted-foreground" data-advanced-read-quote="">
-            {upToPoints(item?.pointsUpTo)}
+        {item?.pointsUpTo != null ? (
+          <span data-advanced-read-quote="">
+            <CostDoor points={item.pointsUpTo} prefix="Up to " />
           </span>
         ) : null}
         {slowOption ? (

@@ -24,6 +24,7 @@ import {
   adminLaneOpenForHeaders,
 } from "@/utils/supabase/adminLane";
 import { getAdminStatus } from "@/utils/supabase/userSessionData";
+import { adminMfaAllows, readAdminMfaVerdict } from "@/utils/auth/adminMfa";
 import {
   adminTierHoldsFeature,
   type AdminFeatureOnUserPageId,
@@ -61,7 +62,9 @@ export async function hasAdminPower(
 ): Promise<boolean> {
   if (!(await requestInAdminLane())) return false;
   const { isAdmin, level } = await getAdminStatus(supabase, userId);
-  return bar === "any" ? isAdmin : level === "super_admin";
+  const atBar = bar === "any" ? isAdmin : level === "super_admin";
+  // Administrator MFA (knob-gated): power needs a current aal2 session.
+  return atBar && adminMfaAllows(await readAdminMfaVerdict());
 }
 
 /**
@@ -77,5 +80,6 @@ export async function hasAdminFeature(
   feature: AdminFeatureOnUserPageId,
 ): Promise<boolean> {
   const { level } = await getAdminStatus(supabase, userId);
-  return adminTierHoldsFeature(level, feature);
+  if (!adminTierHoldsFeature(level, feature)) return false;
+  return adminMfaAllows(await readAdminMfaVerdict());
 }

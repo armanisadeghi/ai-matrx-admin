@@ -145,7 +145,7 @@ export function PdfCldFileViewer({
 }
 import { cn } from "@/lib/utils";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
-import type { PdfPageRow } from "../hooks/useProcessedDocumentPages";
+import type { PdfPageRow } from "@/features/pdf/data/pdfPages";
 import { ExtractionsPane } from "@/features/page-extraction/components/ExtractionsPane";
 import { PdfStudioChunksPane } from "./PdfStudioChunksPane";
 import type { UseDocumentSearch } from "@/features/rag/hooks/useDocumentSearch";

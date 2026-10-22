@@ -29,7 +29,7 @@ import {
 import { ChunkingConfigForm } from "@/features/page-extraction/components/ChunkingConfigForm";
 import { cn } from "@/lib/utils";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
-import type { PdfPageRow } from "../hooks/useProcessedDocumentPages";
+import type { PdfPageRow } from "@/features/pdf/data/pdfPages";
 import type { PdfPaneEditMode } from "./PdfStudioReader";
 import { parsePagesInput } from "@/features/pdf/utils/pages";
 import { LineageTreeView } from "../components/LineageTreeView";

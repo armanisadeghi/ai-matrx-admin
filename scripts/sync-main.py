@@ -1305,24 +1305,14 @@ def commit_all():
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: it holds git conflict markers (<<<<<<< / ======= / >>>>>>>); a marker breaks "
             "the build. Resolve the file; the next sync commits it." % p)
-    for p, why in staged_parse_failures():
-        skipped_here.add(p)
-        git("restore", "--staged", "--", ":(literal)" + p, check=False)
-        say("SWEEP SKIPPED %s: it does not parse (%s); Turbopack refuses it and every release build "
-            "fails. Fix the file; the next sync commits it." % (p, why))
-    for p, why in staged_lock_import_failures():
-        skipped_here.add(p)
-        git("restore", "--staged", "--", ":(literal)" + p, check=False)
-        say("SWEEP SKIPPED %s: %s; the Vercel build installs the LOCKED version and fails. It stays on disk; "
-            "the next sync commits it once pnpm-lock.yaml locks a version that has it (pnpm sync:matrx-packages)."
-            % (p, why))
+    # Arman, 2026-10-22: "never ever ever during a release". The sweep runs inside the release, so it
+    # never holds code back for a quality reason; parse / locked-import / partial-commit problems are
+    # caught when agents write and commit (edit hook, pre-commit), never here — no check runs, nothing waits.
     for p, reasons in held:
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP HELD %s — it would break the build, so it stays uncommitted on disk and the "
             "next sync retries it:\n        %s" % (p, "\n        ".join(reasons[:4])))
-    # Last: what is staged now must carry every local file and export it imports (check-staged-imports).
-    # A sibling held above for its own reason is never pulled back in.
-    hold_partial_imports(set(excluded) | skipped_here)
+    # check-staged-imports runs at commit time (pre-commit), never here: the sweep is the release path.
     rc, _, _ = git("diff", "--cached", "--quiet", check=False)
     if rc == 0:
         return 0

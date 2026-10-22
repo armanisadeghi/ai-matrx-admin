@@ -237,6 +237,41 @@ describe("GoogleWorkspaceOverviewBody", () => {
     expect(onAddAccount).not.toHaveBeenCalled();
   });
 
+  it.each([first.id, second.id])(
+    "opens isolated YouTube consent for selected account %s without the legacy mixed-scope request",
+    async (connectionId) => {
+      mockCapabilities.mockReturnValue({
+        data: [{
+          ...capabilities[12],
+          required_scopes: [
+            { scope: GOOGLE_SCOPE.youtubeReadonly, provider_classification: "sensitive" },
+            { scope: GOOGLE_SCOPE.youtubeAnalyticsReadonly, provider_classification: "non_sensitive" },
+          ],
+        }],
+        isLoading: false, isError: false, refetch: jest.fn(),
+      });
+      renderOverview(connectionId);
+      const card = Array.from(host.querySelectorAll("article")).find(
+        (article) => article.textContent?.includes("YouTube Analytics"),
+      );
+      const enable = Array.from(card?.querySelectorAll("button") ?? []).find(
+        (button) => button.textContent === "Enable YouTube Analytics",
+      );
+      expect(enable).toBeDefined();
+      if (!enable) throw new Error("YouTube Analytics action was not rendered.");
+      await act(async () => enable.click());
+      expect(mockOpenConsent).toHaveBeenCalledTimes(1);
+      expect(mockOpenConsent).toHaveBeenCalledWith({
+        initialConnectionId: connectionId,
+        initialProductKeys: ["youtube"],
+      });
+      expect(mockRequestAuthorizationCode).not.toHaveBeenCalled();
+      expect(mockStartAuthorizationCodeRedirect).not.toHaveBeenCalled();
+      expect(mockConnect().mutateAsync).not.toHaveBeenCalled();
+      expect(card?.textContent).not.toContain("Continue in this tab");
+    },
+  );
+
   it("shows Chat review only for admitted internal testers without a consent action", () => {
     mockCapabilities.mockReturnValue({
       data: [...capabilities, {

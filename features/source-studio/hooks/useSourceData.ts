@@ -19,8 +19,8 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import {
   fetchProcessedDocumentPages,
   invalidateProcessedDocumentPages,
-  type PdfPageRow,
-} from "@/features/pdf-extractor/hooks/useProcessedDocumentPages";
+  type SourcePortionRow,
+} from "@/features/sources/api/processedDocumentPages";
 import { usePortionLocators } from "@/features/sources/hooks/usePortionLocators";
 import type {
   SourceMediaFacts,
@@ -372,7 +372,7 @@ export function useSourcePortions(documentId: string | null): {
   const { byIndex } = usePortionLocators(documentId);
   const [state, setState] = useState<{
     forKey: string | null;
-    pages: PdfPageRow[];
+    pages: SourcePortionRow[];
     error: string | null;
   }>({ forKey: null, pages: [], error: null });
   const [tick, setTick] = useState(0);

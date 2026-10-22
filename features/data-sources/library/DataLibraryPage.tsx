@@ -42,7 +42,9 @@ import { GroupMark } from "./groupMark";
 import { PastRuns } from "./PastRuns";
 import { SourceSpeed } from "./SourceSpeed";
 import { SourceMethodTag } from "./UnderTheHood";
-import { SourceDetail } from "./SourceDetail";
+import { SourceDetail, type SourceAsk } from "./SourceDetail";
+import { AskBox, type AskPlan } from "./AskBox";
+import { dropAskRuns, newAsk } from "./askRun";
 import { LIBRARY_TASKS, resolveTask, resolveTasks, type ResolvedTask } from "./tasks";
 import { useLibrary, useLibraryOrganizationId } from "./hooks";
 import { GiveToAgentDialog } from "./tools/GiveToAgentDialog";
@@ -180,7 +182,10 @@ function DataSourcesDoor({ onOpen }: { onOpen: () => void }) {
 }
 
 function LibraryBody({ library }: { library: Library }) {
+  const organizationId = useLibraryOrganizationId();
   const [view, setView] = useState<View>({ kind: "home" });
+  // The plain-language box's reading: the source it opens is filled (and run) from it.
+  const [asked, setAsked] = useState<(SourceAsk & { sourceKey: string; switchTo: AskPlan | null }) | null>(null);
   const router = useRouter();
   const params = useSearchParams();
   const go = useLibraryAddress();
@@ -194,8 +199,27 @@ function LibraryBody({ library }: { library: Library }) {
 
   const openSource = (key: string) => go({ source: key, job: null, field: null, value: null });
   const openRun = (r: { id: string; sourceKey: string }) => go({ source: r.sourceKey, job: r.id, field: null, value: null });
-  const leaveSource = () =>
-    window.history.length > 1 ? router.back() : go({ source: null, job: null, field: null, value: null }, { replace: true });
+  const leaveSource = () => {
+    dropAskRuns();
+    if (window.history.length > 1) router.back();
+    else go({ source: null, job: null, field: null, value: null }, { replace: true });
+  };
+
+  const openAsk = (plan: AskPlan) => {
+    // The ask's id is a one-time run ticket (`./askRun`): it runs once, at most, and never on a re-mount.
+    setAsked({
+      nonce: newAsk(plan.run),
+      sourceKey: plan.source.key,
+      values: plan.fill.values,
+      option: plan.fill.option,
+      run: plan.run,
+      unapplied: plan.fill.unapplied,
+      canRunAnyway: plan.fill.complete,
+      alternative: plan.alternative ? { key: plan.alternative.source.key, label: plan.alternative.source.label } : null,
+      switchTo: plan.alternative,
+    });
+    go({ task: plan.task.id, source: plan.source.key, job: null, field: null, value: null });
+  };
 
   const openTask = (resolved: ResolvedTask) => {
     // One source answers the job: skip the picker and go straight into it.
@@ -218,6 +242,8 @@ function LibraryBody({ library }: { library: Library }) {
           jobId={jobId}
           onJob={(id, opts) => go({ job: id }, opts)}
           onOpenRun={openRun}
+          ask={asked?.sourceKey === source.key ? asked : undefined}
+          onSwitchAsk={asked?.switchTo ? () => asked.switchTo && openAsk(asked.switchTo) : undefined}
         />
       </div>
     );
@@ -244,21 +270,34 @@ function LibraryBody({ library }: { library: Library }) {
     return <BrowseAllSources library={library} onHome={() => setView({ kind: "home" })} onOpen={openSource} />;
   }
   // Home (and the safe fall-back when a task no longer lands on anything).
-  return <TaskHome library={library} onOpenTask={openTask} onBrowse={() => setView({ kind: "browse" })} onOpenSource={openSource} />;
+  return (
+    <TaskHome
+      library={library}
+      organizationId={organizationId}
+      onOpenTask={openTask}
+      onBrowse={() => setView({ kind: "browse" })}
+      onOpenSource={openSource}
+      onAsk={openAsk}
+    />
+  );
 }
 
 // ─── the task-first home ──────────────────────────────────────────────────────
 
 function TaskHome({
   library,
+  organizationId,
   onOpenTask,
   onBrowse,
   onOpenSource,
+  onAsk,
 }: {
   library: Library;
+  organizationId: string | null;
   onOpenTask: (r: ResolvedTask) => void;
   onBrowse: () => void;
   onOpenSource: (key: string) => void;
+  onAsk: (plan: AskPlan) => void;
 }) {
   const [query, setQuery] = useState("");
   const tasks = resolveTasks(library);
@@ -271,7 +310,10 @@ function TaskHome({
       <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-4 sm:p-8">
         <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">What would you like to pull in?</h1>
         <p className="mt-2 max-w-xl text-sm text-muted-foreground">Pick a task — we pull it into a table</p>
-        <div className="mt-5 max-w-md">
+        <div className="mt-5" data-ask-stage="">
+          <AskBox library={library} organizationId={organizationId} onPlan={onAsk} />
+        </div>
+        <div className="mt-3 max-w-md">
           <SearchField value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search the library" aria-label="Search data sources" />
         </div>
       </section>

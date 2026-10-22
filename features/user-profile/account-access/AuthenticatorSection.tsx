@@ -8,7 +8,17 @@ import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { createClient } from "@/utils/supabase/client";
 import { authenticatorError, enrollAuthenticator, generateRecoveryCodes, readAuthenticators, removeAuthenticator, verifyAuthenticator, verifyRecoveryCode, type AuthenticatorSetup, type AuthenticatorState } from "./mfa";
 
-export function AuthenticatorSection() {
+export interface AuthenticatorSectionProps {
+  /**
+   * Challenge mode (the administrator verify page): opens the code box for the
+   * first verified authenticator and reports when this session reaches aal2.
+   */
+  challenge?: boolean;
+  /** Called after a code or recovery code elevates this session to aal2. */
+  onElevated?: () => void;
+}
+
+export function AuthenticatorSection({ challenge = false, onElevated }: AuthenticatorSectionProps = {}) {
   const [state, setState] = useState<AuthenticatorState | null>(null);
   const [setup, setSetup] = useState<AuthenticatorSetup | null>(null);
   const [name, setName] = useState("");
@@ -42,6 +52,8 @@ export function AuthenticatorSection() {
         if (!active || version !== generation.current) return;
         identity.current = current.userId;
         setState(current);
+        const verified = current.factors.find(factor => factor.verified);
+        if (challenge && !current.elevated && verified) setSelected(verified.id);
       } catch {
         if (active && version === generation.current) setError("Couldn’t load authenticators. Try again.");
       }
@@ -88,6 +100,7 @@ export function AuthenticatorSection() {
     pendingSetup.current = null;
     setState(current); setSetup(null); setSelected(null); setCode(""); setName("");
     setNotice("Authenticator verified.");
+    if (current.elevated) onElevated?.();
   });
   const remove = (id: string) => run(async (version, userId) => {
     await removeAuthenticator(userId, id);
@@ -112,6 +125,7 @@ export function AuthenticatorSection() {
     if (version !== generation.current) return;
     setState(current); setRecoveryCode(""); setSelected(null); setCode("");
     setNotice("Recovery code verified.");
+    if (current.elevated) onElevated?.();
   });
 
   return (
@@ -138,7 +152,7 @@ export function AuthenticatorSection() {
               <Button type="button" variant="outline" disabled={busy} onClick={() => void remove(removing)}>Confirm removal</Button>
               <Button type="button" variant="outline" disabled={busy} onClick={() => setRemoving(null)}>Keep authenticator</Button>
             </div> : null}
-            {!setup ? <div className="flex flex-wrap items-center gap-2">
+            {!setup && challenge && !state.elevated && state.factors.some(factor => factor.verified) ? null : !setup ? <div className="flex flex-wrap items-center gap-2">
               <label className="sr-only" htmlFor="authenticator-name">Authenticator name</label>
               <Input id="authenticator-name" className="min-w-0 flex-1" value={name} maxLength={64} placeholder="Authenticator name" onChange={event => setName(event.target.value)} disabled={busy} autoComplete="off" />
               <Button type="button" variant="outline" disabled={busy || !name.trim()} onClick={() => void begin()}>Add authenticator</Button>
@@ -149,7 +163,7 @@ export function AuthenticatorSection() {
             </div>}
             {selected ? <form className="flex flex-wrap items-center gap-2" onSubmit={event => { event.preventDefault(); void verify(); }}>
               <label className="sr-only" htmlFor="authenticator-code">Authenticator code</label>
-              <Input id="authenticator-code" className="min-w-0 flex-1" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={event => setCode(event.target.value)} disabled={busy} />
+              <Input id="authenticator-code" className="min-w-0 flex-1" placeholder="6-digit code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={event => setCode(event.target.value)} disabled={busy} />
               <Button type="submit" variant="primary" disabled={busy || !/^\d{6}$/.test(code)}>Verify code</Button>
             </form> : null}
             <div className="space-y-3 border-t border-border pt-4">

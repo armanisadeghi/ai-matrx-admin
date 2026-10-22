@@ -4,6 +4,7 @@ import type { Database } from "@/types/database.types";
 import type { DbRpcRow } from "@/types/supabase-rpc";
 import type { JsonObject } from "@/types/json";
 import { isJsonObject } from "@/types/json";
+import { adminMfaAllows, readAdminMfaVerdict } from "@/utils/auth/adminMfa";
 
 export type AdminLevel = Database["public"]["Enums"]["admin_level"];
 
@@ -60,7 +61,9 @@ export async function checkIsSuperAdmin(
   userId: string,
 ): Promise<boolean> {
   const { level } = await getAdminStatus(supabase, userId);
-  return level === "super_admin";
+  // ADMIN POWER, not identity: with the administrator-MFA knob on, only a
+  // current aal2 session holds it (utils/auth/adminMfa.ts). Knob off = unchanged.
+  return level === "super_admin" && adminMfaAllows(await readAdminMfaVerdict());
 }
 
 /**
@@ -77,7 +80,7 @@ export async function checkIsUserAdmin(
   userId: string,
 ): Promise<boolean> {
   const { isAdmin } = await getAdminStatus(supabase, userId);
-  return isAdmin;
+  return isAdmin && adminMfaAllows(await readAdminMfaVerdict());
 }
 
 /**
