@@ -316,8 +316,9 @@ export function personBuildKeyFamily(door: string | null | undefined, search?: s
 
 export async function startAgentBuild(input: StartAgentBuildInput): Promise<string> {
   const dispatch = getStoreSingleton()?.dispatch as AppDispatch | undefined;
-  // The door's engine (see build-engine.ts): the workflow when its switch says so, else the old pipeline.
-  if (dispatch && input.organizationId && (await resolveBuildEngine(input.door)) === "workflow") {
+  // The door's engine (see build-engine.ts). An admin's builtin build (a mandate's system rung) stays on the
+  // server route: it is the one build the old pipeline still runs, until the owner rules on it (lane 3A-k).
+  if (!input.builtin && dispatch && input.organizationId && (await resolveBuildEngine(input.door)) === "workflow") {
     return startBuildRun(dispatch, {
       spec: input.spec,
       mandateKey: input.mandateKey ?? null,
