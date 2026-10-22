@@ -49,6 +49,14 @@ at the end). Each answer = one `study_attempt` via `gradeSpokenAnswer` -> `study
   `ask` targets (`practice_mode`, composite `practice_setup`, validated in `setupWrites.ts` against the
   patched result) register only while `phase === "idle"`. Starting a session is NOT agent-writable
   (spends a run, opens the mic, meters); `session_prompts` is the answer key (`autoContext: false`).
+- **Setup is a Create page (1 Sources, 2 Style and details, 3 Start)** on the ONE `SourceInput`
+  (surface key `education-practice-oral:<mode>`, no Topic tile — the focus is the topic, deliveries
+  `direct`). A deck is a Source (`fc_set`, Use existing "Decks"; `?deck=` seeds it); pasted text is the
+  Paste text tile. Start sends `set.resolve()` (server reads decks as Q/A cards) through
+  `data/practiceSources.ts` (60k-char budget, equal shares, cut said aloud). Lineage: the chosen
+  `SourceSet` + names ride `study_session.settings.source_set/source_names`; `source_set_id` = the deck.
+  No `study_session -> source` association pair is registered (platform.association_types), so no edge.
+  The assistant's `deck_id` / `source_text` writes go through the same Source input (deck + pasted can combine).
 - The setup form opts into `matrx-touch-targets`. Runs reuse sibling source-feature tags
   (`education-assessment*`, `education-tutor`); add `education-spoken-practice*` when `features/agents` is next touched.
 

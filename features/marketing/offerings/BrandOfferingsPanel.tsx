@@ -263,7 +263,7 @@ function offeringColumns(
           ? "Yes"
           : item.status === "dismissed"
             ? "No"
-            : "Open",
+            : "Not confirmed",
       header: "Is it theirs?",
       label: "Is it theirs?",
       helpText:
@@ -528,8 +528,11 @@ export function BrandOfferingsPanel({ brand }: Props) {
   const answerFlagged = async (item: OfferingItem, a: DecisionAnswer | null) => {
     if (a === null) return;
     try {
-      if (a === "yes") await keepFlaggedOffering(item);
-      else await rejectOffering(brand, item);
+      // Yes clears the flag AND records the person's word (the one keep path), so the offering counts as confirmed.
+      if (a === "yes") {
+        await keepFlaggedOffering(item);
+        await keepOffering(brand, item);
+      } else await rejectOffering(brand, item);
       await load();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));

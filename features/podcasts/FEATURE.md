@@ -113,6 +113,8 @@ is easy to fill in.
 
 ## Change log
 
+- 2026-10-22 — **Create uses the one Source input.** `/podcast/studio/create` (GeneratorForm, also mounted by create-dense / create-sharp) offers Topic · Rough notes · Full script (typed, sent as `input_data`) + **From your sources** (`SOURCE_INPUT_OPTION`): the canonical `<SourceInput surfaceKey="podcasts:create" deliveries={["direct"]}>` (Upload · Paste text · Web page · YouTube · Recording · Image · Use existing). Picks go as `source_set`; aidream resolves them (`resolve_source_set`, services/podcast/sources.py), so a cloud PDF goes as clean text, and links each to the episode (`pc_episode --source-->`). Picks survive a reload (wizardDraft; the tile reopens itself) and are cleared once the run starts. The old file-URL / website / note / YouTube / audio tiles (`SOURCE_OPTIONS` resolve+urls rows, `SourceResolverPanel`, `useSourceResolvers`) remain only for the orphan bake-off variants (create-a…f, -refine, -reimagine; page-cleanup rec KILL). Guard: `generator/__tests__/liveCreateUsesTheOneSourceInput.test.ts`.
+
 - 2026-10-21 — Admin Shows: Edit / Delete are declared once (`defineRowVerbs`) and Delete has a bulk twin on the same `removeShow` door.
 - 2026-09-21 — **Admin podcast editor tables use the canonical shared table.**
   `components/admin/PodcastsTable.tsx` renders the Shows and Episodes tabs

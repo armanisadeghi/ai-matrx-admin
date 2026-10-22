@@ -221,6 +221,14 @@ export function useSpokenPractice(
             difficulty: config.difficulty,
             count: config.count,
             sourceTitle: config.source?.title ?? null,
+            // Lineage: the Sources exactly as chosen (parts, form, limit) and
+            // how each was named — read back to say what a session came from.
+            ...(config.source?.sourceSet
+              ? {
+                  source_set: JSON.parse(JSON.stringify(config.source.sourceSet)),
+                  source_names: config.source.sourceNames ?? {},
+                }
+              : {}),
             sessionTitle: designed.sessionTitle,
             intro: designed.intro,
             prompts: designed.prompts,

@@ -23,7 +23,7 @@ import { suggestContext } from "@/features/marketing/smart-add/relations";
 import { loadSavedFindings } from "@/features/marketing/smart-add/validate/fromSaved";
 import { buildQueue, type FocusItem } from "@/features/marketing/smart-add/validate/queue";
 import { EMPTY_KNOWN, foldQueue } from "@/features/marketing/smart-add/validate/fold";
-import { partOf, type ChoiceRow, type ElementRow, type Placement, type WordRow } from "./deck";
+import { partOf, type ChoiceRow, type DecideAction, type ElementRow, type Placement, type WordRow } from "./deck";
 
 const CHOICE_COLUMNS =
   "id, brand_id, element_id, value, origin, recommended_placement, opinion_reason, word_signals, decision, placement, decided_by, decided_at, decision_reason, organization_id, created_at";
@@ -36,6 +36,9 @@ export interface SessionData {
   choices: ChoiceRow[];
   /** The person's word-level remarks (said rows carrying part_of), by the candidate they are about. */
   words: Map<string, WordRow[]>;
+  /** The audience rows ("Who", "Cares about") and every audience category the brand's organization can use. */
+  audienceRows: AudienceRow[];
+  audienceCategories: AudienceCategory[];
   /** Findings waiting for a confirm, in Smart Add's own queue order. */
   findings: FocusItem[];
   kinds: BrandRelationKind[];
@@ -54,6 +57,40 @@ async function loadElements(): Promise<ElementRow[]> {
     const meta = c.metadata && typeof c.metadata === "object" && !Array.isArray(c.metadata) ? (c.metadata as Record<string, Json>) : {};
     return { id: c.id, name: c.name, slug: c.slug ?? "", position: c.position, cardinality: typeof meta.cardinality === "string" ? meta.cardinality : "many" };
   });
+}
+
+/** A row of audience categories: a public system parent in dimension `brand_audience`. */
+export interface AudienceRow {
+  id: string;
+  slug: string;
+  name: string;
+}
+
+/** An audience category: a child of its row, the platform's or the brand's organization's own. */
+export interface AudienceCategory {
+  id: string;
+  name: string;
+  row: string;
+}
+
+async function loadAudience(organizationId: string): Promise<{ rows: AudienceRow[]; categories: AudienceCategory[] }> {
+  const { data, error } = await supabase
+    .schema("platform")
+    .from("categories")
+    .select("id, name, slug, parent_id, position, organization_id, is_system")
+    .eq("dimension", "brand_audience")
+    .is("deleted_at", null)
+    .order("position", { ascending: true, nullsFirst: false })
+    .order("name", { ascending: true })
+    .limit(1000);
+  if (error) throw new Error(`The audience categories could not be read: ${error.message}`);
+  const all = data ?? [];
+  const rows = all.filter((c) => !c.parent_id && c.slug).map((c) => ({ id: c.id, slug: c.slug ?? "", name: c.name }));
+  const slugOf = new Map(rows.map((r) => [r.id, r.slug]));
+  const categories = all
+    .filter((c) => c.parent_id && slugOf.has(c.parent_id) && (c.is_system || c.organization_id === organizationId))
+    .map((c) => ({ id: c.id, name: c.name, row: slugOf.get(c.parent_id ?? "") ?? "who" }));
+  return { rows, categories };
 }
 
 async function loadChoices(brandId: string): Promise<ChoiceRow[]> {
@@ -82,7 +119,9 @@ function wordRows(choices: readonly ChoiceRow[]): Map<string, WordRow[]> {
     if (!p) continue;
     const answer: Placement | null =
       c.decision === "chosen" ? (c.placement === "support" ? "support" : "lead") : (PLACEMENT_OF[c.decision] ?? null);
-    out.set(p.of, [...(out.get(p.of) ?? []), { id: c.id, of: p.of, start: p.start, end: p.end, answer }]);
+    const v = c.value && typeof c.value === "object" && !Array.isArray(c.value) ? (c.value as Record<string, Json>) : {};
+    const categories = Array.isArray(v.categories) ? v.categories.filter((x): x is string => typeof x === "string") : [];
+    out.set(p.of, [...(out.get(p.of) ?? []), { id: c.id, of: p.of, start: p.start, end: p.end, answer, categories }]);
   }
   return out;
 }
@@ -104,8 +143,13 @@ async function loadFindings(brand: MarketingBrand, kinds: BrandRelationKind[]): 
 
 export async function loadSession(brand: MarketingBrand): Promise<SessionData> {
   const kinds = await listBrandRelationKinds();
-  const [elements, choices, findings] = await Promise.all([loadElements(), loadChoices(brand.id), loadFindings(brand, kinds)]);
-  return { elements, choices, words: wordRows(choices), findings, kinds };
+  const [elements, choices, findings, audience] = await Promise.all([
+    loadElements(),
+    loadChoices(brand.id),
+    loadFindings(brand, kinds),
+    loadAudience(brand.organization_id),
+  ]);
+  return { elements, choices, words: wordRows(choices), findings, kinds, audienceRows: audience.rows, audienceCategories: audience.categories };
 }
 
 /** What the decide door answered. */
@@ -122,8 +166,6 @@ function asDecideResult(data: Json): DecideResult {
   return { id: String(r.id ?? ""), decision: String(r.decision ?? ""), superseded: ids(r.superseded), restored: ids(r.restored) };
 }
 
-export type DecideAction = Placement | "retract" | "withdraw";
-
 /** Place, retract or withdraw one candidate as the signed-in person. Throws the database's own sentence. */
 export async function decideChoice(choiceId: string, action: DecideAction, reason?: string | null): Promise<DecideResult> {
   const db = await authenticatedWebDb(supabase);
@@ -135,6 +177,31 @@ export async function decideChoice(choiceId: string, action: DecideAction, reaso
   });
   if (error) throw new Error(error.message);
   return asDecideResult(data);
+}
+
+/**
+ * A brand's answer about an audience category (web.brand_audience_answer): adds the category in the brand's
+ * organization when it is new, and the brand's one candidate about it, then places it. `action` null adds only.
+ */
+export async function answerAudience(
+  brandId: string,
+  row: string,
+  name: string,
+  action: Placement | "retract" | null,
+  origin: "said" | "ai",
+): Promise<{ category_id: string; choice_id: string }> {
+  const db = await authenticatedWebDb(supabase);
+  const { data, error } = await db.rpc("brand_audience_answer", {
+    p_brand_id: brandId,
+    p_row: row,
+    p_name: name,
+    ...(action ? { p_action: action } : {}),
+    p_origin: origin,
+    p_via: SESSION_VIA,
+  });
+  if (error) throw new Error(error.message);
+  const r = data && typeof data === "object" && !Array.isArray(data) ? (data as Record<string, Json>) : {};
+  return { category_id: String(r.category_id ?? ""), choice_id: String(r.choice_id ?? "") };
 }
 
 /** The person's own words about a candidate (a whole rewording, or one span of its words), optionally placed at once. */
