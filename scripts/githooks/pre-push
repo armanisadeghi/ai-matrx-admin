@@ -11,13 +11,30 @@ set -u
 HOOK_DIR=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$HOOK_DIR/../.." && pwd)
 ZERO=0000000000000000000000000000000000000000
+# THE RELEASE PATH IS NEVER BLOCKED (Arman 2026-09-24 / 10-02 / 10-21: "report warnings and errors and release").
+# ship.sh exports MATRX_RELEASE_PATH=1, so sync-main's push and release.sh's push run this hook REPORT ONLY:
+# a failure prints a banner, mails the ship-all lanes (matrx-ship/scripts/release-scream.py) and the push goes
+# through. An ordinary agent push is still refused. Guard: matrx-ship/scripts/test_release_path_never_blocked.py.
+SCREAM="$HOME/code/matrx-ship/scripts/release-scream.py"
+refuse() {  # refuse <check> <detail> [<sha>]
+    if [ "${MATRX_RELEASE_PATH:-0}" = "1" ]; then
+        if [ -f "$SCREAM" ]; then
+            python3 "$SCREAM" --repo matrx-frontend --where "pre-push (release path)" --check "$1" --detail "$2" --ref "${3:-}" || true
+        else
+            echo "RELEASE WARNING — PUSHED ANYWAY (release path never blocks): $1: $2" >&2
+        fi
+        return 0
+    fi
+    echo "PUSH REFUSED: $2" >&2
+    exit 1
+}
 
 # Setting core.hooksPath disables .git/hooks; keep any local hook of the same name running.
 LOCAL_HOOK="$(git rev-parse --git-common-dir)/hooks/pre-push"
 if [ -x "$LOCAL_HOOK" ]; then
     # stdin is consumed below, so run the local hook on a copy of it
     INPUT=$(cat)
-    printf '%s\n' "$INPUT" | "$LOCAL_HOOK" "$@" || exit $?
+    printf '%s\n' "$INPUT" | "$LOCAL_HOOK" "$@" || refuse "local pre-push hook" "$LOCAL_HOOK exited non-zero (above)"
 else
     INPUT=$(cat)
 fi
@@ -37,14 +54,12 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     fi
     git cat-file -e "$local_sha:pnpm-lock.yaml" 2>/dev/null || continue
     if ! command -v node >/dev/null 2>&1; then
-        echo "PUSH REFUSED: the lockfile adoption check needs node on PATH and could not find it." >&2
-        exit 1
+        refuse "lockfile adoption" "the lockfile adoption check needs node on PATH and could not find it; $local_sha was not judged." "$local_sha"
+        continue
     fi
     (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock --ref "$local_sha")
     RC=$?
     if [ "$RC" -ne 0 ]; then
-        echo "PUSH REFUSED: pnpm-lock.yaml in $local_sha adopts @ai-matrx versions the code cannot build against (named above; exit $RC)." >&2
-        echo "  Fix the importer (or restore the export in the package), or put the lockfile back. Never pin." >&2
-        exit 1
+        refuse "lockfile adoption" "pnpm-lock.yaml in $local_sha adopts @ai-matrx versions the code cannot build against (named above; exit $RC). Fix the importer (or restore the export in the package), or put the lockfile back. Never pin." "$local_sha"
     fi
 done <"$REFS"
