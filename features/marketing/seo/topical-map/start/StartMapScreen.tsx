@@ -27,7 +27,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, Globe, Loader2, Square } from "lucide-react";
+import { AlertTriangle, Loader2, Square } from "lucide-react";
 
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Button } from "@/components/ui/button";
@@ -44,8 +44,10 @@ import {
 import { Input } from "@ai-matrx/design-system/controls";
 import { ResearchTopicSelect } from "@/features/marketing/content-plan/components/ResearchTopicSelect";
 import { useBrandSites } from "@/features/marketing/data/hooks";
-import { SourceResolverPanel } from "@/features/podcasts/generator/components/SourceResolverPanel";
-import { useSourceResolvers } from "@/features/podcasts/generator/useSourceResolvers";
+import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
+import { useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
+import { useResolvedSourceText } from "@/features/resource-manager/source-input/useResolvedSourceText";
+import { ALL_SOURCE_KIND_IDS, type SourceInputKindId } from "@/features/resource-manager/source-input/sourceKinds";
 import { extractErrorMessage } from "@/utils/errors";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +64,13 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { linkTopicToBrand } from "@/features/research/service";
 
 const EVERY_SITE = "__every_site__";
+const DOCUMENT_SOURCES_SURFACE = "topical-map:documents";
+const WEB_SOURCES_SURFACE = "topical-map:web-page";
+/** Documents: every way in but a bare topic (the description tile is its own tile). */
+const DOCUMENT_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+/** A web page: the one door. */
+const WEB_KINDS: readonly SourceInputKindId[] = ["web"];
+const MAP_SOURCE_DELIVERIES = ["direct"] as const;
 const ROOT = "__root__";
 
 export interface StartMapScreenProps {
@@ -106,16 +115,10 @@ export function StartMapScreen({
   // switched away from can never ride along.
   const [siteId, setSiteId] = useState<string | null>(initialSiteId);
   const [prompt, setPrompt] = useState("");
-  const [documentText, setDocumentText] = useState("");
-  const [webUrl, setWebUrl] = useState("");
-  const [webText, setWebText] = useState("");
   const [researchTopicId, setResearchTopicId] = useState<string | null>(initialResearchTopicId);
   const [emphasis, setEmphasis] = useState("");
   const [newMapName, setNewMapName] = useState("");
   const [parentSlug, setParentSlug] = useState<string | null>(sectionParentSlug);
-  const [resolverBusy, setResolverBusy] = useState(false);
-  const [webFetching, setWebFetching] = useState(false);
-  const [webError, setWebError] = useState<string | null>(null);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [askedMode, setAskedMode] = useState<"propose" | "apply" | null>(null);
@@ -125,7 +128,19 @@ export function StartMapScreen({
   const sites = useBrandSites(brand.id);
   // Section parents are only meaningful on an existing map.
   const topicRows = useMapTopicRows(mapId ?? "", Boolean(mapId));
-  const resolvers = useSourceResolvers();
+  // The two text tiles read their Sources on the SERVER through the one Source
+  // input; the box under it is the server's text for the person to correct.
+  const documentSources = useSourceSet(DOCUMENT_SOURCES_SURFACE);
+  const documentPreview = useResolvedSourceText(documentSources, { enabled: sourceKind === "documents" });
+  const webSources = useSourceSet(WEB_SOURCES_SURFACE);
+  const webPreview = useResolvedSourceText(webSources, { enabled: sourceKind === "web_search" });
+  const documentText = documentPreview.text;
+  const webText = webPreview.text;
+  const webUrl =
+    (() => {
+      const page = webSources.sources.find((c) => c.status === "ready")?.draft;
+      return (page?.origin ?? page?.label ?? "").trim();
+    })();
 
   const run = useAuthorTopicalMap({
     brandId: brand.id,
@@ -146,16 +161,20 @@ export function StartMapScreen({
   const knobMode: MapAgentChangeMode | null = knobs.knobs?.map_agent_change_mode ?? null;
   const effectiveMode: MapAuthorChangeMode | "ask" | null = forcedChangeMode ?? knobMode;
 
-  const busy = run.running || run.restoring || resolverBusy || webFetching;
+  const busy =
+    run.running ||
+    run.restoring ||
+    (sourceKind === "documents" && documentPreview.loading) ||
+    (sourceKind === "web_search" && webPreview.loading);
 
   const readiness = (): string | null => {
     switch (sourceKind) {
       case "prompt":
         return prompt.trim() ? null : "Describe the business before building the map.";
       case "documents":
-        return documentText.trim() ? null : "Paste or pick the document text first.";
+        return documentText.trim() ? null : "Add a document first.";
       case "web_search":
-        return webText.trim() ? null : "Fetch a page address first, then edit the text.";
+        return webText.trim() ? null : "Add a web page first, then edit the text.";
       case "existing_research":
         return researchTopicId ? null : "Pick the finished research topic.";
       default:
@@ -163,21 +182,6 @@ export function StartMapScreen({
     }
   };
   const notReady = readiness();
-
-  const fetchWebPage = async () => {
-    const url = webUrl.trim();
-    if (!url) return;
-    setWebError(null);
-    setWebFetching(true);
-    try {
-      const text = await resolvers.resolveWebsite(url, "user", (progress) => setWebText(progress));
-      setWebText(text);
-    } catch (error) {
-      setWebError(extractErrorMessage(error));
-    } finally {
-      setWebFetching(false);
-    }
-  };
 
   const launch = async (mode: MapAuthorChangeMode | null) => {
     setLocalError(null);
@@ -333,57 +337,27 @@ export function StartMapScreen({
         ) : null}
 
         {tile.control === "resolve" && sourceKind === "documents" ? (
-          <SourceResolverPanel
-            resolveKind="note"
-            value={documentText}
-            onChange={setDocumentText}
-            onBusyChange={setResolverBusy}
+          <SourceTextPanel
+            surfaceKey={DOCUMENT_SOURCES_SURFACE}
+            kinds={DOCUMENT_KINDS}
+            title="Documents"
+            preview={documentPreview}
+            label="Text the author reads"
+            placeholder={tile.placeholder}
+            disabled={busy}
           />
         ) : null}
 
         {tile.control === "resolve" && sourceKind === "web_search" ? (
-          <div className="grid gap-2">
-            <Label htmlFor="start-map-url">Page address</Label>
-            <div className="flex gap-2">
-              <Input
-                id="start-map-url"
-                type="url"
-                inputMode="url"
-                value={webUrl}
-                onChange={(e) => setWebUrl(e.target.value)}
-                placeholder="https://example.com/services"
-                disabled={busy}
-              />
-              <Button
-                icon={webFetching ? (
-                  <Loader2 className="animate-spin" aria-hidden />
-                ) : (
-                  <Globe aria-hidden />
-                )}
-                type="button"
-                variant="outline"
-                onClick={() => void fetchWebPage()}
-                disabled={busy || !webUrl.trim()}
-              >
-                Fetch and clean
-              </Button>
-            </div>
-            {webError ? (
-              <ErrorNotice size="inline" className="text-xs" message={webError} />
-            ) : null}
-            <ProTextarea
-              aria-label="Cleaned page text"
-              value={webText}
-              onChange={(e) => setWebText(e.target.value)}
-              placeholder={tile.placeholder}
-              rows={8}
-              disabled={busy}
-              className="text-base"
-            />
-            <p className="text-xs text-muted-foreground">
-              Edit the text before building — what is in the box is exactly what the author reads.
-            </p>
-          </div>
+          <SourceTextPanel
+            surfaceKey={WEB_SOURCES_SURFACE}
+            kinds={WEB_KINDS}
+            title="Web page"
+            preview={webPreview}
+            label="Cleaned page text"
+            placeholder={tile.placeholder}
+            disabled={busy}
+          />
         ) : null}
 
         {tile.control === "research" ? (
@@ -617,6 +591,69 @@ export function StartMapScreen({
         }
         onConfirm={onConfirm}
       />
+    </div>
+  );
+}
+
+
+/** The one Source input, and under it the server's text for the person to correct. */
+function SourceTextPanel({
+  surfaceKey,
+  kinds,
+  title,
+  preview,
+  label,
+  placeholder,
+  disabled,
+}: {
+  surfaceKey: string;
+  kinds: readonly SourceInputKindId[];
+  title: string;
+  preview: ReturnType<typeof useResolvedSourceText>;
+  label: string;
+  placeholder?: string;
+  disabled: boolean;
+}) {
+  return (
+    <div className="grid gap-3">
+      <SourceInput
+        surfaceKey={surfaceKey}
+        title={title}
+        purpose="your map"
+        kinds={kinds}
+        deliveries={MAP_SOURCE_DELIVERIES}
+      />
+      {preview.loading || preview.text || preview.error ? (
+        <div className="grid gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <Label>{label}</Label>
+            {preview.loading ? <span className="text-xs text-muted-foreground">Reading…</span> : null}
+            {preview.truncated ? (
+              <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs text-amber-700 dark:text-amber-300">
+                Cut to its chosen size
+              </span>
+            ) : null}
+          </div>
+          {preview.error ? (
+            <ErrorNotice size="inline" className="text-xs" message={preview.error} />
+          ) : (
+            <ProTextarea
+              aria-label={label}
+              value={preview.text}
+              onChange={(e) => preview.setText(e.target.value)}
+              placeholder={placeholder}
+              rows={8}
+              disabled={disabled}
+              className="text-base"
+            />
+          )}
+          {preview.droppedNotes.map((note) => (
+            <p key={note} className="text-xs text-muted-foreground">
+              {note}
+            </p>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

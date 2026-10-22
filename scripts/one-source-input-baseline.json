@@ -22,13 +22,6 @@
     "features/education/spoken-practice/spokenPracticeScope.ts": [
       "second-payload-raw-source"
     ],
-    "features/marketing/seo/topical-map/start/StartMapScreen.tsx": [
-      "known-local-copy",
-      "browser-side-source-resolver"
-    ],
-    "features/marketing/seo/topical-map/start/startMapSources.ts": [
-      "known-local-copy"
-    ],
     "features/masterwork/components/detail/MeetingScavengerDialog.tsx": [
       "file-plus-paste-intake-in-one-component"
     ],
