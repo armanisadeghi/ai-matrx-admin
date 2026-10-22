@@ -1011,7 +1011,7 @@
             "leadsTo": [
               "/marketing/brands/[brandId]/seo/[siteId]/keywords/workbench",
               "/marketing/brands/[brandId]/websites/[siteId]/[...rest]",
-              "/marketing/brands/[brandId]/[[...rest]]"
+              "/marketing/brands/[brandId]/[...legacy]"
             ]
           },
           {
@@ -3235,7 +3235,7 @@
         "note": "Sends people to the Brands list."
       },
       {
-        "route": "/marketing/brands/[brandId]/[[...rest]]",
+        "route": "/marketing/brands/[brandId]/[...legacy]",
         "kind": "redirect",
         "note": "Sends people to the brand workspace (old address under /brands)."
       },

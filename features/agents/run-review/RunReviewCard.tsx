@@ -49,7 +49,6 @@ import type { RootState } from "@/lib/redux/store";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import {
   addUsageTotals,
-  fmtCost,
   fmtMs,
   fmtTokens,
   getUserRequestResult,
@@ -71,9 +70,7 @@ import {
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem } from "@/components/agent-copy/export";
-import { currentCostUnit } from "@/components/cost/costUnit";
-import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
-import { AdminCost } from "@/components/cost/AdminCost";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { formatCount } from "@ai-matrx/kit/format";
 import {
   gridMarkdown,
@@ -366,13 +363,11 @@ function RunReviewCardInner({
     const rows: string[][] = [];
     const usage = blind ? null : readRunUsage(store.getState(), runRequestId);
     if (usage) {
-      const unit = currentCostUnit();
       rows.push(
         ["Total tokens", fmtTokens(usage.tokensTotal)],
         ["Input tokens", fmtTokens(usage.tokensInput)],
         ["Cached tokens", fmtTokens(usage.tokensCached)],
         ["Output tokens", fmtTokens(usage.tokensOutput)],
-        ["Cost", fmtCost(usage.cost, unit)],
         ["Time to first token", fmtMs(usage.ttftMs)],
         ["Server duration", fmtMs(usage.serverDurationMs)],
       );
@@ -699,9 +694,6 @@ function readRunUsage(state: RootState, requestId: string) {
 }
 
 function RunUsageStrip({ requestId }: { requestId: string }) {
-  const { unit: costUnit } = useCostDisplay();
-  const seesDollars = useSeesDollars();
-  const [dollarsOpen, setDollarsOpen] = useState(false);
   const stats = useAppSelector((state: RootState) =>
     readRunUsage(state, requestId),
   );
@@ -710,7 +702,6 @@ function RunUsageStrip({ requestId }: { requestId: string }) {
   // during partial server failures. Hiding cleanly beats showing zeros.
   if (!stats || stats.tokensTotal == null) return null;
 
-  const cost = costParts(fmtCost(stats.cost, costUnit));
   return (
     // Sized by the COLUMN, not the window: five battle columns side by side
     // are each narrow on a wide screen, so the tiles go 2×2 until four fit.
@@ -724,18 +715,11 @@ function RunUsageStrip({ requestId }: { requestId: string }) {
           tooltip={tokenTooltip(stats)}
           accent="text-primary"
         />
-        {/* Points for everyone; a system admin clicks for the dollar cost. */}
         <UsageTile
           icon={<Gauge className="w-3 h-3" />}
-          label="Cost"
-          primary={cost.primary}
-          secondary={cost.secondary}
-          tooltip={seesDollars ? "Click for the dollar cost" : cost.tooltip}
+          label="Usage"
+          primary={<CostDoor usd={stats.cost} iconOnly />}
           accent="text-emerald-500"
-          onClick={seesDollars ? () => setDollarsOpen((v) => !v) : undefined}
-          detail={
-            seesDollars && dollarsOpen ? <AdminCost usd={stats.cost} /> : undefined
-          }
         />
         <UsageTile
           icon={<Zap className="w-3 h-3" />}
@@ -786,21 +770,6 @@ function tokenTooltip(stats: TokenStats): string {
   return parts.length > 0 ? `Tokens: ${parts.join(", ")}` : "Tokens";
 }
 
-/** "14,378 points" → number on the big line, unit beneath, so the number never truncates. */
-function costParts(formatted: string): {
-  primary: string;
-  secondary?: string[];
-  tooltip: string;
-} {
-  const space = formatted.indexOf(" ");
-  if (space < 0) return { primary: formatted, tooltip: `Cost: ${formatted}` };
-  return {
-    primary: formatted.slice(0, space),
-    secondary: [formatted.slice(space + 1)],
-    tooltip: `Cost: ${formatted}`,
-  };
-}
-
 function UsageTile({
   icon,
   label,
@@ -813,7 +782,7 @@ function UsageTile({
 }: {
   icon: React.ReactNode;
   label: string;
-  primary: string;
+  primary: React.ReactNode;
   /** Short items; they wrap onto a second line rather than truncate. */
   secondary?: string[];
   tooltip?: string;
@@ -832,7 +801,7 @@ function UsageTile({
         "rounded-md border border-border/60 bg-card/60 px-2 py-1.5 min-w-0 text-left",
         onClick && "cursor-pointer hover:border-border hover:bg-muted/40 transition-colors",
       )}
-      title={tooltip ?? `${label}: ${primary}`}
+      title={tooltip ?? (typeof primary === "string" ? `${label}: ${primary}` : label)}
     >
       <div className={cn("flex items-center gap-1 text-[9px] uppercase tracking-wider font-semibold", accent)}>
         {icon}

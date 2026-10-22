@@ -63,8 +63,8 @@ describe("route lookup", () => {
     expect(patternScore("/notes", "/notes/abc")).toBe(-1);
   });
   it("fills a sidebar link from the current page's params, or says it cannot", () => {
-    const params = patternParams("/marketing/brands/[brandId]/seo", "/marketing/b1/seo");
-    expect(fillPattern("/marketing/brands/[brandId]/websites", params)).toBe("/marketing/b1/websites");
+    const params = patternParams("/marketing/brands/[brandId]/seo", "/marketing/brands/b1/seo");
+    expect(fillPattern("/marketing/brands/[brandId]/websites", params)).toBe("/marketing/brands/b1/websites");
     expect(fillPattern("/marketing/brands/[brandId]/websites", {})).toBeNull();
   });
   it("puts known pages in their product", () => {

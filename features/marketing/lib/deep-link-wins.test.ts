@@ -12,20 +12,20 @@ import { canonicalizePath } from "@/features/marketing/components/brand/Canonica
 describe("deep link wins", () => {
   it("canonical key address is left exactly as typed", () => {
     expect(
-      canonicalizePath("/marketing/ai-matrx/socials/studio", "ai-matrx", "ai-matrx"),
+      canonicalizePath("/marketing/brands/ai-matrx/socials/studio", "ai-matrx", "ai-matrx"),
     ).toBeNull();
   });
 
   it("a UUID address swaps only the brand segment, keeping section and page", () => {
     const id = "11111111-1111-4111-8111-111111111111";
     expect(
-      canonicalizePath(`/marketing/${id}/socials/studio`, id, "ai-matrx"),
-    ).toBe("/marketing/ai-matrx/socials/studio");
+      canonicalizePath(`/marketing/brands/${id}/socials/studio`, id, "ai-matrx"),
+    ).toBe("/marketing/brands/ai-matrx/socials/studio");
   });
 
   it("never lands on identity or another brand's segment", () => {
-    const next = canonicalizePath("/marketing/ai-matrx/socials/studio", "ai-matrx", "ai-matrx-new");
-    expect(next).toBe("/marketing/ai-matrx-new/socials/studio");
+    const next = canonicalizePath("/marketing/brands/ai-matrx/socials/studio", "ai-matrx", "ai-matrx-new");
+    expect(next).toBe("/marketing/brands/ai-matrx-new/socials/studio");
     expect(next).not.toContain("all-green-recycling");
     expect(next).not.toContain("/identity");
   });

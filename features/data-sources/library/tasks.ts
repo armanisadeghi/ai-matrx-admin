@@ -18,6 +18,7 @@ import {
   Home,
   MapPin,
   MessageSquareQuote,
+  PackageSearch,
   Smartphone,
   Tag,
   Users,
@@ -40,7 +41,7 @@ export interface LibraryTask {
 }
 
 /**
- * The everyday jobs the library opens with. Kept small on purpose — eight big doors, not a wall.
+ * The everyday jobs the library opens with. Kept small on purpose — a few big doors, not a wall.
  * Titles read as something a person wants to do, not a feature name.
  */
 export const LIBRARY_TASKS: readonly LibraryTask[] = [
@@ -65,16 +66,27 @@ export const LIBRARY_TASKS: readonly LibraryTask[] = [
     title: "Track a competitor's hiring",
     example: "Open roles at a company",
     icon: Briefcase,
-    sourceKeys: ["linkedin_jobs_search", "indeed_jobs", "glassdoor_jobs_search", "linkedin_job"],
+    // Each takes the company's name ("Company or role"); a single job page (linkedin_job) is not this job.
+    sourceKeys: ["linkedin_jobs_search", "indeed_jobs", "glassdoor_jobs_search"],
     search: "jobs hiring open roles careers",
   },
   {
     id: "product-price",
     title: "Watch a product's price",
-    example: "Price and stock for a product online",
+    example: "Price and stock for one product over time",
     icon: Tag,
-    sourceKeys: ["amazon_product", "walmart_product", "google_shopping", "amazon_price_availability"],
+    // ONE product: its name finds its page (compare's product lookup), then the page is read again and again.
+    sourceKeys: ["amazon_product", "walmart_product", "amazon_price_availability", "google_shopping"],
     search: "product price stock shopping",
+  },
+  {
+    id: "find-products",
+    title: "Find products and prices",
+    example: "Products for sale online or nearby",
+    icon: PackageSearch,
+    // The keyword searches: many products for a name, never one product watched.
+    sourceKeys: ["amazon_product_search", "walmart_product_search", "google_shopping_search", "facebook_marketplace_search"],
+    search: "product search price listings marketplace",
   },
   {
     id: "research-company",
@@ -95,9 +107,10 @@ export const LIBRARY_TASKS: readonly LibraryTask[] = [
   {
     id: "creator-posts",
     title: "See a creator's top posts",
-    example: "A public TikTok, Instagram or YouTube account",
+    example: "Recent posts from a TikTok or X account",
     icon: Users,
-    sourceKeys: ["tiktok_profiles", "instagram_profiles", "youtube_channels", "x_profiles", "tiktok_posts"],
+    // Posts, never profiles: an @handle names the account and its posts are read (`profile_url`).
+    sourceKeys: ["tiktok_posts", "x_posts"],
     search: "creator posts social profile followers",
   },
   {

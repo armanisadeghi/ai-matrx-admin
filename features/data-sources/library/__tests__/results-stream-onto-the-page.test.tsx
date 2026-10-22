@@ -54,10 +54,12 @@ jest.mock("@/features/shell/components/header/templates/RecordPageHeader", () =>
   RecordPageHeader: ({ record }: { record: { name: string } }) => <h1 data-testid="title">{record.name}</h1>,
 }));
 jest.mock("@/components/cost/useCostDisplay", () => ({ useCostDisplay: () => ({ rate: null }), useSeesDollars: () => false }));
+jest.mock("@/components/cost/CostDoor", () => ({ CostDoor: () => <span data-testid="cost-door" /> }));
 jest.mock("../hooks", () => ({
   useLibraryOrganizationId: () => "org-1",
   useLibrary: () => ({ isLoading: false, error: null, data: LIBRARY, refetch: jest.fn() }),
   usePriceText: () => () => "40 points",
+  sourceCostRow: (_s: unknown, _n: number, label: string) => ({ label, points: 40 }),
   libraryKey: (o: string) => ["data-sources", "library", o],
 }));
 jest.mock("../../hooks", () => ({ limitSettingHref: () => null, fetchedTablesKey: ["data-sources", "fetched-tables"] }));

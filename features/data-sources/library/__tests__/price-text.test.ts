@@ -19,10 +19,10 @@ describe("usePriceText: one rule for every data-source quote", () => {
     expect(text).not.toContain("$");
   });
 
-  it("a dollar seat reads points first, then cents", () => {
+  it("even a dollar seat reads points only: dollars live in the Cost door's Admin only rows", () => {
     sees = true;
     const price = usePriceText();
-    expect(price(source, 1)).toBe("150 points · $0.01");
-    expect(price(source, 100)).toBe("15,000 points · $0.75");
+    expect(price(source, 1)).toBe("150 points");
+    expect(price(source, 100)).toBe("15,000 points");
   });
 });

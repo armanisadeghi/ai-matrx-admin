@@ -53,7 +53,7 @@ export function OpeningTablePage({
 
   const source = catalog.data?.sources.find((s) => s.key === spec?.sourceKey) ?? null;
   const hidden = useMemo(
-    () => (saved && !saved.chosen && source && fields.data ? openingHiddenFields(fields.data, source.output_fields ?? []) : null),
+    () => (saved && !saved.chosen && source && fields.data ? openingHiddenFields(fields.data, source.output_fields ?? [], undefined, source.key) : null),
     [saved, source, fields.data],
   );
   const latched = useRef<string[] | null>(null);

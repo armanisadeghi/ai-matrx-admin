@@ -23,7 +23,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { cn } from "@/lib/utils";
 
-import { points, streamGenerate, type ClonePlanResult, type LineEvent, type PresenterMode, type ServerCloneBrief } from "../../video/clone";
+import { streamGenerate, type ClonePlanResult, type LineEvent, type PresenterMode, type ServerCloneBrief } from "../../video/clone";
 import {
   fetchFormatPreview,
   listFormats,
@@ -39,7 +39,7 @@ import { plainRenderMessage } from "../../video/render-errors";
 import { useSocials } from "../SocialsContext";
 import { useExpiredSessionGuard } from "../../video/session";
 import { MusicPicker } from "./MusicPicker";
-import { NO_MUSIC, musicCostLine, musicForBrief, type MusicChoice } from "../../video/music";
+import { NO_MUSIC, musicForBrief, type MusicChoice } from "../../video/music";
 import { CostLine, FailureLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
 
 let fontsRequested = false;
@@ -465,7 +465,6 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={source === "template" ? "warning" : "success"}>{source === "agent" ? "Script written" : source === "person" ? "Your script" : "Draft script"}</Badge>
               {est ? <CostLine label="Estimate" pts={est.total_points} /> : null}
-              {est && musicCostLine(est) ? <span className="type-meta text-muted-foreground">{musicCostLine(est)}</span> : null}
             </div>
             {notes.filter((n) => n.code !== "music-none").map((n) => (
               <span key={n.code} className="type-meta text-muted-foreground">{n.message}</span>
@@ -480,7 +479,7 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
             </div>
             <div className="flex items-center gap-3">
               <Button variant="primary" disabled={busy} onClick={() => void generate(phase === "confirm")}>
-                {phase === "confirm" ? `Spend ${points(est?.total_points)}` : phase === "generating" ? "Generating" : "Generate"}
+                {phase === "confirm" ? "Confirm and generate" : phase === "generating" ? "Generating" : "Generate"}
               </Button>
               <Button asChild variant="quiet">
                 <Link href={`${base}/${plan.project_id}`}>Open project</Link>

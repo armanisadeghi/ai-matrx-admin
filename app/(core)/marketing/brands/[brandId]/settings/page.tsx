@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { MarketingAddressCard } from "@/features/marketing/components/settings/MarketingAddressCard";
+import { MARKETING_BRANDS_PATH } from "@/features/marketing/lib/keys";
 import { useBrand } from "@/features/marketing/data/hooks";
 import { renameBrandSlug } from "@/features/marketing/data/service";
 import { AutonomyModesEditor } from "@/features/marketing/seo/value-system/settings/AutonomyModesEditor";
@@ -30,7 +31,7 @@ export default function BrandSettingsPage() {
         <MarketingAddressCard
           title="Brand address"
           description="This brand's address in the app. Every page under this brand sits below it."
-          addressPrefix="/marketing/"
+          addressPrefix={`${MARKETING_BRANDS_PATH}/`}
           currentKey={brand.seg}
           previousKeys={brandRow.data?.previous_slugs ?? []}
           rename={(nextKey) => renameBrandSlug(brand.id, nextKey)}

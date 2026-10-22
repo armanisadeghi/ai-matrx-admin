@@ -19,16 +19,16 @@ describe("resolveMarketingSidebarContext", () => {
   });
 
   it("a brand segment resolves to the brand menu", () => {
-    expect(resolveMarketingSidebarContext("/marketing/acme")).toEqual({
+    expect(resolveMarketingSidebarContext("/marketing/brands/acme")).toEqual({
       kind: "brand",
       brandSeg: "acme",
     });
     expect(
-      resolveMarketingSidebarContext("/marketing/acme/identity/media"),
+      resolveMarketingSidebarContext("/marketing/brands/acme/identity/media"),
     ).toEqual({ kind: "brand", brandSeg: "acme" });
     expect(
       resolveMarketingSidebarContext(
-        "/marketing/1b8f0f9e-0000-4000-8000-000000000000/settings",
+        "/marketing/brands/1b8f0f9e-0000-4000-8000-000000000000/settings",
       ).kind,
     ).toBe("brand");
   });
@@ -36,22 +36,22 @@ describe("resolveMarketingSidebarContext", () => {
   it("the websites branch resolves to the website menu", () => {
     expect(
       resolveMarketingSidebarContext(
-        "/marketing/acme/websites/acme-com/pages/p-1",
+        "/marketing/brands/acme/websites/acme-com/pages/p-1",
       ),
     ).toEqual({ kind: "website", brandSeg: "acme", siteSeg: "acme-com" });
     // The websites LIST (no site yet) stays on the brand menu.
     expect(
-      resolveMarketingSidebarContext("/marketing/acme/websites").kind,
+      resolveMarketingSidebarContext("/marketing/brands/acme/websites").kind,
     ).toBe("brand");
   });
 
   it("the seo branch resolves to the seo menu", () => {
     expect(
       resolveMarketingSidebarContext(
-        "/marketing/acme/seo/acme-com/keywords/value/rules",
+        "/marketing/brands/acme/seo/acme-com/keywords/value/rules",
       ),
     ).toEqual({ kind: "seo", brandSeg: "acme", siteSeg: "acme-com" });
-    expect(resolveMarketingSidebarContext("/marketing/acme/seo").kind).toBe(
+    expect(resolveMarketingSidebarContext("/marketing/brands/acme/seo").kind).toBe(
       "brand",
     );
   });
@@ -59,20 +59,20 @@ describe("resolveMarketingSidebarContext", () => {
   it("a site's content plan and reputation resolve to that website's menu", () => {
     expect(
       resolveMarketingSidebarContext(
-        "/marketing/acme/content/plan/acme-com/brief",
+        "/marketing/brands/acme/content/plan/acme-com/brief",
       ),
     ).toEqual({ kind: "website", brandSeg: "acme", siteSeg: "acme-com" });
     expect(
       resolveMarketingSidebarContext(
-        "/marketing/acme/intelligence/reputation/acme-com/cases",
+        "/marketing/brands/acme/intelligence/reputation/acme-com/cases",
       ),
     ).toEqual({ kind: "website", brandSeg: "acme", siteSeg: "acme-com" });
     // The brand-level pickers stay on the brand menu.
     expect(
-      resolveMarketingSidebarContext("/marketing/acme/content/plan").kind,
+      resolveMarketingSidebarContext("/marketing/brands/acme/content/plan").kind,
     ).toBe("brand");
     expect(
-      resolveMarketingSidebarContext("/marketing/acme/intelligence/reputation")
+      resolveMarketingSidebarContext("/marketing/brands/acme/intelligence/reputation")
         .kind,
     ).toBe("brand");
   });

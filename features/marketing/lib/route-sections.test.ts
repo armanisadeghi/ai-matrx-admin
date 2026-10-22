@@ -15,8 +15,8 @@ import {
 } from "./route-sections";
 import { listMarketingBrandSegments } from "./brand-sections";
 
-const WEBSITE_PATH = "/marketing/brand-1/websites/site-1";
-const SEO_PATH = "/marketing/brand-1/seo/site-1";
+const WEBSITE_PATH = "/marketing/brands/brand-1/websites/site-1";
+const SEO_PATH = "/marketing/brands/brand-1/seo/site-1";
 
 function childRouteDirectories(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true })
@@ -75,6 +75,8 @@ describe("marketing route section registries (agency-model tree)", () => {
     const routeDirectory = resolve(process.cwd(), "app/(core)/marketing/brands/[brandId]");
     const onDisk = readdirSync(routeDirectory, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
+      // `[...legacy]` is the pre-agency sections' redirect door, not a section.
+      .filter((entry) => !entry.name.startsWith("["))
       .map((entry) => entry.name)
       .sort();
     expect(listMarketingBrandSegments()).toEqual(onDisk);

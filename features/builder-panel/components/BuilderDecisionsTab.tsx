@@ -1,4 +1,5 @@
 "use client";
+import { AdminOnly } from "@/components/cost/AdminOnlyTag";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
@@ -96,7 +97,7 @@ const SWEEP_CALL_COLUMNS: MatrxColumnDef<SweepCallRow & { id: string }>[] = [
   { id: "results", header: "Rows", accessorKey: "results" },
   { id: "ms", header: "Time", accessorFn: (r) => formatDurationMs(r.ms, { style: "compact" }) },
   { id: "points", header: "Points", accessorFn: (r) => r.points ?? "?" },
-  { id: "usd", header: "$", accessorFn: (r) => formatAdminUsd(r.usd) },
+  { id: "usd", header: "$", accessorFn: (r) => r.usd ?? null, cell: (r) => <AdminOnly>{formatAdminUsd(r.usd)}</AdminOnly> },
   { id: "error", header: "Error", accessorFn: (r) => r.error ?? "", filter: "text" },
 ];
 

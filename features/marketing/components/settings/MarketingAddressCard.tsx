@@ -34,7 +34,7 @@ export interface MarketingAddressCardProps {
   title: string;
   /** One line under the address explaining what it controls. */
   description: string;
-  /** Everything before the key, with a trailing slash (`/marketing/`). */
+  /** Everything before the key, with a trailing slash (`/marketing/brands/`). */
   addressPrefix: string;
   /** The key as it appears in the URL right now. */
   currentKey: string;
@@ -46,7 +46,7 @@ export interface MarketingAddressCardProps {
   onRenamed?: () => void;
   /**
    * Where to start looking for `currentKey` in the pathname when swapping the
-   * URL — 2 for a brand (`/marketing/<key>`), deeper for a nested entity.
+   * URL — 3 for a brand (`/marketing/brands/<key>`), deeper for a nested entity.
    */
   segmentSearchFrom?: number;
   /** Extra classes for the section wrapper (grid placement). */
@@ -61,7 +61,7 @@ export function MarketingAddressCard({
   previousKeys,
   rename,
   onRenamed,
-  segmentSearchFrom = 2,
+  segmentSearchFrom = 3,
   className,
 }: MarketingAddressCardProps) {
   const router = useRouter();

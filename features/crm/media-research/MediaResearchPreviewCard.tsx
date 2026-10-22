@@ -14,7 +14,7 @@ import { PitchAdvisoryPanel } from "@/features/crm/pitch-advisories/PitchAdvisor
 import type { AdvisoryOffer, PitchAdvisory } from "@/features/crm/pitch-advisories/service";
 import type { MediaResearchPreview } from "./service";
 import { formatCount } from "@ai-matrx/kit/format";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 
 export interface MediaResearchPreviewCardProps {
   preview: MediaResearchPreview;
@@ -37,16 +37,13 @@ export function MediaResearchPreviewCard({
   onOffer,
 }: MediaResearchPreviewCardProps) {
   const advisories: PitchAdvisory[] = preview.advisories ?? [];
-  // Everyone sees points; a system admin who flipped the switch sees dollars.
-  const { format: formatCost } = useCostDisplay();
-  const maxCost = formatCost(preview.cost.max_cost_usd);
   return (
     <section
       aria-label="Research preview"
       data-testid="media-research-preview"
       className="space-y-3 rounded-md border border-border bg-card p-3 text-sm"
     >
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         <Stat label="Good fits wanted" value={String(preview.wanted_good_fits)} />
         <Stat label="Multiplier" value={`${preview.multiplier}x`} testId="media-research-multiplier" />
         <Stat
@@ -54,11 +51,6 @@ export function MediaResearchPreviewCard({
           value={String(preview.research_target)}
           testId="media-research-target"
           tone={preview.over_cap ? "strong" : undefined}
-        />
-        <Stat
-          label="Maximum cost"
-          value={maxCost}
-          testId="media-research-max-cost"
         />
       </div>
       <p className="text-xs text-muted-foreground" data-testid="media-research-multiplier-reason">
@@ -110,7 +102,8 @@ export function MediaResearchPreviewCard({
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-[11px] text-muted-foreground">
-          Nothing is spent until you press Run it. Up to {maxCost}.
+          Nothing is spent until you press Run it.
+          <CostDoor usd={preview.cost.max_cost_usd} prefix="Up to " className="ml-2" />
         </p>
         <Button
           icon={running ? <Loader2 className="animate-spin" /> : <Play />}

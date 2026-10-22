@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1583,
+  "routeCount": 1591,
   "routes": [
     {
       "pattern": "/",
@@ -2299,6 +2299,11 @@
       "source": "app/(core)/chat/message-templates/page.tsx"
     },
     {
+      "pattern": "/chat/message-templates/[id]",
+      "status": "live",
+      "source": "app/(core)/chat/message-templates/[id]/page.tsx"
+    },
+    {
       "pattern": "/chat/message-templates/edit/[id]",
       "status": "live",
       "source": "app/(core)/chat/message-templates/edit/[id]/page.tsx"
@@ -4230,6 +4235,11 @@
       "source": "app/(core)/invitations/share/accept/[token]/page.tsx"
     },
     {
+      "pattern": "/invitations/table/accept/[token]",
+      "status": "live",
+      "source": "app/(core)/invitations/table/accept/[token]/page.tsx"
+    },
+    {
       "pattern": "/kiosk",
       "status": "live",
       "source": "app/(kiosk)/kiosk/page.tsx"
@@ -4545,9 +4555,64 @@
       "source": "app/(core)/marketing/page.tsx"
     },
     {
+      "pattern": "/marketing/admin",
+      "status": "live",
+      "source": "app/(core)/marketing/admin/page.tsx"
+    },
+    {
+      "pattern": "/marketing/admin/keyword-data-quality",
+      "status": "live",
+      "source": "app/(core)/marketing/admin/keyword-data-quality/page.tsx"
+    },
+    {
+      "pattern": "/marketing/ads",
+      "status": "live",
+      "source": "app/(core)/marketing/ads/page.tsx"
+    },
+    {
+      "pattern": "/marketing/ai-visibility",
+      "status": "live",
+      "source": "app/(core)/marketing/ai-visibility/page.tsx"
+    },
+    {
+      "pattern": "/marketing/ai-visibility/runs/[runId]",
+      "status": "live",
+      "source": "app/(core)/marketing/ai-visibility/runs/[runId]/page.tsx"
+    },
+    {
+      "pattern": "/marketing/approvals",
+      "status": "live",
+      "source": "app/(core)/marketing/approvals/page.tsx"
+    },
+    {
+      "pattern": "/marketing/audience",
+      "status": "live",
+      "source": "app/(core)/marketing/audience/page.tsx"
+    },
+    {
+      "pattern": "/marketing/automations",
+      "status": "live",
+      "source": "app/(core)/marketing/automations/page.tsx"
+    },
+    {
+      "pattern": "/marketing/backlink-valuation",
+      "status": "live",
+      "source": "app/(core)/marketing/backlink-valuation/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/page.tsx"
+    },
+    {
       "pattern": "/marketing/brands/[brandId]",
       "status": "live",
       "source": "app/(core)/marketing/brands/[brandId]/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands/[brandId]/[...legacy]",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/[brandId]/[...legacy]/page.tsx"
     },
     {
       "pattern": "/marketing/brands/[brandId]/ads",
@@ -5348,61 +5413,6 @@
       "pattern": "/marketing/brands/[brandId]/websites/[siteId]/structure/columns",
       "status": "live",
       "source": "app/(core)/marketing/brands/[brandId]/websites/[siteId]/structure/columns/page.tsx"
-    },
-    {
-      "pattern": "/marketing/admin",
-      "status": "live",
-      "source": "app/(core)/marketing/admin/page.tsx"
-    },
-    {
-      "pattern": "/marketing/admin/keyword-data-quality",
-      "status": "live",
-      "source": "app/(core)/marketing/admin/keyword-data-quality/page.tsx"
-    },
-    {
-      "pattern": "/marketing/ads",
-      "status": "live",
-      "source": "app/(core)/marketing/ads/page.tsx"
-    },
-    {
-      "pattern": "/marketing/ai-visibility",
-      "status": "live",
-      "source": "app/(core)/marketing/ai-visibility/page.tsx"
-    },
-    {
-      "pattern": "/marketing/ai-visibility/runs/[runId]",
-      "status": "live",
-      "source": "app/(core)/marketing/ai-visibility/runs/[runId]/page.tsx"
-    },
-    {
-      "pattern": "/marketing/approvals",
-      "status": "live",
-      "source": "app/(core)/marketing/approvals/page.tsx"
-    },
-    {
-      "pattern": "/marketing/audience",
-      "status": "live",
-      "source": "app/(core)/marketing/audience/page.tsx"
-    },
-    {
-      "pattern": "/marketing/automations",
-      "status": "live",
-      "source": "app/(core)/marketing/automations/page.tsx"
-    },
-    {
-      "pattern": "/marketing/backlink-valuation",
-      "status": "live",
-      "source": "app/(core)/marketing/backlink-valuation/page.tsx"
-    },
-    {
-      "pattern": "/marketing/brands",
-      "status": "live",
-      "source": "app/(core)/marketing/brands/page.tsx"
-    },
-    {
-      "pattern": "/marketing/brands/[brandId]/[[...rest]]",
-      "status": "live",
-      "source": "app/(core)/marketing/brands/[brandId]/[[...rest]]/page.tsx"
     },
     {
       "pattern": "/marketing/brands/all",
@@ -6425,6 +6435,11 @@
       "source": "app/(core)/organizations/speed-test/page.tsx"
     },
     {
+      "pattern": "/p/e/[resourceType]/[id]",
+      "status": "live",
+      "source": "app/(public)/p/e/[resourceType]/[id]/page.tsx"
+    },
+    {
       "pattern": "/pick-lists",
       "status": "live",
       "source": "app/(core)/pick-lists/page.tsx"
@@ -7043,6 +7058,11 @@
       "pattern": "/rsvp/[secret]",
       "status": "live",
       "source": "app/(link)/rsvp/[secret]/page.tsx"
+    },
+    {
+      "pattern": "/s/[token]",
+      "status": "live",
+      "source": "app/(public)/s/[token]/page.tsx"
     },
     {
       "pattern": "/samples",
@@ -7668,6 +7688,26 @@
       "pattern": "/vault/speed-test",
       "status": "live",
       "source": "app/(core)/vault/speed-test/page.tsx"
+    },
+    {
+      "pattern": "/visual-maps",
+      "status": "live",
+      "source": "app/(core)/visual-maps/page.tsx"
+    },
+    {
+      "pattern": "/visual-maps/lab",
+      "status": "live",
+      "source": "app/(core)/visual-maps/lab/page.tsx"
+    },
+    {
+      "pattern": "/visual-maps/lab/[sampleId]",
+      "status": "live",
+      "source": "app/(core)/visual-maps/lab/[sampleId]/page.tsx"
+    },
+    {
+      "pattern": "/visual-maps/lab/all",
+      "status": "live",
+      "source": "app/(core)/visual-maps/lab/all/page.tsx"
     },
     {
       "pattern": "/voice",

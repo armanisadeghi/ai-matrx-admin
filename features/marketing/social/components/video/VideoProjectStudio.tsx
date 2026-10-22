@@ -52,7 +52,7 @@ import { CaptionLookPicker, CompositionPreview, CostLine, FailureLine, MountWhen
 import { mediaLabel } from "./VideoCloneNew";
 import { MusicPicker } from "./MusicPicker";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { musicCostLine, musicOfDocument, musicOps, videoSecondsOf, type MusicChoice } from "../../video/music";
+import { musicOfDocument, musicOps, videoSecondsOf, type MusicChoice } from "../../video/music";
 import { useQuery } from "@tanstack/react-query";
 
 /** The timeline editor loads only when the person opens the Timeline view (heavy: the editor + its player). */
@@ -478,7 +478,6 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
               {sum ? <CostLine label={estimateLabel(sum)} pts={sum.points} /> : null}
             </span>
           </div>
-          {estimate.data && musicCostLine(estimate.data) ? <span className="type-meta text-muted-foreground">{musicCostLine(estimate.data)}</span> : null}
           {estimate.data && confirmLine(estimate.data) ? <span className="type-meta text-muted-foreground">{confirmLine(estimate.data)}</span> : null}
           <div className="flex flex-wrap items-center gap-2">
             {pending || (sum && sum.toMake > 0) ? (
@@ -922,7 +921,7 @@ function VariantsPanel({
             <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5" aria-label="Batch estimate">
               <span className="type-meta text-muted-foreground">{`${countWord(renderable.length)} · ${est.data.to_generate === 0 ? "nothing new to make" : `${est.data.to_generate} to make`}${est.data.cache_hits ? ` · ${est.data.cache_hits} reused` : ""}`}</span>
               <CostLine pts={est.data.estimate_points} />
-              <span className="type-meta text-muted-foreground">{`${est.data.render_charged ? "Rendering is charged" : "Rendering is free"} · ${Math.min(est.data.render_cap, renderable.length)} at a time`}</span>
+              <span className="type-meta text-muted-foreground">{`${Math.min(est.data.render_cap, renderable.length)} at a time`}</span>
               {est.data.will_ask ? <span className="type-meta text-muted-foreground">Asks before it starts: over your confirmation setting</span> : null}
               {est.data.unrenderable.length ? <span className="type-meta text-warning">{`${countWord(est.data.unrenderable.length)} can't render on this version`}</span> : null}
             </div>

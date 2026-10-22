@@ -29,7 +29,6 @@ import {
   ChevronRight,
   CircleSlash,
   Clock,
-  Coins,
   Layers,
   Loader2,
   RefreshCw,
@@ -51,7 +50,7 @@ import {
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { cn } from "@/styles/themes/utils";
 import { formatCount } from "@ai-matrx/kit/format";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { extractErrorMessage, humanizeBackendError } from "@/utils/errors";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). `compact` is the elapsed-work voice: 250ms / 5.2s / 5m 30s /
@@ -177,7 +176,6 @@ function isFailedCall(call: RunAiCall): boolean {
 /** One AI call's full record — the generated content is the point, so its
  * output owns the body; everything else is a compact metrics strip. */
 function AiCallCard({ call, index }: { call: RunAiCall; index: number }) {
-  const { format: formatCostDisplay } = useCostDisplay();
   const [expanded, setExpanded] = useState(false);
   const failed = isFailedCall(call);
   const truncated = !!call.output_text?.includes(SNAPSHOT_REDACTION_MARKER);
@@ -196,10 +194,6 @@ function AiCallCard({ call, index }: { call: RunAiCall; index: number }) {
           {call.model ?? "unknown model"}
         </span>
         <span className="ml-auto flex items-center gap-2 text-[10px] tabular-nums text-muted-foreground">
-          <span className="flex items-center gap-0.5">
-            <Coins className="h-3 w-3" />
-            {formatCostDisplay(call.cost)}
-          </span>
           <span className="flex items-center gap-0.5">
             <Clock className="h-3 w-3" />
             {formatDuration(call.total_duration_ms)}
@@ -305,7 +299,6 @@ function RunDetail({
   run: RunHistoryEntry;
   onBack: () => void;
 }) {
-  const { format: formatCostDisplay } = useCostDisplay();
   const calls = useQuery({
     queryKey: [
       "marketing",
@@ -344,7 +337,7 @@ function RunDetail({
             </>
           )}{" "}
           ·{" "}
-          {formatCostDisplay(run.total_cost)}
+          <CostDoor usd={run.total_cost} label="Usage" />
         </span>
       </div>
       {run.error_text ? (
@@ -680,7 +673,6 @@ function RunRow({
   run: RunHistoryEntry;
   onOpen: () => void;
 }) {
-  const { format: formatCostDisplay } = useCostDisplay();
   return (
     <button
       type="button"
@@ -701,12 +693,6 @@ function RunRow({
       ) : null}
       <RecordId value={run.execution_id} label="Execution" inert />
       <span className="ml-auto flex items-center gap-2 text-[10px] tabular-nums text-muted-foreground">
-        {run.total_cost > 0 ? (
-          <span className="flex items-center gap-0.5">
-            <Coins className="h-3 w-3" />
-            {formatCostDisplay(run.total_cost)}
-          </span>
-        ) : null}
         <span className="flex items-center gap-0.5">
           <Clock className="h-3 w-3" />
           {formatDuration(run.duration_ms)}

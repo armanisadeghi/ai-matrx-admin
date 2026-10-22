@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { useCallback, useEffect, useState } from "react";
 import { StaleDataNotice, displayId } from "@ai-matrx/design-system";
 import Link from "next/link";
@@ -147,7 +147,6 @@ export function MasterworkRunRow({
   trailing?: React.ReactNode;
 }) {
   const duration = runDuration(run);
-  const { format: formatCostDisplay } = useCostDisplay();
   const rules = useRuleCitationIndex();
   const preview = run.deliverable_preview
     ? deliverableLine(run.deliverable_preview, rules)
@@ -174,7 +173,7 @@ export function MasterworkRunRow({
           <span>· {runWhen(run)}</span>
           {duration ? <span>· {duration}</span> : null}
           {run.cost_usd !== null ? (
-            <span>· {formatCostDisplay(run.cost_usd)}</span>
+            <CostDoor usd={run.cost_usd} iconOnly />
           ) : null}
           {/* Always there on touch, hover-revealed on desktop — a hover-only
               door is no door at all on a phone (jobs-bar-2026-09-16, item

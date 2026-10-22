@@ -4425,8 +4425,8 @@
    "file": "app/(core)/marketing/brands/page.tsx",
    "pending": true
   },
-  "route:/marketing/brands/[brandId]/[[...rest]]": {
-   "file": "app/(core)/marketing/brands/[brandId]/[[...rest]]/page.tsx",
+  "route:/marketing/brands/[brandId]/[...legacy]": {
+   "file": "app/(core)/marketing/brands/[brandId]/[...legacy]/page.tsx",
    "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/marketing/brands/new-website": {

@@ -22,7 +22,7 @@ import type {
   MatrxDataTableQueryState,
 } from "@ai-matrx/design-system/data-table/types";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { NewTabLink } from "@ai-matrx/records-ui/entity-ref";
 import { StatusToken } from "@ai-matrx/design-system/controls";
@@ -43,7 +43,6 @@ import {
 import {
   STATUS_WORDS,
   absoluteWhen,
-  costWords,
   durationWords,
   ranByWords,
   rungTitle,
@@ -172,7 +171,6 @@ export function RunsTable({
   onSelectRun,
   selectedConversationId = null,
 }: RunsTableProps) {
-  const { unit: costUnit, rate: costRate } = useCostDisplay();
   const scopeKey = "mandateKey" in scope ? `m:${scope.mandateKey}` : `a:${scope.agentId}`;
   const byAgent = "agentId" in scope;
   const router = useRouter();
@@ -335,15 +333,7 @@ export function RunsTable({
       sortable: true,
       filter: false,
       accessorFn: (run) => run.cost,
-      cell: (run) =>
-        // The points rate arrives a moment after the rows; "—" would claim the cost is unknown.
-        run.cost != null && costUnit === "points" && costRate == null ? (
-          <span className="tabular-nums text-muted-foreground" title="Loading the points rate">
-            …
-          </span>
-        ) : (
-          <span className="tabular-nums">{costWords(run.cost, costRate, costUnit)}</span>
-        ),
+      cell: (run) => <CostDoor usd={run.cost} iconOnly />,
     },
     {
       id: "output",

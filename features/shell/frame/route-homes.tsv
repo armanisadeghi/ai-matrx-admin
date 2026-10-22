@@ -715,7 +715,7 @@ route	tree node	how found today	note
 /marketing/automations	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
 /marketing/backlink-valuation	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
 /marketing/brands	BUSINESS › Marketing	menu: Marketing › Brands	
-/marketing/brands/[brandId]/[[...rest]]	BUSINESS › Marketing	opened from a list (under menu: Marketing › Brands)	
+/marketing/brands/[brandId]/[...legacy]	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	pre-agency brand sections (sites, assets, discovery, local) forward to their new homes
 /marketing/brands/all	BUSINESS › Marketing	menu: Marketing › Brands	
 /marketing/brands/new	BUSINESS › Marketing	menu: Marketing › Brands	
 /marketing/brands/new-website	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	

@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Check, ExternalLink, MapPin, Pencil, Star, X } from "lucide-react";
 import { AddTile, MediaOption } from "@ai-matrx/design-system";
 import { Badge, Button, Chip } from "@ai-matrx/design-system/controls";
-import { formatCount, formatPoints } from "@ai-matrx/kit/format";
+import { formatCount } from "@ai-matrx/kit/format";
 
 import { ProInput } from "@/components/official/ProInput";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,7 @@ import { resolveRow, type ResolveCandidate } from "../discovery";
 import { useFacetKeys } from "../facet-choice";
 import type { KindKey } from "../parse-input";
 import { lookupItems, quoteComparison } from "../server";
-import { FreeAllowanceNote } from "@/features/entitlements/free-allowance/FreeAllowanceNote";
+import { CostDoor } from "@/components/cost/CostDoor";
 import {
   MAX_ROWS, applyNear, editRow, foundMatches, isEmptyRow, needsSearch, newRow, pickCandidate, rowItem, withLookup, withResolve,
   type CompareRow,
@@ -65,7 +65,7 @@ function readyToMatch(r: CompareRow, places: boolean): boolean {
 }
 
 export function Lineup({
-  kind, rows, onRows, near, onNear, organizationId, seesDollars, onCompare, dense = false, starting = false,
+  kind, rows, onRows, near, onNear, organizationId, onCompare, dense = false, starting = false,
 }: {
   kind: ComparisonKindInfo;
   rows: CompareRow[];
@@ -73,7 +73,6 @@ export function Lineup({
   near: string;
   onNear: (near: string) => void;
   organizationId: string;
-  seesDollars: boolean;
   onCompare: (matches: LookupMatch[]) => void;
   /** Inside a narrower host (a chat card): at most two cards a row, the action bar not floating. */
   dense?: boolean;
@@ -204,14 +203,11 @@ export function Lineup({
               {busy ? <span className="ml-2 inline-flex items-center gap-1"><Spinner size="xs" variant="ghost" label="Matching" />Matching</span>
                 : unsettled ? <span className="ml-2">· Finish the open card</span> : null}</>
           ) : quote.data ? (
-            <><span className="tabular-nums text-foreground">{matched.length}</span> matched · <span className="font-medium tabular-nums text-foreground">{formatPoints(quote.data.total_points)}</span>
-              {seesDollars && quote.data.total_usd_display ? <span className="tabular-nums"> · {quote.data.total_usd_display}</span> : null}</>
+            <><span className="tabular-nums text-foreground">{matched.length}</span> matched · <CostDoor rows={[{ label: "Total", points: quote.data.total_points, usd: quote.data.total_usd }]} className="ml-1" /></>
           ) : quote.isError ? (
             <span className="inline-flex items-center gap-2">Price unavailable
               <Button variant="quiet" onClick={() => void quote.refetch()} disabled={quote.isFetching}>Try again</Button></span>
           ) : <span className="inline-block h-4 w-40 animate-pulse rounded bg-muted align-middle" aria-label="Pricing" />}
-          {/* visitors and free accounts: "3 free today" / "Sign up free for more" (paid: nothing) */}
-          <span className="ml-3 inline-block"><FreeAllowanceNote feature="comparison.run" organizationId={organizationId} /></span>
         </div>
         {/* Compare never waits on a card still matching: only the matched cards are sent. A click answers at
             once (the button shows "starting"), and a price still loading says so instead of sitting dead. */}

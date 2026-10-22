@@ -22,7 +22,6 @@ import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { CompareLayerInputs } from "@/features/provision-window/CompareLayerInputs";
 
 import { useComparisonKinds, useComparisonOrganizationId } from "./hooks";
@@ -113,7 +112,6 @@ const KIND_UI: Record<string, { label: string; icon: React.ReactNode; soonId?: s
 const sentId = (m: LookupMatch) => m.item.url ?? m.item.label ?? m.name;
 
 function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; organizationId: string }) {
-  const seesDollars = useSeesDollars();
   const params = useSearchParams();
   const live = kinds.filter((k) => k.status === "live");
   const [kindKey, setKindKey] = useState<string>(
@@ -530,7 +528,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
 
       {kind ? (
         <Lineup kind={kind} rows={rows} onRows={setRows} near={near} onNear={setNear}
-          organizationId={organizationId} seesDollars={seesDollars} onCompare={(m) => void compare(m)} />
+          organizationId={organizationId} onCompare={(m) => void compare(m)} />
       ) : null}
     </div>
   );

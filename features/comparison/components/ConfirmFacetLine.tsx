@@ -3,7 +3,7 @@
 /**
  * "Is this them?" — one compact line for a company facet whose page only resembles the company.
  * Nothing from the page is read or scored until the run's owner says yes; "Not them" leaves the facet
- * empty for good. The cost of yes is shown first (the person is deciding, law 14). Without a handler
+ * empty for good. The cost of yes sits behind the Cost door. Without a handler
  * (a public page, a person who is not the owner) the line is read-only: the question and the link.
  */
 
@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { formatPoints } from "@ai-matrx/kit/format";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 import { ComparisonRefusal, type ComparedItem, type ItemFacet } from "../contract";
@@ -64,8 +64,8 @@ export function ConfirmFacetLine({ item, facet, confirm }: { item: ComparedItem;
         </span>
         {confirm ? (
           <span className="flex items-center gap-1.5">
+            {price.data && price.data > 0 ? <CostDoor points={price.data} /> : null}
             <Button variant="outline" disabled={busy !== null}
-              meta={price.data && price.data > 0 ? formatPoints(price.data) : undefined}
               onClick={() => void reply("yes")}>
               {busy === "yes" ? "Reading" : "Yes, use it"}
             </Button>

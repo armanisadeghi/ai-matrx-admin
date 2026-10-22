@@ -59,7 +59,7 @@ import {
   type QueueFacets,
   type ReferenceRunRequest,
 } from "../service";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { optionLabel, queueKeyAction, type ReviewItem } from "../queue";
 import {
   EMPTY_RUN,
@@ -143,7 +143,7 @@ function referenceText(row: ReferenceResultRow): string {
   return answerWithPercent(referenceView(row.item, row.reference), row.reference.pAnswer);
 }
 
-function resultColumns(formatCost: (usd: number | null) => string): MatrxColumnDef<ReferenceResultRow>[] {
+function resultColumns(): MatrxColumnDef<ReferenceResultRow>[] {
   const mono = "font-mono";
   return [
     {
@@ -241,7 +241,7 @@ function resultColumns(formatCost: (usd: number | null) => string): MatrxColumnD
       filter: "number",
       width: 90,
       align: "right",
-      cell: (r) => <span className={mono}>{formatCost(r.reference?.costUsd ?? null)}</span>,
+      cell: (r) => <CostDoor usd={r.reference?.costUsd ?? null} iconOnly />,
     },
   ];
 }
@@ -598,8 +598,6 @@ export function ReferenceCheck({
   /** A run finished — the calibration's reference block is now stale. */
   onRunSettled: () => void;
 }) {
-  const { format } = useCostDisplay();
-  const formatCost = (usd: number | null | undefined) => format(usd, { short: true });
   const dispatch = useAppDispatch();
   const [question, setQuestion] = useState<string | null>(null);
   const [version, setVersion] = useState<number | null>(null);
@@ -972,15 +970,19 @@ export function ReferenceCheck({
                     : undefined
                 }
               >
-                {quote.itemCount} {quote.itemCount === 1 ? "answer" : "answers"} · {quote.referenceModel.name} · est.{" "}
-                {formatCost(quote.estimatedCostUsd)}
-                {quote.maxCostUsd != null && quote.maxCostUsd > (quote.estimatedCostUsd ?? 0)
-                  ? ` (max ${formatCost(quote.maxCostUsd)})`
-                  : ""}
+                {quote.itemCount} {quote.itemCount === 1 ? "answer" : "answers"} · {quote.referenceModel.name}
                 {quote.skippedExisting > 0 ? ` · ${quote.skippedExisting} already checked` : ""}
                 {quote.inFlight > 0 ? ` · ${quote.inFlight} in another run` : ""}
                 {quote.unbuildable.length > 0 ? ` · ${quote.unbuildable.length} unreadable` : ""}
               </span>
+              <CostDoor
+                rows={[
+                  { label: "Estimate", usd: quote.estimatedCostUsd, prefix: "~" },
+                  ...(quote.maxCostUsd != null && quote.maxCostUsd > (quote.estimatedCostUsd ?? 0)
+                    ? [{ label: "Most", usd: quote.maxCostUsd, prefix: "up to " }]
+                    : []),
+                ]}
+              />
               <Button variant="primary" icon={<Play />} disabled={running} onClick={() => void start()}>
                 Run
               </Button>
@@ -1032,7 +1034,7 @@ export function ReferenceCheck({
         <MatrxDataTable<ReferenceResultRow>
           tableId="agents/decision-review/reference-results"
           data={rows}
-          columns={resultColumns(formatCost)}
+          columns={resultColumns()}
           getRowId={(r) => r.id}
           pageSize={0}
           toolbar={{

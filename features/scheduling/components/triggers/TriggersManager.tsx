@@ -29,8 +29,7 @@ import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import { AdminPoints, AdminUsd, CostFigures, UsdOnly } from "@/components/cost/AdminCost";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import { automationAiState } from "@/features/scheduling/service/automationCosts";
 import { automationIntervalText } from "@/features/scheduling/components/costs/AutomationCostTable";
@@ -90,18 +89,20 @@ function TriggerStats({ t }: { t: ManagedTrigger }) {
   const c = t.cost;
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <UsdOnly><Stat label="Cost 30d $"><AdminUsd usd={c.cost} /></Stat></UsdOnly>
-      <Stat label="Points 30d"><AdminPoints usd={c.cost} /></Stat>
-      <UsdOnly><Stat label="Est./month $"><AdminUsd usd={c.est_monthly_cost} /></Stat></UsdOnly>
-      <Stat label="Est./month points"><AdminPoints usd={c.est_monthly_cost} /></Stat>
+      <Stat label="Cost">
+        <CostDoor
+          rows={[
+            { label: "30 days", usd: c.cost },
+            { label: "Per month", usd: c.est_monthly_cost, prefix: "~" },
+            { label: "Avg per run", usd: c.avg_run_cost },
+            { label: "Costliest run", usd: c.max_run_cost },
+          ]}
+        />
+      </Stat>
       <Stat label="Runs 7d">{c.runs_7d}</Stat>
       <Stat label="Runs 30d">{c.runs}</Stat>
       <Stat label="Avg turns">{c.avg_turns}</Stat>
       <Stat label="Most turns">{c.max_turns}</Stat>
-      <UsdOnly><Stat label="Avg cost/run $"><AdminUsd usd={c.avg_run_cost} /></Stat></UsdOnly>
-      <Stat label="Avg cost/run points"><AdminPoints usd={c.avg_run_cost} /></Stat>
-      <UsdOnly><Stat label="Costliest run $"><AdminUsd usd={c.max_run_cost} /></Stat></UsdOnly>
-      <Stat label="Costliest run points"><AdminPoints usd={c.max_run_cost} /></Stat>
       <Stat label="Runs as">{c.owner_email ?? "Unknown"}</Stat>
       <Stat label="For">{c.organization_name ?? "No organization"}</Stat>
       <div className="col-span-2 min-w-0 sm:col-span-4">
@@ -183,7 +184,6 @@ export function TriggersManager({
   seat: "admin" | "org";
   orgSlug?: string;
 }) {
-  const { format } = useCostDisplay();
   useAutomationReadiness(); // re-renders the "Not ready" flag once the verdicts land
   const [rows, setRows] = useState<ManagedTrigger[]>([]);
   const [loading, setLoading] = useState(true);
@@ -417,8 +417,6 @@ export function TriggersManager({
   const stateOne = (action: TriggerAction) => async (id: string) => {
     await setWorkflowTriggerState(id, action);
   };
-  const monthlyOf = (rows: ManagedTrigger[]) =>
-    rows.reduce((sum, r) => sum + (r.overview.is_active ? r.cost.est_monthly_cost : 0), 0);
   const triggersLabel = (n: number) => `${n} ${n === 1 ? "trigger" : "triggers"}`;
   const { rowActionDefs, bulkActions } = defineRowVerbs<ManagedTrigger>(
     [
@@ -457,7 +455,7 @@ export function TriggersManager({
           skipReason: (t) => (t.cost.guardrail_pause ? "Paused by a limit" : t.overview.is_active ? null : "Already paused"),
           confirm: (t) => ({
             title: `Pause ${triggersLabel(t.ids.length)}?`,
-            description: `They stop firing on their own right now, about ${format(monthlyOf(t.rows))} a month combined. Runs already started finish and Resume turns them back on.`,
+            description: "They stop firing on their own right now. Runs already started finish and Resume turns them back on.",
             confirmLabel: "Pause",
           }),
           runOne: stateOne("pause"),
@@ -536,10 +534,10 @@ export function TriggersManager({
                   {aiOnly ? `AI only (${hidden.length} hidden)` : "Showing all"}
                 </Button>
                 <span className="whitespace-nowrap text-xs text-muted-foreground">{`${shown.length} triggers`}</span>
-                <CostFigures
-                  items={[
-                    { usdLabel: "Cost 30d", pointsLabel: "Points 30d", usd: total },
-                    { usdLabel: "Est./month $", pointsLabel: "Est./month points", usd: monthly },
+                <CostDoor
+                  rows={[
+                    { label: "30 days", usd: total },
+                    { label: "Per month", usd: monthly, prefix: "~" },
                   ]}
                 />
                 <Button variant="outline" onClick={() => void load()} disabled={loading}>
@@ -558,7 +556,7 @@ export function TriggersManager({
               [
                 `Trigger: ${t.cost.name} (${t.overview.kind}, ${t.overview.is_active ? "enabled" : "paused"})`,
                 `Created by ${t.overview.created_by_email ?? "?"} ${t.overview.created_at} · last fired ${t.overview.last_fired_at ?? "never"}`,
-                `Runs 7d/30d: ${t.cost.runs_7d}/${t.cost.runs} · cost 30d ${format(t.cost.cost)} · est/month ${format(t.cost.est_monthly_cost)}`,
+                `Runs 7d/30d: ${t.cost.runs_7d}/${t.cost.runs}`,
                 `Flags: ${triggerHits(t).map((h) => h.detail ?? h.slot).join("; ") || "none"}`,
               ].join("\n"),
           }}
@@ -588,7 +586,7 @@ export function TriggersManager({
         open={pending != null}
         onOpenChange={(o) => !busy && !o && setPending(null)}
         title={pending ? `${ACTION_LABEL[pending.action]} "${pending.t.cost.name}"?` : ""}
-        description={pending ? consequence(pending.action, pending.t, where, format) : undefined}
+        description={pending ? consequence(pending.action, pending.t, where) : undefined}
         confirmLabel={pending ? ACTION_LABEL[pending.action] : "Confirm"}
         variant={pending?.action === "archive" ? "destructive" : "default"}
         busy={busy}
@@ -608,13 +606,22 @@ function consequence(
   action: TriggerAction,
   t: ManagedTrigger,
   where: string,
-  format: (n: number) => string,
-): string {
+): React.ReactNode {
   if (action === "pause") {
-    return `This trigger stops firing on its own right now. Runs already started finish. Nothing is deleted and Resume turns it back on. Today it runs ${t.cost.runs_7d} times a week as ${where}, about ${format(t.cost.est_monthly_cost)} a month.`;
+    return (
+      <>
+        {`This trigger stops firing on its own right now. Runs already started finish. Nothing is deleted and Resume turns it back on. Today it runs ${t.cost.runs_7d} times a week as ${where}. `}
+        <CostDoor label="Per month" usd={t.cost.est_monthly_cost} prefix="~" />
+      </>
+    );
   }
   if (action === "resume") {
-    return `This trigger starts firing on its own again (${automationIntervalText(t.cost)}) as ${where}. Spend resumes at its recent rate, about ${format(t.cost.est_monthly_cost)} a month. If a run came due while it was paused it may fire once right away.`;
+    return (
+      <>
+        {`This trigger starts firing on its own again (${automationIntervalText(t.cost)}) as ${where}. If a run came due while it was paused it may fire once right away. `}
+        <CostDoor label="Per month" usd={t.cost.est_monthly_cost} prefix="~" />
+      </>
+    );
   }
   return `This trigger stops firing and disappears from this list. Its past runs and costs stay on record. It is archived, not erased, and cannot be turned back on from this page.`;
 }

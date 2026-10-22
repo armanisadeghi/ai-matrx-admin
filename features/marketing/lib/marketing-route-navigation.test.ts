@@ -103,7 +103,7 @@ describe("Marketing top-level navigation inventory", () => {
   });
 
   it("every registered brand-workspace segment exists on disk", () => {
-    const brandRoot = join(MARKETING_APP_ROOT, "[brandId]");
+    const brandRoot = join(MARKETING_APP_ROOT, "brands", "[brandId]");
     for (const segment of listMarketingBrandSegments()) {
       expect(existsSync(join(brandRoot, segment))).toBe(true);
     }

@@ -9,7 +9,7 @@ describe("marketingRoutes.siteKeywordWorkbench", () => {
         "qw=shred&sv=view-1",
       ),
     ).toBe(
-      "/marketing/data-destruction/seo/datadestruction-com/keywords/workbench?qw=shred&sv=view-1",
+      "/marketing/brands/data-destruction/seo/datadestruction-com/keywords/workbench?qw=shred&sv=view-1",
     );
   });
 
@@ -20,7 +20,7 @@ describe("marketingRoutes.siteKeywordWorkbench", () => {
         "datadestruction-com",
       ),
     ).toBe(
-      "/marketing/data-destruction/seo/datadestruction-com/keywords/workbench",
+      "/marketing/brands/data-destruction/seo/datadestruction-com/keywords/workbench",
     );
   });
 
@@ -46,7 +46,7 @@ describe("marketingRoutes.site compatibility paths", () => {
         "/reputation",
       ),
     ).toBe(
-      "/marketing/all-green-recycling/websites/allgreenrecycling-com/reputation",
+      "/marketing/brands/all-green-recycling/websites/allgreenrecycling-com/reputation",
     );
   });
 
@@ -57,7 +57,7 @@ describe("marketingRoutes.site compatibility paths", () => {
         "allgreenrecycling-com",
       ),
     ).toBe(
-      "/marketing/all-green-recycling/intelligence/reputation/allgreenrecycling-com",
+      "/marketing/brands/all-green-recycling/intelligence/reputation/allgreenrecycling-com",
     );
   });
 });

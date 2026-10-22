@@ -8,15 +8,15 @@
 // never an organization's numbers. Opening the tab refreshes it once in the
 // background (a page read, never on an AI request's path).
 
+import type { CostUnit } from "@ai-matrx/kit/format";
 import { useEffect, useRef, useState } from "react";
 import Link from "@/components/navigation/AppLink";
 import { useSurfaceScopeContribution } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { ArrowUpRight, Infinity as InfinityIcon, RotateCw } from "lucide-react";
-import { pointsToUsd } from "@ai-matrx/kit/format";
-import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";
+import { pointsToUsd, formatCost } from "@ai-matrx/kit/format";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import {
@@ -73,7 +73,9 @@ const LEVEL_CHIP: Record<UsageGateLevel, { text: string; tone: string }> = {
 function WindowRow({ w }: { w: UsageWindow }) {
   // This is render-time formatting. `useCostDisplay` subscribes to the knob
   // snapshot, so values re-render when the points rate answers after usage.
-  const { unit, rate } = useCostDisplay();
+  const { unit: rawUnit, rate } = useCostDisplay();
+  // Bare dollars only on the admin site, only for a system admin.
+  const unit: CostUnit = useSeesDollars() ? rawUnit : "points";
   const points = (v: number) =>
     formatCost(pointsToUsd(v, { rate }), { rate, unit });
   const pct =

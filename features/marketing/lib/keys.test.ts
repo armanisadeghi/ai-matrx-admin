@@ -53,19 +53,19 @@ describe("nextPreviousSlugs", () => {
 describe("pathWithMarketingSegment", () => {
   it("swaps the brand segment and keeps the rest of the page", () => {
     expect(
-      pathWithMarketingSegment("/marketing/old-brand/settings", "old-brand", "new-brand"),
-    ).toBe("/marketing/new-brand/settings");
+      pathWithMarketingSegment("/marketing/brands/old-brand/settings", "old-brand", "new-brand"),
+    ).toBe("/marketing/brands/new-brand/settings");
   });
 
   it("swaps a site segment without touching an identical brand segment", () => {
     expect(
       pathWithMarketingSegment(
-        "/marketing/acme/websites/acme/settings",
+        "/marketing/brands/acme/websites/acme/settings",
         "acme",
         "acme-site",
-        3,
+        5,
       ),
-    ).toBe("/marketing/acme/websites/acme-site/settings");
+    ).toBe("/marketing/brands/acme/websites/acme-site/settings");
   });
 
   it("returns the path unchanged when the segment is not present", () => {

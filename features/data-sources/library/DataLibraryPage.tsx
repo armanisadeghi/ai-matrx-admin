@@ -12,8 +12,7 @@
  * streaming in right below it as the person's own custom table, then the earlier runs. A task is
  * `?task=<id>` (its sources, then the earlier runs of all of them); a run shown is `&job=<id>`, so a
  * reload re-attaches to it. `&field=<name>&value=<text>` (a pasted address) fills a field; nothing
- * fetches until Get data. Members see points only (each source's own price); dollars only through
- * `useCostDisplay`'s rule.
+ * fetches until Get data. A price shows only behind the Cost door on a source's detail.
  */
 
 import { createElement, useState } from "react";
@@ -27,14 +26,11 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { cn } from "@/lib/utils";
 
 import {
-  cheapestPoints,
   fieldPreview,
   librarySections,
-  pointsPerRecord,
   searchSources,
   sourceLine,
   type Library,
@@ -46,7 +42,7 @@ import { GroupMark } from "./groupMark";
 import { PastRuns } from "./PastRuns";
 import { SourceDetail } from "./SourceDetail";
 import { LIBRARY_TASKS, resolveTask, resolveTasks, type ResolvedTask } from "./tasks";
-import { useLibrary, useLibraryOrganizationId, usePriceText } from "./hooks";
+import { useLibrary, useLibraryOrganizationId } from "./hooks";
 import { GiveToAgentDialog } from "./tools/GiveToAgentDialog";
 import { ToolPage } from "./tools/ToolPage";
 import { ToolsHome } from "./tools/ToolsHome";
@@ -315,19 +311,6 @@ function TaskHome({
 
 function TaskCard({ resolved, onOpen }: { resolved: ResolvedTask; onOpen: () => void }) {
   const { task, confirmed, all } = resolved;
-  // The library is where a person decides what to pull: each task shows what its cheapest source costs
-  // (points for everyone; the dollar figure only for a viewer who sees dollars).
-  const { rate } = useCostDisplay();
-  const priceText = usePriceText();
-  // Only a source's OWN price speaks for the task: the catalog-wide default is the same on all of them.
-  const cheapest = all.reduce<LibrarySource | null>((best, s) => {
-    if (!s.ownPrice) return best;
-    const p = pointsPerRecord(s, rate);
-    if (p == null) return best;
-    const b = best ? pointsPerRecord(best, rate) : null;
-    return b == null || p < b ? s : best;
-  }, null);
-  const price = cheapest ? priceText(cheapest, 1) : null;
   return (
     <button
       type="button"
@@ -343,11 +326,6 @@ function TaskCard({ resolved, onOpen }: { resolved: ResolvedTask; onOpen: () => 
         <div className="text-base font-semibold leading-snug text-foreground">{task.title}</div>
         <p className="mt-1 text-sm text-muted-foreground">{task.example}</p>
       </div>
-      {price ? (
-        <span className="text-xs font-medium text-foreground" data-task-price="">
-          From {price} / record
-        </span>
-      ) : null}
       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
         {confirmed.length > 0 ? (
           <>
@@ -439,20 +417,12 @@ type BrowseView = { kind: "featured" } | { kind: "all" } | { kind: "group"; grou
 function BrowseAllSources({ library, onHome, onOpen }: { library: Library; onHome: () => void; onOpen: (key: string) => void }) {
   const [query, setQuery] = useState("");
   const [view, setView] = useState<BrowseView>({ kind: "featured" });
-  const price = usePriceText();
-  const { rate } = useCostDisplay();
 
   const searching = query.trim().length > 0;
   const inView = view.kind === "group" ? library.sources.filter((s) => s.group === view.group) : library.sources;
   const matches = searchSources(inView, query);
   const featured = view.kind === "featured" && !searching ? library.sources.filter((s) => s.featured) : [];
   const sections = librarySections(matches);
-
-  // The price a source card shows is the server's points_per_record, computed by the same function billing
-  // charges with (data_fetch.service.effective_price_for_dataset): the two cannot drift.
-  const cheapest = cheapestPoints(library.sources, rate);
-  const cheapestSource = cheapest == null ? null : library.sources.find((s) => pointsPerRecord(s, rate) === cheapest) ?? null;
-  const fromText = cheapestSource ? price(cheapestSource, 1) : null;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-10">
@@ -477,7 +447,7 @@ function BrowseAllSources({ library, onHome, onOpen }: { library: Library; onHom
           ))}
         </div>
         <div className="hidden shrink-0 text-xs text-muted-foreground lg:block" data-library-hero="">
-          {formatCount(library.sources.length)} sources{fromText ? ` · from ${fromText} a record` : ""}
+          {formatCount(library.sources.length)} sources
         </div>
       </div>
 
@@ -537,7 +507,6 @@ function CardGrid({ sources, onOpen, rich = false }: { sources: LibrarySource[];
 }
 
 function SourceCard({ source, rich, onOpen }: { source: LibrarySource; rich: boolean; onOpen: () => void }) {
-  const price = usePriceText()(source, 1, { pointsOnly: true });
   const preview = fieldPreview(source.outputFields, rich ? 5 : 3);
   return (
     <button
@@ -566,9 +535,6 @@ function SourceCard({ source, rich, onOpen }: { source: LibrarySource; rich: boo
         </ChipSet>
       )}
       <div className="mt-auto flex items-center gap-1.5 pt-1">
-        <span className="text-xs font-medium text-foreground" data-unit-price="">
-          {price ? `${price} / record` : "No price yet"}
-        </span>
         <span className="ml-auto flex items-center gap-1">
           {source.knownIssue ? (
             <Badge tone="warning" title={plainIssue(source.knownIssue)}>
@@ -603,7 +569,6 @@ function CompactList({
   const [open, setOpen] = useState(defaultOpen);
   const [filter, setFilter] = useState("");
   const [shown, setShown] = useState(LIST_PAGE);
-  const price = usePriceText();
   const rows = searchSources(sources, filter);
   return (
     <div className="rounded-lg border border-border bg-card" data-compact-list={subgroup}>
@@ -632,7 +597,6 @@ function CompactList({
                     end={
                       <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         {s.confirmed && <ShieldCheck className="h-3.5 w-3.5 text-success" aria-label="Confirmed" />}
-                        {price(s, 1, { short: true }) ?? ""}
                         <ChevronRight className="h-3.5 w-3.5" />
                       </span>
                     }

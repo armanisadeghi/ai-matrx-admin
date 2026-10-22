@@ -24,7 +24,7 @@ import { ShimmerText } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 
-import { points } from "../../video/clone";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { zipEntryNames } from "../../video/variants";
 import { plainFailureText } from "../../video/render-errors";
 import { isSessionExpired, useExpiredSessionGuard } from "../../video/session";
@@ -120,11 +120,12 @@ function tookText(s: RunStep | undefined): string | undefined {
 
 // ── cost ────────────────────────────────────────────────────────────────────────────────────────────
 
+/** The estimate: its label, with the price behind the quiet Cost door. */
 export function CostLine({ pts, label }: { pts: number | null | undefined; label?: string }) {
   return (
     <span className="inline-flex items-baseline gap-1.5 tabular-nums">
       {label ? <span className="type-meta text-muted-foreground">{label}</span> : null}
-      <span className="type-label text-foreground">{points(pts)}</span>
+      <CostDoor points={pts} />
     </span>
   );
 }

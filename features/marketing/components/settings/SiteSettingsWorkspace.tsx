@@ -292,6 +292,9 @@ export function SiteSettingsWorkspace() {
             addressPrefix={`${sitePath.slice(0, sitePath.lastIndexOf("/"))}/`}
             currentKey={marketingSeg(site)}
             previousKeys={site.previous_slugs ?? []}
+            // `/marketing/brands/<brand>/websites/<site>` — the site key sits at index 5,
+            // so a site keyed like its brand never renames the brand segment.
+            segmentSearchFrom={5}
             rename={(nextKey) =>
               renameSiteSlug(site.id, brandId, nextKey)
             }

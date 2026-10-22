@@ -16,7 +16,7 @@ import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { formatCount, formatFileSize } from "@ai-matrx/kit/format";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import type { RecordPageAction, RecordPageMenuItem } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { toast } from "@/lib/toast";
 import {
@@ -31,7 +31,7 @@ import { scopeHubPath, userRecordHref, type UserRecordScope } from "@/features/a
 import { useOrgMemberDetail } from "../hooks";
 import { setMemberStatus } from "../service";
 import type { OrgAdminMemberDetail } from "../types";
-import { formatMcents, formatRelativeTime } from "../utils";
+import { MCENTS_PER_USD, formatRelativeTime } from "../utils";
 import { MemberControlsForm } from "./MemberControlsForm";
 import { RemoveMemberDialog } from "./RemoveMemberDialog";
 import { TakeOverAccountDialog } from "./TakeOverAccountDialog";
@@ -57,7 +57,6 @@ function OrgMemberOverview({
   scope: OrganizationScope;
   onSaved: () => void;
 }) {
-  const { unit, rate } = useCostDisplay();
   const resourceTotal = member.resources.reduce((sum, r) => sum + r.count, 0);
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]" data-testid="org-member-overview">
@@ -75,7 +74,7 @@ function OrgMemberOverview({
             value={formatFileSize(member.accountBytesUsed)}
             hint={`${formatCount(member.accountFilesCount)} files, all organizations`}
           />
-          <KpiTile label="AI spend · 24h" value={formatMcents(member.cost24hMcents, rate, unit)} hint={`${formatCount(member.requests24h)} requests`} />
+          <KpiTile label="AI spend · 24h" value={member.cost24hMcents == null ? "—" : <CostDoor label="Usage" usd={member.cost24hMcents / MCENTS_PER_USD} />} hint={`${formatCount(member.requests24h)} requests`} />
           <KpiTile label="Requests · 6h" value={formatCount(member.requests6h)} hint="Account-wide" />
           <KpiTile
             label="Last active here"

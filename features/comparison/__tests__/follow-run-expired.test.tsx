@@ -18,7 +18,7 @@ jest.mock("@/lib/api/server-api", () => ({ serverApi: { call: jest.fn() }, callO
 jest.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams("run=gone-run") }));
 jest.mock("@/features/shell/components/header/templates/RecordPageHeader", () => ({ RecordPageHeader: () => null }));
 jest.mock("@/lib/url-state/addressWithoutNavigating", () => ({ replaceAddressWithoutNavigating: jest.fn() }));
-jest.mock("@/components/cost/useCostDisplay", () => ({ useSeesDollars: () => false }));
+jest.mock("@/components/cost/useCostDisplay", () => ({ useSeesDollars: () => false, useIsCostAdmin: () => false, useCostDisplay: () => ({ toPoints: (u: number | null | undefined) => (u == null ? null : u * 1000) }) }));
 jest.mock("../hooks", () => ({
   useComparisonOrganizationId: () => "org-1",
   useComparisonKinds: () => ({

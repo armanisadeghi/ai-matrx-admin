@@ -29336,8 +29336,8 @@
    "reachableOnlyViaAdminMap": false
   },
   {
-   "route": "/marketing/brands/[brandId]/[[...rest]]",
-   "file": "app/(core)/marketing/brands/[brandId]/[[...rest]]/page.tsx",
+   "route": "/marketing/brands/[brandId]/[...legacy]",
+   "file": "app/(core)/marketing/brands/[brandId]/[...legacy]/page.tsx",
    "otherFiles": [],
    "group": "core",
    "treeNode": "BUSINESS › Marketing",
@@ -66693,7 +66693,7 @@
   },
   {
    "from": "/marketing/brands/[brandId]/locations",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/local/LocalListingsWorkspace.tsx (depth 1)"
@@ -66742,7 +66742,7 @@
   },
   {
    "from": "/marketing/brands/[brandId]/locations/[locationId]",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/local/LocalListingsWorkspace.tsx (depth 1)"
@@ -68961,7 +68961,7 @@
   },
   {
    "from": "/marketing/brands/[brandId]/seo/[siteId]/keywords/value/dimensions",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/seo/value-system/dimensions/MatcherEditor.tsx (depth 3)"
@@ -72209,7 +72209,7 @@
   },
   {
    "from": "/marketing/admin",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "admin-map",
    "confidence": "pattern",
    "via": "app/(core)/marketing/admin/page.tsx"
@@ -72677,11 +72677,11 @@
    "via": "features/marketing/components/shared/MarketingWorkspaceNav.tsx (depth 2)"
   },
   {
-   "from": "/marketing/brands/[brandId]/[[...rest]]",
+   "from": "/marketing/brands/[brandId]/[...legacy]",
    "to": "/marketing/brands/[brandId]/websites",
    "kind": "push",
    "confidence": "pattern",
-   "via": "app/(core)/marketing/brands/[brandId]/[[...rest]]/page.tsx"
+   "via": "app/(core)/marketing/brands/[brandId]/[...legacy]/page.tsx"
   },
   {
    "from": "/marketing/brands/new-website",
@@ -74099,7 +74099,7 @@
   },
   {
    "from": "/marketing/sites/new",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "push",
    "confidence": "pattern",
    "via": "app/(core)/marketing/sites/new/page.tsx"
@@ -87504,7 +87504,7 @@
   },
   {
    "from": "/welcome",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/smart-add/smartAddUrl.ts (depth 4)"
@@ -90430,7 +90430,7 @@
   },
   {
    "from": "layout:/marketing/brands/smart-add@app/(core)/marketing/brands/smart-add",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "layout",
    "confidence": "pattern",
    "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"
@@ -95666,7 +95666,7 @@
   },
   {
    "from": "sidebar:marketing/CrawlSubnav",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
@@ -95813,7 +95813,7 @@
   },
   {
    "from": "sidebar:marketing/MarketingBrandCrumb",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
@@ -95876,7 +95876,7 @@
   },
   {
    "from": "sidebar:marketing/SocialsShell",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "features/marketing/smart-add/smartAddUrl.ts (depth 2)"
@@ -97556,7 +97556,7 @@
   },
   {
    "from": "sidebar:shell",
-   "to": "/marketing/brands/[brandId]/[[...rest]]",
+   "to": "/marketing/brands/[brandId]/[...legacy]",
    "kind": "sidebar",
    "confidence": "pattern",
    "via": "features/marketing/smart-add/smartAddUrl.ts (depth 3)"

@@ -20,7 +20,7 @@
 // viewer of what it produced — the conversation, or the workflow run page.
 
 import { InfoHint } from "@ai-matrx/design-system/controls";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "@/components/navigation/AppLink";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -57,7 +57,6 @@ import {
   STATUS_DOT,
   STATUS_WORDS,
   absoluteWhen,
-  costWords,
   durationWords,
   outputWarningTitle,
   ranByWords,
@@ -234,13 +233,10 @@ export function MandateRunHistory({
   // member's own list is ignored by the read, so it must not say "filtered".
   const filtering = Boolean(url.status || (view === "platform" && url.org) || (view !== "mine" && url.person));
 
-  const { unit: costUnit, rate: costRate } = useCostDisplay();
   const columns = runColumns({
     view,
     audience,
     showOrg,
-    costUnit,
-    costRate,
     onPerson: (id) => (view !== "mine" && !compact ? () => filter({ person: id }) : null),
     onOrg: (id) => (showOrg && !compact ? () => filter({ org: id }) : null),
   });
@@ -413,16 +409,12 @@ function runColumns({
   view,
   audience,
   showOrg,
-  costUnit,
-  costRate,
   onPerson,
   onOrg,
 }: {
   view: RunHistoryView;
   audience: "admin" | "product";
   showOrg: boolean;
-  costUnit: ReturnType<typeof useCostDisplay>["unit"];
-  costRate: ReturnType<typeof useCostDisplay>["rate"];
   onPerson: (id: string | null) => (() => void) | null;
   onOrg: (id: string | null) => (() => void) | null;
 }): MatrxColumnDef<MandateRun>[] {
@@ -552,11 +544,10 @@ function runColumns({
       id: "cost",
       header: "Cost",
       accessorFn: (run) => run.cost,
-      copyValue: (run) => costWords(run.cost, costRate, costUnit),
       filter: false,
       width: 90,
       align: "right",
-      cell: (run) => <span className="tabular-nums">{costWords(run.cost, costRate, costUnit)}</span>,
+      cell: (run) => <CostDoor usd={run.cost} iconOnly />,
     },
     {
       id: "duration",

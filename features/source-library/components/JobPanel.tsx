@@ -39,7 +39,7 @@
  *     rather than silently drawn short.
  */
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
@@ -379,7 +379,6 @@ export function JobPanel({
     onDismiss?: () => void;
     vocabulary?: SourceVocabulary;
 }) {
-    const { format: costText } = useCostDisplay();
     const {
         job,
         items,
@@ -771,7 +770,7 @@ export function JobPanel({
 
                             <span className="text-muted-foreground">Cost</span>
                             <span className="text-right tabular-nums text-foreground">
-                                {promisedCost === null ? "—" : costText(promisedCost)}
+                                {promisedCost === null ? "—" : <CostDoor usd={promisedCost} />}
                             </span>
                             <span className="text-right text-muted-foreground">
                                 not reported
@@ -782,9 +781,13 @@ export function JobPanel({
                             {estimate.cost.paid_cost_estimate > 0 && (
                                 <>
                                     {" "}
-                                    The range shown at confirmation was{" "}
-                                    {costText(estimate.cost.paid_cost_low)} to{" "}
-                                    {costText(estimate.cost.paid_cost_high)}.
+                                    <CostDoor
+                                        label="Range at confirmation"
+                                        rows={[
+                                            { label: "Low", usd: estimate.cost.paid_cost_low },
+                                            { label: "High", usd: estimate.cost.paid_cost_high },
+                                        ]}
+                                    />
                                 </>
                             )}{" "}
                             The server does not report what this job actually spent, so only the
@@ -944,9 +947,8 @@ export function JobPanel({
                             <>
                                 {" "}
                                 Whatever has already been spent on this run is spent: canceling
-                                does not refund it. The whole run was estimated at{" "}
-                                {costText(promisedCost)} when it was
-                                confirmed.
+                                does not refund it.{" "}
+                                <CostDoor label="Estimate at confirmation" usd={promisedCost} />
                             </>
                         )}{" "}
                         Starting this work again later means a new job, and a new estimate for

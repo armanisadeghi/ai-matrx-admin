@@ -1,5 +1,6 @@
 "use client";
 
+import { CostDoor } from "@/components/cost/CostDoor";
 import { AppCheckText, type AppCheckResult } from "./app-check-line";
 import { ProInput } from "@/components/official/ProInput";
 
@@ -810,7 +811,17 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
           ) : null}
           {isAutomationAppTrigger(on) ? (
             <span className="type-secondary text-muted-foreground" data-testid="spaces-automation-app-terms">
-              {appTerms ? `Saved off · checks every ${appTerms.every_minutes} min · ${appTerms.points_per_check} points a check, about ${appTerms.points_per_month.toLocaleString()} a month` : "Saved off · checks on a schedule"}
+              {appTerms ? (
+                <>
+                  {`Saved off · checks every ${appTerms.every_minutes} min `}
+                  <CostDoor
+                    rows={[
+                      { label: "Per check", points: appTerms.points_per_check },
+                      { label: "Per month", points: appTerms.points_per_month, prefix: "~" },
+                    ]}
+                  />
+                </>
+              ) : "Saved off · checks on a schedule"}
             </span>
           ) : null}
           {on === "date_arrives" ? (

@@ -9,7 +9,6 @@ import { newRow, startRows, type CompareRow } from "../rows";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 jest.mock("../server", () => ({ lookupItems: jest.fn(), quoteComparison: jest.fn(async () => ({})) }));
-jest.mock("@/features/entitlements/free-allowance/FreeAllowanceNote", () => ({ FreeAllowanceNote: () => null }));
 jest.mock("@/components/official/ProInput", () => ({
   ProInput: ({ wrapperClassName: _w, ...p }: Record<string, unknown>) => <input {...(p as object)} />,
 }));
@@ -26,7 +25,7 @@ function Harness({ initial }: { initial: CompareRow[] }) {
   return (
     <QueryClientProvider client={new QueryClient()}>
       <Lineup kind={kind} rows={rows} onRows={(f) => setRows(f)} near="" onNear={() => {}} organizationId="o"
-        seesDollars={false} onCompare={() => {}} />
+        onCompare={() => {}} />
     </QueryClientProvider>
   );
 }

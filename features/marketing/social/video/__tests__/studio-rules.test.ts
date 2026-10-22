@@ -143,8 +143,8 @@ describe("variants panel rules", () => {
 
 describe("estimate lines the person reads", () => {
   it("names the confirmation line in points", () => {
-    expect(confirmLine({ confirm_over_points: 20000 })).toBe("Asks before spending over 20,000 points");
-    expect(confirmLine({ confirm_over_points: 10000 })).toBe("Asks before spending over 10,000 points");
+    expect(confirmLine({ confirm_over_points: 20000 })).toBe("Asks before large spends");
+    expect(confirmLine({ confirm_over_points: 10000 })).toBe("Asks before large spends");
     expect(confirmLine({ confirm_over_points: null })).toBeNull();
   });
 });

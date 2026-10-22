@@ -23,7 +23,6 @@ import { useDoorAudience } from "./door-audience";
 import { ReplaysTable } from "./ReplaysTable";
 import { fmtDate } from "./tokens";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Cost } from "@/components/cost/Cost";
 
 export function ReviewRow({
   review,
@@ -68,9 +67,6 @@ export function ReviewRow({
         <span className="text-sm">
           read {review.example_count} real{" "}
           {review.example_count === 1 ? "transcript" : "transcripts"}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          cost <Cost usd={review.total_cost} /> to review
         </span>
         <span className="ml-auto whitespace-nowrap text-xs text-muted-foreground">
           {fmtDate(review.created_at)}

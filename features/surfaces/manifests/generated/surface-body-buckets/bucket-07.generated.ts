@@ -21,4 +21,4 @@ export { crmRecordManifest as s296 } from "../../crm-record.manifest";
 export { printBrandedQrManifest as s351 } from "../../print-branded-qr.manifest";
 export { myMemoryManifest as s361 } from "../../my-memory.manifest";
 export { termListsManifest as s375 } from "../../term-lists.manifest";
-export { adminQuestionDeskInterviewManifest as s388 } from "../../admin-question-desk-interview.manifest";
+export { adminQuestionDeskInterviewManifest as s389 } from "../../admin-question-desk-interview.manifest";

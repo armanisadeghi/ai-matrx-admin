@@ -4,6 +4,7 @@
  * Org-admin user-management dashboard — the hub at /organizations/[orgId]/admin.
  * Overview tiles + member roster + invite + governance audit log.
  */
+import type { CostUnit } from "@ai-matrx/kit/format";
 import React, { useState } from "react";
 import Link from "next/link";
 import {
@@ -27,7 +28,7 @@ import type { Organization, OrgRole } from "../../types";
 import { useOrgRoster } from "../hooks";
 import type { OrgAdminOverview } from "../types";
 import { formatMcents } from "../utils";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { MemberRosterTable } from "./MemberRosterTable";
 import { OrgAdminAuditTable } from "./OrgAdminAuditTable";
@@ -65,7 +66,9 @@ function StatTile({
 }
 
 function OverviewTiles({ overview }: { overview: OrgAdminOverview }) {
-  const { unit, rate: costRate } = useCostDisplay();
+  const { unit: rawUnit, rate: costRate } = useCostDisplay();
+  // Bare dollars only on the admin site, only for a system admin.
+  const unit: CostUnit = useSeesDollars() ? rawUnit : "points";
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
       <StatTile icon={Users} label="Members" value={overview.totalMembers} hint={`${overview.admins} admins`} />

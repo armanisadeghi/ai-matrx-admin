@@ -1,7 +1,7 @@
 import { generateSVGFavicon, svgToDataURI } from "@/utils/favicon-utils";
 import { getMarketingRouteMetadata } from "./route-metadata";
 
-const B = "/marketing/acme";
+const B = "/marketing/brands/acme";
 const W = `${B}/websites/acme-com`;
 const S = `${B}/seo/acme-com`;
 

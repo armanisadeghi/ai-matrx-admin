@@ -36,7 +36,7 @@ import { createRegressionCaseFromFinding, listRegressionCases } from "../api";
 import type { Finding, RegressionCase } from "../types";
 import { fmtDate } from "./tokens";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Cost } from "@/components/cost/Cost";
+import { CostDoor } from "@/components/cost/CostDoor";
 
 /**
  * `error` is NOT `fail` — "the check could not run" and "the unit regressed"
@@ -80,7 +80,7 @@ function CaseRow({ item }: { item: RegressionCase }) {
       <span className="text-muted-foreground">
         {item.last_checked_at ? (
           <>
-            checked {fmtDate(item.last_checked_at)} · <Cost usd={item.last_cost_usd} />
+            checked {fmtDate(item.last_checked_at)} <CostDoor usd={item.last_cost_usd} iconOnly />
           </>
         ) : (
           "no check has run yet"
