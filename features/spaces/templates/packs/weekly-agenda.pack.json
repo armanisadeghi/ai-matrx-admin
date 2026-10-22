@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0112",
-  "version": 9,
+  "version": 10,
   "title": "Weekly Agenda",
   "description": "Solo consultants and small teams: tasks and meetings by day, with a Friday review.",
   "forWho": "Solo consultants and small teams",
@@ -1214,7 +1214,7 @@
         "Sumac Hollow Road"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1429,7 +1429,10 @@
                 "filters": {
                   "day": "Mon"
                 },
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "minutes"
+                ]
               },
               {
                 "id": "view-meeting-today",
@@ -1440,7 +1443,10 @@
                   "on": {
                     "relative": "today"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "minutes"
+                ]
               },
               {
                 "id": "view-meeting-week",
@@ -1451,7 +1457,10 @@
                   "on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "minutes"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -1514,7 +1523,10 @@
                 "filters": {
                   "day": "Tue"
                 },
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "minutes"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -1577,7 +1589,10 @@
                 "filters": {
                   "day": "Wed"
                 },
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "minutes"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -1640,7 +1655,10 @@
                 "filters": {
                   "day": "Thu"
                 },
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "minutes"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -1703,7 +1721,10 @@
                 "filters": {
                   "day": "Fri"
                 },
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "minutes"
+                ]
               }
             ],
             "activeViewId": "view-0"

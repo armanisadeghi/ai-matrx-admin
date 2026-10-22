@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0415",
-  "version": 8,
+  "version": 9,
   "title": "Short-Term Rental Host",
   "description": "For vacation rental hosts: bookings, cleanings, guest messages, repairs and payouts.",
   "forWho": "Vacation rental hosts and co-hosts with a few homes",
@@ -2332,7 +2332,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2586,7 +2586,21 @@
                     "Confirmed",
                     "Checked in"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "nights",
+                  "channel",
+                  "status",
+                  "payout",
+                  "cleaning_fee",
+                  "tax",
+                  "host",
+                  "turn_btn",
+                  "confirm_btn",
+                  "checkin_btn",
+                  "out_btn"
+                ]
               },
               {
                 "id": "vs-week",
@@ -2604,7 +2618,21 @@
                     "Confirmed",
                     "Checked in"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "nights",
+                  "channel",
+                  "status",
+                  "payout",
+                  "cleaning_fee",
+                  "tax",
+                  "host",
+                  "turn_btn",
+                  "confirm_btn",
+                  "checkin_btn",
+                  "out_btn"
+                ]
               },
               {
                 "id": "vs-next7",
@@ -2623,7 +2651,21 @@
                     "Confirmed",
                     "Checked in"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "nights",
+                  "channel",
+                  "status",
+                  "payout",
+                  "cleaning_fee",
+                  "tax",
+                  "host",
+                  "turn_btn",
+                  "confirm_btn",
+                  "checkin_btn",
+                  "out_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -2681,6 +2723,20 @@
                 "icon": "List",
                 "me": [
                   "host"
+                ],
+                "hiddenFields": [
+                  "guests",
+                  "nights",
+                  "channel",
+                  "status",
+                  "payout",
+                  "cleaning_fee",
+                  "tax",
+                  "host",
+                  "turn_btn",
+                  "confirm_btn",
+                  "checkin_btn",
+                  "out_btn"
                 ]
               }
             ],

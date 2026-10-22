@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0550",
-  "version": 6,
+  "version": 7,
   "title": "Nonprofit Fundraising Desk",
   "description": "Donor CRM for nonprofits: gifts, pledges, monthly donors, campaigns and thank-you letters.",
   "forWho": "Small and mid-size nonprofits with a development team",
@@ -3371,7 +3371,7 @@
         "Larkspur Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3580,7 +3580,29 @@
                     "Cultivating",
                     "Active"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "recurring_amount",
+                  "email",
+                  "phone",
+                  "comms",
+                  "first_gift_on",
+                  "steward",
+                  "gift_count",
+                  "total_given",
+                  "pledged_open",
+                  "committed",
+                  "giving_level",
+                  "open_tasks",
+                  "btn_won",
+                  "btn_lapsed",
+                  "btn_claim",
+                  "add_gift",
+                  "add_task",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "don-w",
@@ -3598,7 +3620,29 @@
                     "Cultivating",
                     "Active"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "recurring_amount",
+                  "email",
+                  "phone",
+                  "comms",
+                  "first_gift_on",
+                  "steward",
+                  "gift_count",
+                  "total_given",
+                  "pledged_open",
+                  "committed",
+                  "giving_level",
+                  "open_tasks",
+                  "btn_won",
+                  "btn_lapsed",
+                  "btn_claim",
+                  "add_gift",
+                  "add_task",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "don-n",
@@ -3617,7 +3661,29 @@
                     "Cultivating",
                     "Active"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "recurring_amount",
+                  "email",
+                  "phone",
+                  "comms",
+                  "first_gift_on",
+                  "steward",
+                  "gift_count",
+                  "total_given",
+                  "pledged_open",
+                  "committed",
+                  "giving_level",
+                  "open_tasks",
+                  "btn_won",
+                  "btn_lapsed",
+                  "btn_claim",
+                  "add_gift",
+                  "add_task",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "don-m",
@@ -3626,6 +3692,28 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "recurring_amount",
+                  "phone",
+                  "comms",
+                  "first_gift_on",
+                  "next_touch",
+                  "steward",
+                  "gift_count",
+                  "total_given",
+                  "pledged_open",
+                  "committed",
+                  "giving_level",
+                  "open_tasks",
+                  "btn_won",
+                  "btn_lapsed",
+                  "btn_claim",
+                  "add_gift",
+                  "add_task",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -3728,7 +3816,23 @@
                     "Planning",
                     "Live"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "goal",
+                  "lead",
+                  "raised",
+                  "pledged",
+                  "committed",
+                  "open_pledges",
+                  "donor_gifts",
+                  "pct",
+                  "btn_live",
+                  "btn_close",
+                  "btn_claim",
+                  "add_gift",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cam-w",
@@ -3745,7 +3849,23 @@
                     "Planning",
                     "Live"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "goal",
+                  "lead",
+                  "raised",
+                  "pledged",
+                  "committed",
+                  "open_pledges",
+                  "donor_gifts",
+                  "pct",
+                  "btn_live",
+                  "btn_close",
+                  "btn_claim",
+                  "add_gift",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cam-n",
@@ -3763,7 +3883,23 @@
                     "Planning",
                     "Live"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "goal",
+                  "lead",
+                  "raised",
+                  "pledged",
+                  "committed",
+                  "open_pledges",
+                  "donor_gifts",
+                  "pct",
+                  "btn_live",
+                  "btn_close",
+                  "btn_claim",
+                  "add_gift",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cam-m",
@@ -3772,6 +3908,22 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "goal",
+                  "lead",
+                  "raised",
+                  "pledged",
+                  "committed",
+                  "open_pledges",
+                  "donor_gifts",
+                  "pct",
+                  "btn_live",
+                  "btn_close",
+                  "btn_claim",
+                  "add_gift",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -3867,7 +4019,23 @@
                 },
                 "filters": {
                   "status": "Pledged"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "gift_type",
+                  "status",
+                  "received_on",
+                  "method",
+                  "tribute",
+                  "thanked",
+                  "ack_letter",
+                  "ack_on",
+                  "btn_received",
+                  "btn_thanked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gif-w",
@@ -3881,7 +4049,23 @@
                 },
                 "filters": {
                   "status": "Pledged"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "gift_type",
+                  "status",
+                  "received_on",
+                  "method",
+                  "tribute",
+                  "thanked",
+                  "ack_letter",
+                  "ack_on",
+                  "btn_received",
+                  "btn_thanked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gif-n",
@@ -3896,7 +4080,23 @@
                 },
                 "filters": {
                   "status": "Pledged"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "gift_type",
+                  "status",
+                  "received_on",
+                  "method",
+                  "tribute",
+                  "thanked",
+                  "ack_letter",
+                  "ack_on",
+                  "btn_received",
+                  "btn_thanked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "gif-m",
@@ -3905,6 +4105,22 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "amount",
+                  "status",
+                  "due_on",
+                  "received_on",
+                  "method",
+                  "tribute",
+                  "thanked",
+                  "ack_letter",
+                  "ack_on",
+                  "btn_received",
+                  "btn_thanked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4111,7 +4327,20 @@
                 },
                 "filters": {
                   "status": "Open"
-                }
+                },
+                "hiddenFields": [
+                  "total",
+                  "status",
+                  "pledged_on",
+                  "paid_off_on",
+                  "paid",
+                  "balance",
+                  "btn_paid",
+                  "add_payment",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pl-w",
@@ -4125,7 +4354,20 @@
                 },
                 "filters": {
                   "status": "Open"
-                }
+                },
+                "hiddenFields": [
+                  "total",
+                  "status",
+                  "pledged_on",
+                  "paid_off_on",
+                  "paid",
+                  "balance",
+                  "btn_paid",
+                  "add_payment",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pl-n",
@@ -4140,7 +4382,20 @@
                 },
                 "filters": {
                   "status": "Open"
-                }
+                },
+                "hiddenFields": [
+                  "total",
+                  "status",
+                  "pledged_on",
+                  "paid_off_on",
+                  "paid",
+                  "balance",
+                  "btn_paid",
+                  "add_payment",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pl-m",
@@ -4149,6 +4404,19 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "total",
+                  "pledged_on",
+                  "next_due",
+                  "paid_off_on",
+                  "paid",
+                  "balance",
+                  "btn_paid",
+                  "add_payment",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4618,7 +4886,23 @@
                 },
                 "filters": {
                   "status": "Pledged"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "gift_type",
+                  "status",
+                  "received_on",
+                  "method",
+                  "tribute",
+                  "thanked",
+                  "ack_letter",
+                  "ack_on",
+                  "btn_received",
+                  "btn_thanked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -4699,7 +4983,29 @@
                   "next_touch": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "recurring_amount",
+                  "email",
+                  "phone",
+                  "comms",
+                  "first_gift_on",
+                  "steward",
+                  "gift_count",
+                  "total_given",
+                  "pledged_open",
+                  "committed",
+                  "giving_level",
+                  "open_tasks",
+                  "btn_won",
+                  "btn_lapsed",
+                  "btn_claim",
+                  "add_gift",
+                  "add_task",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"
@@ -4838,7 +5144,20 @@
                 },
                 "filters": {
                   "status": "Open"
-                }
+                },
+                "hiddenFields": [
+                  "total",
+                  "status",
+                  "pledged_on",
+                  "paid_off_on",
+                  "paid",
+                  "balance",
+                  "btn_paid",
+                  "add_payment",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dp-2",
@@ -4852,7 +5171,20 @@
                 },
                 "filters": {
                   "status": "Open"
-                }
+                },
+                "hiddenFields": [
+                  "total",
+                  "status",
+                  "pledged_on",
+                  "paid_off_on",
+                  "paid",
+                  "balance",
+                  "btn_paid",
+                  "add_payment",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dp-1"
@@ -4890,7 +5222,23 @@
                 "filters": {
                   "status": "Received",
                   "thanked": false
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "status",
+                  "due_on",
+                  "received_on",
+                  "method",
+                  "tribute",
+                  "thanked",
+                  "ack_letter",
+                  "ack_on",
+                  "btn_received",
+                  "btn_thanked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dg-1"
@@ -4931,7 +5279,29 @@
                     "Quarterly",
                     "Card declined"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "recurring_amount",
+                  "phone",
+                  "comms",
+                  "first_gift_on",
+                  "next_touch",
+                  "steward",
+                  "gift_count",
+                  "total_given",
+                  "pledged_open",
+                  "committed",
+                  "giving_level",
+                  "open_tasks",
+                  "btn_won",
+                  "btn_lapsed",
+                  "btn_claim",
+                  "add_gift",
+                  "add_task",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dd-2",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0463",
-  "version": 10,
+  "version": 11,
   "title": "Restaurant Operations Hub",
   "description": "For chefs and restaurant owners: recipe costs, food cost, pars, prep lists, inspections.",
   "forWho": "Independent restaurants and small restaurant groups",
@@ -3283,7 +3283,7 @@
         "Foundry Street"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -3766,7 +3766,13 @@
                   "shift_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "rate",
+                  "labor_cost",
+                  "added_at"
+                ]
               },
               {
                 "id": "shi-next",
@@ -3777,7 +3783,13 @@
                   "shift_on": {
                     "relative": "next_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "rate",
+                  "labor_cost",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "shi-b"
@@ -4147,7 +4159,16 @@
                     "relative": "past_days",
                     "n": 7
                   }
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "unit_cost",
+                  "to_order",
+                  "supplier",
+                  "counter",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -4230,7 +4251,17 @@
                 "icon": "List",
                 "filters": {
                   "status": "On menu"
-                }
+                },
+                "hiddenFields": [
+                  "price",
+                  "recipe_cost",
+                  "garnish",
+                  "food_cost_pct",
+                  "margin",
+                  "sold_week",
+                  "chef",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"
@@ -4391,7 +4422,17 @@
                     "On menu",
                     "Testing"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "price",
+                  "recipe_cost",
+                  "garnish",
+                  "food_cost_pct",
+                  "margin",
+                  "sold_week",
+                  "chef",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vfc"
@@ -4428,7 +4469,12 @@
                 "icon": "List",
                 "filters": {
                   "status": "Corrections due"
-                }
+                },
+                "hiddenFields": [
+                  "score",
+                  "findings",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vco"

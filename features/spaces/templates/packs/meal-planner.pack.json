@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0209",
-  "version": 7,
+  "version": 8,
   "title": "Meal Planner",
   "description": "Home cooks and families: plan the week's meals from your recipes, with a shopping list.",
   "forWho": "Home cooks and families",
@@ -1539,7 +1539,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1856,7 +1856,20 @@
                 "icon": "List",
                 "filters": {
                   "favorite": true
-                }
+                },
+                "hiddenFields": [
+                  "servings",
+                  "prep_min",
+                  "cook_min",
+                  "total_min",
+                  "rating",
+                  "favorite",
+                  "times_planned",
+                  "last_planned",
+                  "ingredient_count",
+                  "added",
+                  "open_source"
+                ]
               },
               {
                 "id": "view-12",

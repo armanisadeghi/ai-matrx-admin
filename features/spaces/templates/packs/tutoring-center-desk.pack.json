@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0557",
-  "version": 6,
+  "version": 7,
   "title": "Tutoring Center Desk",
   "description": "Tutoring center desk: students, sessions, hour packages used, assessments and progress.",
   "forWho": "Tutoring centers and independent tutor groups",
@@ -2684,7 +2684,7 @@
         "Quarry Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3167,7 +3167,17 @@
                 },
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "used",
+                  "left",
+                  "price",
+                  "paid",
+                  "btn_used",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "pac-w",
@@ -3181,7 +3191,17 @@
                 },
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "used",
+                  "left",
+                  "price",
+                  "paid",
+                  "btn_used",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "pac-n",
@@ -3196,7 +3216,17 @@
                 },
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "used",
+                  "left",
+                  "price",
+                  "paid",
+                  "btn_used",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "pac-m",
@@ -3205,6 +3235,16 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "hours",
+                  "used",
+                  "left",
+                  "price",
+                  "paid",
+                  "btn_used",
+                  "btn_claim",
+                  "added_at"
                 ]
               }
             ],
@@ -3920,7 +3960,17 @@
                 },
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "used",
+                  "left",
+                  "price",
+                  "paid",
+                  "btn_used",
+                  "btn_claim",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl1"

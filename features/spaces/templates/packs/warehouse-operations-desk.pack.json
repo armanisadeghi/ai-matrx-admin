@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0570",
-  "version": 6,
+  "version": 7,
   "title": "Warehouse Operations Desk",
   "description": "Warehouse: SKUs and locations, receiving, picks, cycle counts and the dock schedule.",
   "forWho": "Warehouses, 3PLs and distribution centers",
@@ -3668,7 +3668,7 @@
         "Cargo Way"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -4176,7 +4176,21 @@
                     "Picking",
                     "Packed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "units",
+                  "status",
+                  "shipped_on",
+                  "tracking",
+                  "picks_short",
+                  "picker",
+                  "btn_pick",
+                  "btn_pack",
+                  "btn_ship",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "out-w",
@@ -4194,7 +4208,21 @@
                     "Picking",
                     "Packed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "units",
+                  "status",
+                  "shipped_on",
+                  "tracking",
+                  "picks_short",
+                  "picker",
+                  "btn_pick",
+                  "btn_pack",
+                  "btn_ship",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "out-n",
@@ -4213,7 +4241,21 @@
                     "Picking",
                     "Packed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "units",
+                  "status",
+                  "shipped_on",
+                  "tracking",
+                  "picks_short",
+                  "picker",
+                  "btn_pick",
+                  "btn_pack",
+                  "btn_ship",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "out-m",
@@ -4222,6 +4264,20 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "units",
+                  "ship_by",
+                  "shipped_on",
+                  "tracking",
+                  "picks_short",
+                  "picker",
+                  "btn_pick",
+                  "btn_pack",
+                  "btn_ship",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4568,7 +4624,18 @@
                     "Released",
                     "Picking"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "wave",
+                  "status",
+                  "picker",
+                  "btn_picked",
+                  "btn_short",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pk-w",
@@ -4585,7 +4652,18 @@
                     "Released",
                     "Picking"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "wave",
+                  "status",
+                  "picker",
+                  "btn_picked",
+                  "btn_short",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pk-n",
@@ -4603,7 +4681,18 @@
                     "Released",
                     "Picking"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "wave",
+                  "status",
+                  "picker",
+                  "btn_picked",
+                  "btn_short",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pk-m",
@@ -4612,6 +4701,17 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "qty",
+                  "status",
+                  "pick_by",
+                  "picker",
+                  "btn_picked",
+                  "btn_short",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -5180,7 +5280,21 @@
                     "Picking",
                     "Packed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "units",
+                  "status",
+                  "shipped_on",
+                  "tracking",
+                  "picks_short",
+                  "picker",
+                  "btn_pick",
+                  "btn_pack",
+                  "btn_ship",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl1"
@@ -5424,7 +5538,18 @@
                 "icon": "TriangleAlert",
                 "filters": {
                   "status": "Short"
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "status",
+                  "pick_by",
+                  "picker",
+                  "btn_picked",
+                  "btn_short",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dw-3"

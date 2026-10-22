@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0307",
-  "version": 10,
+  "version": 11,
   "title": "Inventory Tracker",
   "description": "Small shops and makers: track stock, suppliers and orders so you reorder in time.",
   "forWho": "Small retailers, online shops and makers",
@@ -1853,7 +1853,7 @@
         "Brindle Lane"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -2071,7 +2071,18 @@
                     "Ordered",
                     "Shipped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "cost_each",
+                  "total",
+                  "received_on",
+                  "days_late",
+                  "product",
+                  "supplier",
+                  "created_at",
+                  "recv_btn"
+                ]
               },
               {
                 "id": "v-pl",
@@ -2088,7 +2099,18 @@
                     "Ordered",
                     "Shipped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "cost_each",
+                  "total",
+                  "received_on",
+                  "days_late",
+                  "product",
+                  "supplier",
+                  "created_at",
+                  "recv_btn"
+                ]
               },
               {
                 "id": "v-p7",
@@ -2106,7 +2128,18 @@
                     "Ordered",
                     "Shipped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "cost_each",
+                  "total",
+                  "received_on",
+                  "days_late",
+                  "product",
+                  "supplier",
+                  "created_at",
+                  "recv_btn"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -2187,7 +2220,17 @@
                   "ordered_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "unit_price",
+                  "revenue",
+                  "delivered_on",
+                  "product",
+                  "ship_btn",
+                  "deliv_btn",
+                  "created_at"
+                ]
               },
               {
                 "id": "v-s30",
@@ -2199,7 +2242,17 @@
                     "relative": "past_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "unit_price",
+                  "revenue",
+                  "delivered_on",
+                  "product",
+                  "ship_btn",
+                  "deliv_btn",
+                  "created_at"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -2242,7 +2295,14 @@
                 "icon": "List",
                 "filters": {
                   "rating": "Excellent"
-                }
+                },
+                "hiddenFields": [
+                  "lead_days",
+                  "terms",
+                  "product_count",
+                  "po_count",
+                  "email_btn"
+                ]
               }
             ],
             "activeViewId": "view-tbl"
@@ -2411,7 +2471,18 @@
                     "Ordered",
                     "Shipped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "cost_each",
+                  "total",
+                  "received_on",
+                  "days_late",
+                  "product",
+                  "supplier",
+                  "created_at",
+                  "recv_btn"
+                ]
               }
             ],
             "activeViewId": "view-way"
@@ -2451,7 +2522,17 @@
                     "New",
                     "Packed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "qty",
+                  "unit_price",
+                  "revenue",
+                  "delivered_on",
+                  "product",
+                  "ship_btn",
+                  "deliv_btn",
+                  "created_at"
+                ]
               }
             ],
             "activeViewId": "view-ship"

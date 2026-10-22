@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0313",
-  "version": 9,
+  "version": 10,
   "title": "Invoicing & Expenses for Small Business",
   "description": "Small business owners: bill clients, chase late payers and watch monthly spending.",
   "forWho": "Small business owners",
@@ -1396,7 +1396,7 @@
         "Linnet Row"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1556,7 +1556,18 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "v-pd",
@@ -1573,7 +1584,18 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "v-n7",
@@ -1591,7 +1613,18 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "v-pm",
@@ -1605,7 +1638,18 @@
                 },
                 "filters": {
                   "status": "Paid"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -1694,7 +1738,11 @@
                     "relative": "past_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "logged_at"
+                ]
               }
             ],
             "activeViewId": "view-cat"
@@ -1900,6 +1948,17 @@
                     "field": "due_on",
                     "direction": "asc"
                   }
+                ],
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
                 ]
               }
             ],
@@ -1937,7 +1996,18 @@
                 "icon": "List",
                 "filters": {
                   "status": "Draft"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               }
             ],
             "activeViewId": "view-dr"

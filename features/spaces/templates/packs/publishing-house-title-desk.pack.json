@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0567",
-  "version": 7,
+  "version": 8,
   "title": "Publishing House Title Desk",
   "description": "Publisher: manuscripts, titles by editorial stage, rights, print runs and royalties.",
   "forWho": "Independent book publishers and small presses",
@@ -3796,7 +3796,7 @@
         "Bookbinder Alley"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -4364,7 +4364,17 @@
                     "Draft",
                     "Ready to pay"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "preparer",
+                  "btn_ready",
+                  "btn_paid",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sta-w",
@@ -4381,7 +4391,17 @@
                     "Draft",
                     "Ready to pay"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "preparer",
+                  "btn_ready",
+                  "btn_paid",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sta-n",
@@ -4399,7 +4419,17 @@
                     "Draft",
                     "Ready to pay"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "preparer",
+                  "btn_ready",
+                  "btn_paid",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sta-m",
@@ -4408,6 +4438,16 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "preparer",
+                  "btn_ready",
+                  "btn_paid",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4641,7 +4681,18 @@
                     "Ordered",
                     "Printing"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "quantity",
+                  "unit_cost",
+                  "run_cost",
+                  "printer",
+                  "files_due",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pr-w",
@@ -4659,7 +4710,18 @@
                     "Ordered",
                     "Printing"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "quantity",
+                  "unit_cost",
+                  "run_cost",
+                  "printer",
+                  "files_due",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pr-n",
@@ -4678,7 +4740,18 @@
                     "Ordered",
                     "Printing"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "quantity",
+                  "unit_cost",
+                  "run_cost",
+                  "printer",
+                  "files_due",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pr-m",
@@ -4687,6 +4760,17 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "quantity",
+                  "unit_cost",
+                  "run_cost",
+                  "files_due",
+                  "delivery_on",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -5349,7 +5433,17 @@
                     "Draft",
                     "Ready to pay"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "preparer",
+                  "btn_ready",
+                  "btn_paid",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"

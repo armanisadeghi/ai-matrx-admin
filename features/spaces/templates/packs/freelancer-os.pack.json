@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0300",
-  "version": 11,
+  "version": 12,
   "title": "Freelancer OS",
   "description": "Solo freelancers: clients, projects, tasks, time and invoices from one home page.",
   "forWho": "Solo freelancers and independent consultants",
@@ -2945,7 +2945,7 @@
         "Alderwick Lane"
       ]
     },
-    "version": 11
+    "version": 12
   },
   "pages": [
     {
@@ -3362,7 +3362,16 @@
                     "Contacted",
                     "Proposal"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "days_to",
+                  "email",
+                  "email_btn",
+                  "won_btn",
+                  "lost_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "v-lw",
@@ -3380,7 +3389,16 @@
                     "Contacted",
                     "Proposal"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "days_to",
+                  "email",
+                  "email_btn",
+                  "won_btn",
+                  "lost_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -3478,7 +3496,19 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "project",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "v-iw",
@@ -3495,7 +3525,19 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "project",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "v-ip",
@@ -3509,7 +3551,19 @@
                 },
                 "filters": {
                   "status": "Paid"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "project",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -3776,7 +3830,19 @@
                 "icon": "List",
                 "filters": {
                   "status": "Overdue"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "client",
+                  "project",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               }
             ],
             "activeViewId": "view-od"

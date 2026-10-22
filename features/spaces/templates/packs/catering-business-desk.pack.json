@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0464",
-  "version": 9,
+  "version": 10,
   "title": "Catering Business Desk",
   "description": "For caterers: proposals, event orders, prep and pack lists, food and labor cost per event.",
   "forWho": "Caterers and event food companies",
@@ -2506,7 +2506,7 @@
         "Millrace Drive"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3002,7 +3002,16 @@
                     "Not started",
                     "Prepped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "portions",
+                  "cost_each",
+                  "food_cost",
+                  "dish",
+                  "cook",
+                  "added_at",
+                  "btn_pack_it"
+                ]
               },
               {
                 "id": "ite-w",
@@ -3019,7 +3028,16 @@
                     "Not started",
                     "Prepped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "portions",
+                  "cost_each",
+                  "food_cost",
+                  "dish",
+                  "cook",
+                  "added_at",
+                  "btn_pack_it"
+                ]
               },
               {
                 "id": "ite-n",
@@ -3037,7 +3055,16 @@
                     "Not started",
                     "Prepped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "portions",
+                  "cost_each",
+                  "food_cost",
+                  "dish",
+                  "cook",
+                  "added_at",
+                  "btn_pack_it"
+                ]
               },
               {
                 "id": "ite-prepwk",
@@ -3048,7 +3075,16 @@
                   "prep_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "portions",
+                  "cost_each",
+                  "food_cost",
+                  "dish",
+                  "cook",
+                  "added_at",
+                  "btn_pack_it"
+                ]
               }
             ],
             "activeViewId": "ite-b"
@@ -3375,7 +3411,16 @@
                     "Not started",
                     "Prepped"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "portions",
+                  "cost_each",
+                  "food_cost",
+                  "dish",
+                  "cook",
+                  "added_at",
+                  "btn_pack_it"
+                ]
               }
             ],
             "activeViewId": "vl1"
@@ -3412,7 +3457,15 @@
                 "icon": "List",
                 "filters": {
                   "status": "Requested"
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "rate",
+                  "labor_cost",
+                  "person",
+                  "added_at",
+                  "btn_lock_in"
+                ]
               }
             ],
             "activeViewId": "vl2"

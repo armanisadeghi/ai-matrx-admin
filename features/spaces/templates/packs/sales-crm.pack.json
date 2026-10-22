@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 12,
+  "version": 13,
   "title": "Sales CRM",
   "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -1882,7 +1882,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 12
+    "version": 13
   },
   "pages": [
     {
@@ -2012,7 +2012,19 @@
                 "icon": "Flag",
                 "filters": {
                   "priority": "High"
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "probability",
+                  "weighted_value",
+                  "decided_on",
+                  "priority",
+                  "touches",
+                  "created",
+                  "edited",
+                  "won_btn",
+                  "lost_btn"
+                ]
               },
               {
                 "id": "view-closing-calendar",
@@ -2090,7 +2102,19 @@
                     "Proposal",
                     "Negotiation"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "probability",
+                  "weighted_value",
+                  "decided_on",
+                  "priority",
+                  "touches",
+                  "created",
+                  "edited",
+                  "won_btn",
+                  "lost_btn"
+                ]
               }
             ],
             "activeViewId": "view-pipeline"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0559",
-  "version": 7,
+  "version": 8,
   "title": "Music School Studio Desk",
   "description": "Music school desk: students, weekly lessons, tuition owed, recitals, exams and rentals.",
   "forWho": "Music schools, studios and lesson programs",
@@ -2876,7 +2876,7 @@
         "Cantor Row"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3082,7 +3082,26 @@
                     "Trial lesson",
                     "Active"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "practice_goal",
+                  "makeups",
+                  "billed",
+                  "teacher",
+                  "guardian",
+                  "email",
+                  "phone",
+                  "owed",
+                  "paid_total",
+                  "rentals_out",
+                  "btn_active",
+                  "btn_claim",
+                  "add_tuition",
+                  "add_rental",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pup-w",
@@ -3099,7 +3118,26 @@
                     "Trial lesson",
                     "Active"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "practice_goal",
+                  "makeups",
+                  "billed",
+                  "teacher",
+                  "guardian",
+                  "email",
+                  "phone",
+                  "owed",
+                  "paid_total",
+                  "rentals_out",
+                  "btn_active",
+                  "btn_claim",
+                  "add_tuition",
+                  "add_rental",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pup-n",
@@ -3117,7 +3155,26 @@
                     "Trial lesson",
                     "Active"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "practice_goal",
+                  "makeups",
+                  "billed",
+                  "teacher",
+                  "guardian",
+                  "email",
+                  "phone",
+                  "owed",
+                  "paid_total",
+                  "rentals_out",
+                  "btn_active",
+                  "btn_claim",
+                  "add_tuition",
+                  "add_rental",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pup-m",
@@ -3126,6 +3183,25 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "practice_goal",
+                  "makeups",
+                  "billed",
+                  "guardian",
+                  "email",
+                  "phone",
+                  "next_lesson",
+                  "owed",
+                  "paid_total",
+                  "rentals_out",
+                  "btn_active",
+                  "btn_claim",
+                  "add_tuition",
+                  "add_rental",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -3350,7 +3426,16 @@
                 },
                 "filters": {
                   "status": "Due"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "btn_paid",
+                  "btn_overdue",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tui-w",
@@ -3364,7 +3449,16 @@
                 },
                 "filters": {
                   "status": "Due"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "btn_paid",
+                  "btn_overdue",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tui-n",
@@ -3379,7 +3473,16 @@
                 },
                 "filters": {
                   "status": "Due"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "btn_paid",
+                  "btn_overdue",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tui-m",
@@ -3388,6 +3491,15 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "btn_paid",
+                  "btn_overdue",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -3478,7 +3590,18 @@
                 },
                 "filters": {
                   "status": "Out"
-                }
+                },
+                "hiddenFields": [
+                  "monthly",
+                  "deposit",
+                  "condition",
+                  "out_on",
+                  "serial",
+                  "btn_returned",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ren-w",
@@ -3492,7 +3615,18 @@
                 },
                 "filters": {
                   "status": "Out"
-                }
+                },
+                "hiddenFields": [
+                  "monthly",
+                  "deposit",
+                  "condition",
+                  "out_on",
+                  "serial",
+                  "btn_returned",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ren-n",
@@ -3507,7 +3641,18 @@
                 },
                 "filters": {
                   "status": "Out"
-                }
+                },
+                "hiddenFields": [
+                  "monthly",
+                  "deposit",
+                  "condition",
+                  "out_on",
+                  "serial",
+                  "btn_returned",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ren-m",
@@ -3516,6 +3661,17 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "monthly",
+                  "deposit",
+                  "out_on",
+                  "return_by",
+                  "serial",
+                  "btn_returned",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4135,7 +4291,16 @@
                     "Due",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "btn_paid",
+                  "btn_overdue",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -4220,7 +4385,18 @@
                 },
                 "filters": {
                   "status": "Out"
-                }
+                },
+                "hiddenFields": [
+                  "monthly",
+                  "deposit",
+                  "condition",
+                  "out_on",
+                  "serial",
+                  "btn_returned",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"
@@ -4356,7 +4532,16 @@
                     "Due",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "btn_paid",
+                  "btn_overdue",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dt-1"

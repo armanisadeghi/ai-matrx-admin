@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0305",
-  "version": 10,
+  "version": 11,
   "title": "Creator Studio",
   "description": "YouTube creators: take video ideas to publish day with sponsors, results and gear.",
   "forWho": "Video and channel creators",
@@ -1928,7 +1928,7 @@
         "Hobbler Street"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -2045,7 +2045,17 @@
                 "icon": "List",
                 "filters": {
                   "sponsor_paid": false
-                }
+                },
+                "hiddenFields": [
+                  "days_to",
+                  "length",
+                  "views",
+                  "ctr",
+                  "sponsor_paid",
+                  "sponsor",
+                  "updated_at",
+                  "pub_btn"
+                ]
               },
               {
                 "id": "v-wk",
@@ -2065,7 +2075,17 @@
                     "Editing",
                     "Scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "days_to",
+                  "length",
+                  "views",
+                  "ctr",
+                  "sponsor_paid",
+                  "sponsor",
+                  "updated_at",
+                  "pub_btn"
+                ]
               },
               {
                 "id": "v-lt",
@@ -2085,7 +2105,17 @@
                     "Editing",
                     "Scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "days_to",
+                  "length",
+                  "views",
+                  "ctr",
+                  "sponsor_paid",
+                  "sponsor",
+                  "updated_at",
+                  "pub_btn"
+                ]
               },
               {
                 "id": "v-n7",
@@ -2106,7 +2136,17 @@
                     "Editing",
                     "Scheduled"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "days_to",
+                  "length",
+                  "views",
+                  "ctr",
+                  "sponsor_paid",
+                  "sponsor",
+                  "updated_at",
+                  "pub_btn"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -2237,7 +2277,18 @@
                     "Booked",
                     "Delivered"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "pay_days",
+                  "video_count",
+                  "pub_count",
+                  "views_total",
+                  "left_to_make",
+                  "cpm",
+                  "email_btn",
+                  "paid_btn"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -2489,7 +2540,17 @@
                 "icon": "List",
                 "filters": {
                   "sponsor_paid": false
-                }
+                },
+                "hiddenFields": [
+                  "days_to",
+                  "length",
+                  "views",
+                  "ctr",
+                  "sponsor_paid",
+                  "sponsor",
+                  "updated_at",
+                  "pub_btn"
+                ]
               }
             ],
             "activeViewId": "view-pay"

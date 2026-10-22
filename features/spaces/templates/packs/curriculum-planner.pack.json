@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0260",
-  "version": 8,
+  "version": 9,
   "title": "Course & Curriculum Planner",
   "description": "Instructors and course designers: plan units, lessons and outcomes with pacing.",
   "forWho": "Instructors and course designers",
@@ -1582,7 +1582,7 @@
         "Pennywhistle Close"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1746,7 +1746,14 @@
                 "icon": "List",
                 "filters": {
                   "status": "Draft"
-                }
+                },
+                "hiddenFields": [
+                  "order",
+                  "minutes",
+                  "lesson_flag",
+                  "created",
+                  "ready_btn"
+                ]
               }
             ],
             "activeViewId": "v-d"
@@ -1831,7 +1838,14 @@
                   "on": {
                     "relative": "today"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "order",
+                  "minutes",
+                  "lesson_flag",
+                  "created",
+                  "ready_btn"
+                ]
               },
               {
                 "id": "v-lc",
@@ -1878,7 +1892,14 @@
                     "relative": "next_days",
                     "n": 7
                   }
-                }
+                },
+                "hiddenFields": [
+                  "order",
+                  "minutes",
+                  "lesson_flag",
+                  "created",
+                  "ready_btn"
+                ]
               },
               {
                 "id": "view-u13",
@@ -1895,7 +1916,14 @@
                     "Draft",
                     "Ready"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "order",
+                  "minutes",
+                  "lesson_flag",
+                  "created",
+                  "ready_btn"
+                ]
               }
             ],
             "activeViewId": "v-lc"
@@ -2146,7 +2174,14 @@
                 "icon": "List",
                 "filters": {
                   "type": "Assessment"
-                }
+                },
+                "hiddenFields": [
+                  "order",
+                  "minutes",
+                  "lesson_flag",
+                  "created",
+                  "ready_btn"
+                ]
               }
             ],
             "activeViewId": "y5"

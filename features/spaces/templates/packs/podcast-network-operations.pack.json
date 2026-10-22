@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0566",
-  "version": 7,
+  "version": 8,
   "title": "Podcast Network Operations Desk",
   "description": "Podcast network: shows, episodes, ad inventory, downloads and sponsor deals.",
   "forWho": "Podcast networks and multi-show audio studios",
@@ -3556,7 +3556,7 @@
         "Vinyl Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -4111,7 +4111,25 @@
                     "Booked",
                     "Delivering"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "flight_starts",
+                  "proof_sent_on",
+                  "reads_owed",
+                  "reads_done",
+                  "reads_left",
+                  "spots_aired",
+                  "makegoods",
+                  "promo",
+                  "guaranteed",
+                  "owner",
+                  "btn_booked",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dea-w",
@@ -4129,7 +4147,25 @@
                     "Booked",
                     "Delivering"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "flight_starts",
+                  "proof_sent_on",
+                  "reads_owed",
+                  "reads_done",
+                  "reads_left",
+                  "spots_aired",
+                  "makegoods",
+                  "promo",
+                  "guaranteed",
+                  "owner",
+                  "btn_booked",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dea-n",
@@ -4148,7 +4184,25 @@
                     "Booked",
                     "Delivering"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "flight_starts",
+                  "proof_sent_on",
+                  "reads_owed",
+                  "reads_done",
+                  "reads_left",
+                  "spots_aired",
+                  "makegoods",
+                  "promo",
+                  "guaranteed",
+                  "owner",
+                  "btn_booked",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dea-m",
@@ -4157,6 +4211,24 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "amount",
+                  "flight_ends",
+                  "proof_sent_on",
+                  "reads_owed",
+                  "reads_done",
+                  "reads_left",
+                  "spots_aired",
+                  "makegoods",
+                  "promo",
+                  "guaranteed",
+                  "owner",
+                  "btn_booked",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4933,7 +5005,25 @@
                     "Booked",
                     "Delivering"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "flight_starts",
+                  "proof_sent_on",
+                  "reads_owed",
+                  "reads_done",
+                  "reads_left",
+                  "spots_aired",
+                  "makegoods",
+                  "promo",
+                  "guaranteed",
+                  "owner",
+                  "btn_booked",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl1"

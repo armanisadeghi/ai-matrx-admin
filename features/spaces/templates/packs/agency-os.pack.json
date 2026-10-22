@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 11,
+  "version": 12,
   "title": "Agency OS",
   "description": "Small agencies: clients, retainers, projects, capacity and proposals in one place.",
   "forWho": "Small design, marketing and dev agencies",
@@ -2734,7 +2734,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 11
+    "version": 12
   },
   "pages": [
     {
@@ -2958,7 +2958,15 @@
                     "In progress",
                     "Review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "estimate",
+                  "project",
+                  "done_btn",
+                  "take_btn",
+                  "created_at",
+                  "assigned_to"
+                ]
               },
               {
                 "id": "v-tw",
@@ -2976,7 +2984,15 @@
                     "In progress",
                     "Review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "estimate",
+                  "project",
+                  "done_btn",
+                  "take_btn",
+                  "created_at",
+                  "assigned_to"
+                ]
               },
               {
                 "id": "v-t7",
@@ -2995,7 +3011,15 @@
                     "In progress",
                     "Review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "estimate",
+                  "project",
+                  "done_btn",
+                  "take_btn",
+                  "created_at",
+                  "assigned_to"
+                ]
               },
               {
                 "id": "view-mine-task",
@@ -3003,6 +3027,14 @@
                 "layout": "list",
                 "icon": "List",
                 "me": [
+                  "assigned_to"
+                ],
+                "hiddenFields": [
+                  "estimate",
+                  "project",
+                  "done_btn",
+                  "take_btn",
+                  "created_at",
                   "assigned_to"
                 ]
               }
@@ -3066,7 +3098,17 @@
                     "relative": "next_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "monthly_fee",
+                  "hours_included",
+                  "days_renew",
+                  "hours_used",
+                  "hours_month",
+                  "hours_left",
+                  "used_pct",
+                  "updated_at"
+                ]
               }
             ],
             "activeViewId": "view-cal"
@@ -3157,7 +3199,14 @@
                     "relative": "past_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "days_out",
+                  "won_btn",
+                  "lost_btn",
+                  "created_at"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -3410,7 +3459,14 @@
                 "icon": "List",
                 "filters": {
                   "stage": "Sent"
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "days_out",
+                  "won_btn",
+                  "lost_btn",
+                  "created_at"
+                ]
               }
             ],
             "activeViewId": "view-sent"

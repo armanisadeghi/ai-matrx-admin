@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { cardAmountFields, cardStampFields, checkPack, choiceColorFindings, meViewSeedFinding } from "../template-pack-check";
+import { cardAmountFields, cardStampFields, listBareNumberFields, checkPack, choiceColorFindings, meViewSeedFinding } from "../template-pack-check";
 import { relativeWindowDays, resolvePackBlocks, type SpaceTemplatePack } from "../template-pack";
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../../features/spaces/templates/packs/projects-and-tasks.pack.json"), "utf8")) as SpaceTemplatePack;
@@ -280,6 +280,36 @@ describe("cards never show an amount the reader cannot place (ADVERSARIAL-7 F2)"
     const table = p.spec.tables.find((t) => t.token === projectsDb(p).source.table)!;
     (table.fields as unknown as Array<Record<string, unknown>>).splice(1, 0, { key: "budget", label: "Budget (USD)", parityType: "currency", unit: "USD", format: "currency", sensitivity: "confidential", contextPolicy: "include" });
     projectsDb(p).views = [{ id: "view-board", name: "Board", layout: "kanban", groupField: "status" }];
+    expect(checkPack(p).some((f) => f.at.endsWith("views[0].hiddenFields") && f.says.includes("budget"))).toBe(true);
+  });
+});
+
+describe("list rows never show a number the reader cannot place", () => {
+  const fields = [
+    { key: "name", label: "Project", parityType: "text" },
+    { key: "status", label: "Status", parityType: "status" },
+    { key: "kw", label: "System size", parityType: "number" },
+    { key: "price", label: "Price (USD)", parityType: "currency", format: "currency" },
+    { key: "open", label: "Open approvals", parityType: "rollup" },
+    { key: "tier", label: "Tier", parityType: "formula", formula: 'IF({Price} > 5, "Big", "Small")' },
+    { key: "margin", label: "Margin", parityType: "formula", formula: "{Price} - 1" },
+    { key: "go", label: "Go", parityType: "button" },
+    { key: "when", label: "Install", parityType: "datetime" },
+  ];
+  const keys = (v: Record<string, unknown>) => listBareNumberFields(fields, v).map((f) => f.key);
+  it("flags numbers among the first four properties, and every unhidden one once hiddenFields is saved", () => {
+    expect(keys({ layout: "list" })).toEqual(["kw", "price", "open"]);
+    expect(keys({ layout: "list", hiddenFields: ["kw"] })).toEqual(["price", "open", "margin"]);
+  });
+  it("accepts words, dates, a text formula, a grid and a list with the numbers hidden", () => {
+    expect(keys({ layout: "list", hiddenFields: ["kw", "price", "open", "margin"] })).toEqual([]);
+    expect(keys({ layout: "grid" })).toEqual([]);
+  });
+  it("the checker reports it at the view's hiddenFields", () => {
+    const p = fresh();
+    const table = p.spec.tables.find((t) => t.token === projectsDb(p).source.table)!;
+    (table.fields as unknown as Array<Record<string, unknown>>).splice(1, 0, { key: "budget", label: "Budget (USD)", parityType: "currency", unit: "USD", format: "currency", sensitivity: "confidential", contextPolicy: "include" });
+    projectsDb(p).views = [{ id: "view-list", name: "List", layout: "list" }];
     expect(checkPack(p).some((f) => f.at.endsWith("views[0].hiddenFields") && f.says.includes("budget"))).toBe(true);
   });
 });

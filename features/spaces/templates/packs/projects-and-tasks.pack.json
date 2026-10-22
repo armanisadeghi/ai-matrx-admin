@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0002",
-  "version": 9,
+  "version": 10,
   "title": "Projects & Tasks",
   "description": "Small teams: run projects and tasks on a board, calendar and timeline.",
   "forWho": "Small teams running client or internal projects",
@@ -1572,7 +1572,7 @@
         "Quillmoss Row"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1891,7 +1891,20 @@
                     "In progress",
                     "Blocked"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sub_total",
+                  "priority",
+                  "assignee",
+                  "start_on",
+                  "completed_on",
+                  "estimate",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "id": "view-mine-task",
@@ -1899,6 +1912,19 @@
                 "layout": "list",
                 "icon": "List",
                 "me": [
+                  "assigned_to"
+                ],
+                "hiddenFields": [
+                  "sub_total",
+                  "assignee",
+                  "start_on",
+                  "due_on",
+                  "completed_on",
+                  "estimate",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "take_btn",
                   "assigned_to"
                 ]
               }
@@ -2066,7 +2092,20 @@
                 "filters": {
                   "status": "Blocked"
                 },
-                "icon": "CircleAlert"
+                "icon": "CircleAlert",
+                "hiddenFields": [
+                  "sub_total",
+                  "assignee",
+                  "start_on",
+                  "due_on",
+                  "completed_on",
+                  "estimate",
+                  "created",
+                  "edited",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-blocked"

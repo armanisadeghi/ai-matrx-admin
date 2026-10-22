@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0353",
-  "version": 8,
+  "version": 9,
   "title": "Public Roadmap & Feedback Forms",
   "description": "Product teams: publish a roadmap and take feature and bug reports by form.",
   "forWho": "Product teams with outside customers",
@@ -1236,7 +1236,7 @@
         "Larkspur Mews"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1460,7 +1460,13 @@
                 "icon": "Inbox",
                 "filters": {
                   "status": "New"
-                }
+                },
+                "hiddenFields": [
+                  "details",
+                  "votes",
+                  "submitted_at",
+                  "updated_at"
+                ]
               },
               {
                 "id": "v-rw",
@@ -1471,7 +1477,13 @@
                   "submitted_at": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "details",
+                  "votes",
+                  "submitted_at",
+                  "updated_at"
+                ]
               }
             ],
             "activeViewId": "v-r"
@@ -1655,7 +1667,13 @@
                     "New",
                     "Under review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "details",
+                  "votes",
+                  "submitted_at",
+                  "updated_at"
+                ]
               }
             ],
             "activeViewId": "v-x"

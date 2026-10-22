@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0554",
-  "version": 6,
+  "version": 7,
   "title": "Community Food Bank Desk",
   "description": "For food pantries and food banks: donations, stock, distribution days, partners.",
   "forWho": "Food banks and neighborhood food pantries",
@@ -2616,7 +2616,7 @@
         "Hawthorne Row"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2805,7 +2805,18 @@
                     "Low",
                     "Out"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "received_lb",
+                  "gap",
+                  "btn_restocked",
+                  "btn_claim",
+                  "add_donation",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sto-w",
@@ -2822,7 +2833,18 @@
                     "Low",
                     "Out"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "received_lb",
+                  "gap",
+                  "btn_restocked",
+                  "btn_claim",
+                  "add_donation",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sto-n",
@@ -2840,7 +2862,18 @@
                     "Low",
                     "Out"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "received_lb",
+                  "gap",
+                  "btn_restocked",
+                  "btn_claim",
+                  "add_donation",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "sto-m",
@@ -2849,6 +2882,17 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "received_lb",
+                  "gap",
+                  "btn_restocked",
+                  "btn_claim",
+                  "add_donation",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -3067,7 +3111,18 @@
                     "Planned",
                     "Open now"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "volunteers",
+                  "households",
+                  "pounds_out",
+                  "per_house",
+                  "btn_open",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dis-o",
@@ -3084,7 +3139,18 @@
                     "Planned",
                     "Open now"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "volunteers",
+                  "households",
+                  "pounds_out",
+                  "per_house",
+                  "btn_open",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dis-w",
@@ -3101,7 +3167,18 @@
                     "Planned",
                     "Open now"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "volunteers",
+                  "households",
+                  "pounds_out",
+                  "per_house",
+                  "btn_open",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dis-n",
@@ -3119,7 +3196,18 @@
                     "Planned",
                     "Open now"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "volunteers",
+                  "households",
+                  "pounds_out",
+                  "per_house",
+                  "btn_open",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "dis-m",
@@ -3128,6 +3216,17 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "volunteers",
+                  "households",
+                  "pounds_out",
+                  "per_house",
+                  "btn_open",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -3218,7 +3317,18 @@
                     "Registered",
                     "Active"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "people",
+                  "zone",
+                  "last_visit",
+                  "needs_delivery",
+                  "phone",
+                  "btn_active",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hou-w",
@@ -3235,7 +3345,18 @@
                     "Registered",
                     "Active"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "people",
+                  "zone",
+                  "last_visit",
+                  "needs_delivery",
+                  "phone",
+                  "btn_active",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hou-n",
@@ -3253,7 +3374,18 @@
                     "Registered",
                     "Active"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "people",
+                  "zone",
+                  "last_visit",
+                  "needs_delivery",
+                  "phone",
+                  "btn_active",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hou-m",
@@ -3262,6 +3394,17 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "people",
+                  "last_visit",
+                  "next_visit",
+                  "needs_delivery",
+                  "phone",
+                  "btn_active",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -3324,7 +3467,12 @@
                 },
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "monthly_lb",
+                  "contact",
+                  "added_at"
+                ]
               },
               {
                 "id": "pa-t",
@@ -3805,7 +3953,18 @@
                     "Low",
                     "Out"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "received_lb",
+                  "gap",
+                  "btn_restocked",
+                  "btn_claim",
+                  "add_donation",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -3845,7 +4004,18 @@
                     "relative": "next_days",
                     "n": 7
                   }
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "received_lb",
+                  "gap",
+                  "btn_restocked",
+                  "btn_claim",
+                  "add_donation",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl1"
@@ -3890,7 +4060,18 @@
                     "Planned",
                     "Open now"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "volunteers",
+                  "households",
+                  "pounds_out",
+                  "per_house",
+                  "btn_open",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"

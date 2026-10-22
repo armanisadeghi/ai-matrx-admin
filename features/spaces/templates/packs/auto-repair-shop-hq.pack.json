@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0504",
-  "version": 9,
+  "version": 10,
   "title": "Auto Repair Shop HQ",
   "description": "For independent auto repair shops: repair orders, vehicles, parts, and pickups.",
   "forWho": "Independent auto repair shops and garages",
@@ -2730,7 +2730,7 @@
         "Foundry Road"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2998,7 +2998,29 @@
                     "In progress",
                     "On hold"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "mileage_in",
+                  "job_type",
+                  "priority",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "completed_on",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-w",
@@ -3017,7 +3039,29 @@
                     "In progress",
                     "On hold"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "mileage_in",
+                  "job_type",
+                  "priority",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "completed_on",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-n",
@@ -3037,7 +3081,29 @@
                     "In progress",
                     "On hold"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "mileage_in",
+                  "job_type",
+                  "priority",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "completed_on",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-m",
@@ -3046,6 +3112,28 @@
                 "icon": "User",
                 "me": [
                   "assigned_to"
+                ],
+                "hiddenFields": [
+                  "mileage_in",
+                  "priority",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "scheduled_on",
+                  "completed_on",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
                 ]
               }
             ],
@@ -3173,7 +3261,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-w",
@@ -3191,7 +3287,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "inv-n",
@@ -3210,7 +3314,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "issued_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "inv-b"
@@ -3263,7 +3375,14 @@
                   "last_in": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "year",
+                  "plate",
+                  "mileage",
+                  "oil_due_miles",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vh-t"
@@ -3726,7 +3845,29 @@
                     "In progress",
                     "On hold"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "mileage_in",
+                  "job_type",
+                  "priority",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "completed_on",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l0"
@@ -3763,6 +3904,28 @@
                 "icon": "Table",
                 "me": [
                   "assigned_to"
+                ],
+                "hiddenFields": [
+                  "mileage_in",
+                  "priority",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "scheduled_on",
+                  "completed_on",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
                 ]
               }
             ],
@@ -3800,7 +3963,15 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Overdue"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l2"
@@ -3840,7 +4011,15 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l3"
@@ -3884,7 +4063,29 @@
                     "Scheduled",
                     "In progress"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "mileage_in",
+                  "priority",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "scheduled_on",
+                  "completed_on",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l4"
@@ -3921,7 +4122,29 @@
                 "icon": "Table",
                 "filters": {
                   "comeback": true
-                }
+                },
+                "hiddenFields": [
+                  "mileage_in",
+                  "priority",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "scheduled_on",
+                  "completed_on",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l5"

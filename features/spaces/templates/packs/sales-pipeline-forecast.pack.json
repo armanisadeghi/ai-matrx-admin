@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0154",
-  "version": 10,
+  "version": 11,
   "title": "Sales Pipeline Forecast",
   "description": "Sales managers: forecast revenue from deal stages and weighted value.",
   "forWho": "Sales managers and revenue teams",
@@ -1240,7 +1240,7 @@
         "Aspenglow Drive"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -1392,7 +1392,21 @@
                     "Closed won",
                     "Closed lost"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "probability",
+                  "weighted_value",
+                  "expected_close",
+                  "decided_on",
+                  "source",
+                  "next_step",
+                  "days_quiet",
+                  "quiet_flag",
+                  "created",
+                  "won_btn",
+                  "lost_btn"
+                ]
               },
               {
                 "id": "view-deal-week",
@@ -1450,7 +1464,21 @@
                     "Proposal sent",
                     "Negotiation"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "probability",
+                  "weighted_value",
+                  "last_activity",
+                  "decided_on",
+                  "source",
+                  "next_step",
+                  "days_quiet",
+                  "quiet_flag",
+                  "created",
+                  "won_btn",
+                  "lost_btn"
+                ]
               },
               {
                 "id": "view-deal-close-month",
@@ -1469,7 +1497,21 @@
                     "Proposal sent",
                     "Negotiation"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "probability",
+                  "weighted_value",
+                  "last_activity",
+                  "decided_on",
+                  "source",
+                  "next_step",
+                  "days_quiet",
+                  "quiet_flag",
+                  "created",
+                  "won_btn",
+                  "lost_btn"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -1512,7 +1554,15 @@
                 "icon": "List",
                 "filters": {
                   "size": "Enterprise"
-                }
+                },
+                "hiddenFields": [
+                  "annual_budget",
+                  "pipeline_total",
+                  "weighted_total",
+                  "coverage",
+                  "deal_total",
+                  "open_site"
+                ]
               }
             ],
             "activeViewId": "view-all-accounts"

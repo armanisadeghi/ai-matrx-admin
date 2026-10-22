@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0258",
-  "version": 10,
+  "version": 11,
   "title": "Study Planner & Flashcards",
   "description": "Students preparing for exams: plan study blocks backwards and drill flashcards.",
   "forWho": "Students preparing for exams",
@@ -1480,7 +1480,7 @@
         "Foxglove Parade"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -1547,6 +1547,13 @@
                     "field": "on",
                     "direction": "asc"
                   }
+                ],
+                "hiddenFields": [
+                  "minutes",
+                  "done",
+                  "plan_flag",
+                  "confidence",
+                  "done_btn"
                 ]
               }
             ],
@@ -1635,7 +1642,14 @@
                   "on": {
                     "relative": "today"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "done",
+                  "plan_flag",
+                  "confidence",
+                  "done_btn"
+                ]
               },
               {
                 "id": "v-pc",
@@ -1682,7 +1696,14 @@
                     "relative": "next_days",
                     "n": 7
                   }
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "done",
+                  "plan_flag",
+                  "confidence",
+                  "done_btn"
+                ]
               },
               {
                 "id": "view-u7",
@@ -1696,7 +1717,14 @@
                 },
                 "filters": {
                   "done": false
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "done",
+                  "plan_flag",
+                  "confidence",
+                  "done_btn"
+                ]
               }
             ],
             "activeViewId": "v-pc"
@@ -2050,7 +2078,14 @@
                     "2",
                     "3"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "done",
+                  "plan_flag",
+                  "confidence",
+                  "done_btn"
+                ]
               }
             ],
             "activeViewId": "d-l"

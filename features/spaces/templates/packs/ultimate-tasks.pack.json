@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0107",
-  "version": 9,
+  "version": 10,
   "title": "Ultimate Tasks",
   "description": "People who run on tasks: inbox, focus lists, projects, daily journal and repeating tasks.",
   "forWho": "Individuals and tiny teams who run on tasks",
@@ -1427,7 +1427,7 @@
         "Millbrook Terrace"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1550,7 +1550,23 @@
                     "direction": "desc"
                   }
                 ],
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "sub_total",
+                  "due_on",
+                  "completed_on",
+                  "priority",
+                  "tags",
+                  "recurrence",
+                  "minutes",
+                  "assignee",
+                  "days_left",
+                  "created",
+                  "start_btn",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "list",
@@ -1559,7 +1575,23 @@
                 "filters": {
                   "status": "Inbox"
                 },
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "sub_total",
+                  "due_on",
+                  "completed_on",
+                  "priority",
+                  "tags",
+                  "recurrence",
+                  "minutes",
+                  "assignee",
+                  "days_left",
+                  "created",
+                  "start_btn",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "kanban",
@@ -1620,6 +1652,22 @@
                 "layout": "list",
                 "icon": "List",
                 "me": [
+                  "assigned_to"
+                ],
+                "hiddenFields": [
+                  "sub_total",
+                  "due_on",
+                  "completed_on",
+                  "priority",
+                  "tags",
+                  "recurrence",
+                  "minutes",
+                  "assignee",
+                  "days_left",
+                  "created",
+                  "start_btn",
+                  "done_btn",
+                  "take_btn",
                   "assigned_to"
                 ]
               }
@@ -1733,7 +1781,23 @@
                 "filters": {
                   "status": "Doing"
                 },
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "sub_total",
+                  "due_on",
+                  "completed_on",
+                  "priority",
+                  "tags",
+                  "recurrence",
+                  "minutes",
+                  "assignee",
+                  "days_left",
+                  "created",
+                  "start_btn",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "id": "view-task-week",
@@ -1788,7 +1852,23 @@
                     "To do",
                     "Doing"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sub_total",
+                  "focus",
+                  "completed_on",
+                  "priority",
+                  "tags",
+                  "recurrence",
+                  "minutes",
+                  "assignee",
+                  "days_left",
+                  "created",
+                  "start_btn",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "id": "view-task-today",
@@ -1806,7 +1886,23 @@
                     "To do",
                     "Doing"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sub_total",
+                  "focus",
+                  "completed_on",
+                  "priority",
+                  "tags",
+                  "recurrence",
+                  "minutes",
+                  "assignee",
+                  "days_left",
+                  "created",
+                  "start_btn",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -1853,7 +1949,23 @@
                     "direction": "desc"
                   }
                 ],
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "sub_total",
+                  "due_on",
+                  "completed_on",
+                  "priority",
+                  "tags",
+                  "recurrence",
+                  "minutes",
+                  "assignee",
+                  "days_left",
+                  "created",
+                  "start_btn",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -1943,7 +2055,23 @@
                     "Doing"
                   ]
                 },
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "sub_total",
+                  "due_on",
+                  "completed_on",
+                  "priority",
+                  "tags",
+                  "recurrence",
+                  "minutes",
+                  "assignee",
+                  "days_left",
+                  "created",
+                  "start_btn",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -2056,7 +2184,23 @@
                 "filters": {
                   "status": "Inbox"
                 },
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "sub_total",
+                  "due_on",
+                  "completed_on",
+                  "priority",
+                  "tags",
+                  "recurrence",
+                  "minutes",
+                  "assignee",
+                  "days_left",
+                  "created",
+                  "start_btn",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"

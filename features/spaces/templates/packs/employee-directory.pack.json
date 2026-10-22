@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0255",
-  "version": 6,
+  "version": 7,
   "title": "Employee Directory",
   "description": "Teams of any size: find anyone by team, manager, skills and time zone.",
   "forWho": "Teams of every size",
@@ -1056,7 +1056,7 @@
         "Emberglass Road"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1385,7 +1385,20 @@
                 "icon": "List",
                 "filters": {
                   "status": "Alumni"
-                }
+                },
+                "hiddenFields": [
+                  "report_count",
+                  "location",
+                  "timezone",
+                  "employment",
+                  "skills",
+                  "status",
+                  "chat",
+                  "emergency",
+                  "updated",
+                  "added",
+                  "open_chat"
+                ]
               }
             ],
             "activeViewId": "v-al"
@@ -1774,7 +1787,20 @@
                 "icon": "List",
                 "filters": {
                   "status": "On leave"
-                }
+                },
+                "hiddenFields": [
+                  "report_count",
+                  "location",
+                  "timezone",
+                  "employment",
+                  "skills",
+                  "status",
+                  "chat",
+                  "emergency",
+                  "updated",
+                  "added",
+                  "open_chat"
+                ]
               }
             ],
             "activeViewId": "d5"

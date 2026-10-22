@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0511",
-  "version": 9,
+  "version": 10,
   "title": "Personal Trainer Business HQ",
   "description": "For personal trainers: client programs, sessions left, weekly check-ins, renewals.",
   "forWho": "Personal trainers and small coaching businesses",
@@ -3517,7 +3517,7 @@
         "Granary Row"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -4080,7 +4080,14 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-w",
@@ -4097,7 +4104,14 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-n",
@@ -4115,7 +4129,14 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "pay-b"
@@ -4857,6 +4878,13 @@
                     "field": "due_on",
                     "direction": "asc"
                   }
+                ],
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "method",
+                  "paid_btn",
+                  "added_at"
                 ]
               }
             ],

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0312",
-  "version": 10,
+  "version": 11,
   "title": "Course Creator Hub",
   "description": "Course creators: build, film, sell and launch an online course with students.",
   "forWho": "Educators selling courses and cohorts",
@@ -1788,7 +1788,7 @@
         "Beckett Alley"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -2071,7 +2071,13 @@
                     "relative": "past_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "progress",
+                  "days_in",
+                  "email_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-board"
@@ -2127,7 +2133,11 @@
                     "relative": "next_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "days_to_open",
+                  "target"
+                ]
               }
             ],
             "activeViewId": "view-tl"

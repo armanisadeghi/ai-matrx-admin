@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0564",
-  "version": 6,
+  "version": 7,
   "title": "Security Consultancy Engagement Desk",
   "description": "Security consultancy: engagements, scope, findings by severity, fixes and retests.",
   "forWho": "Cybersecurity consultancies and assessment firms",
@@ -3386,7 +3386,7 @@
         "Sentinel Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3885,7 +3885,22 @@
                     "Fix in progress",
                     "Retest needed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "cvss",
+                  "affected",
+                  "status",
+                  "fixed_on",
+                  "client_owner",
+                  "author",
+                  "btn_progress",
+                  "btn_retest",
+                  "btn_fixed",
+                  "btn_claim",
+                  "owner_me",
+                  "retests_failed",
+                  "added_at"
+                ]
               },
               {
                 "id": "fin-w",
@@ -3903,7 +3918,22 @@
                     "Fix in progress",
                     "Retest needed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "cvss",
+                  "affected",
+                  "status",
+                  "fixed_on",
+                  "client_owner",
+                  "author",
+                  "btn_progress",
+                  "btn_retest",
+                  "btn_fixed",
+                  "btn_claim",
+                  "owner_me",
+                  "retests_failed",
+                  "added_at"
+                ]
               },
               {
                 "id": "fin-n",
@@ -3922,7 +3952,22 @@
                     "Fix in progress",
                     "Retest needed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "cvss",
+                  "affected",
+                  "status",
+                  "fixed_on",
+                  "client_owner",
+                  "author",
+                  "btn_progress",
+                  "btn_retest",
+                  "btn_fixed",
+                  "btn_claim",
+                  "owner_me",
+                  "retests_failed",
+                  "added_at"
+                ]
               },
               {
                 "id": "fin-m",
@@ -3931,6 +3976,21 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "cvss",
+                  "status",
+                  "fix_by",
+                  "fixed_on",
+                  "client_owner",
+                  "author",
+                  "btn_progress",
+                  "btn_retest",
+                  "btn_fixed",
+                  "btn_claim",
+                  "owner_me",
+                  "retests_failed",
+                  "added_at"
                 ]
               }
             ],
@@ -4753,7 +4813,22 @@
                     "Fix in progress",
                     "Retest needed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "cvss",
+                  "affected",
+                  "status",
+                  "fixed_on",
+                  "client_owner",
+                  "author",
+                  "btn_progress",
+                  "btn_retest",
+                  "btn_fixed",
+                  "btn_claim",
+                  "owner_me",
+                  "retests_failed",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -5011,7 +5086,22 @@
                     "Fix in progress",
                     "Retest needed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "cvss",
+                  "status",
+                  "fix_by",
+                  "fixed_on",
+                  "client_owner",
+                  "author",
+                  "btn_progress",
+                  "btn_retest",
+                  "btn_fixed",
+                  "btn_claim",
+                  "owner_me",
+                  "retests_failed",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dsx-1"

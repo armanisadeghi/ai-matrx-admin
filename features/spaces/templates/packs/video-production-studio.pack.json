@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0454",
-  "version": 10,
+  "version": 11,
   "title": "Video Production Studio",
   "description": "For video producers: productions, shot lists, crew and gear bookings, and edit rounds.",
   "forWho": "Video and film production companies",
@@ -2432,7 +2432,7 @@
         "Tannery Row"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -2708,7 +2708,32 @@
                     "Shoot",
                     "Post"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "rounds_included",
+                  "releases",
+                  "music",
+                  "shoot_on",
+                  "delivered_on",
+                  "budget",
+                  "crew_gear_cost",
+                  "unconfirmed",
+                  "budget_left",
+                  "shots_total",
+                  "shots_got",
+                  "capture_pct",
+                  "cuts_waiting",
+                  "cuts_sent",
+                  "days_to_delivery",
+                  "client",
+                  "producer",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_out",
+                  "add_shot",
+                  "add_booking",
+                  "add_cut"
+                ]
               },
               {
                 "id": "pro-w",
@@ -2727,7 +2752,32 @@
                     "Shoot",
                     "Post"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "rounds_included",
+                  "releases",
+                  "music",
+                  "shoot_on",
+                  "delivered_on",
+                  "budget",
+                  "crew_gear_cost",
+                  "unconfirmed",
+                  "budget_left",
+                  "shots_total",
+                  "shots_got",
+                  "capture_pct",
+                  "cuts_waiting",
+                  "cuts_sent",
+                  "days_to_delivery",
+                  "client",
+                  "producer",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_out",
+                  "add_shot",
+                  "add_booking",
+                  "add_cut"
+                ]
               },
               {
                 "id": "pro-n",
@@ -2747,7 +2797,32 @@
                     "Shoot",
                     "Post"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "rounds_included",
+                  "releases",
+                  "music",
+                  "shoot_on",
+                  "delivered_on",
+                  "budget",
+                  "crew_gear_cost",
+                  "unconfirmed",
+                  "budget_left",
+                  "shots_total",
+                  "shots_got",
+                  "capture_pct",
+                  "cuts_waiting",
+                  "cuts_sent",
+                  "days_to_delivery",
+                  "client",
+                  "producer",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_out",
+                  "add_shot",
+                  "add_booking",
+                  "add_cut"
+                ]
               },
               {
                 "id": "pro-m",
@@ -2756,6 +2831,31 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "rounds_included",
+                  "releases",
+                  "music",
+                  "delivery_on",
+                  "delivered_on",
+                  "budget",
+                  "crew_gear_cost",
+                  "unconfirmed",
+                  "budget_left",
+                  "shots_total",
+                  "shots_got",
+                  "capture_pct",
+                  "cuts_waiting",
+                  "cuts_sent",
+                  "days_to_delivery",
+                  "client",
+                  "producer",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_out",
+                  "add_shot",
+                  "add_booking",
+                  "add_cut"
                 ]
               }
             ],
@@ -2914,7 +3014,15 @@
                   "on_date": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "rate",
+                  "days",
+                  "coi",
+                  "production",
+                  "added_at",
+                  "btn_lock_in"
+                ]
               }
             ],
             "activeViewId": "boo-b"
@@ -2998,7 +3106,14 @@
                     "Client review",
                     "Revisions"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "version",
+                  "feedback",
+                  "production",
+                  "added_at",
+                  "btn_approve_cut"
+                ]
               },
               {
                 "id": "cut-w",
@@ -3016,7 +3131,14 @@
                     "Client review",
                     "Revisions"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "version",
+                  "feedback",
+                  "production",
+                  "added_at",
+                  "btn_approve_cut"
+                ]
               },
               {
                 "id": "cut-n",
@@ -3035,7 +3157,14 @@
                     "Client review",
                     "Revisions"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "version",
+                  "feedback",
+                  "production",
+                  "added_at",
+                  "btn_approve_cut"
+                ]
               }
             ],
             "activeViewId": "cut-b"
@@ -3628,7 +3757,32 @@
                     "Shoot",
                     "Post"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "rounds_included",
+                  "releases",
+                  "music",
+                  "shoot_on",
+                  "delivered_on",
+                  "budget",
+                  "crew_gear_cost",
+                  "unconfirmed",
+                  "budget_left",
+                  "shots_total",
+                  "shots_got",
+                  "capture_pct",
+                  "cuts_waiting",
+                  "cuts_sent",
+                  "days_to_delivery",
+                  "client",
+                  "producer",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_out",
+                  "add_shot",
+                  "add_booking",
+                  "add_cut"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -3714,7 +3868,14 @@
                     "Client review",
                     "Revisions"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "version",
+                  "feedback",
+                  "production",
+                  "added_at",
+                  "btn_approve_cut"
+                ]
               }
             ],
             "activeViewId": "vl2"

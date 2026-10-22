@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0581",
-  "version": 2,
+  "version": 3,
   "title": "Independent Record Label",
   "description": "Releases from demo to street date, artist deals, recoupment and royalty statements.",
   "forWho": "Independent labels and artist-run imprints",
@@ -267,7 +267,7 @@
         "Alder Mill Way"
       ]
     },
-    "version": 2,
+    "version": 3,
     "tables": [
       {
         "token": "artist",
@@ -2863,7 +2863,13 @@
                     "relative": "past_days",
                     "n": 30
                   }
-                }
+                },
+                "hiddenFields": [
+                  "receipts",
+                  "artist_share",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "stat-to_send",
@@ -2872,7 +2878,13 @@
                 "icon": "Send",
                 "filters": {
                   "status": "Draft"
-                }
+                },
+                "hiddenFields": [
+                  "receipts",
+                  "artist_share",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "stat-b"
@@ -3453,7 +3465,13 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Draft"
-                }
+                },
+                "hiddenFields": [
+                  "receipts",
+                  "artist_share",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "l-draft-statements"

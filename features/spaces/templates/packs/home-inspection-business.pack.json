@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0418",
-  "version": 7,
+  "version": 8,
   "title": "Home Inspection Business",
   "description": "For home inspectors: bookings, agreements, reports, agent referrals and license renewals.",
   "forWho": "Home inspectors and multi-inspector firms",
@@ -2246,7 +2246,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2502,7 +2502,28 @@
                     "Writing report",
                     "Delivered"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sqft",
+                  "year_built",
+                  "agent",
+                  "kind",
+                  "addons",
+                  "delivered_on",
+                  "status",
+                  "agreement",
+                  "paid",
+                  "utilities",
+                  "fee",
+                  "safety_items",
+                  "inspector",
+                  "scheduler",
+                  "inv_btn",
+                  "confirm_btn",
+                  "onsite_btn",
+                  "writing_btn",
+                  "delivered_btn"
+                ]
               },
               {
                 "id": "vs-week",
@@ -2522,7 +2543,28 @@
                     "Writing report",
                     "Delivered"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sqft",
+                  "year_built",
+                  "agent",
+                  "kind",
+                  "addons",
+                  "delivered_on",
+                  "status",
+                  "agreement",
+                  "paid",
+                  "utilities",
+                  "fee",
+                  "safety_items",
+                  "inspector",
+                  "scheduler",
+                  "inv_btn",
+                  "confirm_btn",
+                  "onsite_btn",
+                  "writing_btn",
+                  "delivered_btn"
+                ]
               },
               {
                 "id": "vs-next7",
@@ -2543,7 +2585,28 @@
                     "Writing report",
                     "Delivered"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "sqft",
+                  "year_built",
+                  "agent",
+                  "kind",
+                  "addons",
+                  "delivered_on",
+                  "status",
+                  "agreement",
+                  "paid",
+                  "utilities",
+                  "fee",
+                  "safety_items",
+                  "inspector",
+                  "scheduler",
+                  "inv_btn",
+                  "confirm_btn",
+                  "onsite_btn",
+                  "writing_btn",
+                  "delivered_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -2615,6 +2678,27 @@
                 "icon": "List",
                 "me": [
                   "scheduler"
+                ],
+                "hiddenFields": [
+                  "sqft",
+                  "year_built",
+                  "kind",
+                  "addons",
+                  "when_at",
+                  "delivered_on",
+                  "status",
+                  "agreement",
+                  "paid",
+                  "utilities",
+                  "fee",
+                  "safety_items",
+                  "inspector",
+                  "scheduler",
+                  "inv_btn",
+                  "confirm_btn",
+                  "onsite_btn",
+                  "writing_btn",
+                  "delivered_btn"
                 ]
               }
             ],
@@ -2657,7 +2741,14 @@
                 },
                 "filters": {
                   "status": "Unpaid"
-                }
+                },
+                "hiddenFields": [
+                  "base_fee",
+                  "addons",
+                  "total",
+                  "paid_on",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "vs-week",
@@ -2671,7 +2762,14 @@
                 },
                 "filters": {
                   "status": "Unpaid"
-                }
+                },
+                "hiddenFields": [
+                  "base_fee",
+                  "addons",
+                  "total",
+                  "paid_on",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "vs-over",
@@ -2685,7 +2783,14 @@
                 },
                 "filters": {
                   "status": "Unpaid"
-                }
+                },
+                "hiddenFields": [
+                  "base_fee",
+                  "addons",
+                  "total",
+                  "paid_on",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -3563,7 +3668,28 @@
                 "layout": "list",
                 "filters": {
                   "status": "Writing report"
-                }
+                },
+                "hiddenFields": [
+                  "sqft",
+                  "year_built",
+                  "kind",
+                  "addons",
+                  "when_at",
+                  "delivered_on",
+                  "status",
+                  "agreement",
+                  "paid",
+                  "utilities",
+                  "fee",
+                  "safety_items",
+                  "inspector",
+                  "scheduler",
+                  "inv_btn",
+                  "confirm_btn",
+                  "onsite_btn",
+                  "writing_btn",
+                  "delivered_btn"
+                ]
               }
             ],
             "activeViewId": "d1"
@@ -3599,7 +3725,14 @@
                 "layout": "list",
                 "filters": {
                   "status": "Unpaid"
-                }
+                },
+                "hiddenFields": [
+                  "base_fee",
+                  "addons",
+                  "total",
+                  "paid_on",
+                  "paid_btn"
+                ]
               }
             ],
             "activeViewId": "d2"

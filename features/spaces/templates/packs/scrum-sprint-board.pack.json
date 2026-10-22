@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0105",
-  "version": 9,
+  "version": 10,
   "title": "Scrum Sprint Board",
   "description": "Scrum teams: epics and stories with points, sprint ceremonies and retrospectives.",
   "forWho": "Scrum teams in software or game studios",
@@ -1627,7 +1627,7 @@
         "Quillmere Pier"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1864,7 +1864,16 @@
                     "Next"
                   ]
                 },
-                "id": "view-2"
+                "id": "view-2",
+                "hiddenFields": [
+                  "number",
+                  "capacity",
+                  "committed",
+                  "completed",
+                  "completion",
+                  "load",
+                  "story_count"
+                ]
               }
             ],
             "activeViewId": "view-0"

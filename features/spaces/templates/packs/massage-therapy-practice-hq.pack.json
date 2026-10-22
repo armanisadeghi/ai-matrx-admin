@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0515",
-  "version": 8,
+  "version": 9,
   "title": "Massage Therapy Practice HQ",
   "description": "For massage therapists: intake, session notes, memberships, rooms and reminders.",
   "forWho": "Massage therapists and small bodywork practices",
@@ -2323,7 +2323,7 @@
         "Wicker Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2745,7 +2745,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-w",
@@ -2762,7 +2768,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-n",
@@ -2780,7 +2792,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "pay-b"
@@ -3296,7 +3314,13 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Failed"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l2"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0303",
-  "version": 11,
+  "version": 12,
   "title": "Small Business OS",
   "description": "Owners of 1 to 15 person businesses: sales, projects, money, team and goals in one.",
   "forWho": "Owners of 1 to 15 person businesses",
@@ -3067,7 +3067,7 @@
         "Weatherby Road"
       ]
     },
-    "version": 11
+    "version": 12
   },
   "pages": [
     {
@@ -3202,7 +3202,16 @@
                     "Qualified",
                     "Proposal"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "win_chance",
+                  "weighted",
+                  "contact",
+                  "created_at",
+                  "won_btn",
+                  "lost_btn"
+                ]
               },
               {
                 "id": "v-dover",
@@ -3220,7 +3229,16 @@
                     "Qualified",
                     "Proposal"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "value",
+                  "win_chance",
+                  "weighted",
+                  "contact",
+                  "created_at",
+                  "won_btn",
+                  "lost_btn"
+                ]
               },
               {
                 "id": "view-board",
@@ -3513,7 +3531,18 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "contact",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "v-iwk",
@@ -3530,7 +3559,18 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "contact",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "view-board",
@@ -3576,7 +3616,18 @@
                 },
                 "filters": {
                   "status": "Paid"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "due_on",
+                  "sent_on",
+                  "days_late",
+                  "contact",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               }
             ],
             "activeViewId": "v-iov"
@@ -4118,7 +4169,18 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "contact",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               }
             ],
             "activeViewId": "view-u"
@@ -4208,7 +4270,18 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "paid_on",
+                  "sent_on",
+                  "days_late",
+                  "contact",
+                  "created_at",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               }
             ]
           }

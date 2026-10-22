@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0469",
-  "version": 9,
+  "version": 10,
   "title": "Brewery Taproom Desk",
   "description": "For brewers and taproom managers: batches, tanks, kegs, tap list, distributor orders.",
   "forWho": "Craft breweries, cideries and taproom operators",
@@ -2617,7 +2617,7 @@
         "Foundry Row"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3012,7 +3012,13 @@
                     "Cleaning",
                     "Kicked"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "pint_price",
+                  "owner",
+                  "added_at",
+                  "btn_back_to_pouring"
+                ]
               },
               {
                 "id": "tap-w",
@@ -3030,7 +3036,13 @@
                     "Cleaning",
                     "Kicked"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "pint_price",
+                  "owner",
+                  "added_at",
+                  "btn_back_to_pouring"
+                ]
               },
               {
                 "id": "tap-n",
@@ -3049,7 +3061,13 @@
                     "Cleaning",
                     "Kicked"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "pint_price",
+                  "owner",
+                  "added_at",
+                  "btn_back_to_pouring"
+                ]
               }
             ],
             "activeViewId": "tap-b"
@@ -3610,7 +3628,13 @@
                     "relative": "next_days",
                     "n": 3
                   }
-                }
+                },
+                "hiddenFields": [
+                  "pint_price",
+                  "owner",
+                  "added_at",
+                  "btn_back_to_pouring"
+                ]
               }
             ],
             "activeViewId": "vl1"

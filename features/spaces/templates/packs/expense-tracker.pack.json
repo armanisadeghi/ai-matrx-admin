@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0350",
-  "version": 5,
+  "version": 6,
   "title": "Expense Tracker",
   "description": "Individuals and freelancers: log spending, set category budgets, see where it went.",
   "forWho": "Individuals and freelancers",
@@ -836,7 +836,7 @@
         "Fennel Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1027,7 +1027,14 @@
                     "relative": "past_days",
                     "n": 7
                   }
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "month_label",
+                  "notes",
+                  "recurring",
+                  "logged_at"
+                ]
               },
               {
                 "id": "v-board",
@@ -1318,7 +1325,14 @@
                 "icon": "Repeat",
                 "filters": {
                   "recurring": true
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "month_label",
+                  "notes",
+                  "recurring",
+                  "logged_at"
+                ]
               }
             ],
             "activeViewId": "v-rec"

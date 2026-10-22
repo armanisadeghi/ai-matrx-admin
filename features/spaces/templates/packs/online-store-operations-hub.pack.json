@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0516",
-  "version": 9,
+  "version": 10,
   "title": "Online Store Operations Hub",
   "description": "For online shops: SKUs and stock, purchase orders, fulfillment, returns, sales by channel.",
   "forWho": "Small online shops selling their own goods",
@@ -3367,7 +3367,7 @@
         "Cobbler Row"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3685,7 +3685,16 @@
                 "icon": "TriangleAlert",
                 "filters": {
                   "reorder_flag": "Reorder"
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "reorder_qty",
+                  "incoming",
+                  "counted_on",
+                  "reorder_flag",
+                  "added_at"
+                ]
               },
               {
                 "id": "sku-s",
@@ -3694,7 +3703,16 @@
                 "icon": "CircleSlash",
                 "filters": {
                   "reorder_flag": "Sold out"
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "reorder_qty",
+                  "incoming",
+                  "counted_on",
+                  "reorder_flag",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "sku-t"
@@ -4589,7 +4607,16 @@
                 "icon": "TriangleAlert",
                 "filters": {
                   "reorder_flag": "Reorder"
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "reorder_qty",
+                  "incoming",
+                  "counted_on",
+                  "reorder_flag",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "d-l2"

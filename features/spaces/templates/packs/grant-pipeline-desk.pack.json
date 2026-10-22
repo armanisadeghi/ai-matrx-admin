@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0552",
-  "version": 8,
+  "version": 9,
   "title": "Grant Pipeline and Reporting Desk",
   "description": "Grant pipeline: funders, LOIs, applications, awards, budgets vs. spending and reports due.",
   "forWho": "Nonprofit grant writers and development directors",
@@ -2902,7 +2902,7 @@
         "Tamarack Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3106,7 +3106,26 @@
                     "Researching",
                     "Warm"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "typical",
+                  "relationship",
+                  "email",
+                  "owner",
+                  "grants_count",
+                  "awarded_total",
+                  "asked_total",
+                  "decided",
+                  "won",
+                  "win_rate",
+                  "ever_asked",
+                  "btn_claim",
+                  "add_grant",
+                  "add_touch",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "fun-w",
@@ -3123,7 +3142,26 @@
                     "Researching",
                     "Warm"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "typical",
+                  "relationship",
+                  "email",
+                  "owner",
+                  "grants_count",
+                  "awarded_total",
+                  "asked_total",
+                  "decided",
+                  "won",
+                  "win_rate",
+                  "ever_asked",
+                  "btn_claim",
+                  "add_grant",
+                  "add_touch",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "fun-n",
@@ -3141,7 +3179,26 @@
                     "Researching",
                     "Warm"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "typical",
+                  "relationship",
+                  "email",
+                  "owner",
+                  "grants_count",
+                  "awarded_total",
+                  "asked_total",
+                  "decided",
+                  "won",
+                  "win_rate",
+                  "ever_asked",
+                  "btn_claim",
+                  "add_grant",
+                  "add_touch",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "fun-m",
@@ -3150,6 +3207,25 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "typical",
+                  "email",
+                  "next_check_in",
+                  "owner",
+                  "grants_count",
+                  "awarded_total",
+                  "asked_total",
+                  "decided",
+                  "won",
+                  "win_rate",
+                  "ever_asked",
+                  "btn_claim",
+                  "add_grant",
+                  "add_touch",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4171,7 +4247,26 @@
                   "next_check_in": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "typical",
+                  "relationship",
+                  "email",
+                  "owner",
+                  "grants_count",
+                  "awarded_total",
+                  "asked_total",
+                  "decided",
+                  "won",
+                  "win_rate",
+                  "ever_asked",
+                  "btn_claim",
+                  "add_grant",
+                  "add_touch",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"

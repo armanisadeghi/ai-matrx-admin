@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0510",
-  "version": 8,
+  "version": 9,
   "title": "Yoga Studio HQ",
   "description": "For yoga studios: class schedule, memberships and class packs, teacher pay, students.",
   "forWho": "Yoga and pilates studios",
@@ -2564,7 +2564,7 @@
         "Alder Walk"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2978,7 +2978,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-w",
@@ -2995,7 +3001,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-n",
@@ -3013,7 +3025,13 @@
                     "Pending",
                     "Failed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "pay-b"
@@ -3583,7 +3601,13 @@
                 "icon": "Table",
                 "filters": {
                   "status": "Failed"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l2"
@@ -3623,7 +3647,22 @@
                     "relative": "next_days",
                     "n": 14
                   }
-                }
+                },
+                "hiddenFields": [
+                  "classes_left",
+                  "injuries",
+                  "waiver_on",
+                  "phone",
+                  "email",
+                  "joined_on",
+                  "area",
+                  "visits",
+                  "no_shows",
+                  "paid_total",
+                  "flag",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "view-l6"

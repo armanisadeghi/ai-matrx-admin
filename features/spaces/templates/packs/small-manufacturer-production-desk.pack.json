@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0569",
-  "version": 7,
+  "version": 8,
   "title": "Small Manufacturer Production Desk",
   "description": "Small manufacturer: orders, bill of materials, unit cost, work orders, scrap, QC holds.",
   "forWho": "Small manufacturers and workshops making products to order",
@@ -3160,7 +3160,7 @@
         "Foundry Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3357,7 +3357,24 @@
                     "Confirmed",
                     "In production"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "quantity",
+                  "ordered_on",
+                  "shipped_on",
+                  "total",
+                  "owner",
+                  "runs_count",
+                  "good_units",
+                  "remaining",
+                  "btn_confirm",
+                  "btn_start",
+                  "btn_shipped",
+                  "btn_claim",
+                  "add_run",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-w",
@@ -3375,7 +3392,24 @@
                     "Confirmed",
                     "In production"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "quantity",
+                  "ordered_on",
+                  "shipped_on",
+                  "total",
+                  "owner",
+                  "runs_count",
+                  "good_units",
+                  "remaining",
+                  "btn_confirm",
+                  "btn_start",
+                  "btn_shipped",
+                  "btn_claim",
+                  "add_run",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-n",
@@ -3394,7 +3428,24 @@
                     "Confirmed",
                     "In production"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "quantity",
+                  "ordered_on",
+                  "shipped_on",
+                  "total",
+                  "owner",
+                  "runs_count",
+                  "good_units",
+                  "remaining",
+                  "btn_confirm",
+                  "btn_start",
+                  "btn_shipped",
+                  "btn_claim",
+                  "add_run",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-m",
@@ -3403,6 +3454,23 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "quantity",
+                  "due_on",
+                  "shipped_on",
+                  "total",
+                  "owner",
+                  "runs_count",
+                  "good_units",
+                  "remaining",
+                  "btn_confirm",
+                  "btn_start",
+                  "btn_shipped",
+                  "btn_claim",
+                  "add_run",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -3626,6 +3694,21 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "price",
+                  "build_hours",
+                  "labor_rate",
+                  "parts_count",
+                  "material_cost",
+                  "unit_cost",
+                  "margin",
+                  "orders_open",
+                  "units_open",
+                  "btn_claim",
+                  "add_line",
+                  "add_order",
+                  "added_at"
                 ]
               }
             ],
@@ -3722,7 +3805,19 @@
                     "Low",
                     "Out"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_point",
+                  "unit_cost",
+                  "lead_days",
+                  "used_in",
+                  "short",
+                  "btn_restocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-w",
@@ -3739,7 +3834,19 @@
                     "Low",
                     "Out"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_point",
+                  "unit_cost",
+                  "lead_days",
+                  "used_in",
+                  "short",
+                  "btn_restocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-n",
@@ -3757,7 +3864,19 @@
                     "Low",
                     "Out"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_point",
+                  "unit_cost",
+                  "lead_days",
+                  "used_in",
+                  "short",
+                  "btn_restocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-m",
@@ -3766,6 +3885,18 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_point",
+                  "unit_cost",
+                  "lead_days",
+                  "used_in",
+                  "short",
+                  "btn_restocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
@@ -4371,7 +4502,24 @@
                     "Confirmed",
                     "In production"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "quantity",
+                  "ordered_on",
+                  "shipped_on",
+                  "total",
+                  "owner",
+                  "runs_count",
+                  "good_units",
+                  "remaining",
+                  "btn_confirm",
+                  "btn_start",
+                  "btn_shipped",
+                  "btn_claim",
+                  "add_run",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl0"
@@ -4411,7 +4559,19 @@
                     "Low",
                     "Out"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_point",
+                  "unit_cost",
+                  "lead_days",
+                  "used_in",
+                  "short",
+                  "btn_restocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl1"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0580",
-  "version": 2,
+  "version": 3,
   "title": "YouTube Channel Studio",
   "description": "Run a channel like a studio: videos from idea to upload, sponsors, shoots and payouts.",
   "forWho": "YouTube creators and small channel teams",
@@ -286,7 +286,7 @@
         "Fernhollow Road"
       ]
     },
-    "version": 2,
+    "version": 3,
     "tables": [
       {
         "token": "sponsor",
@@ -2705,7 +2705,21 @@
                     "Contracted",
                     "Script review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "exclusive",
+                  "contact",
+                  "email",
+                  "paid_on",
+                  "videos_live",
+                  "views_sponsored",
+                  "cpm",
+                  "paid_btn",
+                  "mail_btn",
+                  "add_video_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "spon-owed",
@@ -2717,7 +2731,21 @@
                     "Live",
                     "Invoiced"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "exclusive",
+                  "email",
+                  "draft_due",
+                  "paid_on",
+                  "videos_live",
+                  "views_sponsored",
+                  "cpm",
+                  "paid_btn",
+                  "mail_btn",
+                  "add_video_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "spon-b"
@@ -2995,7 +3023,15 @@
                     "Planned",
                     "Confirmed"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "crew_size",
+                  "wrapped_on",
+                  "video_count",
+                  "planned_minutes",
+                  "wrap_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "shoo-b"
@@ -3064,7 +3100,12 @@
                 },
                 "filters": {
                   "status": "Expected"
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "recv_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "payo-b"
@@ -3677,7 +3718,21 @@
                     "Contracted",
                     "Script review"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "exclusive",
+                  "contact",
+                  "email",
+                  "paid_on",
+                  "videos_live",
+                  "views_sponsored",
+                  "cpm",
+                  "paid_btn",
+                  "mail_btn",
+                  "add_video_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "l-drafts-due-soon"
@@ -3717,7 +3772,21 @@
                     "Live",
                     "Invoiced"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "exclusive",
+                  "email",
+                  "draft_due",
+                  "paid_on",
+                  "videos_live",
+                  "views_sponsored",
+                  "cpm",
+                  "paid_btn",
+                  "mail_btn",
+                  "add_video_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "l-sponsor-money-owed"
@@ -4423,7 +4492,15 @@
                   }
                 ],
                 "id": "shoot_-coming-up",
-                "icon": "List"
+                "icon": "List",
+                "hiddenFields": [
+                  "crew_size",
+                  "wrapped_on",
+                  "video_count",
+                  "planned_minutes",
+                  "wrap_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "shoot_-coming-up"

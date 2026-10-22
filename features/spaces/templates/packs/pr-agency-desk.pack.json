@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0453",
-  "version": 9,
+  "version": 10,
   "title": "PR Agency Desk",
   "description": "For PR agencies: client retainers, campaigns, a media list, pitches and earned coverage.",
   "forWho": "Public relations and communications agencies",
@@ -2545,7 +2545,7 @@
         "Candlewick Court"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2718,6 +2718,20 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "retainer",
+                  "target",
+                  "messages",
+                  "since",
+                  "owner",
+                  "campaigns_live",
+                  "coverage_month",
+                  "reach_month",
+                  "owner_me",
+                  "added_at",
+                  "add_campaign",
+                  "btn_mail"
                 ]
               }
             ],
@@ -3123,7 +3137,16 @@
                   "published_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "reach",
+                  "quoted",
+                  "message",
+                  "link",
+                  "campaign",
+                  "client",
+                  "added_at"
+                ]
               },
               {
                 "id": "cov-month",
@@ -3134,7 +3157,16 @@
                   "published_on": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "reach",
+                  "quoted",
+                  "message",
+                  "link",
+                  "campaign",
+                  "client",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "cov-c"
@@ -3793,7 +3825,16 @@
                   "published_on": {
                     "relative": "this_month"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "reach",
+                  "quoted",
+                  "message",
+                  "link",
+                  "campaign",
+                  "client",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "vl2"

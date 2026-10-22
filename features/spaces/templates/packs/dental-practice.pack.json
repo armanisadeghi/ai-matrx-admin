@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0400",
-  "version": 8,
+  "version": 9,
   "title": "Dental Practice",
   "description": "For dentists and front desks: schedule, recalls, treatment plans, claims and supplies.",
   "forWho": "Dentists, office managers and dental front desks",
@@ -2877,7 +2877,7 @@
         "Meridian Court"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3137,7 +3137,16 @@
                     "Confirmed",
                     "Checked in"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "completed_on",
+                  "visit_type",
+                  "status",
+                  "coordinator",
+                  "checkin_btn",
+                  "complete_btn"
+                ]
               },
               {
                 "id": "vs-week",
@@ -3155,7 +3164,16 @@
                     "Confirmed",
                     "Checked in"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "completed_on",
+                  "visit_type",
+                  "status",
+                  "coordinator",
+                  "checkin_btn",
+                  "complete_btn"
+                ]
               },
               {
                 "id": "vs-next7",
@@ -3174,7 +3192,16 @@
                     "Confirmed",
                     "Checked in"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "minutes",
+                  "completed_on",
+                  "visit_type",
+                  "status",
+                  "coordinator",
+                  "checkin_btn",
+                  "complete_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -3222,6 +3249,15 @@
                 "icon": "List",
                 "me": [
                   "coordinator"
+                ],
+                "hiddenFields": [
+                  "minutes",
+                  "completed_on",
+                  "visit_type",
+                  "status",
+                  "coordinator",
+                  "checkin_btn",
+                  "complete_btn"
                 ]
               }
             ],
@@ -3829,7 +3865,19 @@
                 "layout": "list",
                 "filters": {
                   "status": "Proposed"
-                }
+                },
+                "hiddenFields": [
+                  "fee",
+                  "est_ins",
+                  "ins_claimed",
+                  "patient_part",
+                  "decided_on",
+                  "completed_on",
+                  "urgency",
+                  "claim_btn",
+                  "accept_btn",
+                  "done_btn"
+                ]
               }
             ],
             "activeViewId": "d2"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0586",
-  "version": 2,
+  "version": 3,
   "title": "Martial Arts School",
   "description": "Intro lessons to black belt: students, ranks, belt tests, class schedule and dues.",
   "forWho": "Karate, taekwondo and jiu-jitsu schools",
@@ -248,7 +248,7 @@
         "Kettering Mill Road"
       ]
     },
-    "version": 2,
+    "version": 3,
     "tables": [
       {
         "token": "lead",
@@ -2540,7 +2540,25 @@
                 "icon": "PauseCircle",
                 "filters": {
                   "status": "Frozen"
-                }
+                },
+                "hiddenFields": [
+                  "stripes",
+                  "classes_since",
+                  "membership",
+                  "monthly_dues",
+                  "yearly",
+                  "guardian",
+                  "phone",
+                  "email",
+                  "waiver",
+                  "joined_on",
+                  "promoted_on",
+                  "instructor",
+                  "tests_passed",
+                  "add_test_btn",
+                  "call_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "stud-b"
@@ -3937,7 +3955,25 @@
                   ]
                 },
                 "id": "studen-frozen",
-                "icon": "List"
+                "icon": "List",
+                "hiddenFields": [
+                  "stripes",
+                  "classes_since",
+                  "membership",
+                  "monthly_dues",
+                  "yearly",
+                  "guardian",
+                  "phone",
+                  "email",
+                  "waiver",
+                  "joined_on",
+                  "promoted_on",
+                  "instructor",
+                  "tests_passed",
+                  "add_test_btn",
+                  "call_btn",
+                  "added_at"
+                ]
               },
               {
                 "name": "By rank",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0466",
-  "version": 9,
+  "version": 10,
   "title": "Event Venue Desk",
   "description": "For venue managers: tours, date holds, contracts, deposits, floor plans and event days.",
   "forWho": "Event venues, halls and barn and loft rental spaces",
@@ -2587,7 +2587,7 @@
         "Weir Lane"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2846,7 +2846,20 @@
                     "Tour booked",
                     "Proposal sent"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "wanted_on",
+                  "tour_on",
+                  "decided_on",
+                  "email",
+                  "space",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_lost",
+                  "add_booking"
+                ]
               },
               {
                 "id": "inq-w",
@@ -2864,7 +2877,20 @@
                     "Tour booked",
                     "Proposal sent"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "wanted_on",
+                  "tour_on",
+                  "decided_on",
+                  "email",
+                  "space",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_lost",
+                  "add_booking"
+                ]
               },
               {
                 "id": "inq-n",
@@ -2883,7 +2909,20 @@
                     "Tour booked",
                     "Proposal sent"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "wanted_on",
+                  "tour_on",
+                  "decided_on",
+                  "email",
+                  "space",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_lost",
+                  "add_booking"
+                ]
               },
               {
                 "id": "inq-tours",
@@ -2894,7 +2933,20 @@
                   "tour_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "wanted_on",
+                  "follow_up_on",
+                  "decided_on",
+                  "email",
+                  "space",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_lost",
+                  "add_booking"
+                ]
               },
               {
                 "id": "inq-m",
@@ -2903,6 +2955,19 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "guests",
+                  "tour_on",
+                  "follow_up_on",
+                  "decided_on",
+                  "email",
+                  "space",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_lost",
+                  "add_booking"
                 ]
               }
             ],
@@ -3452,7 +3517,20 @@
                     "Tour booked",
                     "Proposal sent"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "guests",
+                  "wanted_on",
+                  "tour_on",
+                  "decided_on",
+                  "email",
+                  "space",
+                  "owner",
+                  "owner_me",
+                  "added_at",
+                  "btn_mark_lost",
+                  "add_booking"
+                ]
               }
             ],
             "activeViewId": "vl0"

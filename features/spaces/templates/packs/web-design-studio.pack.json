@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 10,
+  "version": 11,
   "title": "Web Design Studio HQ",
   "description": "For web studios: site projects by phase, page content, change requests and invoices.",
   "forWho": "Web design and development studios",
@@ -2825,7 +2825,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -3376,7 +3376,14 @@
                   "requested_on": {
                     "relative": "this_week"
                   }
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "in_scope",
+                  "project",
+                  "added_at",
+                  "btn_mark_done"
+                ]
               }
             ],
             "activeViewId": "rev-b"
@@ -3456,7 +3463,14 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "days_late",
+                  "project",
+                  "added_at",
+                  "btn_mark_paid"
+                ]
               },
               {
                 "id": "inv-w",
@@ -3473,7 +3487,14 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "days_late",
+                  "project",
+                  "added_at",
+                  "btn_mark_paid"
+                ]
               },
               {
                 "id": "inv-n",
@@ -3491,7 +3512,14 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "days_late",
+                  "project",
+                  "added_at",
+                  "btn_mark_paid"
+                ]
               }
             ],
             "activeViewId": "inv-b"
@@ -4124,7 +4152,14 @@
                     "Sent",
                     "Overdue"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "days_late",
+                  "project",
+                  "added_at",
+                  "btn_mark_paid"
+                ]
               }
             ],
             "activeViewId": "vl1"
@@ -4164,7 +4199,14 @@
                     "Open",
                     "In progress"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "hours",
+                  "in_scope",
+                  "project",
+                  "added_at",
+                  "btn_mark_done"
+                ]
               }
             ],
             "activeViewId": "vl2"

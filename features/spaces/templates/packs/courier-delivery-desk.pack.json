@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0576",
-  "version": 2,
+  "version": 3,
   "title": "Courier and Last-Mile Delivery Desk",
   "description": "Dispatch same-day and route deliveries, capture proof, retry failed drops, and see margin.",
   "forWho": "Local couriers and last-mile delivery companies",
@@ -2230,7 +2230,7 @@
         "Birchwood Ave"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -3385,7 +3385,15 @@
                     "Open",
                     "Investigating"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "claimed",
+                  "settled",
+                  "findings",
+                  "pay_btn",
+                  "deny_btn",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dl2"

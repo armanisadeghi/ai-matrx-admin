@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0402",
-  "version": 8,
+  "version": 9,
   "title": "Chiropractic Office",
   "description": "For chiropractors: new-patient calls, care plans, prepaid visits, re-exams and the desk.",
   "forWho": "Chiropractors and chiropractic front desks",
@@ -2179,7 +2179,7 @@
         "Pecan Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2657,7 +2657,17 @@
                 },
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "visits_total",
+                  "visits_used",
+                  "visits_left",
+                  "price",
+                  "paid",
+                  "owed",
+                  "pkg_visit_btn",
+                  "used_btn"
+                ]
               },
               {
                 "id": "vs-next30",
@@ -2672,7 +2682,17 @@
                 },
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "visits_total",
+                  "visits_used",
+                  "visits_left",
+                  "price",
+                  "paid",
+                  "owed",
+                  "pkg_visit_btn",
+                  "used_btn"
+                ]
               },
               {
                 "id": "vs-over",
@@ -2686,7 +2706,17 @@
                 },
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "visits_total",
+                  "visits_used",
+                  "visits_left",
+                  "price",
+                  "paid",
+                  "owed",
+                  "pkg_visit_btn",
+                  "used_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -3050,7 +3080,17 @@
                 "layout": "list",
                 "filters": {
                   "status": "Active"
-                }
+                },
+                "hiddenFields": [
+                  "visits_total",
+                  "visits_used",
+                  "visits_left",
+                  "price",
+                  "paid",
+                  "owed",
+                  "pkg_visit_btn",
+                  "used_btn"
+                ]
               }
             ],
             "activeViewId": "d2"

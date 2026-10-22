@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0414",
-  "version": 9,
+  "version": 10,
   "title": "Property Management",
   "description": "For landlords and property managers: units, leases, rent roll, repairs and renewals.",
   "forWho": "Landlords, property managers and leasing staff",
@@ -2494,7 +2494,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2748,7 +2748,15 @@
                     "Late",
                     "Partial"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "received",
+                  "late_fee",
+                  "balance",
+                  "paid_btn",
+                  "late_btn"
+                ]
               },
               {
                 "id": "vs-week",
@@ -2766,7 +2774,15 @@
                     "Late",
                     "Partial"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "received",
+                  "late_fee",
+                  "balance",
+                  "paid_btn",
+                  "late_btn"
+                ]
               },
               {
                 "id": "vs-over",
@@ -2784,7 +2800,15 @@
                     "Late",
                     "Partial"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "received",
+                  "late_fee",
+                  "balance",
+                  "paid_btn",
+                  "late_btn"
+                ]
               },
               {
                 "id": "vb",
@@ -3393,7 +3417,15 @@
                     "Late",
                     "Partial"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "amount",
+                  "received",
+                  "late_fee",
+                  "balance",
+                  "paid_btn",
+                  "late_btn"
+                ]
               }
             ],
             "activeViewId": "d1"

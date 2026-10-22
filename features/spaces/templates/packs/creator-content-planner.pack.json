@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0301",
-  "version": 10,
+  "version": 11,
   "title": "Creator Content Planner",
   "description": "Solo creators: script and schedule videos, podcasts, posts and emails in one plan.",
   "forWho": "Solo creators with YouTube, podcast and newsletter",
@@ -1455,7 +1455,7 @@
         "Marrow Street"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -1781,7 +1781,13 @@
                 "icon": "List",
                 "filters": {
                   "promote": true
-                }
+                },
+                "hiddenFields": [
+                  "score",
+                  "promote",
+                  "added_at",
+                  "score_btn"
+                ]
               }
             ],
             "activeViewId": "view-tbl"

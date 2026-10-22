@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0573",
-  "version": 2,
+  "version": 3,
   "title": "Pediatric Practice Desk",
   "description": "Well-child visits, shot schedules, vaccine stock and families in one pediatric workspace.",
   "forWho": "Pediatric and family medicine practices caring for children",
@@ -2508,7 +2508,7 @@
         "Pecan Mill Drive"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2944,7 +2944,18 @@
                     "Scheduled",
                     "Deferred"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "dose_no",
+                  "lot",
+                  "given_on",
+                  "vis_given",
+                  "registry",
+                  "owner",
+                  "given_btn",
+                  "dose_take",
+                  "added_at"
+                ]
               },
               {
                 "id": "dose-w",
@@ -2963,7 +2974,18 @@
                     "Scheduled",
                     "Deferred"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "dose_no",
+                  "lot",
+                  "given_on",
+                  "vis_given",
+                  "registry",
+                  "owner",
+                  "given_btn",
+                  "dose_take",
+                  "added_at"
+                ]
               },
               {
                 "id": "dose-n",
@@ -2983,7 +3005,18 @@
                     "Scheduled",
                     "Deferred"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "dose_no",
+                  "lot",
+                  "given_on",
+                  "vis_given",
+                  "registry",
+                  "owner",
+                  "given_btn",
+                  "dose_take",
+                  "added_at"
+                ]
               },
               {
                 "id": "dose-m",
@@ -2992,6 +3025,17 @@
                 "icon": "User",
                 "me": [
                   "owner"
+                ],
+                "hiddenFields": [
+                  "dose_no",
+                  "due_on",
+                  "given_on",
+                  "vis_given",
+                  "registry",
+                  "owner",
+                  "given_btn",
+                  "dose_take",
+                  "added_at"
                 ]
               }
             ],
@@ -3583,7 +3627,18 @@
                     "Overdue",
                     "Due"
                   ]
-                }
+                },
+                "hiddenFields": [
+                  "dose_no",
+                  "due_on",
+                  "given_on",
+                  "vis_given",
+                  "registry",
+                  "owner",
+                  "given_btn",
+                  "dose_take",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dl0"

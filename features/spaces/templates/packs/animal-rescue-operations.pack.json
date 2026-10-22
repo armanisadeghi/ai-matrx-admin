@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0555",
-  "version": 6,
+  "version": 7,
   "title": "Animal Rescue Operations Desk",
   "description": "For foster-based rescues: animals, fosters, shelter pulls, vet care and adoptions.",
   "forWho": "Animal rescues, humane societies and foster networks",
@@ -3000,7 +3000,7 @@
         "Juniper Hollow"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3331,6 +3331,19 @@
                 "icon": "User",
                 "me": [
                   "owner_me"
+                ],
+                "hiddenFields": [
+                  "capacity",
+                  "home_check",
+                  "phone",
+                  "current",
+                  "in_home",
+                  "placed",
+                  "room",
+                  "btn_claim",
+                  "btn_mail",
+                  "owner_me",
+                  "added_at"
                 ]
               }
             ],
