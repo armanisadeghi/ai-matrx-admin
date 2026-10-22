@@ -69,15 +69,18 @@ Hidden by me: `platform.hidden_item` (filed under the record's own org) behind
 `HiddenFilter` beside `ArchiveFilter` (absent until something is hidden).
 Exemplar: Marketing › Brands (`BrandArchiveFlow`, `BrandsPortfolio`).
 
-Platform-wide (2026-10-15): ONE host — `cant-remove/CantRemoveDialogHost`
-(mounted in `app/Providers.tsx`) behind `ensureRemovable(request)` (call before
-any archive/delete confirm) and `offerOwnerChoices(error, request)` (call in the
-catch). `features/trash` `archiveRecord` checks rights before writing and throws
+Platform-wide (2026-10-15; one copy since 2026-10-22): the summon overlay
+`cantRemoveDialog`, rendered by `@ai-matrx/sharing/access/react/cantRemoveDialog.render`,
+behind the package's `ensureRemovable(request)` (call before any archive/delete
+confirm) and `offerOwnerChoices(error, request)` (call in the catch), both from
+`@ai-matrx/sharing/access/react`. Its app inputs (overlay doors, toasts, current
+person, sign-in link) come from `accessUiEnv.ts`, run at boot by `providers/SharingHost.tsx`. `features/trash` `archiveRecord` checks rights before writing and throws
 `RemovalNotYoursError`, so `ArchiveRecordButton` and every caller of it get the
 screen. Every `EntityListPage` with a `registryToken` drops the person's hidden
 rows (`useEntityList`, client-side, one page at a time) and shows
-`HiddenByMeButton` in its toolbar. Hidden ids live in a module store in
-`hooks/useHiddenByMe.ts` (cleared on sign-in/out; no query client needed).
+`HiddenByMeButton` in its toolbar. Hidden ids live in ONE module store, the sharing package's
+(`hooks/useHiddenByMe.ts` re-exports it, so the package's dialog and the app's lists
+share it; cleared on sign-in/out; no query client needed).
 Open: a list that hides client-side counts hidden rows on OTHER pages in its
 total — lists that need exact paging narrow server-side with `applyHiddenView`.
 

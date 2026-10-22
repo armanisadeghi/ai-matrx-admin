@@ -42,6 +42,7 @@ export { agentToastOverlayOverlay } from "./agentToastOverlay.definition";
 export { agentVariableEditorWindowOverlay } from "./agentVariableEditorWindow.definition";
 export { aiVoiceWindowOverlay } from "./aiVoiceWindow.definition";
 export { aiWatchWindowOverlay } from "./aiWatchWindow.definition";
+export { alchemyPrepareWindowOverlay } from "./alchemyPrepareWindow.definition";
 export { announcementsOverlay } from "./announcements.definition";
 export { applyToSourceReviewOverlay } from "./applyToSourceReview.definition";
 export { approvalsWindowOverlay } from "./approvalsWindow.definition";

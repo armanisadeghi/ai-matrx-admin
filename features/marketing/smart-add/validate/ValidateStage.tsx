@@ -35,7 +35,7 @@ import { personNameOnPage } from "../personParty";
 import { outboundHref } from "../SmartAddExtras";
 import { compareRelationKinds, relationGroupKey, relationGroupLabel } from "../webKinds";
 import { WeThinkHint } from "../WeThinkHint";
-import { ANSWER_LABEL, isGapKey, optionsFor, type Answer, type FocusItem } from "./queue";
+import { ANSWER_LABEL, isGapKey, optionsFor, yesNoFor, type Answer, type FocusItem } from "./queue";
 import { logoImageOf, SECTION_LABEL, sectionOf } from "./fold";
 import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
@@ -208,12 +208,6 @@ function WeThink({ item, kinds }: { item: FocusItem; kinds: BrandRelationKind[] 
   return <WeThinkHint suggestion={item.suggestion} kinds={kinds} evidence={Array.isArray(evidence) ? evidence.filter((e): e is string => typeof e === "string") : undefined} />;
 }
 
-/** Yes / No answers per kind: Yes = "this is it", No = "not us" / "wrong". */
-function yesNo(item: FocusItem): { yes: Answer; no: Answer } {
-  if (item.kind === "fact") return { yes: "correct", no: "wrong" };
-  if (item.kind === "name") return { yes: "preferred", no: "not_us" };
-  return { yes: "ours", no: "not_us" };
-}
 
 /** Logos: the ONE picture this card asks about, raw, never boxed; the badge counts the places it was found. */
 function LogoHero({ item }: { item: FocusItem }) {
@@ -326,7 +320,7 @@ function FocusCard({
   // Founder / Key person on a page asks for the person's name before anything is saved (MKT-043).
   const [personFor, setPersonFor] = useState<BrandRelationKind | null>(null);
   const options = optionsFor(item.kind);
-  const { yes, no } = yesNo(item);
+  const { yes, no } = yesNoFor(item, brandName);
   const glowOther = ["related", "alias", "later", "ignore"].includes(item.suggestion?.choice ?? "");
   const glow = (a: Answer) => item.suggestion?.choice === a;
   const suggestedRelation =
@@ -580,7 +574,7 @@ export function ValidateStage({
       }
       if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target) || !current) return;
       const k = e.key.toLowerCase();
-      const { yes, no } = yesNo(current);
+      const { yes, no } = yesNoFor(current, brandName);
       const press = (a: Answer, opts?: AnswerOptions) => {
         e.preventDefault();
         answer(current, a, opts);

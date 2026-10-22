@@ -1,10 +1,15 @@
 // features/data-tables/records-ui-host/entityRefHost.tsx
 //
 // THE APP'S ENTITY-REF HOST: what `@ai-matrx/records-ui/entity-ref` (EntityRef, doors, TextWithDoors,
-// toastDoor, NewTabLink, RecordStamps) needs from this app, bound ONCE at module load. Imported for
-// side effect by providers/chatUiRegistrationBase.ts (the shell's eager graph, which already draws
-// EntityRef) and, lazily, by jest.entity-ref-host.setup.ts. The package names every port and its
-// announcing default in its src/entity-ref/slot.ts.
+// toastDoor, NewTabLink, RecordStamps) needs from this app, bound ONCE at module load.
+//
+// MOUNTED at the root: app/Providers.tsx renders <EntityRefHost /> next to <SharingHost />, so every
+// route that takes the app Providers (the shell groups through AppShell, the public full tier, the
+// link/kiosk/portal/meet/auth groups) has the host before any reference draws. A bare side-effect
+// import is not a binding the bundler must keep (package.json "sideEffects": false), so the mount
+// is what keeps this module in the bundle. Lazily loaded too by jest.entity-ref-host.setup.ts.
+// The guard providers/__tests__/root-hosts-are-bound.test.ts fails when a route group draws without it.
+// The package names every port and its announcing default in its src/entity-ref/slot.ts.
 
 import React, { type ComponentType } from "react";
 import {
@@ -68,3 +73,8 @@ export const entityRefHostPorts: EntityRefHost = {
 };
 
 configureEntityRefs(entityRefHostPorts);
+
+/** Renders nothing; mounting it in app/Providers.tsx is what binds (and keeps) the host above. */
+export function EntityRefHost(): null {
+  return null;
+}

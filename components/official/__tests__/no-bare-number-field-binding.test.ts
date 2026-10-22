@@ -5,7 +5,7 @@
 // onChange coerces the keystroke straight into state with a fallback —
 // `set(parseInt(e.target.value) || 0)`, `Number(e.target.value) || 10` — snaps a
 // cleared field to the fallback and the next keystroke paints "04" / "101".
-// The one input that keeps a text draft is components/official/ClampedNumberInput;
+// The one input that keeps a text draft is ClampedNumberInput from @ai-matrx/design-system/controls;
 // use it. This fails on any tracked .tsx that reintroduces the pattern.
 
 import { execFileSync } from "node:child_process";

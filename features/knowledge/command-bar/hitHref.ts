@@ -5,7 +5,7 @@
  * the entity registry's `hrefFor` is the canonical address — the same one
  * every `EntityRef` link uses — except agents, whose real address depends on
  * their kind and is resolved server-side by `/agents/go/<id>` (see
- * components/official/entity-ref/useEntityHref.ts). A Segment opens its
+ * @ai-matrx/records-ui/entity-ref useEntityHref). A Segment opens its
  * Source. A hit with no door returns `null`, and the bar says so on the row
  * instead of rendering a link to nowhere (no dead ends).
  */

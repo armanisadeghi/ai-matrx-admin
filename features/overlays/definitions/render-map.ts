@@ -50,6 +50,7 @@ export const RENDER_MAP: OverlayRenderMap = {
   agentVariableEditorWindow: () => import("./agentVariableEditorWindow.render"),
   aiVoiceWindow: () => import("./aiVoiceWindow.render"),
   aiWatchWindow: () => import("./aiWatchWindow.render"),
+  alchemyPrepareWindow: () => import("./alchemyPrepareWindow.render"),
   announcements: () => import("./announcements.render"),
   applyToSourceReview: () => import("./applyToSourceReview.render"),
   approvalsWindow: () => import("./approvalsWindow.render"),

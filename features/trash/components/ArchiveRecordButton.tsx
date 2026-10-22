@@ -16,7 +16,7 @@ import { toast } from "@/lib/toast";
 import { announceReversible } from "@/lib/reversible/announceReversible";
 import { TRASH_HREF } from "../archiveCopy";
 import { archiveRecord, restoreFromTrash } from "../service";
-import { offerOwnerChoices } from "@/features/access-gate/cant-remove/cantRemoveOpener";
+import { offerOwnerChoices } from "@ai-matrx/sharing/access/react";
 
 interface ArchiveRecordProps {
   /** Registered entity token (platform.entity_types). */

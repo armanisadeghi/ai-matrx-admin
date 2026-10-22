@@ -7,7 +7,7 @@
 // drift. Archive goes through Trash's one archive (`archiveRecord`), so the
 // assessment is restorable from /trash and from this list's Archived filter.
 
-import { ensureRemovable, offerOwnerChoices } from "@/features/access-gate/cant-remove/cantRemoveOpener";
+import { ensureRemovable, offerOwnerChoices } from "@ai-matrx/sharing/access/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {

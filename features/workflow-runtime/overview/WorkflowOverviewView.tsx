@@ -66,7 +66,11 @@ export function WorkflowOverviewView({
     <div className="mx-auto grid w-full max-w-[1500px] gap-4 px-3 py-4 sm:px-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="min-w-0" data-testid="workflow-overview-map">
         <VisualMap
-          value={{ type: "workflow", spec: overview.spec }}
+          value={{
+            type: "workflow",
+            spec: overview.spec,
+            ...(overview.verified === null ? {} : { verified: overview.verified, issues: overview.issues ?? 0 }),
+          }}
           openOnCanvas={false}
           selectedNodeId={pickedId}
           onNodePick={(node) => setPickedId(node?.id ?? null)}

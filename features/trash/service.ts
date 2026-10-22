@@ -10,7 +10,7 @@
  * (common-docs/systems/architecture/database/data-lifecycle/projects/data-lifecycle-platform/PLAN.md), not to a button.
  */
 import { fetchRemovalRights } from "@/features/access-gate/service/hiddenByMe";
-import { RemovalNotYoursError } from "@/features/access-gate/cant-remove/cantRemoveOpener";
+import { RemovalNotYoursError } from "@ai-matrx/sharing/access/react";
 import { supabase } from "@/utils/supabase/client";
 import type { Database } from "@/types/database.types";
 import { tryWriteOne } from "@/utils/supabase/writeOne";

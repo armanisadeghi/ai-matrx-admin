@@ -8,7 +8,7 @@
 // Studio / Cleanup / Scribe), with the same secondary destinations the old
 // hub cards carried.
 
-import { ensureRemovable, offerOwnerChoices } from "@/features/access-gate/cant-remove/cantRemoveOpener";
+import { ensureRemovable, offerOwnerChoices } from "@ai-matrx/sharing/access/react";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useRouter } from "next/navigation";

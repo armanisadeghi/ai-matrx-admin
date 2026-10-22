@@ -15,14 +15,6 @@ import type { DeadEndAllowlistEntry } from "./types";
 
 export const DEAD_END_ALLOWLIST: DeadEndAllowlistEntry[] = [
   {
-    file: "components/official/entity-ref/EntityRef.tsx",
-    reason:
-      "EntityRef IS the door primitive. It renders the name/id fallback itself; " +
-      "flagging it would be the checker flagging its own fix.",
-    addedBy: "no-dead-ends detector",
-    addedOn: "2026-08-09",
-  },
-  {
     file: "features/admin/dead-ends/DeadEndsConsole.tsx",
     rule: "unlinked-entity-name",
     reason:
