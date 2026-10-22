@@ -14,6 +14,7 @@ import {
   NAV_ITEM_SELECTED,
   NAV_ITEM_UNSELECTED,
 } from "@/features/shell/components/header/navItemClasses";
+import { HEADER_MODE_PILL_TRACK } from "@/features/shell/components/header/RouteModeNav";
 import {
   NavItemTooltip,
   NavTooltipProvider,
@@ -32,7 +33,7 @@ export function TranscriptsModeController() {
 
   return (
     <NavTooltipProvider>
-      <div className="pointer-events-auto matrx-glass-thin-border flex min-w-0 items-center gap-0 rounded-full p-0.5">
+      <div className={`pointer-events-auto min-w-0 ${HEADER_MODE_PILL_TRACK}`}>
         {TRANSCRIPTS_MODES.map(({ id, label, icon: Icon, href, blurb }) => {
           const isActive = id === mode;
           return (

@@ -46,7 +46,6 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
@@ -55,10 +54,7 @@ import { UserIdentity } from "@/components/user/UserIdentity";
 import { SettingRequestActionButtons } from "@/features/access-gate/components/SettingRequestActionButtons";
 import { ResourceActionRequestButtons } from "@/features/access-gate/components/ResourceActionRequestButtons";
 import { RefreshCwTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import {
-  NAV_ITEM_SELECTED,
-  NAV_ITEM_UNSELECTED,
-} from "@/features/shell/components/header/navItemClasses";
+import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
@@ -351,29 +347,15 @@ export function AccessRequestsSurface() {
     );
   }
 
-  const tab = (target: Box, label: string, count: number) => (
-    <button
-      key={target}
-      type="button"
-      onClick={() => setBox(target)}
-      aria-current={box === target ? "page" : undefined}
-      className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs transition-colors",
-        box === target ? NAV_ITEM_SELECTED : NAV_ITEM_UNSELECTED,
-      )}
-    >
+  const tabLabel = (target: Box, label: string) => (
+    <span className="inline-flex items-center gap-1.5">
       {target === "inbox" ? (
         <Inbox className="h-3.5 w-3.5" aria-hidden />
       ) : (
         <Send className="h-3.5 w-3.5" aria-hidden />
       )}
       {label}
-      {count > 0 && (
-        <Badge className="pointer-events-none h-4 min-w-[16px] border-0 bg-primary px-1 text-[9px] font-semibold text-primary-foreground hover:bg-primary">
-          {count > 99 ? "99+" : count}
-        </Badge>
-      )}
-    </button>
+    </span>
   );
 
   return (
@@ -386,10 +368,15 @@ export function AccessRequestsSurface() {
           Access requests
         </span>
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          <div className="matrx-glass-thin-border inline-flex items-center gap-1 rounded-full p-1">
-            {tab("inbox", "To me", inboxCount)}
-            {tab("sent", "I sent", sentPending)}
-          </div>
+          <SegmentedControl<Box>
+            aria-label="Request box"
+            value={box}
+            onValueChange={setBox}
+            data={[
+              { value: "inbox", label: tabLabel("inbox", "To me"), count: inboxCount > 0 ? inboxCount : null },
+              { value: "sent", label: tabLabel("sent", "I sent"), count: sentPending > 0 ? sentPending : null },
+            ]}
+          />
           <RefreshCwTapButton
             ariaLabel="Refresh access requests"
             disabled={refreshing}
