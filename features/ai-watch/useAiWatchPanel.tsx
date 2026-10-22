@@ -82,6 +82,11 @@ import {
   type AiWatchRecord,
   type AiWatchRunSummary,
 } from "@/features/ai-watch/ai-watch-records";
+import { RunDataSection } from "@/features/ai-watch/data/RunDataSection";
+import { StepDataView } from "@/features/ai-watch/data/StepDataView";
+import { fetchRunSteps, type NodeOutcomeRow } from "@/features/ai-watch/data/ai-watch-data-reads";
+import { outcomeIdOf, railSteps } from "@/features/ai-watch/data/rail-steps";
+import { useKindSchema } from "@/features/tool-result-tables/useKindSchema";
 import {
   chooseRequestSource,
   continuationView,
@@ -207,6 +212,27 @@ export function useAiWatchPanel({
   }, [listActive, historyScope, listConversation]);
   useUserRequestChanges({ scope: "list", enabled: listActive, refresh: () => listRefresh.current() });
 
+  // Every recorded step of the page's workflow runs (AI and not): the non-AI ones join the rail
+  // beside the AI calls, so a lookup step's outside answers can be watched too. Re-read with the list.
+  const [steps, setSteps] = useState<NodeOutcomeRow[]>([]);
+  const [stepsError, setStepsError] = useState<string | null>(null);
+  const stepsRefresh = records.length;
+  useEffect(() => {
+    if (!listActive || !historyScope) return;
+    let cancelled = false;
+    fetchRunSteps(historyScope.split(",")).then(
+      (rows) => {
+        if (cancelled) return;
+        setSteps(rows);
+        setStepsError(null);
+      },
+      (err: unknown) => !cancelled && setStepsError(err instanceof Error ? err.message : String(err)),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [listActive, historyScope, stepsRefresh]);
+
   // Followed server work (factory builds, eval runs): their recorded calls join the rail as their own groups.
   const followedRuns = useFollowedRunSummaries();
   const followedWork = useFollowedWork();
@@ -233,7 +259,14 @@ export function useAiWatchPanel({
     setAppliedFocus(focusAt);
     if (doorTarget) setPicked(doorTarget);
   }
+  const aiNodeIdsByRun = new Map<string, Set<string>>();
+  for (const g of groups) {
+    if (!g.workflowRunId) continue;
+    aiNodeIdsByRun.set(g.workflowRunId, new Set(g.calls.map((c) => c.nodeId).filter((n): n is string => Boolean(n))));
+  }
+  const stepsByRun = railSteps(steps, aiNodeIdsByRun);
   const current = picked ?? autoSelection(groups, newestRun);
+  const pickedStep = mode === "page" ? steps.find((s) => s.id === outcomeIdOf(current)) ?? null : null;
   const currentRun = registry.find((r) => r.key === current || r.requestIds.includes(current ?? ""));
   const currentCall = groups.flatMap((g) => g.calls).find((c) => c.key === current);
   const serverId = mode === "everything" ? everythingPick : (currentRun?.serverRequestId ?? currentCall?.serverId ?? null);
@@ -277,6 +310,11 @@ export function useAiWatchPanel({
         {followedReadError ? (
           <div className="p-2">
             <ErrorNotice title="Followed work could not be read" message={followedReadError} />
+          </div>
+        ) : null}
+        {stepsError ? (
+          <div className="p-2">
+            <ErrorNotice title="The run's steps could not be read" message={stepsError} />
           </div>
         ) : null}
         {callCount === 0 && !listError ? <div className="p-2 text-muted-foreground">No AI calls on this page yet</div> : null}
@@ -324,6 +362,25 @@ export function useAiWatchPanel({
                 <span className="shrink-0 text-muted-foreground">{call.status ?? ""}</span>
               </button>
             ))}
+            {(group.workflowRunId ? stepsByRun.get(group.workflowRunId) ?? [] : []).map((step) => (
+              <button
+                key={step.key}
+                type="button"
+                onClick={() => setPicked(step.key)}
+                data-testid="ai-watch-rail-step"
+                className={cn(
+                  "flex w-full items-center justify-between gap-2 border-t border-border px-2 py-1.5 text-left hover:bg-muted",
+                  step.key === current && "bg-muted font-medium",
+                )}
+              >
+                <span className="truncate" title={step.label}>
+                  {step.label}
+                </span>
+                <span className="shrink-0 text-muted-foreground">
+                  {step.failed ? "failed" : step.hasRaw ? "step · raw" : "step"}
+                </span>
+              </button>
+            ))}
           </div>
         ))}
           </>
@@ -333,11 +390,15 @@ export function useAiWatchPanel({
         {mode === "page" && currentCall && groups.find((g) => g.calls.includes(currentCall))?.workflowRunId ? (
           <RunTestReplaysStrip runId={groups.find((g) => g.calls.includes(currentCall))?.workflowRunId as string} />
         ) : null}
-        <AiWatchRunView
-          key={serverId ?? current ?? "none"}
-          serverId={serverId}
-          requestIds={mode === "everything" ? [] : (currentRun?.requestIds ?? [])}
-        />
+        {pickedStep ? (
+          <StepDataView key={pickedStep.id} step={pickedStep} />
+        ) : (
+          <AiWatchRunView
+            key={serverId ?? current ?? "none"}
+            serverId={serverId}
+            requestIds={mode === "everything" ? [] : (currentRun?.requestIds ?? [])}
+          />
+        )}
       </div>
     </>
   );
@@ -451,6 +512,12 @@ function AiWatchRunView({ serverId, requestIds }: { serverId: string | null; req
           />
         ) : null}
       </Section>
+
+      <RunDataSection
+        serverId={serverId}
+        snapshots={record?.snapshots ?? []}
+        refreshKey={`${record?.status ?? ""}:${record?.toolCalls ?? ""}:${record?.snapshots.length ?? 0}`}
+      />
 
       {captures.children.length ? (
         <Section title="Sub-agent runs">
@@ -791,13 +858,16 @@ function MandateSection({
 
       <Section title={changed ? "Goal · definition changed since this run" : "Goal"}>
         <Block label={`Goal (definition v${frame.definition_version ?? "?"})`} value={frame.goal ?? "No goal set"} open />
+        {frame.output_kind ? <OutputKindSchema kind={frame.output_kind} /> : null}
         {versionId ? (
           versionError ? (
             <ErrorNotice title="The agent version could not be read" message={versionError} />
           ) : (
             <>
               <Block label={`Instructions (v${version?.versionNumber ?? "?"})`} value={system ?? "Not readable here"} />
-              <Block label="Output schema" value={version?.outputSchema ?? "None declared"} />
+              {frame.output_kind ? null : (
+                <Block label="Output schema · agent version (no output kind)" value={version?.outputSchema ?? "None declared"} />
+              )}
             </>
           )
         ) : (
@@ -805,6 +875,18 @@ function MandateSection({
         )}
       </Section>
     </>
+  );
+}
+
+/** The output kind's schema as the kind registry holds it (`content_ir.kind_definition`) — the contract the run's
+ * answer is checked against, never a copy on the agent version. */
+function OutputKindSchema({ kind }: { kind: string }) {
+  const schema = useKindSchema(kind);
+  return (
+    <Block
+      label={`Output kind schema · ${kind} (kind registry)`}
+      value={schema === undefined ? "Reading the kind registry" : (schema ?? "The kind registry has no schema for this kind")}
+    />
   );
 }
 
