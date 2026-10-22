@@ -24,7 +24,11 @@ jest.mock("@/lib/url-state/addressWithoutNavigating", () => ({
   replaceAddressWithoutNavigating: (href: string) => replaced.push(href),
 }));
 // The heavy grid: stands in as a marker carrying the table id it was asked to draw.
-jest.mock("next/dynamic", () => () => (props: { tableId: string }) => <div data-testid="located-table" data-table={props.tableId} />);
+jest.mock("next/dynamic", () => () =>
+  function LocatedTableStandIn(props: { tableId: string }) {
+    return <div data-testid="located-table" data-table={props.tableId} />;
+  },
+);
 jest.mock("@ai-matrx/design-system/data-table", () => ({
   MatrxDataTable: ({ data, onRowOpen }: { data: { id: string }[]; onRowOpen: (r: { id: string }) => void }) => (
     <ul data-testid="past-runs">
