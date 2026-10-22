@@ -146,6 +146,9 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
     const key = `${v.table}\u0000${String(v.name ?? "").trim().toLowerCase()}`;
     if (v.name && storeViewNames.has(key)) say(`spec.views[${i}].name`, `Two views of "${v.table}" are named "${v.name}"; give each view its own name.`);
     storeViewNames.add(key);
+    const table = tables.get(v.table);
+    const me = table && !startsEmpty ? meViewSeedFinding(table, v as unknown as Record<string, unknown>) : null;
+    if (me) say(`spec.views[${i}].me`, me);
   });
   for (const t of every) checkLookValues(t, say);
   for (const t of every) checkChoiceColors(t, say);
@@ -205,7 +208,7 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   pages.forEach((p, i) => {
     if (!isObj(p) || !Array.isArray(p.blocks)) return;
     const base = `pages[${i}] (${p.key})`;
-    checkTokens(p.blocks, `${base}.blocks`, { tables, views, keys }, say);
+    checkTokens(p.blocks, `${base}.blocks`, { tables, views, keys, startsEmpty }, say);
     let n = 0;
     const blocks = resolvePackBlocks(p.blocks, { tables: fakeTables, pages: fakePages, newId: () => `b${++n}` });
     const snapshot = { v: 1, settings: packPageSettings(p as PackPage), icon: p.icon ?? null, cover: p.cover ?? null, ...(p.properties ? { properties: p.properties } : {}), blocks };
@@ -505,6 +508,8 @@ interface TokenWorld {
   tables: Map<string, TemplateSpec["tables"][number]>;
   views: Map<string, TemplateSpec["views"][number]>;
   keys: Set<string>;
+  /** A board that starts empty seeds no rows, so a "My" view has nothing to show by design. */
+  startsEmpty?: boolean;
 }
 
 function checkSpans(spans: RichSpan[] | undefined, at: string, w: TokenWorld, say: (at: string, says: string) => void) {
@@ -584,6 +589,13 @@ function checkTokens(blocks: PackBlock[], path: string, w: TokenWorld, say: (at:
             field(v.chart.field, "chart.field");
           }
           checkFilterWords(v, vat, src.table, fields, typeOf, choicesOf, say);
+          if (!w.startsEmpty) {
+            const me = meViewSeedFinding(table, v);
+            if (me) say(`${vat}.me`, me);
+          }
+          for (const f of cardAmountFields(table.fields, v)) {
+            say(`${vat}.hiddenFields`, `"${f.key}" (${f.label ?? f.key}) would show on every ${String(v.layout)} card as a bare amount, and ${f.why}. Add "${f.key}" to hiddenFields; keep an amount on a card only when the card's title says what it is (a cost line, a payout, a quote).`);
+          }
           for (const key of cardStampFields(table.fields, v)) {
             say(`${vat}.hiddenFields`, `"${key}" is a created/edited stamp and would end every ${String(v.layout)} card as a date with no label. Add "${key}" to hiddenFields (the Properties menu can still show it).`);
           }
@@ -598,6 +610,62 @@ function checkTokens(blocks: PackBlock[], path: string, w: TokenWorld, say: (at:
 }
 
 const CARD_LAYOUTS = ["kanban", "gallery", "calendar", "timeline"];
+
+type CardField = { key: string; label?: unknown; parityType?: unknown; format?: unknown; unit?: unknown };
+/** A money label on a derived or standing amount: a bare "$99.00" under it cannot be read as this card's own price. */
+const STANDING_AMOUNT = /\b(per|limit|average|avg|monthly|weekly|yearly|annual|rate|dues|advance|unit|each|retail|wholesale|suggested|list price|bill|budget|credit|floor|cap)\b/i;
+const MONEY_LABEL = /\((USD|EUR|GBP|CAD|AUD)\)|\$/;
+const isMoney = (f: CardField) =>
+  f.parityType === "currency" || (["rollup", "lookup", "formula"].includes(String(f.parityType)) && (f.format === "currency" || MONEY_LABEL.test(String(f.label ?? ""))));
+
+/** The fields a card view shows (title excluded), mirroring features/spaces/data/view-spec.ts effectiveHidden. */
+function cardShownFields<F extends CardField>(fields: ReadonlyArray<F>, view: Record<string, unknown>): F[] {
+  const rest = fields.slice(1).filter((f) => f.key !== view.groupField);
+  if (Array.isArray(view.hiddenFields)) return rest.filter((f) => !(view.hiddenFields as unknown[]).includes(f.key));
+  return rest.filter((f) => f.key !== view.dateField && !DATE_ONLY_KINDS.includes(String(f.parityType))).slice(0, 4);
+}
+
+/**
+ * The amounts a card would show that a reader cannot place (ADVERSARIAL-7 F2). A card draws values with no property
+ * name, so "Castellano-Reyes household · Rural co-op · $126.00" leaves the reader guessing. An amount is ambiguous when
+ * the card shows two of them, when it is a total or a looked-up figure from other rows (it reads as this card's own
+ * price), or when its label names a standing amount (a monthly fee, a credit limit, a cost per unit, an advance).
+ */
+export function cardAmountFields(fields: ReadonlyArray<CardField>, view: Record<string, unknown>): Array<CardField & { why: string }> {
+  if (typeof view.layout !== "string" || !CARD_LAYOUTS.includes(view.layout)) return [];
+  const money = cardShownFields(fields, view).filter(isMoney);
+  return money.flatMap((f) => {
+    if (money.length > 1) return [{ ...f, why: "the card shows another amount beside it" }];
+    if (f.parityType !== "currency") return [{ ...f, why: "it is a figure added up or looked up from other rows" }];
+    if (STANDING_AMOUNT.test(String(f.label ?? f.key))) return [{ ...f, why: "it is a standing amount, not this card's own price" }];
+    return [];
+  });
+}
+
+const INSTALLER = "@installer";
+type SeedTable = { fields: ReadonlyArray<{ key: string; parityType?: unknown }>; rows?: ReadonlyArray<{ values?: Record<string, unknown> }> };
+/**
+ * A "My ..." view (`me`) opens empty unless a seed row names the person who installs (ADVERSARIAL-7 F1). At least one
+ * seed row must put "@installer" in one of the view's person fields and match its filters and any-of choices
+ * (relative days are left to the day the copy is opened).
+ */
+export function meViewSeedFinding(table: SeedTable, view: Record<string, unknown>): string | null {
+  const me = Array.isArray(view.me) ? (view.me as unknown[]).filter((k): k is string => typeof k === "string") : [];
+  if (!me.length) return null;
+  // A created_by / modified_by field names whoever installs on every seed row already (the install writes them).
+  const kinds = new Map(table.fields.map((f) => [f.key, String(f.parityType)] as const));
+  if (me.some((k) => kinds.get(k) === "created_by" || kinds.get(k) === "modified_by")) return null;
+  const filters = isObj(view.filters) ? view.filters : {};
+  const anyOf = isObj(view.anyOf) ? view.anyOf : {};
+  const names = (x: unknown) => x === INSTALLER || (Array.isArray(x) && x.includes(INSTALLER));
+  const hit = (table.rows ?? []).some((r) => {
+    const v = r.values ?? {};
+    if (!me.some((k) => names(v[k]))) return false;
+    if (Object.entries(filters).some(([k, want]) => typeof want !== "object" && want !== "@this-row" && v[k] !== want)) return false;
+    return Object.entries(anyOf).every(([k, list]) => !Array.isArray(list) || list.includes(v[k] as never));
+  });
+  return hit ? null : `This "My" view opens empty for whoever installs: no seed row puts "${INSTALLER}" in ${me.map((k) => `"${k}"`).join(" or ")} and matches the view's filters. Seed "${INSTALLER}" on two or three open rows.`;
+}
 const STAMP_KINDS = ["created_time", "modified_time"];
 const DATE_ONLY_KINDS = ["date", "datetime"];
 
