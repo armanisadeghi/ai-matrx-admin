@@ -34,7 +34,10 @@
  * reading), and the conversation stays reachable at `/chat/<id>`.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { AI_WORK_COMPOSER_SURFACE_NAME } from "@/features/surfaces/manifests/ai-work-composer.manifest";
+import { buildComposerScope } from "../composerSurface";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -851,14 +854,49 @@ function ComposerBody({
     runsOnDevice !== null ? `&runs_on=${encodeURIComponent(runsOnDevice)}${computerScheduleParams(computerPlan)}` : ""
   }`;
 
+  // The page's agent surface: every value from state this body already holds.
+  const getScope = () =>
+    buildComposerScope({
+      requestText,
+      destinationId: destination,
+      destinationAvailable: destinationAvailability(
+        destination,
+        bridgeCapability,
+        localCapability ?? undefined,
+        codexBridgeCapability,
+      ).selectable,
+      runsOnName: runsOnDevice !== null ? (runsOnName ?? runsOnDevice) : null,
+      agentId,
+      agentName: defaultAgentName ?? null,
+      conversationId,
+      skillIds,
+      homes,
+      localFolder,
+      savedLabel,
+      savedRequestId: saved?.id ?? null,
+      launchedConversationId: launched,
+      canRun,
+      runStatus,
+    });
+
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 pt-4">
+    <SurfaceRuntimeProvider
+      surfaceName={AI_WORK_COMPOSER_SURFACE_NAME}
+      getScope={getScope}
+      // The run being assembled here is this page's OWN conversation: it never sees the page.
+      ownConversationId={conversationId}
+    >
+    <NonEditableContextMenu
+      sourceFeature="chat"
+      surfaceName={AI_WORK_COMPOSER_SURFACE_NAME}
+      menuVersion={1}
+      getApplicationScope={getScope}
+      contentSource={{ type: "raw" }}
+    >
+    <div className="matrx-touch-targets mx-auto flex max-w-3xl flex-col gap-3 px-4 pt-4">
       {runsOnDevice !== null && (
         <ComputerConnection key={runsOnDevice} deviceId={runsOnDevice} onConnection={setComputerConnection} />
       )}
-      <header>
-        <div className="flex items-center gap-1.5"><h1 className="text-lg font-semibold text-foreground">Start work</h1><InfoHint text="Say what you want done, choose who does it and what they should know, then run it now or save it." label="About starting work" /></div>
-      </header>
 
       <ComposerSection
         step={1}
@@ -1271,5 +1309,7 @@ function ComposerBody({
         )}
       </div>
     </div>
+    </NonEditableContextMenu>
+    </SurfaceRuntimeProvider>
   );
 }
