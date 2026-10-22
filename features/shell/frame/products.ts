@@ -107,6 +107,10 @@ import {
   Wrench,
 } from "lucide-react";
 import { INTELLIGENCE_ICON } from "@ai-matrx/icons/domain";
+// HR is the one product whose URLs are owned by a routes module rather than
+// written here — `features/hr/__tests__/no-hand-built-hr-urls.test.ts` fails a
+// literal in navigation position. The other products have no such module.
+import { HR_HREF } from "@/features/hr/routes";
 import type { FrameProduct, ProductFamily } from "./types";
 
 export const PRODUCT_FAMILIES: readonly { id: ProductFamily; label: string }[] = [
@@ -419,7 +423,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
     family: "business",
     icon: IdCard,
     color: "amber",
-    homeHref: "/hr",
+    homeHref: HR_HREF,
     menu: oneSection([
       { id: "home", label: "Home", icon: House },
       { id: "my-info", label: "My info", icon: UserRound },
