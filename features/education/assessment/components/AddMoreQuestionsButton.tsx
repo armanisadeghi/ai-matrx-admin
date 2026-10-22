@@ -19,7 +19,7 @@ import { emptyRunMessage } from "@/features/education/convert/segmentedGenerate"
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Button } from "@/components/ui/button";
 import { Chip, ChipSet } from "@ai-matrx/design-system/controls";

@@ -34,7 +34,7 @@ import { ArrowRight } from "lucide-react";
 import type { CanonicalBlockIR } from "@ai-matrx/content-ir";
 import { Button } from "@/components/ui/button";
 import { Input, SegmentedControl } from "@ai-matrx/design-system/controls";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
