@@ -68,6 +68,7 @@ import os from "node:os";
 import path from "node:path";
 import { agentTrafficHeaders, markBrowserAgentTraffic } from "./lib/agent-traffic.mjs";
 import { fillSecret } from "./lib/seat-browser.mjs";
+import { egressProxyBrowserArgs } from "./lib/egress-proxy-browser-args.mjs";
 
 const require = createRequire(import.meta.url);
 
@@ -346,7 +347,8 @@ const context = await chromium.launchPersistentContext(profileDir, {
   // Never run stale app code: no service worker, and the HTTP cache is
   // cleared below (the profile keeps only the sign-in).
   serviceWorkers: "block",
-  args: ["--no-sandbox"],
+  // A cloud container reaches the live site through the egress proxy.
+  args: ["--no-sandbox", ...egressProxyBrowserArgs("page-look")],
   ...(executablePath ? { executablePath } : {}),
 });
 await markBrowserAgentTraffic(context, "page-look", opts.base);

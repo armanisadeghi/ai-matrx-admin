@@ -65,6 +65,7 @@ import os from "node:os";
 import path from "node:path";
 import { agentTrafficHeaders, markBrowserAgentTraffic } from "./lib/agent-traffic.mjs";
 import { fillSecret } from "./lib/seat-browser.mjs";
+import { egressProxyBrowserArgs } from "./lib/egress-proxy-browser-args.mjs";
 
 const require = createRequire(import.meta.url);
 
@@ -171,38 +172,8 @@ const executablePath = ["/opt/pw-browsers/chromium", process.env.SURFACE_PROBE_C
   .find((p) => existsSync(p));
 
 const isLocal = /\.localhost(:\d+)?$|\/\/localhost(:\d+)?$|127\.0\.0\.1/.test(opts.base);
-const launchArgs = ["--no-sandbox"];
-const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
-if (proxy) {
-  launchArgs.push(`--proxy-server=${proxy}`);
-  launchArgs.push("--proxy-bypass-list=<local>;*.localhost;localhost;127.0.0.1");
-}
-// Trust the egress proxy's CA by pinned key hash — never a blanket TLS disable
-// (docs/official/browser-testing.md, "From a private worktree" step 3).
-const caBundle = "/root/.ccr/ca-bundle.crt";
-if (existsSync(caBundle)) {
-  try {
-    const pems = readFileSync(caBundle, "utf8").match(
-      /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g,
-    ) ?? [];
-    const hashes = [];
-    for (const pem of pems) {
-      try {
-        hashes.push(
-          execSync(
-            "openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl base64",
-            { input: pem, encoding: "utf8", shell: "/bin/bash", stdio: ["pipe", "pipe", "ignore"] },
-          ).trim(),
-        );
-      } catch {
-        /* a certificate openssl cannot read is skipped */
-      }
-    }
-    if (hashes.length) launchArgs.push(`--ignore-certificate-errors-spki-list=${hashes.join(",")}`);
-  } catch {
-    console.error("[surface-probe] could not derive CA key hashes; continuing without them");
-  }
-}
+// The egress-proxy CA is trusted by pinned key hash, never a blanket TLS disable.
+const launchArgs = ["--no-sandbox", ...egressProxyBrowserArgs("surface-probe")];
 
 const host = new URL(opts.base).host.replace(/[^a-z0-9.-]/gi, "_");
 const profileDir = path.join(os.tmpdir(), "surface-probe-profiles", host);
@@ -310,9 +281,24 @@ async function openAgentsMenu(page) {
   return false;
 }
 
+/**
+ * The Agents popover's entry that opens the page's values window. It was
+ * "Surface Context"; the 2026-10 popover calls it "This page" ("Values,
+ * actions, agents"), and a probe that knew only the old words failed on every
+ * page. Either label opens the same window.
+ */
+const SURFACE_CONTEXT_ENTRIES = ["Surface Context", "This page"];
+
+async function clickSurfaceContextEntry(page) {
+  for (const label of SURFACE_CONTEXT_ENTRIES) {
+    if (await pointerClick(page, "[data-radix-popper-content-wrapper] button", label)) return true;
+  }
+  return false;
+}
+
 async function openSurfaceContext(page) {
   if (!(await openAgentsMenu(page))) return false;
-  const ok = await pointerClick(page, "[data-radix-popper-content-wrapper] button", "Surface Context");
+  const ok = await clickSurfaceContextEntry(page);
   await page.waitForTimeout(4000);
   return ok;
 }
@@ -620,8 +606,8 @@ try {
           .join(" "),
       );
       result.surfaceNamed = popover.includes(opts.surface);
-      if (!(await pointerClick(page, "[data-radix-popper-content-wrapper] button", "Surface Context")))
-        result.errors.push('"Surface Context" not found in the Agents popover');
+      if (!(await clickSurfaceContextEntry(page)))
+        result.errors.push('neither "This page" nor "Surface Context" found in the Agents popover');
       await page.waitForTimeout(4000);
       result.before = await readProbe(page);
       // The surface key is an admin-only diagnostic in the Agents popover (and
