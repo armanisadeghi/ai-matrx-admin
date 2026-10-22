@@ -93,6 +93,14 @@ For the Intelligence menu owner (display waits on Arman's menu design, surface-d
 - The chain is precomputed in `ui.mv_surface_chain`, re-rolled by statement triggers on `ui.ui_surface` only when a name, parent or deleted state changes. Bindings are joined live, so a new binding shows on the next read with no refresh. An unregistered surface gets its own bindings plus AI Matrx. The `matrx-default/basic-*` default contracts are not ancestors; the current menu still adds them itself.
 - Cost (live, 2026-10-22): ~1 ms for the agent half; ~45 ms for the shortcut half. Nearly all of that is the existing `mandate.definition` / `mandate.treatment` access policies (`iam.accessible_entity_ids`), which today's whole-catalog `context_menu_slim_view` read also pays. Migration: aidream `db/migrations/20261023120500_ui_surface_intelligence_chain.sql`; proof: aidream `tests/test_surface_intelligence_reads_the_chain_live.py`.
 
+## What the agent receives — the exact blocks (W6-A, 2026-10-22)
+
+For the per-surface admin page's "What the agent receives" panel and for reviews. **`POST {server}/admin/surface-evidence/receives`** (admin; MCP: `surface_evidence` `action="receives"`). Body, one of:
+- **A surface + values** — `{ surface, values }` (what the page would send as `request.context`), or `{ surface, from_last_check: true }` (the values the last probe recorded in `ui_surface.last_check.values` — its previews, e.g. "8 fields", not the full values). Optional `agent_id`, `organization_id`, `live_tool_names` / `live_write_targets` (what the page mounts; omitted = none live, so write targets list as declared-only). Composed by the run path's own preview (`/ai/context/preview` → `preview_render` → `apply_surface_context`), so it cannot drift from a turn.
+- **A sent turn** — `{ conversation_id }` (newest turn with a receipt), `{ message_id }` or `{ request_id }`: each receipt block re-found by hash in what the turn recorded; a block whose text is gone has `retained: false` and a note saying only its hash was kept.
+
+Returns `blocks[]` (`id`, `label`, `chars`, `sha256`, `text`, `retained`, `source`), `situation` (the delivered `<situation>`), and `checks`: `paragraphs` (each chain level's paragraph and where it sits), `chain_order_ok` (module before page), `raw_blanks`, `not_known`. Service: aidream `services/surface_evidence/receives.py`.
+
 ## Edge Payload System (v1, 2026-07-19 — Arman-approved)
 
 **Real logic on a `platform.associations` edge lives in `payload`, typed by `payload_kind` and schema-validated at the DB edge. `metadata` is for loose annotations only — a payload without a kind is rejected.**
