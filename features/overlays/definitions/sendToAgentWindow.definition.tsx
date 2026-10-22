@@ -18,6 +18,5 @@ export const sendToAgentWindowOverlay = defineOverlay<SendToAgentWindowDefinitio
         },
     windowId: "send-to-agent-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

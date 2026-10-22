@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
-import { mayTakeFocusOnOpen } from "@/components/matrx/resizable/focusOnOpen";
 import type { FloatingFrameSize } from "@ai-matrx/summon/lite";
 
 /**
@@ -173,6 +172,7 @@ export function MatrxDynamicPanelHost({
         : null;
     let retryFrame: number | null = null;
     let retryTimer: number | null = null;
+    let mayTakeFocusOnOpen: (container: HTMLElement | null) => boolean = () => false;
 
     const focusPreferredTarget = (allowFallbackControls: boolean) => {
       const panel = panelRef.current;
@@ -209,19 +209,28 @@ export function MatrxDynamicPanelHost({
       return fieldTarget != null;
     };
 
-    const frame = requestAnimationFrame(() => {
-      const foundField = focusPreferredTarget(false);
-      if (foundField) return;
-      retryFrame = requestAnimationFrame(() => {
-        focusPreferredTarget(true);
+    // The focus rule is summon's (`mayTakeFocusOnOpen`, `@ai-matrx/summon/lite`), loaded with the first
+    // open: this host sits in the boot graph, where a heavy summon entry may not be imported statically.
+    let cancelled = false;
+    let frame: number | null = null;
+    void import("@ai-matrx/summon/lite").then((lite) => {
+      if (cancelled) return;
+      mayTakeFocusOnOpen = lite.mayTakeFocusOnOpen;
+      frame = requestAnimationFrame(() => {
+        const foundField = focusPreferredTarget(false);
+        if (foundField) return;
+        retryFrame = requestAnimationFrame(() => {
+          focusPreferredTarget(true);
+        });
+        retryTimer = window.setTimeout(() => {
+          focusPreferredTarget(true);
+        }, 120);
       });
-      retryTimer = window.setTimeout(() => {
-        focusPreferredTarget(true);
-      }, 120);
     });
 
     return () => {
-      cancelAnimationFrame(frame);
+      cancelled = true;
+      if (frame != null) cancelAnimationFrame(frame);
       if (retryFrame != null) cancelAnimationFrame(retryFrame);
       if (retryTimer != null) window.clearTimeout(retryTimer);
       if (returnFocusTo?.isConnected) {

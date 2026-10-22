@@ -15,6 +15,5 @@ export const errorInspectorWindowOverlay = defineOverlay<ErrorInspectorWindowDef
     restoreDefaults: {},
     windowId: "error-inspector-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

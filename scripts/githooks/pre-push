@@ -1,0 +1,50 @@
+#!/bin/sh
+# Versioned pre-push hook for matrx-frontend (core.hooksPath = scripts/githooks, see install_githooks.sh).
+#
+# ONE JOB: a push that changes pnpm-lock.yaml may not carry a lockfile whose @ai-matrx versions no longer
+# ship something the code imports. 2026-10-21: commit 689c27aa4d adopted @ai-matrx/chat 0.8.307 by editing
+# the lockfile alone; nothing was installed, so every installed-package check passed, and 0.8.307 had dropped
+# `setDebrief`: two Vercel releases failed. The commit hook cannot see a commit made with --no-verify or by a
+# sweep; this one runs on what is about to LEAVE the machine. It reads the pushed commit, never the working tree.
+# Remedy: fix the importer (or restore the export in the package), or put the lockfile back. Never pin.
+set -u
+HOOK_DIR=$(cd "$(dirname "$0")" && pwd)
+ROOT=$(cd "$HOOK_DIR/../.." && pwd)
+ZERO=0000000000000000000000000000000000000000
+
+# Setting core.hooksPath disables .git/hooks; keep any local hook of the same name running.
+LOCAL_HOOK="$(git rev-parse --git-common-dir)/hooks/pre-push"
+if [ -x "$LOCAL_HOOK" ]; then
+    # stdin is consumed below, so run the local hook on a copy of it
+    INPUT=$(cat)
+    printf '%s\n' "$INPUT" | "$LOCAL_HOOK" "$@" || exit $?
+else
+    INPUT=$(cat)
+fi
+
+REFS=$(mktemp "${TMPDIR:-/tmp}/matrx-prepush.XXXXXX")
+trap 'rm -f "$REFS"' EXIT
+printf '%s\n' "$INPUT" >"$REFS"
+# (a file, not a pipe: `exit 1` inside a piped loop would only leave its subshell and let the push through)
+while read -r local_ref local_sha remote_ref remote_sha; do
+    [ -n "${local_sha:-}" ] || continue
+    [ "$local_sha" != "$ZERO" ] || continue            # a deletion
+    [ "$remote_ref" = "refs/heads/main" ] || continue  # only what lands on main is built
+    [ "${MATRX_LOCK_IMPORTS_CHECKED:-}" != "$local_sha" ] || continue   # sync-main judged this exact commit
+    if [ "$remote_sha" != "$ZERO" ] && git cat-file -e "$remote_sha^{commit}" 2>/dev/null \
+        && git diff --quiet "$remote_sha" "$local_sha" -- pnpm-lock.yaml; then
+        continue                                        # the lockfile is the one origin already has
+    fi
+    git cat-file -e "$local_sha:pnpm-lock.yaml" 2>/dev/null || continue
+    if ! command -v node >/dev/null 2>&1; then
+        echo "PUSH REFUSED: the lockfile adoption check needs node on PATH and could not find it." >&2
+        exit 1
+    fi
+    (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock --ref "$local_sha")
+    RC=$?
+    if [ "$RC" -ne 0 ]; then
+        echo "PUSH REFUSED: pnpm-lock.yaml in $local_sha adopts @ai-matrx versions the code cannot build against (named above; exit $RC)." >&2
+        echo "  Fix the importer (or restore the export in the package), or put the lockfile back. Never pin." >&2
+        exit 1
+    fi
+done <"$REFS"

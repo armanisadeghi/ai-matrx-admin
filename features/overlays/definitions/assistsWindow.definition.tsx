@@ -15,6 +15,5 @@ export const assistsWindowOverlay = defineOverlay<AssistsWindowDefinitionData>()
     restoreDefaults: {},
     windowId: "assists-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

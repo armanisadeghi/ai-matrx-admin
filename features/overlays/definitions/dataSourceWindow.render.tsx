@@ -6,7 +6,6 @@ import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
 
-        const isOpen = true;
         const data = overlayData as
           Record<string, unknown> | null | undefined;
         const sourceKey = typeof data?.sourceKey === "string" ? data.sourceKey : null;
@@ -14,7 +13,7 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
           data?.values && typeof data.values === "object"
             ? (data.values as Record<string, string>)
             : undefined;
-        if (!isOpen || !sourceKey) return <OverlayNeedsData overlayId="dataSourceWindow" onClose={close} />;
+        if (!sourceKey) return <OverlayNeedsData overlayId="dataSourceWindow" onClose={close} />;
         return (
           <DataSourceWindow
             isOpen

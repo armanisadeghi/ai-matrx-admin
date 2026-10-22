@@ -20,7 +20,6 @@ export const accessSetupWindowOverlay = defineOverlay<AccessSetupWindowDefinitio
         },
     windowId: "access-setup-window",
     mobile: "drawer",
-    ephemeral: true,
   },
   link: {
     key: "access-setup",

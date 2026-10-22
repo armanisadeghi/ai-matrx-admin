@@ -15,7 +15,6 @@ export const approvalsWindowOverlay = defineOverlay<ApprovalsWindowDefinitionDat
     restoreDefaults: {},
     windowId: "approvals-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
   link: {
     key: "approvals",

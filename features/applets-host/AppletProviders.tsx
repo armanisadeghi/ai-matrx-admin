@@ -50,7 +50,6 @@ import DeferredSingletonWrapper from "@/app/DeferredSingletonWrapper";
 import { AppSummonProvider } from "@/features/overlays/host/AppSummonProvider";
 import { MediaHostProvider } from "@/features/files/media-client/MediaHostProvider";
 import { ConfirmDialogHost } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { ClipboardFallbackHost } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackHost";
 import { ValuePromptsDialogHost } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
 import { GlobalAuthSync } from "@/features/auth/components/GlobalAuthSync";
 import { GuestAiAllowanceBridge } from "@/components/guest/GuestAiAllowanceBridge";
@@ -84,7 +83,6 @@ export function AppletProviders({ children }: { children: React.ReactNode }) {
                                           <DeferredSingletonWrapper />
                                           <ConfirmDialogHost />
                                           <ComingSoonClient />
-                                          <ClipboardFallbackHost />
                                           <ValuePromptsDialogHost />
                                           <AgentPeekHost />
                                         </MediaHostProvider>

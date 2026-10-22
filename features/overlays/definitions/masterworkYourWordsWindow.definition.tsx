@@ -15,6 +15,5 @@ export const masterworkYourWordsWindowOverlay = defineOverlay<MasterworkYourWord
     restoreDefaults: { rulebookId: null },
     windowId: "masterwork-your-words-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

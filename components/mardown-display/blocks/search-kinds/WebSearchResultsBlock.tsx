@@ -101,11 +101,22 @@ export default function WebSearchResultsBlock({
   const topStories = news.length > 0 && (
     <section>
       <SectionHeading label={webLike ? "Top stories" : "News"} />
-      <div className="grid grid-cols-2 gap-3 @lg:grid-cols-3">
-        {news.map((item, i) => (
-          <SearchKindNested key={i} value={item} />
-        ))}
-      </div>
+      {webLike ? (
+        // Google's carousel: one row of story cards that scrolls sideways.
+        <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2 scrollbar-none">
+          {news.map((item, i) => (
+            <div key={i} className="w-[220px] shrink-0 snap-start">
+              <SearchKindNested value={item} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 @lg:grid-cols-3">
+          {news.map((item, i) => (
+            <SearchKindNested key={i} value={item} />
+          ))}
+        </div>
+      )}
     </section>
   );
 

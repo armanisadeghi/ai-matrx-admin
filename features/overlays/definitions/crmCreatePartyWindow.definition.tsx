@@ -15,6 +15,5 @@ export const crmCreatePartyWindowOverlay = defineOverlay<CrmCreatePartyWindowDef
     restoreDefaults: { initialKind: "person", initialOrgId: null },
     windowId: "crm-create-party-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

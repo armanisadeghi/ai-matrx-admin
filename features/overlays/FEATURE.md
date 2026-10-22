@@ -36,11 +36,12 @@ features/overlays/
 
 | Piece | Where | What it does |
 |---|---|---|
-| Store | `lib/redux/rootReducer.ts` (`...summonReducers`), `lib/redux/store.ts` (`createSummonMiddleware`, `bindOverlayStoreState`) | The package's four slices (`overlays`, `windowManager`, `urlSync`, `overlayState`) live in the one app store. |
-| Provider | `features/overlays/host/AppSummonProvider.tsx`, mounted in `app/Providers.tsx` and `features/applets-host/AppletProviders.tsx` | `SummonProvider` with the app ports, a `renderWrapper` that puts every rendered overlay inside the chat surface layer boundary, the error card's admin "Copy for AI" extra, then `WindowsProvider` and `WindowTraySync` (`@ai-matrx/summon/window-host`). |
-| Ports | `host/ports.ts` | `identity` (`auth:<id>` / `guest:<fingerprint>`, ready from auth), `notify` (`@/lib/toast`), `errors` (`captureError`, named `overlays:<source>`), `debug` (admin debug mode), `persistence` (`createDataPersistence` over `@ai-matrx/data`, organization = active org). |
-| Services | `host/OverlayServices.tsx` (in `app/DeferredSingletonCore.tsx`) | `OverlayLinkManager` and `OverlayPersistence`, running before anything opens; dev-only `window.__overlaysTest`. |
-| World | `app/DeferredSingletonWrapper.tsx` → `app/DeferredOverlayWorld.tsx` → `host/OverlayWorldHost.tsx` | `<SummonHost definitions={APP_OVERLAYS} />`, loaded on the first open only. |
+| Gate | `lib/redux/store.ts` (`createBootGate` from `@ai-matrx/summon/boot`, `ports: createStoreOverlayPorts()`) | No summon slice or middleware at first load. `summonGate.middleware` queues overlay/window actions; the first one loads the core, `attachReducer` injects its four slices (`overlays`, `windowManager`, `urlSync`, `overlayState`) into the one app store (`rootReducer.inject`), then the queue flushes. |
+| Root | `features/overlays/host/AppSummonProvider.tsx` (`SummonRoot` from `@ai-matrx/summon/boot-root`), mounted in `app/Providers.tsx` | Hands the app store and ports to summon's context, with a `renderWrapper` that puts every rendered overlay inside the chat surface layer boundary, the error card's admin "Copy for AI" extra (lazy), and the window options. `runtime` lazily loads `host/AppSummonRuntime.tsx` (Next router port + `WindowTraySync`) only once the core has loaded. |
+| Ports | `host/ports.ts` | `identity` (`auth:<id>` / `guest:<fingerprint>`, ready from auth), `notify` (`@/lib/toast`), `errors` (`captureError`, named `overlays:<source>`), `debug` (admin debug mode), `persistence` (`createDataPersistence` from `@ai-matrx/summon/persistence/data`, imported on first use; organization = active org), `router` (`appRouterPort`). |
+| Services | `host/OverlayServices.tsx` (in `app/DeferredSingletonCore.tsx`) | `OverlayLinkManager` (`./url`) and `OverlayPersistence` (`./persistence`), running before anything opens; dev-only `window.__overlaysTest`. |
+| World | `app/DeferredSingletonWrapper.tsx` → `app/DeferredOverlayWorld.tsx` → `host/OverlayWorldHost.tsx` | `<SummonHost definitions={APP_OVERLAYS} renders={RENDER_MAP} />` (`./react`), loaded on the first open only (`selectAnyOverlayTouched` from `./boot-kit`). |
+| Light kit | `@ai-matrx/summon/boot-kit` | What first-load code may import: `formatLinkToken` (links), `lazyOpener`, and the light handle entries (`registerHandleEntry`, `unregisterHandleEntry`, `removeHandleGroup`, `peekHandle`). `./boot` adds the action creators (`openOverlay`, `closeOverlay`, `toggleOverlay`) and `isOverlayOpen`. |
 
 ## Rules
 
@@ -51,7 +52,7 @@ features/overlays/
 5. **Open through the definition** (`useOpenX`, `def.useSummon()`, `Controller`). Raw `openOverlay`/`closeOverlay` dispatch is for host code under `features/overlays/` and the extension bridge.
 6. **Every definition file starts with `"use client"`**; server components read `overlay-meta-index.ts`, never the registry.
 7. **Openers and definitions never share a module.** The bundler's unit is the module, and it keeps every export anything uses: the registry (lazy runtime) uses every definition, so a definition beside its openers rode into first load wherever a menu imported an opener (54 on /pricing, 2026-10-17). `check:overlays` fails when an `.overlay` file declares a definition; `check:import-fanout` fails when anything but the generated list imports a `.definition` file.
-8. **Chat's window openers are lazy.** `ChatHostAdapter` registers `createLazyChatWindowOpeners(store)` (`chat-window-opener-specs.ts`: ids + instance-id rules only); the openers themselves are ONE chunk, `chat-window-openers.ts`, imported by the first chat-triggered open. Each opener module exports a plain `create…Opener(store)` its hook wraps; a new chat opener adds a spec row and a chunk row (the spec type demands an `instanceId` rule for instance openers; per-subject ids live in `definitions/opener-instance-ids.ts`). Callbacks that register on open use summon's light entries on `./open` (`registerHandleEntry`, `removeHandleGroup`, `peekHandle`); only the emit loads `@ai-matrx/summon/handles`.
+8. **Chat's window openers are lazy.** `ChatHostAdapter` registers `createLazyChatWindowOpeners(store)` (`chat-window-opener-specs.ts`: ids + instance-id rules only); the openers themselves are ONE chunk, `chat-window-openers.ts`, imported by the first chat-triggered open. Each opener module exports a plain `create…Opener(store)` its hook wraps; a new chat opener adds a spec row and a chunk row (the spec type demands an `instanceId` rule for instance openers; per-subject ids live in `definitions/opener-instance-ids.ts`). Callbacks that register on open use summon's light handle entries on `./boot-kit` (`registerHandleEntry`, `removeHandleGroup`, `peekHandle`); only the emit loads `@ai-matrx/summon/handles`. First-load code imports summon only from `./boot`, `./boot-kit` and `./boot-root`.
 9. **Declare once**: `registry.ts` is the only hand list. `overlay-definitions.gen.ts` and `overlay-meta-index.ts` are generated by `pnpm gen:overlays`; `pnpm check:overlays` (`definitions/__tests__/overlayIndexIsGenerated.test.ts`, a release gate) fails when they are stale or a definition file is unlisted.
 10. **Window components are imported only by their render module.** `features/overlays/**` is exempt from the window-import ban.
 11. **Dialogs never block the AI.** Desktop `Dialog` is non-blocking by default; a workbench never passes `modal`. `pnpm check:blocking-dialogs`.
@@ -60,6 +61,10 @@ features/overlays/
 ## Adding one
 
 Two files plus one line in `registry.ts` (`d.<id>Overlay,`), then `pnpm gen:overlays`. Steps and templates: the `overlay-system` skill. Type-check proves ids (a mistyped id is a compile error through the augmented `OverlayRegistry`); jest guards prove the index.
+
+## Restore on reload
+
+Reloading the same tab restores its windows (data + dragged rect); a new tab starts empty; windows never follow a person to another device (Arman, 2026-10-21). A window is remembered by default (summon `core/preservation.ts`: every JSON open-data key except `callbackGroupId`). `window.ephemeral: true` / `preservation: false` is only for one-shots, each listed with a reason in `definitions/__tests__/ephemeralWindowsCensus.test.ts`.
 
 ## Instances and keep-alive
 

@@ -15,6 +15,5 @@ export const siteCommandRunWindowOverlay = defineOverlay<SiteCommandRunWindowDef
     restoreDefaults: {},
     windowId: "site-command-run-window",
     mobile: "card",
-    ephemeral: true,
   },
 });

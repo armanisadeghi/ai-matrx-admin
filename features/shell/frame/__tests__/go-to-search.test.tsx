@@ -20,6 +20,7 @@ import { buildGoToIndex } from "../goToIndex";
 import { FRAME_ROUTE_HOMES } from "../route-homes.generated";
 import { PRODUCTS, PRODUCT_FAMILIES } from "../products";
 import { rankMenuSearch } from "../searchEngine";
+import { menuGoToEntries } from "../../frame-host/goToMenuEntries";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 class NoopResizeObserver {
@@ -137,5 +138,25 @@ describe("the go-to icon and hotkey", () => {
     key({ key: "K", metaKey: true, shiftKey: true });
     await settle();
     expect(palette()).not.toBeNull();
+  });
+});
+
+describe("the host's menu entries", () => {
+  it("finds a classic menu name the frame's own table does not carry", () => {
+    const entries = menuGoToEntries({ isAuthenticated: true, isAdmin: false });
+    const withMenu = buildGoToIndex(PRODUCTS, PRODUCT_FAMILIES, FRAME_ROUTE_HOMES, entries);
+    const hit = rankMenuSearch(withMenu, "zip code heatmap")[0];
+    expect(hit?.href).toBe("/free/zip-code-heatmap");
+  });
+
+  it("respects guest and admin gating", () => {
+    const hrefs = (o: { isAuthenticated: boolean; isAdmin: boolean }) => new Set(menuGoToEntries(o).map((e) => e.href));
+    expect(hrefs({ isAuthenticated: true, isAdmin: false }).has("/administration")).toBe(false);
+    expect(menuGoToEntries({ isAuthenticated: false, isAdmin: false }).length).toBeLessThan(
+      menuGoToEntries({ isAuthenticated: true, isAdmin: false }).length,
+    );
+    expect(menuGoToEntries({ isAuthenticated: true, isAdmin: true }).length).toBeGreaterThan(
+      menuGoToEntries({ isAuthenticated: true, isAdmin: false }).length,
+    );
   });
 });

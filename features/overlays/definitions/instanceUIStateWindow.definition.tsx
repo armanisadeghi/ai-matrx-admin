@@ -15,6 +15,5 @@ export const instanceUIStateWindowOverlay = defineOverlay<InstanceUIStateWindowD
     restoreDefaults: { selectedConversationId: null },
     windowId: "instance-ui-state-window",
     mobile: "card",
-    ephemeral: true,
   },
 });

@@ -15,6 +15,5 @@ export const agentFromChatWindowOverlay = defineOverlay<AgentFromChatWindowDefin
     restoreDefaults: { conversationId: null, conversationTitle: null },
     windowId: "agent-from-chat-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

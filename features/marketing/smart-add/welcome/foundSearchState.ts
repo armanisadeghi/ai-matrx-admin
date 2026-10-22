@@ -5,10 +5,11 @@
  */
 
 import type { User } from "@supabase/supabase-js";
+import { formatLinkToken } from "@ai-matrx/summon/boot-kit";
 
 /** The window the found notice opens in place (welcomeFoundWindow's link key). */
 export const FOUND_WINDOW_LINK_KEY = "welcome-found";
-export const FOUND_WINDOW_LINK = `/dashboard?panels=${FOUND_WINDOW_LINK_KEY}`;
+export const FOUND_WINDOW_LINK = `/dashboard?panels=${formatLinkToken({ key: FOUND_WINDOW_LINK_KEY, id: "default" })}`;
 
 export interface FoundSearchState {
   startedAt: string | null;

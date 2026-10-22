@@ -15,6 +15,5 @@ export const captureInspectorWindowOverlay = defineOverlay<CaptureInspectorWindo
     restoreDefaults: { initialExchangeId: null },
     windowId: "capture-inspector",
     mobile: "card",
-    ephemeral: true,
   },
 });

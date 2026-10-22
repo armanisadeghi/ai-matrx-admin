@@ -15,6 +15,5 @@ export const noteInfoWindowOverlay = defineOverlay<NoteInfoWindowDefinitionData>
     restoreDefaults: { noteId: null, title: undefined },
     windowId: "note-info-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

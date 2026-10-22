@@ -15,6 +15,5 @@ export const agentSkillsWindowOverlay = defineOverlay<AgentSkillsWindowDefinitio
     restoreDefaults: { agentId: null },
     windowId: "agent-skills-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

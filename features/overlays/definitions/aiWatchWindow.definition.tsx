@@ -23,7 +23,6 @@ export const aiWatchWindowOverlay = defineOverlay<AiWatchWindowDefinitionData>()
         },
     windowId: "ai-watch-window",
     mobile: "card",
-    ephemeral: true,
     preservation: {
       dataKeys: [
         "windowInstanceId",

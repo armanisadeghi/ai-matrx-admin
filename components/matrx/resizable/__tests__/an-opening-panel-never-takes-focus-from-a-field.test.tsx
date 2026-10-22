@@ -40,7 +40,7 @@ import {
   KEEP_FOCUS_ATTRIBUTE,
   isEditableField,
   mayTakeFocusOnOpen,
-} from "../focusOnOpen";
+} from "@ai-matrx/summon/lite";
 
 let host: HTMLDivElement;
 let root: Root;
@@ -87,10 +87,11 @@ function Page({ open, field = true }: { open: boolean; field?: boolean }) {
   );
 }
 
-function flushFrames() {
-  // Portal target (rAF) → focus effect (rAF, rAF, 120ms timer).
+async function flushFrames() {
+  // Portal target (rAF) → the focus rule's import() → focus effect (rAF, rAF, 120ms timer).
   for (let i = 0; i < 6; i += 1) {
-    act(() => {
+    await act(async () => {
+      await Promise.resolve();
       jest.advanceTimersByTime(130);
     });
   }
@@ -101,29 +102,29 @@ const rename = () =>
 const composer = () =>
   document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]');
 
-it("a marked inline edit outside the opening panel keeps focus", () => {
+it("a marked inline edit outside the opening panel keeps focus", async () => {
   act(() => root.render(<Page open={false} />));
   rename().focus();
   expect(document.activeElement).toBe(rename());
 
   act(() => root.render(<Page open />));
-  flushFrames();
+  await flushFrames();
 
   expect(composer()).not.toBeNull();
   expect(document.activeElement).toBe(rename());
 });
 
-it("a panel opened from an ordinary field (Enter, a hotkey) takes focus", () => {
+it("a panel opened from an ordinary field (Enter, a hotkey) takes focus", async () => {
   act(() => root.render(<Page open={false} />));
   document.querySelector<HTMLInputElement>('input[aria-label="Search"]')!.focus();
 
   act(() => root.render(<Page open />));
-  flushFrames();
+  await flushFrames();
 
   expect(document.activeElement).toBe(composer());
 });
 
-it("a declined first attempt still retries, so a field gone a frame later leaves focus in the panel", () => {
+it("a declined first attempt still retries, so a field gone a frame later leaves focus in the panel", async () => {
   act(() => root.render(<Page open={false} />));
   rename().focus();
 
@@ -135,27 +136,27 @@ it("a declined first attempt still retries, so a field gone a frame later leaves
   expect(document.activeElement).toBe(rename());
   // The field commits and unmounts before the 120ms retry.
   act(() => root.render(<Page open field={false} />));
-  flushFrames();
+  await flushFrames();
 
   expect(document.activeElement).toBe(composer());
 });
 
-it("a <select> never holds focus back", () => {
+it("a <select> never holds focus back", async () => {
   act(() => root.render(<Page open={false} />));
   document.querySelector<HTMLSelectElement>('select[aria-label="Sort"]')!.focus();
 
   act(() => root.render(<Page open />));
-  flushFrames();
+  await flushFrames();
 
   expect(document.activeElement).toBe(composer());
 });
 
-it("with nothing being typed in, the panel still takes focus on open", () => {
+it("with nothing being typed in, the panel still takes focus on open", async () => {
   act(() => root.render(<Page open={false} />));
   (document.activeElement as HTMLElement | null)?.blur();
 
   act(() => root.render(<Page open />));
-  flushFrames();
+  await flushFrames();
 
   expect(document.activeElement).toBe(composer());
 });

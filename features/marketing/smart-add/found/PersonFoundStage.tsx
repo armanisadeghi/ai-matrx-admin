@@ -22,6 +22,24 @@ import { FitText } from "./FitText";
 import styles from "./found.module.css";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
+/**
+ * Every slot's height is FIXED from the first frame, waiting / filled / "Not sure" alike, so nothing below it moves
+ * when a round lands (CLS 0; live 2026-10-21 measured 0.06 at 375px). Each height holds its filled card's content:
+ * lead = picture + label + one handle line + followers; fact = label + two value lines; more = label + MORE_SHOWN
+ * account rows. The "more" and "tools" slots share a row on wide screens, so they share a height.
+ */
+const SLOT = {
+  lead: "h-[12.5rem] overflow-hidden rounded-3xl",
+  fact: "h-[9rem] overflow-hidden rounded-3xl",
+  more: "h-[11.5rem] overflow-hidden rounded-3xl",
+} as const;
+const MORE_SHOWN = 2;
+
+/** A card value of words (a place, a list of tools): wraps at words, two lines at most, never cut inside a word. */
+function Clamp({ text }: { text: string }) {
+  return <span className="line-clamp-2 break-normal">{text}</span>;
+}
+
 function Photo({ cards }: { cards: PersonFoundCards }) {
   const fallback = (
     <span className="flex size-full items-center justify-center bg-foreground text-2xl font-semibold text-background">
@@ -78,15 +96,16 @@ export function PersonFoundStage({
               <span className="block break-words text-[2rem] font-semibold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-[2.4rem]">
                 {cards.firstName ? `Welcome, ${cards.firstName}` : "Welcome"}
               </span>
-              {/* The bio's line is reserved from the first frame, so it lands without moving anything. */}
-              <p className="min-h-6 truncate text-base text-muted-foreground" data-testid="welcome-found-bio">
+              {/* The bio's two lines are reserved from the first frame, so it lands without moving anything; it
+                  wraps at words and never cuts one mid-way on a one-line slot. */}
+              <p className="line-clamp-2 h-12 break-normal text-base text-muted-foreground" data-testid="welcome-found-bio">
                 {/* Their confirmed company leads the line (the picked card showed it). */}
                 {[cards.work, cards.bio?.text].filter(Boolean).join(" · ")}
               </p>
             </div>
           </div>
         </Slot>
-        <Slot id="lead" label="Social" icon={<Layers className="size-4" />} filled={Boolean(lead)} working={working} className="sm:col-span-2">
+        <Slot id="lead" label="Social" icon={<Layers className="size-4" />} filled={Boolean(lead)} working={working} className={`${SLOT.lead} sm:col-span-2`}>
           {lead ? (
             <OutboundLink href={href(lead.item.url ?? lead.item.value)} data-clickable className="block h-full">
               <CardBody
@@ -99,34 +118,39 @@ export function PersonFoundStage({
             </OutboundLink>
           ) : null}
         </Slot>
-        <Slot id="website" label="Your site" icon={<Globe className="size-4" />} filled={Boolean(cards.website)} working={working} className="sm:col-span-3">
+        <Slot id="website" label="Your site" icon={<Globe className="size-4" />} filled={Boolean(cards.website)} working={working} className={`${SLOT.fact} sm:col-span-3`}>
           {cards.website ? (
             <OutboundLink href={href(cards.website.url ?? cards.website.value)} data-clickable className="block h-full">
               <CardBody icon={<Globe className="size-4" />} label="Your site" value={<FitText text={shownHost(cards.website)} />} />
             </OutboundLink>
           ) : null}
         </Slot>
-        <Slot id="location" label="Based in" icon={<MapPin className="size-4" />} filled={Boolean(cards.location)} working={working} className="sm:col-span-3">
-          {cards.location ? <CardBody icon={<MapPin className="size-4" />} label="Based in" value={cards.location.text} /> : null}
+        <Slot id="location" label="Based in" icon={<MapPin className="size-4" />} filled={Boolean(cards.location)} working={working} className={`${SLOT.fact} sm:col-span-3`}>
+          {cards.location ? <CardBody icon={<MapPin className="size-4" />} label="Based in" value={<Clamp text={cards.location.text} />} /> : null}
         </Slot>
-        <Slot id="more" label="Also on" icon={<Layers className="size-4" />} filled={more.length > 0} working={working} className="sm:col-span-3">
+        <Slot id="more" label="Also on" icon={<Layers className="size-4" />} filled={more.length > 0} working={working} className={`${SLOT.more} sm:col-span-3`}>
           {more.length ? (
             <div className={`${styles.card} flex h-full min-h-[8.5rem] flex-col justify-end gap-3 rounded-3xl p-5 sm:p-6`}>
               <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
                 <Layers className="size-4" />
                 Also on
+                {more.length > MORE_SHOWN ? <span className="ml-auto tabular-nums">+{more.length - MORE_SHOWN}</span> : null}
               </span>
-              <div className="flex flex-wrap gap-x-6 gap-y-3">
-                {more.map((a) => (
+              {/* At most MORE_SHOWN rows: the slot's height is fixed from the first frame, so a late account never
+                  grows it (zero shift). */}
+              <div className="flex flex-col gap-3">
+                {more.slice(0, MORE_SHOWN).map((a) => (
                   <OutboundLink
                     key={a.item.key}
                     href={href(a.item.url ?? a.item.value)}
                     data-clickable
-                    className="flex min-w-0 max-w-full items-center gap-2.5"
+                    className="flex w-full min-w-0 items-center gap-2.5"
                   >
                     <AccountPicture account={a} size="size-10" />
-                    <span className="flex min-w-0 flex-col">
-                      <span className="truncate text-lg font-semibold leading-tight text-foreground">{handleOf(a)}</span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="text-lg font-semibold text-foreground">
+                        <FitText text={handleOf(a)} />
+                      </span>
                       <span className="text-sm text-muted-foreground">
                         {a.followers != null ? `${formatCount(a.followers, { style: "compact" })} followers` : platformLabel(a.platform)}
                       </span>
@@ -137,8 +161,8 @@ export function PersonFoundStage({
             </div>
           ) : null}
         </Slot>
-        <Slot id="tools" label="Tools you use" icon={<Wrench className="size-4" />} filled={Boolean(cards.tools)} working={working} className="sm:col-span-3">
-          {cards.tools ? <CardBody icon={<Wrench className="size-4" />} label="Tools you use" value={cards.tools.text} /> : null}
+        <Slot id="tools" label="Tools you use" icon={<Wrench className="size-4" />} filled={Boolean(cards.tools)} working={working} className={`${SLOT.more} sm:col-span-3`}>
+          {cards.tools ? <CardBody icon={<Wrench className="size-4" />} label="Tools you use" value={<Clamp text={cards.tools.text} />} /> : null}
         </Slot>
       </div>
 

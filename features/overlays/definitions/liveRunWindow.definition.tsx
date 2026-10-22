@@ -15,6 +15,5 @@ export const liveRunWindowOverlay = defineOverlay<LiveRunWindowDefinitionData>()
     restoreDefaults: {},
     windowId: "live-run-window",
     mobile: "card",
-    ephemeral: true,
   },
 });

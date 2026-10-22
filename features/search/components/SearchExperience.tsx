@@ -23,6 +23,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import {
@@ -35,6 +36,7 @@ import {
   FileText,
   ImageIcon,
   Info,
+  LayoutGrid,
   Link2,
   MapPinOff,
   RotateCcw,
@@ -116,6 +118,9 @@ import type {
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ToolSearchPanel } from "@/features/search/tools/ToolSearchPanel";
+import { useTopStories } from "@/features/search/hooks/useTopStories";
+import { isNewsQuery } from "@/components/mardown-display/blocks/search-kinds/search-kind-data";
+import { selectIsAuthenticated, selectUserAvatarUrl, selectDisplayName } from "@/lib/redux/selectors/userSelectors";
 import {
   detectReviewLane,
   isToolTab,
@@ -458,7 +463,9 @@ function SignUpForMore() {
 const GUEST_TABS: ReadonlySet<string> = new Set(["web", "news", "images", "videos", "places"]);
 
 export function SearchExperience({ form, inputs, surface, guest = false }: SearchExperienceProps) {
-  const TAB_OPTIONS = guest ? ALL_TAB_OPTIONS.filter((t) => GUEST_TABS.has(t.value)) : ALL_TAB_OPTIONS;
+  // The same tabs for everyone (Google's way); a tab a visitor cannot run says so when pressed.
+  const TAB_OPTIONS = ALL_TAB_OPTIONS;
+  const [guestWall, setGuestWall] = useState<string | null>(null);
   const {
     keywords,
     setKeywords,
@@ -480,10 +487,13 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
     errorDiagnostics,
     locationNote,
   } = form;
-  const { special } = inputs;
+  // A bare @handle never replaces the results: it rides above them as one suggestion.
+  const handleHint = inputs.special?.type === "handle" ? inputs.special : null;
+  const special = handleHint ? null : inputs.special;
 
   const isAdminDebugger = useAppSelector(selectIsAdminDebugger);
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
   // A link that carries a query opens on the results layout — never the
   // start screen for one frame.
@@ -499,6 +509,11 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
     return isToolTab(t) ? t : null;
   });
   const onAnyTab = (next: SearchTab | ToolTab) => {
+    if (guest && !GUEST_TABS.has(next)) {
+      setGuestWall(TAB_OPTIONS.find((t) => t.value === next)?.label ?? "This tab");
+      return;
+    }
+    setGuestWall(null);
     if (isToolTab(next)) {
       setToolTab(next);
       const p = new URLSearchParams(window.location.search);
@@ -532,6 +547,12 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
       return;
     }
     inputs.submit();
+    // A @handle is words first, Google's way: the web answers for the text exactly as typed, and the
+    // account lookup waits beside the results as one suggestion.
+    if (inputs.pendingMode === "handle") {
+      setPinnedTop(true);
+      void handleSearch({ query: keywords.trim(), vertical: "web", options: { ...options, page: 1 } });
+    }
   };
 
   /** Run the current tab now (an explicit press). */
@@ -604,6 +625,8 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
 
   const home = runs.length === 0 && !special && !pinnedTop;
   const compare = runs.length > 1;
+  const webQuery = lastRequest?.vertical === "web" && runs[0]?.phase === "done" ? lastRequest.query : "";
+  const topStories = useTopStories(webQuery, !compare && isNewsQuery(webQuery || null));
 
   // "I'm Feeling Lucky": the search runs as usual, then the first web result opens in its place.
   const lucky = useRef(false);
@@ -641,7 +664,7 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
     </Button>
   );
 
-  const placesLocation = vertical === "places" && (
+  const placesLocation = vertical === "places" && optionsOpen && (
     <ProInput
       aria-label="Location"
       enableCleanup={false}
@@ -657,20 +680,56 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
     />
   );
 
+  /** Re-run what is on screen with one option changed — Google's Tools apply at once. */
+  const applyOption = <K extends keyof KeywordSearchOptions>(key: K, value: KeywordSearchOptions[K]) => {
+    setOption(key, value);
+    if (lastRequest && keywords.trim() && !isLoading) {
+      runTab(lastRequest.vertical, { options: { ...options, [key]: value, page: 1 } });
+    }
+  };
+
+  // Google's Tools: ONE slim row of dropdowns under the tabs; everything else behind "Advanced".
   const optionsPanel = optionsOpen && (
-    <div className="space-y-3">
-      {engineChoice && (
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-muted-foreground">Engine</span>
-          <SegmentedControl
-            aria-label="Search engine"
-            value={engine}
-            onValueChange={setEngine}
-            data={ENGINE_OPTIONS}
-          />
+    <div className="space-y-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <Select
+          aria-label="Time"
+          value={options.timeRange ?? "any"}
+          options={TIME_OPTIONS}
+          onValueChange={(v) => applyOption("timeRange", v === "any" ? null : (v as KeywordSearchOptions["timeRange"]))}
+        />
+        <Select
+          aria-label="Region"
+          value={options.country}
+          options={withCurrent(COUNTRY_OPTIONS, options.country)}
+          onValueChange={(v) => applyOption("country", v)}
+        />
+        <Button
+          variant="quiet"
+          pressed={advancedOpen}
+          badge={changedOptionCount > 0}
+          onClick={() => setAdvancedOpen((v) => !v)}
+          aria-expanded={advancedOpen}
+        >
+          Advanced
+        </Button>
+      </div>
+      {advancedOpen && (
+        <div className="space-y-3">
+          {engineChoice && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-muted-foreground">Engine</span>
+              <SegmentedControl
+                aria-label="Search engine"
+                value={engine}
+                onValueChange={setEngine}
+                data={ENGINE_OPTIONS}
+              />
+            </div>
+          )}
+          <SearchOptions form={form} />
         </div>
       )}
-      <SearchOptions form={form} />
     </div>
   );
 
@@ -750,6 +809,9 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
           <div className={cn("w-full min-w-0", PILL_WIDTH)}>
             <SearchPill form={form} inputs={inputs} onQuery={onQuery} onClear={onClear} onSubmit={submitBox} />
           </div>
+          <div className="ml-auto hidden shrink-0 sm:block">
+            <SearchAccountCorner />
+          </div>
         </div>
         <div className={cn("min-w-0", GUTTER)}>
           {tabRow}
@@ -788,6 +850,9 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
     return (
       <div className="relative flex flex-1 flex-col overflow-auto px-4" {...dragProps}>
         {dropVeil}
+        <div className="flex justify-end py-2.5">
+          <SearchAccountCorner />
+        </div>
         <div className={cn("mx-auto flex w-full flex-col items-center gap-7 pb-16 pt-[14vh] sm:pt-[20vh]", PILL_WIDTH)}>
           <SearchWordmark size="home" />
           <div className="w-full space-y-1">
@@ -847,14 +912,30 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
             />
           )}
 
-          {special ? (
+          {guestWall && (
+            <div className="flex max-w-[652px] flex-col items-start gap-2 py-6">
+              <p className="text-sm text-foreground">{`${guestWall} needs a free account.`}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <SignUpForMore />
+                <Button variant="quiet" onClick={() => setGuestWall(null)}>
+                  Back to results
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {handleHint && !guestWall && (
+            <HandleSuggestion handle={handleHint.handle} onPick={(platform) => inputs.lookUpProfile(platform, handleHint.handle)} />
+          )}
+
+          {guestWall ? null : special ? (
             <SpecialPanel
               special={special}
               inputs={inputs}
               form={form}
               surface={surface}
               guest={guest}
-              onSearchWords={(query) => runTab("web", { query })}
+              onSearchWords={() => runTab("web", { query: keywords.trim() })}
             />
           ) : showRuns ? (
             <div className={cn(compare && "grid gap-x-8 gap-y-10 lg:grid-cols-2")}>
@@ -863,6 +944,7 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
                   key={run.provider}
                   named={compare || !tabHasEngineChoice(lastRequest?.vertical ?? vertical)}
                   run={run}
+                  topStories={topStories}
                   tab={lastRequest?.vertical ?? vertical}
                   query={lastRequest?.query ?? keywords.trim()}
                   guest={guest}
@@ -1081,7 +1163,10 @@ function RunColumn({
   onRetry,
   guest = false,
   named = false,
+  topStories = [],
 }: {
+  /** Google's Top stories for a newsy query, fetched from the News vertical. */
+  topStories?: Record<string, unknown>[];
   /** Show which engine or tab answered — only when two answer side by side, or the tab is its own source. */
   named?: boolean;
   run: KeywordEngineRun;
@@ -1147,7 +1232,13 @@ function RunColumn({
         (isWeb ? (
           // The result line already names the engine and count.
           <div className="[&_[data-search-collection-header]]:hidden">
-            <WebSearchResultsBlock serverData={{ ...outcome.result, __kind: "web_search_results" }} />
+            <WebSearchResultsBlock
+              serverData={{
+                ...outcome.result,
+                __kind: "web_search_results",
+                ...(topStories.length > 0 ? { news: topStories } : {}),
+              }}
+            />
           </div>
         ) : (
           <SearchKindView value={outcome.result} />
@@ -1235,6 +1326,71 @@ function ResultLine({
           </Button>
         )}
       </span>
+    </div>
+  );
+}
+
+/** A @handle's account lookup, offered as one result-style line above the web results. */
+function HandleSuggestion({ handle, onPick }: { handle: string; onPick: (platform: SocialSearchPlatformLookup) => void }) {
+  return (
+    <div className="flex max-w-[652px] min-w-0 flex-wrap items-center gap-x-1 gap-y-1 border-b border-border pb-3 text-sm">
+      <UserRound className="mr-1 h-4 w-4 shrink-0 text-muted-foreground" />
+      <span className="text-muted-foreground">{`Look up @${handle} on`}</span>
+      {HANDLE_LOOKUP_PLATFORMS.slice(0, 5).map((platform) => (
+        <Button key={platform} variant="link" icon={<PlatformMark platform={platform} size={14} />} onClick={() => onPick(platform)}>
+          {platformLabel(platform)}
+        </Button>
+      ))}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="link" aria-label="More platforms">
+            More
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          {HANDLE_LOOKUP_PLATFORMS.slice(5).map((platform) => (
+            <DropdownMenuItem key={platform} onSelect={() => onPick(platform)}>
+              {platformLabel(platform)}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+type SocialSearchPlatformLookup = (typeof HANDLE_LOOKUP_PLATFORMS)[number];
+
+/** Google's top-right corner: the apps grid and the account for a signed-in person, Sign in otherwise. */
+function SearchAccountCorner() {
+  const signedIn = useAppSelector(selectIsAuthenticated);
+  const avatar = useAppSelector(selectUserAvatarUrl);
+  const name = useAppSelector(selectDisplayName);
+  if (!signedIn) {
+    return (
+      <a
+        href="/login?redirectTo=%2Fsearch"
+        className="inline-flex h-9 items-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground hover:opacity-90"
+      >
+        Sign in
+      </a>
+    );
+  }
+  const initial = (typeof name === "string" && name.trim() ? name.trim().charAt(0) : "?").toUpperCase();
+  return (
+    <div className="flex items-center gap-1">
+      <Link href="/dashboard" aria-label="Apps" title="Apps" className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted">
+        <LayoutGrid className="h-5 w-5" />
+      </Link>
+      <Link href="/user-settings" aria-label="Account" title={typeof name === "string" ? name : "Account"} className="block shrink-0">
+        {typeof avatar === "string" && avatar ? (
+          <img src={avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+        ) : (
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
+            {initial}
+          </span>
+        )}
+      </Link>
     </div>
   );
 }
@@ -1359,17 +1515,22 @@ function SpecialPanel({
             message={special.error ?? "The lookup failed."}
             size="compact"
             actions={
-              guest ? (
-                <SignUpForMore />
-              ) : (
-                <Button
-                  variant="quiet"
-                  icon={<RotateCcw />}
-                  onClick={() => inputs.lookUpProfile(special.platform, special.handle, special.url)}
-                >
-                  Try again
+              <div className="flex flex-wrap items-center gap-2">
+                {guest ? (
+                  <SignUpForMore />
+                ) : (
+                  <Button
+                    variant="quiet"
+                    icon={<RotateCcw />}
+                    onClick={() => inputs.lookUpProfile(special.platform, special.handle, special.url)}
+                  >
+                    Try again
+                  </Button>
+                )}
+                <Button variant="quiet" icon={<Search />} onClick={() => onSearchWords(form.keywords.trim())}>
+                  Search the web
                 </Button>
-              )
+              </div>
             }
           />
         )}

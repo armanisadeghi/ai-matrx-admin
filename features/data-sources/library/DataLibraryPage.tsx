@@ -389,6 +389,8 @@ function BrowseAllSources({ library, onHome, onOpen }: { library: Library; onHom
   const featured = view.kind === "featured" && !searching ? library.sources.filter((s) => s.featured) : [];
   const sections = librarySections(matches);
 
+  // The price a source card shows is the server's points_per_record, computed by the same function billing
+  // charges with (data_fetch.service.effective_price_for_dataset): the two cannot drift.
   const cheapest = cheapestPoints(library.sources, rate);
   const cheapestSource = cheapest == null ? null : library.sources.find((s) => pointsPerRecord(s, rate) === cheapest) ?? null;
   const fromText = cheapestSource ? price(cheapestSource, 1) : null;

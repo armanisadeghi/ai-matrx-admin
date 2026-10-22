@@ -50,7 +50,7 @@ export function createFindReplaceCallbackGroup(
 
   return {
     callbackGroupId,
-    dispose: () => callbackManager.unregister(callbackGroupId),
+    dispose: () => callbackManager.remove(callbackGroupId),
   };
 }
 

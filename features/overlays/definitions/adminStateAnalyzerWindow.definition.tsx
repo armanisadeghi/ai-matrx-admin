@@ -15,7 +15,6 @@ export const adminStateAnalyzerWindowOverlay = defineOverlay<AdminStateAnalyzerW
     restoreDefaults: {},
     windowId: "state-analyzer-window",
     mobile: "card",
-    ephemeral: true,
   },
   link: {
     key: "state_analyzer",

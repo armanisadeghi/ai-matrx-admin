@@ -47,6 +47,8 @@ import {
 } from "@ai-matrx/browser-audio/core";
 import {
   acquireCameraLease,
+  nextCameraFlipTarget,
+  type CameraFlipTarget,
   type CameraLease,
 } from "@/features/media-capture/runtime/camera-stream-manager";
 import { capturePhotoFromVideo } from "@/features/media-capture/hooks/usePhotoCapture";
@@ -66,7 +68,6 @@ import {
   classifyCameraBlockReason,
   cropBlobToAspect,
   finalizeCapturedVideo,
-  nextCameraDevice,
   PHOTO_JPEG_QUALITY,
 } from "@ai-matrx/capture/react";
 import type { CapturedVideoResult } from "@ai-matrx/capture/react";
@@ -157,7 +158,10 @@ export function useCameraCaptureHost(
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [notSupported, setNotSupported] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
-  const [deviceId, setDeviceId] = useState<string | null>(null);
+  // A side (phones) or a device id (desktop webcams) — see nextCameraFlipTarget.
+  const [target, setTarget] = useState<CameraFlipTarget>({
+    facingMode: "environment",
+  });
   const [flash, setFlash] = useState(false);
   const [recording, setRecording] = useState(false);
   const [recordElapsed, setRecordElapsed] = useState(0);
@@ -225,12 +229,7 @@ export function useCameraCaptureHost(
       }
       try {
         const lease = await acquireCameraLease(
-          {
-            profile: "maximum-available",
-            ...(deviceId
-              ? { deviceId }
-              : { facingMode: "environment" as const }),
-          },
+          { profile: "maximum-available", ...target },
           { combineMicPrompt: true },
         );
         if (cancelled) {
@@ -270,14 +269,14 @@ export function useCameraCaptureHost(
       }
       setStream(null);
     };
-  }, [deviceId, qaImageUrl, qaPermissionDenied]);
+  }, [target, qaImageUrl, qaPermissionDenied]);
 
   const cameraBlocked = notSupported || permissionDenied;
   const qaQrOnly = Boolean(qaImageUrl);
 
   // ── Camera flip — KEPT (C22) for the two host facts it injects: the app's
   //    device snapshot and the persisted preferred camera (setCamera). The
-  //    cycling algorithm itself is the package's `nextCameraDevice`. ───────
+  //    choice of side-vs-device is `nextCameraFlipTarget` (shared runtime). ─
   const { setCamera } = useAudioDevices();
   const switchCamera = useCallback(() => {
     // Flipping reacquires the lease and stops the current tracks — doing it
@@ -285,16 +284,17 @@ export function useCameraCaptureHost(
     // recording (engine.onFlipCamera goes null), and this guard backstops it.
     if (recordingRef.current) return;
     const cams = getMediaDevicesSnapshot().cameras;
-    const current =
-      deviceId ??
-      leaseRef.current?.stream.getVideoTracks()[0]?.getSettings().deviceId ??
-      null;
-    const next = nextCameraDevice(cams, current);
-    if (next) {
-      setDeviceId(next.deviceId);
-      setCamera(next.deviceId, next.label);
+    const next = nextCameraFlipTarget(
+      leaseRef.current?.stream.getVideoTracks()[0],
+      cams,
+    );
+    if (!next) return;
+    setTarget(next);
+    if ("deviceId" in next) {
+      const cam = cams.find((c) => c.deviceId === next.deviceId);
+      setCamera(next.deviceId, cam?.label ?? "");
     }
-  }, [deviceId, setCamera]);
+  }, [setCamera]);
 
   // ── Video-mode mic warm hold — KEPT (C22): this holds the APP's shared
   //    mic singleton (voice notes + recorder share the same warm grant); a

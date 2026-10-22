@@ -14,7 +14,6 @@ export const jsonTruncatorOverlay = defineOverlay<JsonTruncatorDefinitionData>()
   window: {
     restoreDefaults: { input: null },
     windowId: "json-truncator",
-    ephemeral: true,
   },
   link: {
     key: "json_truncator",

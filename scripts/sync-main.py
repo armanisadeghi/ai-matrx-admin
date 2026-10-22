@@ -57,9 +57,11 @@ Leftover check: scripts/check-conflict-markers.py.
 import datetime
 import glob
 import json
+import atexit
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -1980,6 +1982,122 @@ def _trial_files(d):
     return sorted(set(rels))
 
 
+# TRIAL TREES DIE WITH THE PROCESS (2026-10-21). A sync killed mid-trial left 12 abandoned
+# `sync-main-package-trial-*` copies of the checkout in $TMPDIR, each competing for disk. Every tree is
+# recorded here, removed at exit and on SIGTERM / SIGINT / SIGHUP, and stamped with the owner's pid so
+# the sweep at the next start can tell a dead run's tree from a live one's.
+TRIAL_PREFIX = "sync-main-package-trial-"
+TRIAL_OWNER = ".sync-main-owner"
+TRIAL_MAX_AGE = 2 * 3600
+_TRIALS = set()
+_HANDLERS_ON = False
+
+
+def _remove_trials():
+    for t in list(_TRIALS):
+        shutil.rmtree(t, ignore_errors=True)
+        _TRIALS.discard(t)
+
+
+def _on_signal(signum, _frame):
+    _remove_trials()
+    signal.signal(signum, signal.SIG_DFL)
+    os.kill(os.getpid(), signum)   # die the way the sender asked, after the cleanup
+
+
+def _arm_trial_cleanup():
+    global _HANDLERS_ON
+    if _HANDLERS_ON:
+        return
+    _HANDLERS_ON = True
+    atexit.register(_remove_trials)
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        try:
+            signal.signal(sig, _on_signal)
+        except (ValueError, OSError):   # not the main thread
+            pass
+
+
+def drop_trial_tree(path):
+    shutil.rmtree(path, ignore_errors=True)
+    _TRIALS.discard(path)
+
+
+def _cwds_of_live_processes():
+    """Every working directory a running process holds (one lsof call), or None when it cannot be read."""
+    try:
+        r = subprocess.run(["lsof", "-d", "cwd", "-Fn"], capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return [l[1:] for l in r.stdout.splitlines() if l.startswith("n")]
+
+
+def sweep_old_trials(now=time.time, tmp_root=None, max_age=TRIAL_MAX_AGE):
+    """Remove `sync-main-package-trial-*` folders older than max_age that no live process owns.
+    Owner = the pid stamped inside (alive), or any process whose cwd is inside it. Returns removed paths."""
+    root = tmp_root or os.path.realpath(tempfile.gettempdir())
+    removed = []
+    try:
+        names = [n for n in os.listdir(root) if n.startswith(TRIAL_PREFIX)]
+    except OSError:
+        return removed
+    cwds = None
+    for n in sorted(names):
+        path = os.path.join(root, n)
+        try:
+            age = now() - os.stat(path).st_mtime
+        except OSError:
+            continue
+        if age < max_age or path in _TRIALS:
+            continue
+        pid = (_read(os.path.join(path, TRIAL_OWNER)) or b"").decode("utf-8", "replace").strip()
+        if pid.isdigit() and _pid_alive(int(pid)):
+            continue
+        if cwds is None:
+            cwds = _cwds_of_live_processes()
+        if cwds is None:
+            return removed   # cannot prove nobody owns it: leave every one
+        if any(c == path or c.startswith(path + os.sep) for c in cwds):
+            continue
+        shutil.rmtree(path, ignore_errors=True)
+        removed.append(path)
+    if removed:
+        say("removed %d abandoned package-trial folder(s) older than %d h: %s"
+            % (len(removed), max_age // 3600, ", ".join(os.path.basename(r) for r in removed)))
+    return removed
+
+
+_CLONE_STATS = {"cloned": 0, "fallback": 0}
+
+
+def clone_files(src_dir, dst_dir, rels):
+    """Clone each rel from src_dir into dst_dir with clonefile(2) (macOS/APFS). Returns the rels it could
+    NOT clone (all of them off macOS), for the caller to copy the slow way."""
+    import ctypes
+    import ctypes.util
+    try:
+        libc = ctypes.CDLL(ctypes.util.find_library("c") or "libc.dylib", use_errno=True)
+        clonefile = libc.clonefile
+        clonefile.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint32]
+    except (OSError, AttributeError):
+        _CLONE_STATS["fallback"] += len(rels)
+        return list(rels)
+    left, made = [], set()
+    for rel in rels:
+        dst = os.path.join(dst_dir, rel)
+        parent = os.path.dirname(dst)
+        if parent not in made:
+            os.makedirs(parent, exist_ok=True)
+            made.add(parent)
+        # CLONE_NOFOLLOW (1): a symlink is cloned as a symlink
+        if clonefile(os.path.join(src_dir, rel).encode(), dst.encode(), 1) == 0:
+            _CLONE_STATS["cloned"] += 1
+        else:
+            left.append(rel)
+            _CLONE_STATS["fallback"] += 1
+    return left
+
+
 def make_trial_tree(d):
     """(tmp, rels): a scratch copy of folder d OUTSIDE the checkout, or (None, why)."""
     rels = _trial_files(d)
@@ -1987,12 +2105,21 @@ def make_trial_tree(d):
         return None, "git ls-files failed in %s/" % d
     # The REAL path (macOS: /var -> /private/var): a node script judging "am I the main module"
     # compares its own real URL to argv[1], and silently does nothing when they differ.
-    tmp = os.path.realpath(tempfile.mkdtemp(prefix="sync-main-package-trial-"))
-    r = subprocess.run("tar --null -T - -cf - | tar -xf - -C %s" % _shq(tmp), shell=True, cwd=d,
-                       input=("\0".join(rels) + "\0").encode(), capture_output=True)
-    if r.returncode != 0:
-        shutil.rmtree(tmp, ignore_errors=True)
-        return None, "copying %s/ into a trial tree failed: %s" % (d, r.stderr.decode("utf-8", "replace")[-400:])
+    _arm_trial_cleanup()
+    tmp = os.path.realpath(tempfile.mkdtemp(prefix=TRIAL_PREFIX))
+    _TRIALS.add(tmp)
+    with open(os.path.join(tmp, TRIAL_OWNER), "w") as f:
+        f.write(str(os.getpid()))
+    # APFS CLONE FIRST (2026-10-21): one tar copy took 29+ minutes for 455 MB on a saturated disk; a
+    # clonefile() is instant and costs no space. Any file the clone refuses (not APFS, cross-volume) goes
+    # through the old tar copy, so the tree is always complete.
+    left = clone_files(d, tmp, rels)
+    if left:
+        r = subprocess.run("tar --null -T - -cf - | tar -xf - -C %s" % _shq(tmp), shell=True, cwd=d,
+                           input=("\0".join(left) + "\0").encode(), capture_output=True)
+        if r.returncode != 0:
+            drop_trial_tree(tmp)
+            return None, "copying %s/ into a trial tree failed: %s" % (d, r.stderr.decode("utf-8", "replace")[-400:])
     return tmp, rels
 
 
@@ -2052,7 +2179,7 @@ def baseline_health(d, tool, lock_name, rels):
             ok = False
         return package_health(base, tool) if ok else {"imports": None, "sandbox": None}
     finally:
-        shutil.rmtree(base, ignore_errors=True)
+        drop_trial_tree(base)
 
 
 # THE SHARED INSTALL ONLY MOVES FORWARD (2026-10-15). The update used to run IN this checkout: the
@@ -2149,7 +2276,7 @@ def update_matrx_packages():
                 say("ADOPTED in %s/ but `%s` there did not finish (%s) — run it by hand." % (d, " ".join(install), e))
             changed += [os.path.normpath(os.path.join(d, rel)) for rel in moved_files]
         finally:
-            shutil.rmtree(tmp, ignore_errors=True)
+            drop_trial_tree(tmp)
     if changed:
         git("add", "--", *changed)
         git("commit", "--no-verify", "-q", "-m", "chore(deps): every @ai-matrx package to npm latest (sync-main)",
@@ -2312,6 +2439,38 @@ def guard_twins():
 # `pnpm install --frozen-lockfile --lockfile-only --ignore-scripts`, ~1 s). A disagreement this
 # push would ADD is not pushed; one origin/main already has is announced, never a stop (refusing
 # would not remove it, and release.sh's own frozen guard keeps it out of a release).
+# THE LOCKFILE ADOPTION GUARD (2026-10-21). Commit 689c27aa4d adopted @ai-matrx/chat 0.8.307 by editing
+# pnpm-lock.yaml alone. Nothing was installed, so every installed-package check passed, and chat 0.8.307
+# had dropped `setDebrief`: v0.4.3429 and its rebuild failed on Vercel. Right before the push, when this
+# push changes pnpm-lock.yaml, the code at HEAD is judged against the versions HEAD's lockfile names
+# (check-matrx-imports.mjs --lock). A push that would ship a build that cannot compile stops, naming the
+# missing export. A check that cannot run (npm unreachable) is announced, never a silent pass.
+def guard_lock_imports():
+    checker = os.path.join(os.path.dirname(os.path.abspath(__file__)), "check-matrx-imports.mjs")
+    if not os.path.isfile(checker) or not os.path.isfile("pnpm-lock.yaml"):
+        return
+    rc, _, _ = git("diff", "--quiet", "%s/%s" % (REMOTE, BRANCH), "HEAD", "--", "pnpm-lock.yaml", check=False)
+    if rc == 0:
+        return   # the lockfile this push carries is the one origin already has
+    try:
+        r = subprocess.run(["node", checker, "--lock", "--ref", "HEAD"], capture_output=True, text=True, timeout=900)
+    except (OSError, subprocess.TimeoutExpired) as e:
+        die("NOT PUSHED — the lockfile adoption check could not run (%s). A lockfile-only adoption can break the "
+            "build and nothing else would notice; run `node scripts/check-matrx-imports.mjs --lock --ref HEAD`." % e)
+    out = (r.stdout + r.stderr).strip()
+    if r.returncode == 0:
+        say("lockfile adoption check: every @ai-matrx import resolves against the versions pnpm-lock.yaml names.")
+        _, head, _ = git("rev-parse", "HEAD")
+        os.environ["MATRX_LOCK_IMPORTS_CHECKED"] = head.strip()   # the pre-push hook need not judge this commit again
+        return
+    tail = "\n".join("  " + l for l in out.splitlines()[-25:])
+    if r.returncode == 1:
+        die("NOT PUSHED — pnpm-lock.yaml adopts @ai-matrx versions that no longer ship something this repo "
+            "imports, so the release build would fail:\n%s\nFix the importer (or restore the export in the package), "
+            "or put the lockfile back; everything is committed locally and nothing is lost." % tail)
+    die("NOT PUSHED — the lockfile adoption check could not run (exit %d):\n%s" % (r.returncode, tail))
+
+
 def guard_frozen_lockfile():
     helper = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lockfile-frozen.sh")
     if not os.path.isfile(helper) or not blob_at("HEAD", "pnpm-lock.yaml"):
@@ -2522,6 +2681,7 @@ def main():
         if nothing_left_after_wait():
             say("synced: the sync this one waited for already pushed everything here; nothing to do.")
             return
+    sweep_old_trials()   # a killed run's trial copies; only ones older than 2 h that no live process holds
     # Show where we started, so the terminal holds the before-state if anything goes wrong.
     say("==================== git status (before sync) ====================")
     subprocess.run(["git", "status"])
@@ -2621,6 +2781,7 @@ def main():
                 total_local += commit_all()
         guard_lockfiles()   # after the sweep, the merge and the package update: what is about to be pushed
         guard_twins()       # the same lockfile, judged as Vercel's postinstall judges it
+        guard_lock_imports()      # the code at HEAD against the package versions HEAD's lockfile names
         guard_frozen_lockfile()   # package.json and pnpm-lock.yaml must agree, as Vercel's frozen install sees them
         if not push:
             break

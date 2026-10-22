@@ -22,6 +22,5 @@ export const taskQuickCreateWindowOverlay = defineOverlay<TaskQuickCreateWindowD
         },
     windowId: "task-quick-create-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

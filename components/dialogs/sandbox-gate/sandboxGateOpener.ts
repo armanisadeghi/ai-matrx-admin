@@ -11,33 +11,18 @@
  *   • "detach"  — send WITHOUT a sandbox (the binding is cleared downstream).
  *   • "cancel"  — go back; the send is aborted and the composer text is kept.
  *
- * THE MACHINERY IS NOT OURS. The host registry, the request queue, the
- * pre-hydration queueing, the never-a-silent-default promise and the
- * globalThis slot all come from `@ai-matrx/kit/opener` — one implementation
- * for the whole platform. This file used to hand-roll every one of them in a
- * module-level `let host` + `const queue`, which is the dual-loader-graph
- * hazard the package documents: state that silently splits host registration
- * from its callers. Never re-implement it here.
+ * THE MACHINERY IS NOT OURS. The dialog is the summon overlay `sandboxGateDialog`
+ * (features/overlays/definitions); the ask/answer bridge is `requestOverlay`
+ * over summon's one-shot request handle. Never re-implement either here.
  */
 
-import { createOpener } from "@ai-matrx/kit/opener";
-import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
+import { requestOverlay } from "@/features/overlays/requestOverlay";
 
 export type SandboxGateChoice = "attach" | "detach" | "cancel";
 
 export interface SandboxGateOptions {
   conversationId: string;
 }
-
-export const sandboxGateOpener = createOpener<SandboxGateOptions, SandboxGateChoice>(
-  "matrx-frontend.sandbox-gate-opener-state",
-  {
-    hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)",
-    // One gate per conversation: a double-fired send must not stack a second
-    // dialog on top of the first — both sends await the one answer.
-    dedupeKey: (opts) => opts.conversationId,
-  },
-);
 
 /**
  * Open the sandbox gate. Resolves with the user's choice. Dismissing the
@@ -47,6 +32,10 @@ export const sandboxGateOpener = createOpener<SandboxGateOptions, SandboxGateCho
 export function openSandboxGate(
   opts: SandboxGateOptions,
 ): Promise<SandboxGateChoice> {
-  requestDialogHosts();
-  return sandboxGateOpener.open(opts);
+  // One gate per conversation: a double-fired send must not stack a second
+  // dialog on top of the first — both sends await the one answer.
+  return requestOverlay<SandboxGateOptions, SandboxGateChoice>("sandboxGateDialog", opts, {
+    cancel: "cancel",
+    dedupeKey: opts.conversationId,
+  });
 }

@@ -214,7 +214,10 @@ export function Lineup({
           {/* visitors and free accounts: "3 free today" / "Sign up free for more" (paid: nothing) */}
           <span className="ml-3 inline-block"><FreeAllowanceNote feature="comparison.run" organizationId={organizationId} /></span>
         </div>
-        <Button variant="primary" hero={!dense} disabled={matched.length < 2 || busy || starting || !quote.data}
+        {/* Compare never waits on a card still matching: only the matched cards are sent. A click answers at
+            once (the button shows "starting"), and a price still loading says so instead of sitting dead. */}
+        <Button variant="primary" hero={!dense} disabled={matched.length < 2 || starting || !quote.data}
+          loading={starting || (matched.length >= 2 && !quote.data && !quote.isError)}
           data-compare-confirm-button="" onClick={() => onCompare(matched)}>
           {matched.length >= 2 ? `Compare ${matched.length}` : "Compare"}
         </Button>

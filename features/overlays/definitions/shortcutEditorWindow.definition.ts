@@ -19,6 +19,5 @@ export const shortcutEditorWindowOverlay = defineOverlay<ShortcutEditorWindowDef
         },
     windowId: "shortcut-editor-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

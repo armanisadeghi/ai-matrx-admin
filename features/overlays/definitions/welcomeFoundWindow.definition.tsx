@@ -15,7 +15,6 @@ export const welcomeFoundWindowOverlay = defineOverlay<WelcomeFoundWindowDefinit
     restoreDefaults: {},
     windowId: "welcome-found-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
   link: {
     key: "welcome-found",

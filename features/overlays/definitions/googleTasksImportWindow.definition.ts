@@ -15,7 +15,6 @@ export const googleTasksImportWindowOverlay = defineOverlay<GoogleTasksImportWin
     restoreDefaults: { organizationId: null, projectId: null },
     windowId: "google-tasks-import-window",
     mobile: "drawer",
-    ephemeral: true,
   },
   link: {
     key: "google_tasks_import",

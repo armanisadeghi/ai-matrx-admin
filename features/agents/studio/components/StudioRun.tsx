@@ -32,7 +32,11 @@ export function StudioRun({ conversation, surfaceKey, turnModelBar = false, oper
           title={conversation.purpose === "open" ? "This chat could not open" : "This chat could not start"}
           message={conversation.reason}
           operation={operation}
-          onRetry={conversation.retry}
+          actions={
+            <Button variant="outline" onClick={conversation.retry}>
+              Try again
+            </Button>
+          }
         />
       </div>
     );

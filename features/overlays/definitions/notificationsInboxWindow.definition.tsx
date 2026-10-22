@@ -15,6 +15,5 @@ export const notificationsInboxWindowOverlay = defineOverlay<NotificationsInboxW
     restoreDefaults: {},
     windowId: "notifications-inbox-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

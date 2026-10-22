@@ -15,6 +15,5 @@ export const chatDebugWindowOverlay = defineOverlay<ChatDebugWindowDefinitionDat
     restoreDefaults: { sessionId: null },
     windowId: "chat-debug-window",
     mobile: "card",
-    ephemeral: true,
   },
 });

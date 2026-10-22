@@ -15,6 +15,5 @@ export const convertToShapeWindowOverlay = defineOverlay<ConvertToShapeWindowDef
     restoreDefaults: { initialJsonContent: "" },
     windowId: "convert-to-shape-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

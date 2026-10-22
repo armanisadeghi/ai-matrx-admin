@@ -15,6 +15,5 @@ export const customAgentWindowOverlay = defineOverlay<CustomAgentWindowDefinitio
     restoreDefaults: { sessionId: null as string | null },
     windowId: "custom-agent-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

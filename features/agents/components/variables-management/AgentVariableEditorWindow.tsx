@@ -41,7 +41,7 @@ import {
 import { displayLabel } from "@ai-matrx/kit/text-case";
 import { variableRunLabel } from "@ai-matrx/agents";
 import { AgentVariableEditor } from "./AgentVariableEditor";
-import { variableEditorInstanceId } from "./variableEditorAddress";
+import { variableEditorLink } from "./variableEditorAddress";
 
 const OVERLAY_ID = "agentVariableEditorWindow" as const;
 
@@ -133,7 +133,8 @@ export default function AgentVariableEditorWindow({
       // R35 — the link someone copies from this window names the variable it is
       // showing, not just "an editor is open" (`features/overlays/definitions/<id>.link.ts`
       // hydrates the pair back).
-      urlSyncId={variableEditorInstanceId({ agentId, variableName })}
+      urlSyncId={variableEditorLink({ agentId, variableName }).id}
+      urlSyncArgs={variableEditorLink({ agentId, variableName }).args}
       title={title}
       onClose={onClose}
       width={520}

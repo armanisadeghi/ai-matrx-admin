@@ -22,7 +22,6 @@ export const detailWindowOverlay = defineOverlay<DetailWindowDefinitionData>()({
         },
     windowId: "detail-window",
     mobile: "drawer",
-    ephemeral: true,
   },
   link: {
     key: "detail",

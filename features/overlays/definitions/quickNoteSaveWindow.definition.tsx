@@ -15,6 +15,5 @@ export const quickNoteSaveWindowOverlay = defineOverlay<QuickNoteSaveWindowDefin
     restoreDefaults: { initialContent: "" },
     windowId: "quick-note-save-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

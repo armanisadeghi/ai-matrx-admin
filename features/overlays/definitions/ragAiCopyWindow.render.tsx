@@ -7,7 +7,6 @@ import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
 
-        const isOpen = true;
         const data = overlayData as
           | {
               bundle?: RagAiCopyBundle;
@@ -15,7 +14,6 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
             }
           | null
           | undefined;
-        if (!isOpen) return null;
         if (!data?.bundle) return <OverlayNeedsData overlayId="ragAiCopyWindow" onClose={close} />;
         return (
           <RagAiCopyWindow

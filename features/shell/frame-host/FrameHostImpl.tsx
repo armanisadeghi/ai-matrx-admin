@@ -32,7 +32,11 @@ import {
 } from "@ai-matrx/chat/canvas/workspace/side-chat-state";
 import { FrameChrome } from "./FrameChrome";
 import { FrameSideChatHostContext } from "./frameSideChatHost";
+import { useEarlySideChatDoors } from "./frameSideChatQueue";
 import { useGridFavorites } from "./useGridFavorites";
+import { menuGoToEntries } from "./goToMenuEntries";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
 import type { FrameHostProps } from "./FrameHostGate";
 import { PRODUCTS, PRODUCT_FAMILIES } from "@/features/shell/frame/products";
 import { FRAME_ROUTE_HOMES } from "@/features/shell/frame/route-homes.generated";
@@ -157,6 +161,11 @@ export default function FrameHostImpl({
     canToggle: !sideChatState.standsAside,
     onToggle: toggleSideChat,
   });
+  // History rows and comments reach the side chat before it has loaded: open it, queue the act.
+  useEarlySideChatDoors({
+    enabled: isAuthenticated && !sideChatState.standsAside,
+    open: () => sideChatState.setOpen(true),
+  });
   const [initialPathname] = useState(pathname);
   const sideChatHost = {
     signedIn: isAuthenticated,
@@ -172,6 +181,8 @@ export default function FrameHostImpl({
   // The frame presents the canvas window while it is mounted: `openCanvasItem(...)` from any page
   // reaches the store and opens the frame's canvas, even before its body has loaded.
   useEffect(() => canvas?.registerPresentation(), [canvas]);
+  const isAdmin = useAppSelector(selectIsAdminPerson);
+  const goToEntries = menuGoToEntries({ isAuthenticated, isAdmin });
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [favorites, setFavorites] = useGridFavorites();
@@ -224,6 +235,8 @@ export default function FrameHostImpl({
           variant="workspace"
           initialGeometry={initialGeometry}
           hostHeaderSlots
+          goToEntries={goToEntries}
+          onGoTo={go}
           loadCompanion={isAuthenticated ? loadSideChat : undefined}
           companionOpen={sideChatState.open}
           onCompanionOpenChange={sideChatState.setOpen}

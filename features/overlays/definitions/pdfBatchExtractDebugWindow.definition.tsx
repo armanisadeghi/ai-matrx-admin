@@ -15,6 +15,5 @@ export const pdfBatchExtractDebugWindowOverlay = defineOverlay<PdfBatchExtractDe
     restoreDefaults: { selectedSessionId: null },
     windowId: "pdf-batch-extract-debug",
     mobile: "card",
-    ephemeral: true,
   },
 });

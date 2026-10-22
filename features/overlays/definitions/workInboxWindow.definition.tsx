@@ -15,6 +15,5 @@ export const workInboxWindowOverlay = defineOverlay<WorkInboxWindowDefinitionDat
     restoreDefaults: {},
     windowId: "work-inbox-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

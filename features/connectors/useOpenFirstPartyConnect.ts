@@ -20,7 +20,7 @@
 // at once; one that changed but does not prove it yet is read once more.
 
 import { useQueryClient } from "@tanstack/react-query";
-import { selectIsOverlayOpen } from "@ai-matrx/summon/boot";
+import { isOverlayOpen } from "@ai-matrx/summon/boot";
 import type { OpenFirstPartyConnect } from "@ai-matrx/chat/agents/connectors/first-party-connectors";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -96,7 +96,7 @@ export function useOpenFirstPartyConnect(): OpenFirstPartyConnect {
       return false;
     }
     // Subscribe BEFORE opening, so a dialog that opens in the same tick is seen opening.
-    const wait = waitForOverlayClosed(store, (state) => selectIsOverlayOpen(state as never, CONSENT_OVERLAY_ID));
+    const wait = waitForOverlayClosed(store, (state) => isOverlayOpen(state as never, CONSENT_OVERLAY_ID));
     try {
       openConsent({
         initialProductKeys: options?.productKey ? [options.productKey] : [...DEFAULT_PRODUCT_KEYS],

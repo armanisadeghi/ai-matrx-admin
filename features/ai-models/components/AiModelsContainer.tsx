@@ -24,7 +24,7 @@ import type { AiModel, AiProvider } from "../types";
 import { applyFiltersForCount } from "@/features/ai-models/utils/filterUtils";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, BookOpen, Maximize2, Minimize2 } from "lucide-react";
-import ProviderReferenceModal from "./ProviderReferenceModal";
+import { useProviderReferenceWindow } from "@/features/overlays/definitions/providerReferenceWindow.overlay";
 import TopTierAccessButton from "./TopTierAccessButton";
 import {
   ResizableHandle,
@@ -55,7 +55,7 @@ export default function AiModelsContainer() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelMaximized, setPanelMaximized] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
-  const [referenceOpen, setReferenceOpen] = useState(false);
+  const [referenceOpen, toggleReference] = useProviderReferenceWindow();
 
   const {
     tabIds,
@@ -382,7 +382,7 @@ export default function AiModelsContainer() {
             <Button
               icon={<BookOpen />}
               variant={referenceOpen ? "outline" : "quiet"}
-              onClick={() => setReferenceOpen((v) => !v)}
+              onClick={toggleReference}
               title="Open floating provider reference panel"
             >
               Provider Ref
@@ -516,12 +516,6 @@ export default function AiModelsContainer() {
           </div>
         )}
 
-        {referenceOpen && providers.length > 0 && (
-          <ProviderReferenceModal
-            providers={providers}
-            onClose={() => setReferenceOpen(false)}
-          />
-        )}
       </div>
     </SurfaceRuntimeProvider>
   );

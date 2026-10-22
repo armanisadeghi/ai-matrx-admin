@@ -15,6 +15,5 @@ export const audioControlWindowOverlay = defineOverlay<AudioControlWindowDefinit
     restoreDefaults: {},
     windowId: "audio-control-window",
     mobile: "card",
-    ephemeral: true,
   },
 });

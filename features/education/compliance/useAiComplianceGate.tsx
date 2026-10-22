@@ -95,6 +95,8 @@ export interface UseAiComplianceGateOptions {
   declarationPresentation?: "dialog" | "nudge";
   /** `false` reads nothing (the first-sign-in popup already asked this session). Default true. */
   enabled?: boolean;
+  /** The person closed the age question without answering ("Not now"); the first-sign-in popup keeps it on the account. */
+  onDeclarationDismissed?: () => void;
 }
 
 export function useAiComplianceGate(
@@ -120,6 +122,10 @@ export function useAiComplianceGate(
   );
   const [open, setOpen] = useState(false);
   const [askAge, setAskAge] = useState(false);
+  const onDismissedRef = useRef(options.onDeclarationDismissed);
+  useEffect(() => {
+    onDismissedRef.current = options.onDeclarationDismissed;
+  });
   const [savingBand, setSavingBand] = useState<AgeBand | null>(null);
   // Latest successfully-loaded verdict, read inside ensureAllowed without making
   // the callback depend on (and churn with) `gate`.
@@ -282,7 +288,9 @@ export function useAiComplianceGate(
         <AgeQuestion
           open={askAge}
           onOpenChange={(next) => {
-            if (!next) settleAgePrompt(false);
+            if (next) return;
+            settleAgePrompt(false);
+            onDismissedRef.current?.();
           }}
           onPick={onPickBand}
           saving={savingBand}

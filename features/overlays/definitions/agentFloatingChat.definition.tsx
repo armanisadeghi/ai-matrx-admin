@@ -14,6 +14,5 @@ export const agentFloatingChatOverlay = defineOverlay<AgentFloatingChatDefinitio
   window: {
     restoreDefaults: {},
     windowId: "agent-floating-chat",
-    ephemeral: true,
   },
 });

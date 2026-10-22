@@ -15,6 +15,5 @@ export const favoritesManagerWindowOverlay = defineOverlay<FavoritesManagerWindo
     restoreDefaults: {},
     windowId: "favorites-manager-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import type { ComparisonKindInfo, LookupMatch } from "../contract";
 import { Lineup } from "../components/Lineup";
-import { startRows, type CompareRow } from "../rows";
+import { newRow, startRows, type CompareRow } from "../rows";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -24,8 +24,8 @@ const match: LookupMatch = {
 
 const kind = { key: "local_business", label: "Local businesses" } as unknown as ComparisonKindInfo;
 
-function Harness() {
-  const [rows, setRows] = useState<CompareRow[]>(startRows());
+function Harness({ initial }: { initial?: CompareRow[] } = {}) {
+  const [rows, setRows] = useState<CompareRow[]>(initial ?? startRows());
   return (
     <QueryClientProvider client={new QueryClient()}>
       <Lineup kind={kind} rows={rows} onRows={(f) => setRows(f)} near="" onNear={() => {}} organizationId="o"
@@ -101,5 +101,27 @@ describe("a card matches while the person is still typing", () => {
     await act(async () => { await jest.advanceTimersByTimeAsync(450); });
     expect(mockResolveRow).toHaveBeenCalledTimes(2); // card 2 asked without any blur
     await act(async () => { release({ status: "found", match, category: "", candidates: [], message: null }); });
+  });
+
+  it("Compare answers a click while another card is still matching (live: a click did nothing for 25 s)", async () => {
+    const onCompare = jest.fn();
+    const found = (key: string) => newRow({ key, name: "Opti-Club", state: "found", match });
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    function Two() {
+      const [rows, setRows] = useState<CompareRow[]>([found("a"), found("b"), newRow({ key: "c", name: "Zed", state: "resolving" })]);
+      return (
+        <QueryClientProvider client={new QueryClient()}>
+          <Lineup kind={kind} rows={rows} onRows={(f) => setRows(f)} near="" onNear={() => {}} organizationId="o"
+            seesDollars={false} onCompare={onCompare} />
+        </QueryClientProvider>
+      );
+    }
+    await act(async () => { createRoot(host).render(<Two />); });
+    await act(async () => { await jest.advanceTimersByTimeAsync(50); });
+    const button = host.querySelector<HTMLButtonElement>("[data-compare-confirm-button]")!;
+    expect(button.disabled).toBe(false);
+    await act(async () => { button.click(); });
+    expect(onCompare).toHaveBeenCalledTimes(1);
   });
 });

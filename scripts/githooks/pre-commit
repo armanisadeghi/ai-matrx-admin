@@ -62,6 +62,15 @@ if [ -n "$STAGED" ]; then
         exit 1
     fi
 fi
+# JOB 4 — a staged pnpm-lock.yaml is judged against the versions it NAMES, not the ones installed here
+# (2026-10-21, 689c27aa4d: a lockfile-only adoption installs nothing, so JOB 2 saw the old package).
+if git diff --cached --name-only -- pnpm-lock.yaml | grep -q .; then
+    if ! (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock); then
+        echo "COMMIT REFUSED: the staged pnpm-lock.yaml adopts @ai-matrx versions that no longer ship an export this code imports (named above)." >&2
+        echo "  Fix the importer (or restore the export in the package), or unstage the lockfile. Never pin." >&2
+        exit 1
+    fi
+fi
 # CLOSE IN FLOW (Arman, 2026-10-20): a dialog's × is a flex item of its row, never pinned to a corner
 # with absolute/fixed — the design-system's Dialog / Sheet / CommandDialog draw it. Runs only when a
 # .tsx/.jsx is staged and the installed design-system ships the scanner (~2 s, shrink-only baseline).

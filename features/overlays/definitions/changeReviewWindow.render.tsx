@@ -5,9 +5,7 @@ import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
 
-        const isOpen = true;
         const data = overlayData as Record<string, unknown> | null | undefined;
-        if (!isOpen) return null;
         const verb = data?.verb === "move" || data?.verb === "delete" ? data.verb : null;
         const entityType = typeof data?.entityType === "string" ? data.entityType : null;
         const ids = Array.isArray(data?.ids) ? data.ids.filter((x): x is string => typeof x === "string") : [];

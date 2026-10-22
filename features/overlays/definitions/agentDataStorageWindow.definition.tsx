@@ -15,7 +15,6 @@ export const agentDataStorageWindowOverlay = defineOverlay<AgentDataStorageWindo
     restoreDefaults: { agentId: null },
     windowId: "agent-data-storage-window",
     mobile: "fullscreen",
-    ephemeral: true,
     deprecated: { reason: "Stub — not yet implemented. Will be removed if no implementation lands." },
   },
 });

@@ -15,6 +15,5 @@ export const agentConvertSystemWindowOverlay = defineOverlay<AgentConvertSystemW
     restoreDefaults: { agentId: null },
     windowId: "agent-convert-system-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });
