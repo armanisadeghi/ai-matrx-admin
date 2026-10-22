@@ -10,6 +10,11 @@
 import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { getFingerprint } from "@/lib/services/fingerprint-service";
 
+// Console noise that is Cloudflare's, not ours (live walk 2026-10-22, reproduced signed out on /search and /chat):
+// the invisible widget's own iframe (challenges.cloudflare.com/.../turnstile/.../invisible) probes its sandbox with
+// `fetch("data:,")` and logs "Connecting to 'data:,' violates ... connect-src" against ITS OWN policy, and its
+// private-access-token probe (`/cdn-cgi/challenge-platform/h/b/pat/...`) answers 401 by design when the browser
+// holds no token. Neither comes from our page (its CSP is frame-ancestors only), neither blocks the check. Leave both.
 const SCRIPT_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
 interface TurnstileApi {

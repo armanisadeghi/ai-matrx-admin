@@ -149,7 +149,6 @@ function FacetHeading({ result, facetKey, label, confirm }: {
   const rows = comparedItems(result).map((i) => ({ item: i, f: i.facets?.find((x) => x.key === facetKey) }));
   const failed = rows.filter((r) => r.f?.status === "failed" && !isUnconfirmed(r.f));
   const asking = rows.filter((r) => r.f && isUnconfirmed(r.f));
-  const slowest = Math.max(0, ...rows.map((r) => r.f?.seconds ?? 0));
   return (
     <div className="space-y-1.5 pt-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -160,7 +159,6 @@ function FacetHeading({ result, facetKey, label, confirm }: {
               Not found for {item.name}
             </span>
           ))}
-          {slowest >= 1 ? <span className="type-meta tabular-nums text-muted-foreground">{Math.round(slowest)} s</span> : null}
         </div>
       </div>
       {asking.map(({ item, f }) => (
