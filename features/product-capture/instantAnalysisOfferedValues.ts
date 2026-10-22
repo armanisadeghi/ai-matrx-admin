@@ -11,9 +11,10 @@
  */
 
 import type { ProductCaptureInstantItemOffer } from "@ai-matrx/agents/generated/provision-offers";
+import { KIND_KEY } from "@ai-matrx/content-ir";
 import type { CaptureFile, CaptureItem } from "./types";
 
-type MappedKeys = Exclude<keyof ProductCaptureInstantItemOffer, "__kind" | "dock_notes">;
+type MappedKeys = Exclude<keyof ProductCaptureInstantItemOffer, typeof KIND_KEY | "dock_notes">;
 
 export function instantAnalysisOfferedValues(
   item: Pick<CaptureItem, "code" | "codeSource" | "folderPath" | "status" | "createdAt">,
