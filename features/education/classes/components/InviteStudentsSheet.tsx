@@ -31,7 +31,7 @@ import {
 import { toast } from "@/lib/toast";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { ClipboardFallbackDialog } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog";
+import { ClipboardFallbackDialog } from "@ai-matrx/design-system";
 import { useClassInvites, extractEmails } from "../hooks/useClassInvites";
 import { classJoinUrl, classInviteAcceptUrl } from "../service";
 import { Textarea } from "@/components/ui/textarea";

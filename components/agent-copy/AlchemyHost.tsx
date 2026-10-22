@@ -56,14 +56,22 @@ import {
   ErrorActionsProvider,
   ErrorCardMenusProvider,
   WritingBoxProvider,
+  WritingInputProvider,
   type WritingBoxProps,
+  type WritingInputProps,
 } from "@ai-matrx/design-system";
 import { errorCardMenus, renderPackageErrorActions } from "@/components/errors/PackageErrorActions";
 import { ProTextarea, type ProTextareaProps } from "@/components/official/ProTextarea";
+import { ProInput, type ProInputProps } from "@/components/official/ProInput";
 
 /** A package box a person writes in is THE writing box (one-ui-system rule 6). */
 function PackageWritingBox(props: WritingBoxProps) {
   return <ProTextarea {...(props as ProTextareaProps)} />;
+}
+
+/** A package one-line field a person types in is THE writing input (rule 6): mic, read-aloud, the "…" actions. */
+function PackageWritingInput(props: WritingInputProps) {
+  return <ProInput {...(props as ProInputProps)} />;
 }
 import { SelectionToolbarRoot } from "@/components/selection-toolbar/SelectionToolbarRoot";
 
@@ -181,6 +189,7 @@ export function AlchemyHost({ children }: { children: ReactNode }) {
               and every package box a person writes in is ProTextarea. */}
           <ErrorCardMenusProvider menus={errorCardMenus}>
             <WritingBoxProvider Box={PackageWritingBox}>
+            <WritingInputProvider Box={PackageWritingInput}>
               {/* Every ItemRow / ItemContextMenu (design-system/item) right-clicks into v3. */}
               <ItemMenuHostBinding>
               {children}
@@ -189,6 +198,7 @@ export function AlchemyHost({ children }: { children: ReactNode }) {
                   come from this registry (components/selection-toolbar). */}
               <SelectionToolbarRoot />
               <AlchemyWindowHost controller={windows} />
+            </WritingInputProvider>
             </WritingBoxProvider>
           </ErrorCardMenusProvider>
         </ErrorActionsProvider>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useHostNamesRecord } from "@/features/shell/host-chrome/RecordHostChrome";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
@@ -118,6 +119,7 @@ function requireText(
 }
 
 export function TranscriptViewer({ transcriptId = null }: { transcriptId?: string | null } = {}) {
+  const hostNamesTranscript = useHostNamesRecord(transcriptId ? { token: "transcript", id: transcriptId } : null);
   const { activeTranscript: selectedTranscript, transcripts, updateTranscript } = useTranscripts();
   // A given id shows THAT transcript (a board tile); without one it shows the selected one (the processor page).
   const activeTranscript = transcriptId ? (transcripts.find((t) => t.id === transcriptId) ?? null) : selectedTranscript;
@@ -614,9 +616,12 @@ export function TranscriptViewer({ transcriptId = null }: { transcriptId?: strin
           ) : (
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl font-bold text-foreground truncate">
-                  {activeTranscript.title}
-                </h1>
+                {/* A host that names this transcript (a board tile) already shows its title. */}
+                {hostNamesTranscript ? null : (
+                  <h1 className="text-xl font-bold text-foreground truncate">
+                    {activeTranscript.title}
+                  </h1>
+                )}
                 {activeTranscript.description && (
                   <p className="text-sm text-muted-foreground mt-1">
                     {activeTranscript.description}

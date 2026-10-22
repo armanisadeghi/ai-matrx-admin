@@ -854,6 +854,7 @@ export default function DocumentEditor({
   if (chrome) {
     return (
       <EditorDocumentHeader
+        record={{ token: "udt_document", id: documentId }}
         backHref={chrome.backHref}
         backLabel="Back to documents"
         productTone="docs"

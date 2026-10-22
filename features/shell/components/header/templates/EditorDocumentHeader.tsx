@@ -19,6 +19,7 @@
  * Same commands, same File menu, same actions — only the presentation differs.
  */
 
+import { HostTitle, useHostNamesRecord, type HostedRecordRef } from "@/features/shell/host-chrome/RecordHostChrome";
 import NavLink from "@/components/navigation/NavLink";
 import type { CSSProperties, ReactNode } from "react";
 import { Menu } from "lucide-react";
@@ -58,6 +59,12 @@ export type EditorDocumentHeaderProps = {
    * chrome, no navigation button) and the product mark is a plain mark, not a link away.
    */
   embedded?: boolean;
+  /**
+   * The record this editor edits. In a host that holds it and names it (a board tile —
+   * `RecordHostChrome`), the title and its marks move into the host's title slot and the product mark
+   * drops out (the host draws the type icon): the bar is one compact row of the menus and actions.
+   */
+  record?: HostedRecordRef;
 };
 
 const OFFICE_KIND = { sheets: "workbook", docs: "document", slides: "presentation" } as const;
@@ -82,7 +89,9 @@ export function EditorDocumentHeader({
   children,
   className,
   embedded = false,
+  record,
 }: EditorDocumentHeaderProps) {
+  const hosted = useHostNamesRecord(record);
   const [look, , settled] = useOfficeLook();
   const office = look === "microsoft" && !!ribbon;
   const accent = OFFICE_ACCENT[OFFICE_KIND[productTone]];
@@ -111,6 +120,12 @@ export function EditorDocumentHeader({
       {titleMarks ? <span className="flex shrink-0 items-center">{titleMarks}</span> : null}
     </>
   );
+  // The host names the record: the title (with its marks) lives in the host's title slot.
+  const hostedTitle = hosted ? (
+    <HostTitle record={record}>
+      <div className="flex h-7 min-w-0 flex-1 items-center gap-0.5 overflow-hidden">{titleRow}</div>
+    </HostTitle>
+  ) : null;
   // ONE tree for both looks: the canvas slot (last child) keeps its identity when the look changes,
   // so a live editor (Univer) is never remounted by a switch — only the chrome rows above it change.
   // Until the saved look is read, the title row is drawn but not shown (no Google-then-Office flash).
@@ -127,7 +142,15 @@ export function EditorDocumentHeader({
       data-office-look={office ? "microsoft" : "google"}
     >
       {embedded ? null : <ShellChromeMode mode="canvas" />}
-      {office ? (
+      {hostedTitle}
+      {hosted ? (
+        menuBar || actions ? (
+          <header className={cn("canvas-workspace-header flex h-9 shrink-0 items-center gap-1.5 border-b border-border/60 pl-2 pr-3", !settled && "invisible")}>
+            <div className="flex min-w-0 flex-1 items-center">{menuBar}</div>
+            {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
+          </header>
+        ) : null
+      ) : office ? (
         <header
           className={cn(
             "canvas-workspace-header grid h-12 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border/60 bg-[color-mix(in_oklab,var(--office-accent)_7%,hsl(var(--card)))] pl-2 pr-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,auto)_minmax(0,1fr)]",

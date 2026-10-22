@@ -37,7 +37,7 @@ Everything here runs through the AI Dream MCP or the server API. Nothing needs t
 
 | Need | Door |
 |---|---|
-| See an agent, its instructions, variables, model | `agent_catalog action=get agent_id=…` |
+| See an agent, its instructions, variables, model | `agent_catalog action=get_agent agent_id=…` |
 | Pick candidate models (price, restrictions) | `agent_catalog action=list_models`; rules: `test-model-selection` skill |
 | List / read an agent's test cases | `agent_tests action=list_cases agent_id=…` · `action=get_case case_id=…` |
 | Make a case from a real conversation | `agent_tests action=save_case conversation_id=… label=…` (its agent, variables, input, final answer) |

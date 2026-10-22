@@ -19,6 +19,7 @@
  * `<AccessGate token id/>` resolves denied / in Trash / missing / signed out.
  */
 
+import { HostedRecordBar } from "@/features/shell/host-chrome/RecordHostChrome";
 import { createElement, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ExternalLink, FlaskConical, FolderKanban, ListTodo, Loader2, UsersRound, Video, Workflow } from "lucide-react";
@@ -156,15 +157,6 @@ function BodySkeleton({ label }: { label: string }) {
 }
 
 /** The one-line strip above a body: identity on the left, doors on the right. */
-function TileBar({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
-  return (
-    <div className="flex min-h-10 shrink-0 items-center gap-2 border-b border-border bg-card/60 px-3 py-1.5">
-      <div className="flex min-w-0 flex-1 items-center gap-2">{children}</div>
-      {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
-    </div>
-  );
-}
-
 function DoorButton({ href, children, primary }: { href: string; children: ReactNode; primary?: boolean }) {
   return (
     <Button asChild variant={primary ? "primary" : "outline"}>
@@ -487,8 +479,10 @@ function WarRoomRecordBody({ id, source, title, onSource }: ItemBodyProps & { id
         {/* The Stage's thread surface sits under the shell's glass header on the
             room route; a tile has no glass header, so the offset is zero here. */}
         <div className="flex h-full min-h-0 flex-col [--shell-header-h:0px]">
-          <TileBar
-            actions={
+          <HostedRecordBar
+            record={{ token: "war_room", id }}
+            name={<p className="truncate text-sm font-medium text-foreground">{session.title}</p>}
+            open={
               <DoorButton href={roomHref} primary>
                 <ExternalLink className="size-3.5" />
                 Open room
@@ -496,13 +490,10 @@ function WarRoomRecordBody({ id, source, title, onSource }: ItemBodyProps & { id
             }
           >
             <RoomBadge session={session} size="md" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">{session.title}</p>
-              <p className="text-[11px] text-muted-foreground">
-                {threadCount === 1 ? "1 thread" : `${threadCount} threads`}
-              </p>
-            </div>
-          </TileBar>
+            <p className="shrink-0 text-[11px] text-muted-foreground">
+              {threadCount === 1 ? "1 thread" : `${threadCount} threads`}
+            </p>
+          </HostedRecordBar>
           <div className="min-h-0 flex-1">{stage}</div>
         </div>
       </WarRoomSurfaceHost>
@@ -764,17 +755,21 @@ function WorkflowRunBody({ source, title, onSource }: ItemBodyProps) {
   return (
     <MasterworkRulesProvider masterworkId={loaded.definitionId}>
       <div className="flex h-full min-h-0 flex-col">
-        <TileBar
-          actions={
+        <HostedRecordBar
+          record={{ token: "workflow_run", id: runId }}
+          name={
+          <>
+            <Workflow className="size-4 shrink-0 text-muted-foreground" />
+            <p className="truncate text-sm font-medium text-foreground">{loaded.name}</p>
+          </>
+        }
+          open={
             <DoorButton href={runHref(runId)} primary>
               <ExternalLink className="size-3.5" />
               Open run
             </DoorButton>
           }
-        >
-          <Workflow className="size-4 shrink-0 text-muted-foreground" />
-          <p className="truncate text-sm font-medium text-foreground">{loaded.name}</p>
-        </TileBar>
+        />
         <div className="min-h-0 flex-1 overflow-y-auto">
           {/* The run's own agent surface — the host the run page mounts. */}
           <WorkflowRunSurfaceHost
@@ -860,17 +855,21 @@ function ResearchReport({ id, source, title, onSource }: ItemBodyProps & { id: s
   }
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <TileBar
-        actions={
+      <HostedRecordBar
+        record={{ token: "research_topic", id }}
+        name={
+        <>
+          <FlaskConical className="size-4 shrink-0 text-muted-foreground" />
+          <p className="truncate text-sm font-medium text-foreground">{topic.name}</p>
+        </>
+      }
+        open={
           <DoorButton href={`/research/topics/${encodeURIComponent(id)}`} primary>
             <ExternalLink className="size-3.5" />
             Open topic
           </DoorButton>
         }
-      >
-        <FlaskConical className="size-4 shrink-0 text-muted-foreground" />
-        <p className="truncate text-sm font-medium text-foreground">{topic.name}</p>
-      </TileBar>
+      />
       <div className="min-h-0 flex-1 overflow-y-auto">
         <DocumentViewer />
       </div>
@@ -949,17 +948,21 @@ function ProjectRecordBody({ id, source, title, onSource }: ItemBodyProps & { id
   // project route renders it, without the route's shell chrome.
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <TileBar
-        actions={
+      <HostedRecordBar
+        record={{ token: "project", id }}
+        name={
+        <>
+          <FolderKanban className="size-4 shrink-0 text-muted-foreground" />
+          <p className="truncate text-sm font-medium text-foreground">{project.name}</p>
+        </>
+      }
+        open={
           <DoorButton href={`/projects/${encodeURIComponent(id)}`} primary>
             <ExternalLink className="size-3.5" />
             Open project
           </DoorButton>
         }
-      >
-        <FolderKanban className="size-4 shrink-0 text-muted-foreground" />
-        <p className="truncate text-sm font-medium text-foreground">{project.name}</p>
-      </TileBar>
+      />
       <div className="min-h-0 flex-1">
         <ProjectRecordWorkspace key={project.id} initialProject={project} chrome="embedded" />
       </div>

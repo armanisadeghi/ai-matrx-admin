@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3442",
+  "version": "0.4.3443",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
@@ -47,6 +47,8 @@
     "check:no-retired-member-visibility-knob": "node scripts/check-no-retired-member-visibility-knob.mjs",
     "check:no-vendor-names": "node scripts/check-no-vendor-names-in-ui.mjs",
     "check:no-vendor-names:self-test": "node scripts/check-no-vendor-names-in-ui.mjs --self-test",
+    "check:conflict-markers-source": "node scripts/check-conflict-markers-source.mjs",
+    "check:conflict-markers-source:self-test": "node scripts/check-conflict-markers-source.mjs --self-test",
     "check:one-source-input": "node scripts/check-one-source-input.mjs",
     "check:one-source-input:self-test": "node scripts/check-one-source-input.mjs --self-test",
     "check:tool-catalog-readers": "node scripts/check-tool-catalog-readers.mjs",

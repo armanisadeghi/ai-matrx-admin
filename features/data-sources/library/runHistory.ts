@@ -14,6 +14,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { RecordFilter } from "@ai-matrx/records";
 
 import { createClient } from "@/utils/supabase/client";
+import { getJobRowKeys } from "../server";
+import { useLibraryOrganizationId } from "./hooks";
 
 export const OPEN_STATUSES = ["queued", "fetching", "waiting_for_provider", "storing"] as const;
 
@@ -33,19 +35,23 @@ export interface FetchJobRow {
   error: string | null;
   created_at: string;
   finished_at: string | null;
-  /** The table's key column and, in `metadata.row_keys`, the keys of the rows THIS run stored. */
+  /** The table's key column (its NAME). */
   key_column: string | null;
-  metadata: unknown;
+  /** The store's field KEY of that column ("place_id"), the short word the server wrote beside the run's keys. */
+  row_key_field: string | null;
 }
 
-const JOB_COLUMNS =
-  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, metadata";
+export const JOB_COLUMNS =
+  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, row_key_field:metadata->>row_key_field";
 
 const POLL_OPEN_MS = 3000;
 
 export const fetchJobKey = (jobId: string | null) => ["data-sources", "job-row", jobId] as const;
 export const pastRunsKey = (sourceKeys: readonly string[]) => ["data-sources", "past-runs", [...sourceKeys].sort().join(",")] as const;
 export const PAST_RUNS_PREFIX = ["data-sources", "past-runs"] as const;
+
+// Widened to a plain string: the typed select parser cannot read the `metadata->>` alias (TS2589).
+const COLUMNS: string = JOB_COLUMNS;
 
 const jobs = () => createClient().schema("scraper").from("data_fetch_job");
 
@@ -54,9 +60,9 @@ export function useDataFetchJob(jobId: string | null) {
   return useQuery({
     queryKey: fetchJobKey(jobId),
     queryFn: async (): Promise<FetchJobRow | null> => {
-      const { data, error } = await jobs().select(JOB_COLUMNS).eq("id", jobId ?? "").maybeSingle();
+      const { data, error } = await jobs().select(COLUMNS).eq("id", jobId ?? "").maybeSingle();
       if (error) throw error;
-      return (data as FetchJobRow | null) ?? null;
+      return (data as unknown as FetchJobRow | null) ?? null;
     },
     enabled: Boolean(jobId),
     refetchInterval: (q) => (isOpenStatus((q.state.data as FetchJobRow | null | undefined)?.status) ? POLL_OPEN_MS : false),
@@ -64,26 +70,66 @@ export function useDataFetchJob(jobId: string | null) {
   });
 }
 
+/** How the grid relates to one run: its own rows, rows still to come, or (honestly) the whole shared table. */
+export type RunScope = "this-run" | "coming" | "all-rows";
+
+const KEYS_PAGE = 2000;
+
+export const runKeysKey = (jobId: string | null, status: string | null | undefined, rows: number) =>
+  ["data-sources", "run-row-keys", jobId, isOpenStatus(status) ? "open" : "closed", rows] as const;
+
 /**
- * The grid filter that shows only this run's rows: every run of a source writes one shared table, so
- * the rows are told apart by the keys the server recorded on the job. A list value is "is either" to
- * the store's filter (a record holding any of the keys). Null when the job has no keys to filter by
- * (a run from before they were kept shows the whole table, as it always did). Pure.
+ * The keys of the rows ONE run stored, read only for the run on view (never with the Past runs list):
+ * the server pages them out of their own table so a run of thousands of rows costs the list nothing.
+ * Re-read while the run is open, so the rows land in the grid as they are stored.
  */
-export function runRowFilter(job: Pick<FetchJobRow, "key_column" | "metadata"> | null | undefined): RecordFilter | null {
-  const meta = job?.metadata && typeof job.metadata === "object" ? (job.metadata as { row_keys?: unknown; row_key_field?: unknown }) : null;
-  // The store's filter reads the field KEY ("place_id"), which the server wrote beside the keys; the
-  // job's key_column is the column's NAME ("Place Id") and the store refuses it as a filter key.
-  const field = typeof meta?.row_key_field === "string" ? meta.row_key_field : null;
-  const keys = meta?.row_keys;
-  if (!field || !Array.isArray(keys) || keys.length === 0) return null;
-  // The store reads a list as "is either" on any column; its TS type only names the scalar forms.
-  return { [field]: keys } as unknown as RecordFilter;
+export function useRunRowKeys(job: Pick<FetchJobRow, "id" | "status" | "rows_created" | "rows_updated"> | null | undefined) {
+  const organizationId = useLibraryOrganizationId();
+  return useQuery({
+    queryKey: runKeysKey(job?.id ?? null, job?.status, (job?.rows_created ?? 0) + (job?.rows_updated ?? 0)),
+    queryFn: async (): Promise<string[]> => {
+      const keys: string[] = [];
+      for (;;) {
+        const page = await getJobRowKeys(job?.id ?? "", { organizationId: organizationId ?? "", offset: keys.length, limit: KEYS_PAGE });
+        keys.push(...page.keys);
+        if (page.keys.length === 0 || keys.length >= page.total) break;
+      }
+      return keys;
+    },
+    enabled: Boolean(job?.id) && Boolean(organizationId),
+    refetchInterval: isOpenStatus(job?.status) ? POLL_OPEN_MS : false,
+    staleTime: 0,
+  });
 }
 
-/** True when the job names a key column but has stored no keys yet (a run still filling). */
-export const runHasNoRowsYet = (job: Pick<FetchJobRow, "key_column" | "metadata" | "status"> | null | undefined): boolean =>
-  Boolean(job?.key_column) && runRowFilter(job) === null && isOpenStatus(job?.status);
+/**
+ * The grid filter that shows only this run's rows: every run of a source writes one shared table, so
+ * the rows are told apart by the keys the server recorded for the run. A list value is "is either" to
+ * the store's filter (a record holding any of the keys). Null when the run has no keys to filter by.
+ * Pure.
+ */
+export function runRowFilter(job: Pick<FetchJobRow, "row_key_field"> | null | undefined, keys: readonly string[] | null | undefined): RecordFilter | null {
+  // The store's filter reads the field KEY ("place_id"), which the server wrote beside the keys; the
+  // job's key_column is the column's NAME ("Place Id") and the store refuses it as a filter key.
+  const field = typeof job?.row_key_field === "string" && job.row_key_field ? job.row_key_field : null;
+  if (!field || !keys || keys.length === 0) return null;
+  // The store reads a list as "is either" on any column; its TS type only names the scalar forms.
+  return { [field]: [...keys] } as unknown as RecordFilter;
+}
+
+/**
+ * Which rows the grid may honestly show for this run. A run still filling with no stored rows yet is
+ * "coming" (the skeleton holds the place); a run whose keys cannot be told (older than per-run results,
+ * or its key field never resolved) is "all-rows", and the page must SAY so. Pure.
+ */
+export function runScope(
+  job: Pick<FetchJobRow, "key_column" | "row_key_field" | "status"> | null | undefined,
+  keys: readonly string[] | null | undefined,
+): RunScope {
+  if (runRowFilter(job, keys)) return "this-run";
+  if (isOpenStatus(job?.status) && (job?.key_column || job?.row_key_field)) return "coming";
+  return "all-rows";
+}
 
 /** The newest open fetch of this source (read under RLS), for reconnect after a reload. */
 export function useOpenJob(sourceKey: string) {
@@ -115,13 +161,13 @@ export function usePastRuns(sourceKeys: readonly string[]) {
     queryKey: pastRunsKey(sourceKeys),
     queryFn: async (): Promise<FetchJobRow[]> => {
       const { data, error } = await jobs()
-        .select(JOB_COLUMNS)
+        .select(COLUMNS)
         .in("source_key", [...sourceKeys])
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(PAST_RUNS_LIMIT);
       if (error) throw error;
-      return (data as FetchJobRow[] | null) ?? [];
+      return (data as unknown as FetchJobRow[] | null) ?? [];
     },
     enabled: sourceKeys.length > 0,
     staleTime: 15_000,

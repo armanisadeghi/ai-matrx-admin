@@ -1,5 +1,6 @@
 "use client";
 
+import { useHostNamesRecord } from "@/features/shell/host-chrome/RecordHostChrome";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
@@ -68,6 +69,10 @@ export function ScopeDetailEditor({
   scopeParam,
   canManage,
 }: ScopeDetailEditorProps) {
+  // THE HOST CHROME: a host that names this scope and offers Open (a Board tile) — the h1 hero and the
+  // context-items "Open full page" link drop out, and rename stays one quiet button on the type/count line.
+  // A Board tile holds the scope by id (`scopeParam` is its uuid there).
+  const inTile = useHostNamesRecord({ token: "scope", id: scopeParam });
   const dispatch = useAppDispatch();
   // Both route segments resolve by UUID or kebab slug.
   const scopeType = useAppSelector((s) =>
@@ -215,6 +220,14 @@ export function ScopeDetailEditor({
   const total = rows?.length ?? 0;
   /** The scope's values read — the filled/total counts say "—" when it failed. */
   const valuesRead = readOf({ loading, error: readError });
+  const countLine = (className: string) => (
+    <p className={className}>
+      {scopeType.label_singular} ·{" "}
+      <UntrustedCount value={filled} read={valuesRead} label="Filled context items" /> of{" "}
+      <UntrustedCount value={total} read={valuesRead} label="Context items" />{" "}
+      {total === 1 ? "context item" : "context items"} filled
+    </p>
+  );
 
   return (
     <div className="space-y-6">
@@ -225,10 +238,10 @@ export function ScopeDetailEditor({
         rows={rows}
         readError={readError ? String(readError) : null}
       />
-      <Card className="p-6">
+      <Card className={inTile ? "p-4" : "p-6"}>
         <div className="flex items-start gap-4">
           <div
-            className={`w-12 h-12 rounded-lg ${SCOPE_ICON_SURFACE} ${color.fg} ring-1 ${color.ring} flex items-center justify-center shrink-0`}
+            className={`${inTile ? "w-9 h-9" : "w-12 h-12"} rounded-lg ${SCOPE_ICON_SURFACE} ${color.fg} ring-1 ${color.ring} flex items-center justify-center shrink-0`}
           >
             <ScopeGlyph icon={scopeType.icon} className="h-7 w-7" />
           </div>
@@ -274,26 +287,29 @@ export function ScopeDetailEditor({
               </div>
             ) : (
               <div className="flex items-center gap-2 group">
-                <h1 className="text-2xl font-bold text-foreground">
-                  {scope.name}
-                </h1>
+                {inTile ? (
+                  countLine("text-xs text-muted-foreground")
+                ) : (
+                  <h1 className="text-2xl font-bold text-foreground">
+                    {scope.name}
+                  </h1>
+                )}
                 <Button
                   icon={<Pencil />}
                   ref={editNameButtonRef}
                   type="button"
                   variant="quiet"
-                  className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
+                  className={
+                    inTile
+                      ? undefined
+                      : "opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
+                  }
                   onClick={() => setEditingName(true)}
                   aria-label="Edit name"
                 />
               </div>
             )}
-            <p className="text-xs text-muted-foreground mt-1">
-              {scopeType.label_singular} ·{" "}
-              <UntrustedCount value={filled} read={valuesRead} label="Filled context items" /> of{" "}
-              <UntrustedCount value={total} read={valuesRead} label="Context items" />{" "}
-              {total === 1 ? "context item" : "context items"} filled
-            </p>
+            {inTile && !editingName ? null : countLine("text-xs text-muted-foreground mt-1")}
 
             {editingDescription ? (
               <div className="mt-3 space-y-2">
@@ -373,7 +389,7 @@ export function ScopeDetailEditor({
         variant="scope"
         id={scope.id}
         orgSlugOrId={orgSlugOrId}
-        title={`${scope.name} · knowledge graph`}
+        title={inTile ? "Knowledge graph" : `${scope.name} · knowledge graph`}
       />
 
       <Card className="p-6 space-y-5">
@@ -387,14 +403,16 @@ export function ScopeDetailEditor({
               </span>
             )}
           </h2>
-          <Button
-            asChild
-            variant="quiet"
-          >
-            <Link href={scopeContextItemsHref(orgSlugOrId, scopeType, scope)}>
-              Open full page
-            </Link>
-          </Button>
+          {inTile ? null : (
+            <Button
+              asChild
+              variant="quiet"
+            >
+              <Link href={scopeContextItemsHref(orgSlugOrId, scopeType, scope)}>
+                Open full page
+              </Link>
+            </Button>
+          )}
         </div>
         {loading && !rows && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

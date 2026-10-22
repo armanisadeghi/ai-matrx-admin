@@ -38,7 +38,7 @@ import {
 import { buildSheetMenus, type SheetChromeHost } from "../chrome/sheet-commands";
 import { flattenMenus } from "@ai-matrx/office/core";
 
-jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({ promptForValues: async () => null }));
+jest.mock("@ai-matrx/chat/ui/valuePromptsOpener", () => ({ promptForValues: async () => null }));
 
 function boot() {
   const univer = new Univer({ locale: LocaleType.EN_US, locales: {} });

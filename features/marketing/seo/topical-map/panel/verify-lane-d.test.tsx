@@ -211,10 +211,6 @@ jest.mock("@/lib/toast", () => ({
   __esModule: true,
   toast: { error: jest.fn(), success: jest.fn(), info: jest.fn() },
 }));
-jest.mock("@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog", () => ({
-  __esModule: true,
-  ClipboardFallbackDialog: () => null,
-}));
 jest.mock("@ai-matrx/design-system", () => ({
   ...jest.requireActual("@ai-matrx/design-system"),
   __esModule: true,

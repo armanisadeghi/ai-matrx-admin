@@ -24,7 +24,7 @@ import {
 } from "@/lib/entity-list/RowSelectionBar";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import { bulkCountLabel, type EntityBulkAction } from "@/lib/entity-list/selection";
-import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
+import { promptForValues } from "@ai-matrx/chat/ui/valuePromptsOpener";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   deleteContextItem,

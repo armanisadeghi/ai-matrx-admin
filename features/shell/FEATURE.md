@@ -132,6 +132,17 @@ A page picks a template; it never hand-builds its top. Named options only — a 
 
 **Guard:** `pnpm check:page-top` (findings row `page-top`, `--self-test`): `raw-page-header` (a file outside the header module importing `PageHeader`) and `sentence-under-title` (the interface-text `page-description` scanner). Baseline `scripts/page-top/baseline.json` only shrinks (`--shrink`).
 
+## RECORD HOST CHROME — a host that names a record, the record drops its own name (2026-10-22)
+
+One primitive, `features/shell/host-chrome/RecordHostChrome.tsx`. A host (Board tile today; window, peek) declares the record it holds (`{ token, id }` — for a tile, its type's `comments(source)`), that its bar NAMES it, that it OFFERS Open, and a title slot. A record's header for THAT record (matched by token + id, never by depth, so a task inside a hosted chat keeps its name) reads it:
+
+- `useHostNamesRecord(ref)` / `useHostOpensRecord(ref)` / `useHostChromeFor(ref)` — drop the name / the Open door.
+- `<HostTitle record>` — the record's rename field moves into the host's title slot (the tile header), drawn in place otherwise.
+- `<HostedRecordBar record name|titleField open actions>{modes, status}</HostedRecordBar>` — the ONE in-body record row (replaced the board's `TileBar` and CRM's `EmbeddedRecordHeader`); empty → no row.
+- `RecordPageHeader` (with `record.token` + `record.id`) and `EditorDocumentHeader` (with `record`) read it: in a host holding that record they draw one compact row of modes/menus/actions, the title in the host slot.
+
+Baseline of a record header: its modes, its own verbs, its status. Not baseline (the host owns it when present): its name, Open-in-page, back/crumbs, close/focus. Guard: `features/board/__tests__/host-chrome-contract.test.tsx`.
+
 ## A ROUTE CAN OWN CMD+K / CMD+P (2026-10-05)
 
 Cmd/Ctrl+K opens the shell's global search (`CommandBarHotkey`); a route with its own quick-find claims the key
@@ -158,6 +169,8 @@ seeded into the store, so the first frame is already theirs and a save re-render
 [`shell-layout/FEATURE.md`](./shell-layout/FEATURE.md).
 
 ## Change log
+
+- `2026-10-22` — claude: **Record host chrome** (section above): one primitive for "the host already names this record"; BoardTile provides it for every tile, `RecordPageHeader` and `EditorDocumentHeader` read it, `DesktopAction` exported from `EntityModeHeader` for its bar.
 
 - `2026-10-22` — claude: **One name for the Side Chat's door.** The 768–1023px header button (`ShellChatToggle`) and the phone ⋮ row read "Side Chat" with the rail's square bubble (`MessageSquareText`), so nothing but the navigation says "Chat". On domain-panel pages the rail's Side Chat row has its own grid row under the toggle (the sidebar grid is now brand · Side Chat · icons · footer). The server reads an empty or unreadable chat cookie as closed (`parseCanvasChatCookie(…, false)`).
 

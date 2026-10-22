@@ -116,7 +116,8 @@ Dropped items (a level naming a non-Dimension) warn once in dev. Test levels ins
 
 1. Write `aidream/apps/shared/records/scripts/drill-definitions/<key>.drill.ts`, copying
    `ai_usage.drill.ts`: source, lanes (every lane gets a rule), Dimensions with `level`, Measures,
-   `records`.
+   `records` (required — a test fails a definition without it; when the records are another
+   relation's rows, `records.noun` names one record, e.g. "execution", never the summary's grain).
 2. `pnpm drill:sync --write --lane <LANE>` (in `apps/shared/records`) writes the campaign migration;
    apply it the way DB changes are applied in this workspace (never hand-edit the generated
    `platform.drill_def__<key>()`).

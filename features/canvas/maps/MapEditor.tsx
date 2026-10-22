@@ -5,6 +5,7 @@
 // One map, open. The canvas itself is InteractiveDiagramBlock in authoring
 // mode — this file owns loading, the name, and saving. Nothing here draws.
 
+import { HostedRecordBar, useHostNamesRecord } from "@/features/shell/host-chrome/RecordHostChrome";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
@@ -58,6 +59,7 @@ export function MapEditor({
   onTitle?: (title: string) => void;
 }) {
   const [diagram, setDiagram] = useState<DiagramData | null>(() => keptMaps.get(mapId) ?? null);
+  const hostNamesMap = useHostNamesRecord({ token: "canvas_item", id: mapId });
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [selection, setSelection] = useState<MapSurfaceSelection>({
@@ -334,16 +336,21 @@ export function MapEditor({
       onChange={(e) => renameMap(e.target.value)}
       disabled={!diagram}
       aria-label="Map name"
-      className="w-full text-center"
+      className={hostNamesMap ? "w-full" : "w-full text-center"}
     />
   );
+  // Not the page (a board tile): the host names the map, so the name field moves into its header and the
+  // row keeps only the save state.
   const header = embedded ? (
-    <div className="flex shrink-0 items-center gap-2 border-b border-border bg-card px-3 py-2" data-map-bar>
-      <div className="min-w-0 flex-1">{nameField}</div>
-      <div className="flex w-28 shrink-0 justify-end">
-        <SaveIndicator state={saveState} />
-      </div>
-    </div>
+    <HostedRecordBar
+      record={{ token: "canvas_item", id: mapId }}
+      titleField={<div className="min-w-0 flex-1">{nameField}</div>}
+      actions={
+        <div className="flex w-28 shrink-0 justify-end" data-map-bar>
+          <SaveIndicator state={saveState} />
+        </div>
+      }
+    />
   ) : (
     <RouteHeader
       left={

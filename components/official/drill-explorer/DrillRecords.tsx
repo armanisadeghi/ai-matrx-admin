@@ -63,7 +63,7 @@ interface DrillRowsPageSums {
  * describing it asked the door to drill a System table by inference — refused 403 on every run-analysis
  * load. Only declared definitions are described, and the siblings already are (`useDrillSiblings`).
  */
-export function useRecordsNoun(
+export function recordsNounOf(
   def: DrillDefinition,
   records: DrillRecordsDeclaration,
   siblings: { offered: readonly string[]; described: readonly DrillSiblingDefinition[] } = { offered: [], described: [] },
@@ -77,6 +77,9 @@ export function useRecordsNoun(
   if (!sibling) return null;
   return grainNoun(sibling.def.grain) ?? own;
 }
+
+/** Same function under its hook-style name (it reads no React state, so a host may call it anywhere). */
+export const useRecordsNoun = recordsNounOf;
 
 /**
  * THE QUESTION'S SORT AS THE RECORDS' SORT: the question sorts by a Measure ("cost"), a Dimension or a
@@ -118,7 +121,8 @@ export function recordsWindow(
   const along = drillWindowKey(dimensions, carried);
   if (!along) return undefined;
   const asked = doorWindow({ by: [], show: [], where: [], window: window ?? null }, { key: along, align }).window;
-  if (asked) return asked;
+  // (the host library types a window's parts optional; the door needs all three)
+  if (asked?.key && asked.from && asked.to) return { key: asked.key, from: asked.from, to: asked.to };
   return def.mode === "definer" ? allTimeWindow(along, now) : undefined;
 }
 

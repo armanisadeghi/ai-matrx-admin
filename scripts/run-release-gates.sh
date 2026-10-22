@@ -78,6 +78,9 @@ if $STRICT; then
         # `pnpm check:parse --fix` repairs the injected-import class;
         # `pnpm check:parse:self-test` proves the guard can still fail.
         "Every TypeScript file parses|pnpm check:parse"
+        # NO CONFLICT MARKERS IN TRACKED SOURCE (4d1b83b210 shipped a conflict-marked AssessmentCreate.tsx). Report-only, loud.
+        "Unresolved git conflict markers in tracked source|pnpm check:conflict-markers-source"
+        "Conflict-markers guard self-test|pnpm check:conflict-markers-source:self-test"
         # BINDER ERRORS parse cannot see (duplicate top-level declaration = the 2026-10-05 toastDoor
         # build break; import of a name its target does not export). LOUD, never blocking: exits 0.
         "Binder errors (duplicate declarations, missing exports)|pnpm check:binder"
@@ -1263,6 +1266,9 @@ else
         # `pnpm check:parse --fix` repairs the injected-import class;
         # `pnpm check:parse:self-test` proves the guard can still fail.
         "Every TypeScript file parses|pnpm check:parse"
+        # NO CONFLICT MARKERS IN TRACKED SOURCE (4d1b83b210 shipped a conflict-marked AssessmentCreate.tsx). Report-only, loud.
+        "Unresolved git conflict markers in tracked source|pnpm check:conflict-markers-source"
+        "Conflict-markers guard self-test|pnpm check:conflict-markers-source:self-test"
         # BINDER ERRORS parse cannot see (duplicate top-level declaration = the 2026-10-05 toastDoor
         # build break; import of a name its target does not export). LOUD, never blocking: exits 0.
         "Binder errors (duplicate declarations, missing exports)|pnpm check:binder"

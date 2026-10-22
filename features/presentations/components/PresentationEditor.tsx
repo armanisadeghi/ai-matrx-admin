@@ -556,6 +556,7 @@ export function PresentationEditor({ presentationId, embedded = false, onName }:
         }}
       />
       <EditorDocumentHeader
+        record={{ token: "presentation", id: presentationId }}
         embedded={embedded}
         backHref="/presentations"
         backLabel="Back to presentations"

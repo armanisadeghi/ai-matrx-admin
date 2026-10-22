@@ -13,6 +13,7 @@ import {
   parseLookup,
   parseQuote,
   parseRunState,
+  type ComparedItem,
   type ComparisonItemInput,
   type ComparisonKindInfo,
   type ComparisonQuote,
@@ -162,9 +163,12 @@ export function followRun(runId: string, opts: Ctx & RunWatch & { signal: AbortS
 }
 
 /** What reading the page for "Is this them?" costs, asked before the person says yes. Free. */
-export async function getConfirmPrice(runId: string, itemIndex: number, facet: string, opts: Ctx): Promise<number> {
+/** The item an "Is this them?" answer names: its request position when the result has one, always its id. */
+export type ConfirmItem = Pick<ComparedItem, "item_id" | "item_index">;
+
+export async function getConfirmPrice(runId: string, item: ConfirmItem, facet: string, opts: Ctx): Promise<number> {
   try {
-    const { data } = await getJson<unknown>(confirmPath(runId, itemIndex, facet), {
+    const { data } = await getJson<unknown>(confirmPath(runId, item, facet), {
       organizationId: org(opts.organizationId), signal: opts.signal, captureErrors: false,
     });
     const points = (data as { points?: unknown } | null)?.points;
@@ -176,11 +180,11 @@ export async function getConfirmPrice(runId: string, itemIndex: number, facet: s
 
 /** The run owner's answer: a page to use ({ url }) or "not them" ({ reject: true }). Returns the rebuilt run. */
 export async function answerConfirm(
-  runId: string, itemIndex: number, facet: string, answer: { url: string } | { reject: true }, opts: Ctx,
+  runId: string, item: ConfirmItem, facet: string, answer: { url: string } | { reject: true }, opts: Ctx,
 ): Promise<ComparisonRunState> {
   let data: unknown;
   try {
-    ({ data } = await postJson<unknown>(confirmPath(runId, itemIndex, facet), answer, {
+    ({ data } = await postJson<unknown>(confirmPath(runId, item, facet), answer, {
       organizationId: org(opts.organizationId), signal: opts.signal, captureErrors: false,
     }));
   } catch (err) {
@@ -191,6 +195,10 @@ export async function answerConfirm(
   return state;
 }
 
-function confirmPath(runId: string, itemIndex: number, facet: string): string {
-  return `${BASE}/runs/${encodeURIComponent(runId)}/items/${itemIndex}/facets/${encodeURIComponent(facet)}/confirm`;
+/** The confirm address. A result saved before items carried their position names the item by id
+ *  (`items/by-id/...?item_id=`) — never position 0, which would answer for another company. */
+export function confirmPath(runId: string, item: ConfirmItem, facet: string): string {
+  const at = typeof item.item_index === "number" ? String(item.item_index) : "by-id";
+  return `${BASE}/runs/${encodeURIComponent(runId)}/items/${at}/facets/${encodeURIComponent(facet)}/confirm`
+    + `?item_id=${encodeURIComponent(item.item_id)}`;
 }

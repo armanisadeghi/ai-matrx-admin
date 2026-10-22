@@ -352,6 +352,10 @@ export const toggleTaskCompleteThunk = createAsyncThunk<
       const record = toTaskRecord(updated, current.organization_id);
       if (record) {
         dispatch(upsertTaskWithLevel({ record, level: "full-data" }));
+        if (newStatus === "completed" && record.status !== "completed") {
+          // Rolled forward: drop a staged due_date that a later Save would write over the new date.
+          dispatch(dropTaskEditFields({ taskId, fields: ["due_date"] }));
+        }
         if (
           current.project_id &&
           record.status !== "completed" &&
@@ -467,6 +471,11 @@ export const updateTaskFieldThunk = createAsyncThunk<
         const record = toTaskRecord(updated, current.organization_id);
         if (record) {
           dispatch(upsertTaskWithLevel({ record, level: "full-data" }));
+          // The server rolled a recurring task's due date forward: a staged due_date was typed
+          // against the OLD date, and a later Save would write it back over the roll.
+          if (willBeClosed && !isClosedStatus(record.status)) {
+            dispatch(dropTaskEditFields({ taskId, fields: ["due_date"] }));
+          }
           if (
             current.project_id &&
             willBeClosed &&
@@ -483,13 +492,25 @@ export const updateTaskFieldThunk = createAsyncThunk<
           }
         }
       } else {
-        dispatch(
-          upsertTaskWithLevel({
-            record: current as TaskRecord,
-            level: "full-data",
-          }),
-        );
-        if (current.project_id && openDelta !== 0) {
+        // Roll back ONLY the fields this write set, and only where the store still holds the value
+        // this write put there: an overlapping write to the same task keeps its own value (a stale
+        // whole-record snapshot would erase it).
+        const latest = getState().tasks.entities[taskId];
+        const restore: Record<string, unknown> = {};
+        for (const key of Object.keys(patch) as (keyof UpdateTaskInput)[]) {
+          if (latest && latest[key as keyof typeof latest] === patch[key]) {
+            restore[key] = current[key as keyof typeof current];
+          }
+        }
+        if (latest && Object.keys(restore).length > 0) {
+          dispatch(
+            upsertTaskWithLevel({
+              record: { ...latest, ...restore } as TaskRecord,
+              level: "full-data",
+            }),
+          );
+        }
+        if (current.project_id && openDelta !== 0 && "status" in restore) {
           dispatch(
             adjustProjectTaskCount({
               projectId: current.project_id,
@@ -732,14 +753,16 @@ export const saveTaskFieldNowThunk = createAsyncThunk<
   void,
   { taskId: string; patch: Pick<UpdateTaskInput, TaskFieldSavedNow> },
   { state: RootState; dispatch: AppDispatch }
->("tasksUi/saveTaskFieldNow", async ({ taskId, patch }, { dispatch }) => {
+>("tasksUi/saveTaskFieldNow", async ({ taskId, patch }, { dispatch, getState }) => {
+  const fields = Object.keys(patch) as TaskFieldSavedNow[];
+  // What was staged when the save STARTED; only that exact value is dropped afterwards, so a value
+  // the person stages for the same field during the round trip survives.
+  const startDraft = (getState().tasksUi.taskEdits[taskId] ?? {}) as Record<string, unknown>;
+  const stagedAtStart = new Map(fields.filter((f) => f in startDraft).map((f) => [f, startDraft[f]]));
   await dispatch(updateTaskFieldThunk({ taskId, patch })).unwrap();
-  dispatch(
-    dropTaskEditFields({
-      taskId,
-      fields: Object.keys(patch) as TaskFieldSavedNow[],
-    }),
-  );
+  const nowDraft = (getState().tasksUi.taskEdits[taskId] ?? {}) as Record<string, unknown>;
+  const drop = fields.filter((f) => stagedAtStart.has(f) && f in nowDraft && nowDraft[f] === stagedAtStart.get(f));
+  if (drop.length > 0) dispatch(dropTaskEditFields({ taskId, fields: drop }));
 });
 
 // ─── Per-user notification/triage state (projects.task_user_state) ─────────

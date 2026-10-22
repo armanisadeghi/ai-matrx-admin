@@ -25,8 +25,15 @@ jest.mock("@/lib/url-state/addressWithoutNavigating", () => ({
 }));
 // The heavy grid: stands in as a marker carrying the table id it was asked to draw.
 jest.mock("next/dynamic", () => () =>
-  function LocatedTableStandIn(props: { tableId: string; filter?: unknown }) {
-    return <div data-testid="located-table" data-table={props.tableId} data-filter={props.filter ? JSON.stringify(props.filter) : ""} />;
+  function LocatedTableStandIn(props: { tableId: string; filter?: unknown; readOnly?: boolean }) {
+    return (
+      <div
+        data-testid="located-table"
+        data-table={props.tableId}
+        data-read-only={props.readOnly ? "yes" : ""}
+        data-filter={props.filter ? JSON.stringify(props.filter) : ""}
+      />
+    );
   },
 );
 jest.mock("@ai-matrx/design-system/data-table", () => ({
@@ -74,11 +81,15 @@ jest.mock("../../runs", () => ({
   resumeRun: jest.fn(() => () => {}),
 }));
 const jobRows: Record<string, unknown> = {};
+// The keys of each run (the server's side table), read for the run on view only.
+const runKeys: Record<string, string[]> = {};
+let keysLoading = false;
 jest.mock("../runHistory", () => {
   const actual = jest.requireActual("../runHistory");
   return {
     ...actual,
     useDataFetchJob: (id: string | null) => ({ isLoading: false, data: id ? (jobRows[id] ?? null) : null }),
+    useRunRowKeys: (job: { id: string } | null) => ({ isLoading: keysLoading, data: job ? (runKeys[job.id] ?? []) : null }),
     useOpenJob: () => ({ data: null }),
     usePastRuns: () => ({ isLoading: false, data: Object.values(jobRows) }),
   };
@@ -131,6 +142,8 @@ beforeEach(() => {
   pushed.length = 0;
   replaced.length = 0;
   for (const k of Object.keys(jobRows)) delete jobRows[k];
+  for (const k of Object.keys(runKeys)) delete runKeys[k];
+  keysLoading = false;
   runNow = { status: "idle" };
 });
 afterEach(() => {
@@ -194,8 +207,10 @@ test("a reload onto a run refills the form with what that run asked", () => {
 
 test("the grid shows only the rows of the run on view, though runs share one table", () => {
   // Two runs of one source wrote the same table; each job carries the keys of its own rows.
-  jobRows.A = job("A", { table_id: "shared", key_column: "Place Id", metadata: { row_key_field: "place_id", row_keys: ["p1", "p2", "p3"] } });
-  jobRows.B = job("B", { table_id: "shared", key_column: "Place Id", metadata: { row_key_field: "place_id", row_keys: ["p9"] } });
+  jobRows.A = job("A", { table_id: "shared", key_column: "Place Id", row_key_field: "place_id" });
+  jobRows.B = job("B", { table_id: "shared", key_column: "Place Id", row_key_field: "place_id" });
+  runKeys.A = ["p1", "p2", "p3"];
+  runKeys.B = ["p9"];
   const filterOf = () => (host.querySelector('[data-testid="located-table"]') as HTMLElement).getAttribute("data-filter");
 
   search = "source=google_maps_place&job=A";
@@ -211,9 +226,39 @@ test("the grid shows only the rows of the run on view, though runs share one tab
 });
 
 test("a run still filling with no stored rows yet holds the skeleton, never the whole shared table", () => {
-  jobRows.C = job("C", { status: "fetching", table_id: "shared", key_column: "Place Id", metadata: {} });
+  jobRows.C = job("C", { status: "fetching", table_id: "shared", key_column: "Place Id", row_key_field: null });
   search = "source=google_maps_place&job=C";
   render();
   expect(host.querySelector('[data-testid="located-table"]')).toBeNull();
   expect(host.querySelector("[data-results-coming]")).not.toBeNull();
+});
+
+
+test("a run whose keys cannot be told says so in one line, with a door to the full table (review I8)", () => {
+  // An older run: no key field, no keys. The grid used to show the whole shared table with no word.
+  jobRows.D = job("D", { table_id: "shared", key_column: "Place Id", row_key_field: null });
+  search = "source=google_maps_place&job=D";
+  render();
+  expect(host.querySelector("[data-all-rows-notice]")?.textContent).toContain("Showing all saved rows: this run predates per-run results.");
+  expect(host.querySelector("[data-all-rows-notice] [data-open-table]")).not.toBeNull();
+  expect(host.querySelector("[data-run-scope]")?.getAttribute("data-run-scope")).toBe("all-rows");
+});
+
+test("a narrowed run needs no notice, and the run view never offers a record that would vanish (review I8)", () => {
+  jobRows.E = job("E", { table_id: "shared", key_column: "Place Id", row_key_field: "place_id" });
+  runKeys.E = ["p1"];
+  search = "source=google_maps_place&job=E";
+  render();
+  expect(host.querySelector("[data-all-rows-notice]")).toBeNull();
+  // Read-only: a record added here would carry no run key and disappear at once.
+  expect(host.querySelector('[data-testid="located-table"]')?.getAttribute("data-read-only")).toBe("yes");
+});
+
+test("while a finished run's keys load, the skeleton holds the place, never the whole table", () => {
+  jobRows.F = job("F", { table_id: "shared", key_column: "Place Id", row_key_field: "place_id" });
+  keysLoading = true;
+  search = "source=google_maps_place&job=F";
+  render();
+  expect(host.querySelector('[data-testid="located-table"]')).toBeNull();
+  expect(host.querySelector("[data-all-rows-notice]")).toBeNull();
 });

@@ -36,7 +36,7 @@ import type {
   EntityBulkAction,
   EntityBulkSelection,
 } from "@/lib/entity-list/selection";
-import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
+import { promptForValues } from "@ai-matrx/chat/ui/valuePromptsOpener";
 import {
   selectAllFilesMap,
   selectAllFoldersMap,

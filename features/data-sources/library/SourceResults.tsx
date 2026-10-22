@@ -21,7 +21,7 @@ import { FetchProgress } from "../FetchProgress";
 import { RefusalView } from "../RefusalView";
 import type { DataFetchResult } from "../contract";
 import type { RunState } from "../runs";
-import { isOpenStatus, runHasNoRowsYet, runRowFilter, runStatusLabel, useDataFetchJob, type FetchJobRow } from "./runHistory";
+import { isOpenStatus, runRowFilter, runScope, runStatusLabel, useDataFetchJob, useRunRowKeys, type FetchJobRow } from "./runHistory";
 
 // The grid is heavy: it loads when there are results to draw, never with the library.
 const LocatedTableViewer = dynamic(() => import("@/features/data-tables/components/LocatedTableViewer"), {
@@ -29,14 +29,34 @@ const LocatedTableViewer = dynamic(() => import("@/features/data-tables/componen
   loading: () => <RegionSkeleton shape="rows" count={8} aria-label="Loading results" />,
 });
 
-/** The table, inline, at a height that shows a screenful of rows and keeps the page scrolling. */
+/** Said, in one line, when the grid cannot be narrowed to the run (nothing may differ silently). */
+export const ALL_ROWS_NOTICE = "Showing all saved rows: this run predates per-run results.";
+
+/**
+ * The table, inline, at a height that shows a screenful of rows and keeps the page scrolling.
+ * Every run of a source writes one shared table, so the grid is narrowed to the keys the server
+ * recorded for THIS run (read for the run on view only). A run whose keys cannot be told says so, in
+ * a line above the grid, with the door to the full table. Either way the grid here is read-only: a
+ * record added in a narrowed view would belong to no run and vanish at once, so records are added
+ * in the full table ("Open as table").
+ */
 export function InlineResultsTable({ tableId, job }: { tableId: string; job?: FetchJobRow | null }) {
-  // Every run of a source writes one shared table: the run's own row keys narrow the grid to its rows.
-  const filter = runRowFilter(job);
-  if (runHasNoRowsYet(job)) return <RowsComing />;
+  const keysQuery = useRunRowKeys(job);
+  const keys = keysQuery.data ?? null;
+  const scope = runScope(job, keys);
+  if (scope === "coming" || (Boolean(job?.id) && keysQuery.isLoading)) return <RowsComing />;
+  const filter = runRowFilter(job, keys);
   return (
-    <div className="flex h-[min(78dvh,760px)] min-h-[420px] flex-col" data-inline-results={tableId} data-run-rows={filter ? "this-run" : "all"}>
-      <LocatedTableViewer tableId={tableId} filter={filter} rowPeek />
+    <div className="flex flex-col gap-2" data-run-scope={scope}>
+      {scope === "all-rows" ? (
+        <div className="flex flex-wrap items-center gap-2" data-all-rows-notice="">
+          <p className="min-w-0 flex-1 text-xs text-warning">{ALL_ROWS_NOTICE}</p>
+          <OpenAsTable tableId={tableId} />
+        </div>
+      ) : null}
+      <div className="flex h-[min(78dvh,760px)] min-h-[420px] flex-col" data-inline-results={tableId} data-run-rows={filter ? "this-run" : "all"}>
+        <LocatedTableViewer tableId={tableId} filter={filter} rowPeek readOnly />
+      </div>
     </div>
   );
 }
