@@ -7,7 +7,6 @@ import { useEffect } from "react";
 import { ConversationRenameDialogHost } from "@ai-matrx/chat/agents/components/conversation-actions/rename/ConversationRenameDialogHost";
 import CloudFilesPickerHostBody from "@/features/files/components/pickers/CloudFilesPickerHostBody";
 import UploadGuardHostBody from "@/features/files/upload/UploadGuardHostBody";
-import ClipboardFallbackHostBody from "@/components/dialogs/clipboard-fallback/ClipboardFallbackHostBody";
 import ValuePromptsDialogHostBody from "@/components/dialogs/value-prompts/ValuePromptsDialogHostBody";
 import { markDialogHostsMounted } from "./dialogHostsLatch";
 
@@ -22,7 +21,6 @@ export default function DialogHostsImpl() {
     <>
       <CloudFilesPickerHostBody />
       <UploadGuardHostBody />
-      <ClipboardFallbackHostBody />
       <ValuePromptsDialogHostBody />
       <ConversationRenameDialogHost />
     </>

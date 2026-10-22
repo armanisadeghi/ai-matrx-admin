@@ -26,7 +26,7 @@ export function createReferencePickerCallbackGroup(
   );
   return {
     callbackGroupId,
-    dispose: () => callbackManager.unregister(callbackGroupId),
+    dispose: () => callbackManager.remove(callbackGroupId),
   };
 }
 
@@ -42,5 +42,5 @@ export function getReferencePickerCallbackGroup(
 export function disposeReferencePickerCallbackGroup(
   callbackGroupId: string | null | undefined,
 ): void {
-  if (callbackGroupId) callbackManager.unregister(callbackGroupId);
+  if (callbackGroupId) callbackManager.remove(callbackGroupId);
 }

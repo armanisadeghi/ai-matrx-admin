@@ -21,8 +21,9 @@ The human side of the commerce pipeline, over the C1 `commerce` schema:
 - **Attention queue** — open `recall_audit` disagreements (`is_disagreement`, no `human_verdict`),
   escalations (`escalated_at` set), and high-impact open `asset_unknown` rows, one list; inline
   recall verdicts; every row opens its asset (no dead ends).
-- **Onboarding + store connect shell** — `/commerce/stores/connect`; the Connect button is the
-  registered Coming-Soon promise `commerce.store-connect-oauth` until W6's OAuth routes land.
+- **Onboarding + store connect** — `/commerce/stores/connect`; Connect calls aidream
+  `GET /ebay/oauth/connect` (via `callApi`) and sends the browser to eBay consent; the callback
+  returns here with `?status=connected|declined|expired|error`, shown as a toast.
 
 ## 🚨 THE LEARNING-TAP LAW
 

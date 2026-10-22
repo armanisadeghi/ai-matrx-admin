@@ -40,6 +40,7 @@ import { saveAgent } from "@/features/agents/redux/builder-write.thunks";
 import type { TestCaseRow } from "@/features/agent-tests/cases";
 import { CaseVersionGrid } from "@/features/agent-tests/components/CaseVersionGrid";
 import { StudioCases } from "./StudioCases";
+import { AgentBuildRecord } from "@/features/agents/factory/components/AgentBuildRecord";
 import { curatedDebriefModelIds, debriefModelIds } from "../debrief-models";
 import { useDebriefModelFilter } from "../use-debrief-model-filter";
 import { writeVersionNote } from "../version-note-api";
@@ -167,7 +168,10 @@ export function StudioControls({
         ) : tab === "cases" ? (
           <StudioCases agentId={agentId} casesVersion={casesVersion} onUseCase={onUseCase} />
         ) : tab === "versions" ? (
-          <VersionsTab agentId={agentId} />
+          <div className="flex flex-col gap-3">
+            <AgentBuildRecord agentId={agentId} />
+            <VersionsTab agentId={agentId} />
+          </div>
         ) : tab === "battle" ? (
           <StudioBattle
             agentId={agentId}
