@@ -3,7 +3,9 @@
 #
 # Called by this directory's pre-commit hook (~0.1 s: `git grep --cached` reads the index, only the
 # staged paths). A marker is a line that starts with exactly `<<<<<<< ` or `>>>>>>> ` (or is only
-# those seven characters). `=======` alone is never judged: it is a Markdown heading underline.
+# those seven characters), and in code files a bare `=======` line too (half a block, `=======` ...
+# `>>>>>>> origin/main` with no opening line, still breaks the build); in prose (.md, .txt, ...)
+# `=======` is a heading underline and is never judged.
 #
 # Why (2026-10-22): matrx-frontend 4d1b83b210 committed AssessmentCreate.tsx with the
 # `<<<<<<< HEAD` / `>>>>>>> origin/main` markers a sync's open merge had written into the working
@@ -18,12 +20,19 @@
 # scripts/sync-main.py runs its own check before every commit it makes.
 set -u
 MARKER_RE='^(<<<<<<<|>>>>>>>)( |$)'
+MID_RE='^=======( |$)'
+CODE_RE='\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|json|py|css|scss|sql|sh|ya?ml|toml|go|rs)$'
 
 check() {
     files=$(git diff --cached --name-only --diff-filter=ACMR -z | tr '\0' '\n' | grep -v '\.held$' | grep -v '^_conflicts/')
     [ -n "$files" ] || return 0
     # shellcheck disable=SC2086
     hits=$(printf '%s\n' "$files" | tr '\n' '\0' | xargs -0 git grep --cached -nIE "$MARKER_RE" -- 2>/dev/null)
+    code=$(printf '%s\n' "$files" | grep -E "$CODE_RE")
+    if [ -n "$code" ]; then
+        mid=$(printf '%s\n' "$code" | tr '\n' '\0' | xargs -0 git grep --cached -nIE "$MID_RE" -- 2>/dev/null)
+        hits=$(printf '%s\n%s\n' "$hits" "$mid" | sed '/^$/d')
+    fi
     [ -n "$hits" ] || return 0
     echo "COMMIT REFUSED: staged file(s) still hold git conflict markers:" >&2
     printf '%s\n' "$hits" | head -20 | sed 's/^/  /' >&2
@@ -50,6 +59,10 @@ self_test() {
         if ! MATRX_RELEASE_PATH=0 sh "$me" >/dev/null 2>&1; then echo "SELF-TEST FAILED: a clean file was refused"; exit 1; fi
         printf 'x\n>>>>>>> theirs\n' > y.ts && git add y.ts
         if MATRX_RELEASE_PATH=0 sh "$me" >/dev/null 2>&1; then echo "SELF-TEST FAILED: a lone >>>>>>> passed"; exit 1; fi
+        printf 'x\n' > y.ts && printf 'const a = 1;\n=======\nconst a = 2;\n' > z.ts && git add y.ts z.ts
+        if MATRX_RELEASE_PATH=0 sh "$me" >/dev/null 2>&1; then echo "SELF-TEST FAILED: a lone ======= in code passed"; exit 1; fi
+        printf 'const a = 2;\n' > z.ts && git add z.ts
+        if ! MATRX_RELEASE_PATH=0 sh "$me" >/dev/null 2>&1; then echo "SELF-TEST FAILED: a markdown underline was refused"; exit 1; fi
         echo "self-test OK: refused a staged marker, passed once it was resolved"
     )
     rc=$?
