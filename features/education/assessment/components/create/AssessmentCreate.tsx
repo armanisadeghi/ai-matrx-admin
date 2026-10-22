@@ -45,6 +45,11 @@ import { createSourceRef } from "@ai-matrx/agents/sources";
 import type { SourceDraft } from "@ai-matrx/agents/sources/runtime";
 import { useWizardDraft } from "@/lib/wizard-draft/useWizardDraft";
 import { WizardDraftRestored } from "@/lib/wizard-draft/WizardDraftRestored";
+import { RunStoppedNotice } from "@/lib/wizard-draft/RunStoppedNotice";
+import { useTabBoundRun } from "@/lib/wizard-draft/useTabBoundRun";
+import { cardRunRequest, restoreCardRunRequest } from "@/features/flashcards/data/cardRunRequest";
+import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
+import { ArrowRight } from "lucide-react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import { createEducationAssessmentScope } from "@/features/surfaces/manifests/education-assessment.manifest";
@@ -72,6 +77,12 @@ import { KIND_CONFIG, type KindConfig } from "../kindConfig";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+<<<<<<< HEAD
+
+/** Decks stay pickable here (per screen — the global Use existing list is the nine approved kinds). */
+const QUIZ_EXTRA_KINDS = ["fc_set"] as const;
+=======
+>>>>>>> origin/main
 
 const FIELD = "text-base"; // 16px+ prevents iOS zoom-on-focus
 
@@ -138,6 +149,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
 
   const surfaceKey = assessmentCreateSurfaceKey(config.base);
   const set = useSourceSet(surfaceKey);
+  const tabRun = useTabBoundRun(`${surfaceKey}:run`, restoreCardRunRequest);
   const styleDraft = useWizardDraft<AssessmentStyleDraft>(`${surfaceKey}:style`, {
     restore: restoreAssessmentStyle,
   });
@@ -229,18 +241,26 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
 
   const handleGenerate = async () => {
     if (!canGenerate) return;
-    const outcome = await generation.run({
-      source: hasSources
-        ? { mode: "sources", sources: set.toSourceSet(), topic, resolve: set.resolve }
-        : { mode: "topic", topic },
-      count,
-      difficulty,
-      depth,
-      questionTypes: Array.from(types),
-      examType,
-      userRequest,
-      timeLimitMinutes: timeLimitMin,
-    });
+    // The run is orchestrated in this tab (read, fan out, save): a reload
+    // mid-run stops it. Its request is kept so the page says so and offers the
+    // same request again — and a reload after the save began never repeats it.
+    const outcome = await tabRun.track(
+      cardRunRequest(count, set.toSourceSet(), sourceNamesOf(set.sources), topic),
+      (_settle, saving, attach) =>
+        generation.run({
+          source: hasSources
+            ? { mode: "sources", sources: set.toSourceSet(), topic, resolve: set.resolve }
+            : { mode: "topic", topic },
+          count,
+          difficulty,
+          depth,
+          questionTypes: Array.from(types),
+          examType,
+          userRequest,
+          timeLimitMinutes: timeLimitMin,
+          tabRun: { saving, attach },
+        }),
+    );
     // A blocked run already showed its own dialog (COPPA / paywall) or toast.
     if (outcome.status === "failed") {
       toast.error(outcome.error);
@@ -259,6 +279,32 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
     styleDraft.clear();
     startNavigation(() => router.push(`${base}/${assessment.id}`));
   };
+
+  // ── A run that stopped with its page: the same request, one click ───────
+  const stoppedRun = tabRun.stopped;
+  const [redoNonce, setRedoNonce] = useState(0);
+  // A ref, not state: the redo waits for the restored picks to land, then fires once.
+  const redoCount = useRef<number | null>(null);
+  const redoStopped = () => {
+    const req = stoppedRun?.request;
+    if (!req) return;
+    tabRun.dismiss();
+    for (const s of set.sources) set.remove(s.id);
+    for (const draft of req.drafts) set.addReady(draft);
+    set.setTopic(req.topic);
+    const n = Math.min(config.countMax, req.count);
+    setCount(n);
+    keep({ count: n });
+    redoCount.current = n;
+    setRedoNonce((x) => x + 1);
+  };
+  const fireRedo = useEffectEvent(() => {
+    redoCount.current = null;
+    void handleGenerate();
+  });
+  useEffect(() => {
+    if (redoCount.current !== null && canGenerate && count === redoCount.current) fireRedo();
+  }, [redoNonce, canGenerate, count]);
 
   // Live surface scope for the Agents chrome (matrx-user/education-assessment,
   // create view). Plain function reading the live render values at Run time.
@@ -443,7 +489,30 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
               title="Sources"
               purpose={`your ${config.noun}`}
               deliveries={FLASHCARD_SOURCE_DELIVERIES}
+              extraKinds={QUIZ_EXTRA_KINDS}
             />
+<<<<<<< HEAD
+            {stoppedRun?.whileSaving ? (
+              // The save had been sent and may have landed: never redo it blind.
+              <RunStoppedNotice
+                message={`The page closed while saving your ${config.noun}. Check your ${config.pluralLabel.toLowerCase()}.`}
+                redoLabel={`Your ${config.pluralLabel.toLowerCase()}`}
+                redoIcon={ArrowRight}
+                onRedo={() => {
+                  tabRun.dismiss();
+                  startNavigation(() => router.push(base));
+                }}
+                onDismiss={tabRun.dismiss}
+              />
+            ) : stoppedRun ? (
+              <RunStoppedNotice
+                message={`Making ${stoppedRun.request.count} ${stoppedRun.request.count === 1 ? "question" : "questions"} stopped when the page closed.`}
+                onRedo={redoStopped}
+                onDismiss={tabRun.dismiss}
+              />
+            ) : null}
+=======
+>>>>>>> origin/main
             {styleDraft.didRestore ? (
               <WizardDraftRestored
                 what="your style and details"
