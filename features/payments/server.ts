@@ -302,7 +302,7 @@ async function aPortalEdits(tableId: string, fieldKey: string): Promise<boolean>
 async function readyToCharge(ask: PaymentAsk, recordId: string): Promise<{ account: OrgPaymentAccount; amount: { ok: true; cents: number } }> {
   const account = await readOrgAccount(ask.organization_id);
   if (!account || account.disconnected_at) throw new PaymentRefusal("This organization has not connected a Stripe account yet.");
-  if (account.livemode !== isLive()) throw new PaymentRefusal("The connected Stripe account is in the other mode (test vs live).");
+  if (account.livemode !== isLive()) throw new PaymentRefusal("This business is not taking payments online yet.");
   if (!account.charges_enabled) throw new PaymentRefusal("The connected Stripe account cannot take payments until its setup is finished.");
 
   const record = await recordValues(ask.organization_id, recordId);

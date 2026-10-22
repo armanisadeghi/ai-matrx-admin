@@ -65,7 +65,8 @@ try {
     console.log("route /docs shown:", !!mapped.v);
     await page.screenshot({ path: `${OUT}/${phase}-03-route.png`, fullPage: true });
   } else {
-    await page.locator('section button:text-is("Remove")').last().click();
+    await page.waitForLoadState("networkidle").catch(() => undefined);
+    await page.getByRole("button", { name: "Remove", exact: true }).last().click();
     await page.click('button:has-text("Remove — its pages stop working")');
     const gone = await until("gone", async () => (await page.locator(`h2:text-is("${HOST}")`).count()) && !(await page.locator("text=Removed").count()) ? null : true, 90000);
     console.log("removed:", !!gone.v);

@@ -161,19 +161,32 @@ export async function mergeTrashCounts(
 /**
  * One page of rows. With a kind, only the source that lists it is asked. Without one (the
  * "Recent" overview) every source that has anything is asked and the rows merge newest first.
+ *
+ * `kindSource` may still be loading (a promise): the first source (the main registry) is asked AT
+ * ONCE and never waits for anyone's counts; another source is asked once the counts say it lists
+ * something (FT2, 2026-10-22 - counts then rows in series made /trash take 2-6 s).
  */
 export async function listMergedTrash(
   sources: readonly TrashSource[],
-  kindSource: Map<string, TrashSource>,
+  kindSource: Map<string, TrashSource> | Promise<Map<string, TrashSource>>,
   opts: TrashSourceListOptions,
+  /** Told the first source's rows the moment they land, before any other source answers. */
+  onFirst?: (rows: TrashItem[]) => void,
 ): Promise<TrashItem[]> {
+  const known = Promise.resolve(kindSource).catch(() => new Map<string, TrashSource>());
   if (opts.kinds && opts.kinds.length > 0) {
-    const owner = kindSource.get(opts.kinds[0]) ?? sources[0];
+    const owner = (await known).get(opts.kinds[0]) ?? sources[0];
     return (await owner.list(opts)).sort((a, b) => b.deleted_at.localeCompare(a.deleted_at));
   }
-  const listed = new Set(kindSource.values());
-  const asked = sources.filter((s, i) => i === 0 || listed.has(s));
-  const pages = await Promise.all(asked.map((s) => s.list(opts)));
+  const first = sources[0].list(opts).then((rows) => {
+    onFirst?.([...rows].sort((a, b) => b.deleted_at.localeCompare(a.deleted_at)));
+    return rows;
+  });
+  const rest = known.then((map) => {
+    const listed = new Set(map.values());
+    return Promise.all(sources.slice(1).filter((s) => listed.has(s)).map((s) => s.list(opts)));
+  });
+  const pages = [await first, ...(await rest)];
   return pages.flat().sort((a, b) => b.deleted_at.localeCompare(a.deleted_at));
 }
 

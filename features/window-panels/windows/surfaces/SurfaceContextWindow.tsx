@@ -158,6 +158,8 @@ function ListRow({
   onPress,
   expanded,
   children,
+  valueKey,
+  valueState,
 }: {
   title: string;
   line?: string;
@@ -165,6 +167,9 @@ function ListRow({
   onPress?: () => void;
   expanded?: boolean;
   children?: React.ReactNode;
+  /** Machine hooks for `pnpm surface:probe`; never rendered as text. */
+  valueKey?: string;
+  valueState?: "supplied" | "empty" | "absent";
 }) {
   const body = (
     <>
@@ -188,7 +193,11 @@ function ListRow({
     </>
   );
   return (
-    <li className="border-b border-border last:border-b-0">
+    <li
+      className="border-b border-border last:border-b-0"
+      data-value-key={valueKey}
+      data-value-state={valueState}
+    >
       {onPress ? (
         <button
           type="button"
@@ -431,7 +440,10 @@ export default function SurfaceContextWindow({
             title={normalizedQuery ? "No match" : "Nothing here yet"}
           />
         ) : (
-          <ul>
+          // data-declared-keys + each row's data-value-key/-state let
+          // `pnpm surface:probe` read the page the way this window shows it,
+          // including the declared values a person's seat does not list.
+          <ul data-declared-keys={declared.map((value) => value.name).join(" ")}>
             {filteredItems.map((item) => {
               const raw = live.scope[item.key];
               const expanded = openKey === item.key;
@@ -439,6 +451,8 @@ export default function SurfaceContextWindow({
               return (
                 <ListRow
                   key={item.key}
+                  valueKey={item.key}
+                  valueState={!supplied_ ? "absent" : isPresentEmpty(raw) ? "empty" : "supplied"}
                   title={item.label}
                   line={supplied_ ? previewValue(raw) : "Not available"}
                   onPress={() => setOpenKey(expanded ? null : item.key)}

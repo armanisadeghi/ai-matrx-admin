@@ -18,8 +18,8 @@ const columns = [
 ] as unknown as EntityColumn[];
 
 describe("a built-in source offers gallery, list, card size and load limit", () => {
-  it("offers Table, Board, Gallery, List and Chart", () => {
-    expect(ENTITY_LAYOUT_IDS).toEqual(["grid", "kanban", "gallery", "list", "chart"]);
+  it("offers Table, Board, Gallery, List and Chart (and Calendar and Timeline, a-built-in-source-draws-a-calendar-and-a-timeline)", () => {
+    expect(ENTITY_LAYOUT_IDS).toEqual(expect.arrayContaining(["grid", "kanban", "gallery", "list", "chart"]));
   });
   it("reads the view's own load limit, else 50", () => {
     expect(entityPageSize({ loadLimit: 10 })).toBe(10);
@@ -33,9 +33,9 @@ describe("a built-in source offers gallery, list, card size and load limit", () 
     expect(entityCardColumns(columns, ["status"], title).map((c) => c.api_name)).toEqual(["due", "notes", "points", "area"]);
   });
   it("offers card size on the gallery and load limit on every layout that lists rows", () => {
-    expect(entitySettingsFor("gallery")).toEqual({ cardSize: true, loadLimit: true });
-    expect(entitySettingsFor("list")).toEqual({ cardSize: false, loadLimit: true });
-    expect(entitySettingsFor("grid")).toEqual({ cardSize: false, loadLimit: true });
-    expect(entitySettingsFor("chart")).toEqual({ cardSize: false, loadLimit: false });
+    expect(entitySettingsFor("gallery")).toMatchObject({ cardSize: true, loadLimit: true });
+    expect(entitySettingsFor("list")).toMatchObject({ cardSize: false, loadLimit: true });
+    expect(entitySettingsFor("grid")).toMatchObject({ cardSize: false, loadLimit: true });
+    expect(entitySettingsFor("chart")).toMatchObject({ cardSize: false, loadLimit: false });
   });
 });

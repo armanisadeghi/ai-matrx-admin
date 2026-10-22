@@ -159,10 +159,15 @@ export function CloudBrowserStartFailed({
   error,
   retrying,
   onRetry,
+  title = "Your cloud browser could not start",
+  retryLabel = "Try again",
 }: {
   error: CloudBrowserLoadError;
   retrying: boolean;
   onRetry: () => void;
+  /** The card's headline; a run that was running says what happened to it. */
+  title?: string;
+  retryLabel?: string;
 }) {
   // A capacity refusal is a wait the panel carries out itself; it only becomes
   // this failure card once the wait has gone on too long.
@@ -185,7 +190,7 @@ export function CloudBrowserStartFailed({
       <AlertTriangle className="h-8 w-8 text-amber-500" aria-hidden />
       <div className="space-y-1">
         <p className="text-sm font-medium text-foreground">
-          Your cloud browser could not start
+          {title}
           <ErrorAlchemyMenu />
         </p>
         <p className="max-w-sm text-xs text-muted-foreground">
@@ -198,7 +203,7 @@ export function CloudBrowserStartFailed({
           ) : (
             <RotateCw aria-hidden />
           )} variant="primary" onClick={onRetry} disabled={retrying}>
-          {retrying ? "Trying again" : "Try again"}
+          {retrying ? "Trying again" : retryLabel}
         </Button>
       ) : (
         <p className="max-w-sm text-xs text-muted-foreground">

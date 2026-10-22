@@ -12,6 +12,7 @@ import {
   type PublicDeckListRow,
 } from "@/features/surfaces/manifests/education-library-community.manifest";
 import {
+  collectionWriteHandlers,
   collectProblems,
   ListLevelProblem,
   ProblemList,
@@ -19,6 +20,7 @@ import {
   repeatsProblem,
 } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
 import type { PublicDeck } from "./types";
+import { suggestDeckEdit } from "./service";
 
 export const MAX_DECKS_PER_WRITE = 10;
 export const MAX_SUGGESTION_CHARS = 4000;
@@ -190,4 +192,45 @@ export function parseCreateDeckSuggestionsValue(
     if (unknownDeck) throw unknownDeck;
     return { deck: deck!, body };
   });
+}
+
+/**
+ * The `create_deck_suggestions` handler. Its apply calls the plain service
+ * function (a direct RPC), never a server action or anything bound to a
+ * component: a server action's thrown error reaches the browser in
+ * production only as "Minified React error #441", which hid the RPC's own
+ * reason (e.g. "cannot suggest an edit to your own deck") from the agent.
+ */
+export function deckSuggestionWriteHandler(input: {
+  decks: readonly PublicDeck[];
+  isSignedIn: boolean;
+  refuse: (message: string) => never;
+  suggest?: (deckId: string, body: string) => Promise<void>;
+}): ReturnType<typeof collectionWriteHandlers>[string] {
+  const suggest = input.suggest ?? suggestDeckEdit;
+  const guard = <T,>(parse: () => T): T => {
+    try {
+      return parse();
+    } catch (e) {
+      return input.refuse((e as Error).message);
+    }
+  };
+  return collectionWriteHandlers(
+    {
+      plural: "deck_suggestions",
+      singular: "deck suggestion",
+      create: {
+        parse: (value) =>
+          guard(() =>
+            parseCreateDeckSuggestionsValue(value, input.decks, input.isSignedIn),
+          ),
+        run: async (plan: DeckSuggestionPlan) => {
+          await suggest(plan.deck.id, plan.body);
+          return { id: plan.deck.id, name: `Suggestion on ${plan.deck.name}` };
+        },
+        nameOf: (plan: DeckSuggestionPlan) => `suggestion on ${plan.deck.name}`,
+      },
+    },
+    input.refuse,
+  ).create_deck_suggestions;
 }

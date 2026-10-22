@@ -109,6 +109,12 @@ async function completeIdbOperation<T>(
   db: MatrxSyncDb,
   operation: string,
   request: Promise<T>,
+  /**
+   * `keep` leaves the connection alone on timeout (used for `open` only): an
+   * abandoned in-flight open makes every later open queue BEHIND it, so
+   * closing and reopening turns one slow open into a timeout per caller.
+   */
+  onTimeout: "invalidate" | "keep" = "invalidate",
 ): Promise<T | null> {
   // A window the page was frozen through is not a fair test of IDB: closing
   // its connection then would turn a page freeze into a spurious "IndexedDB
@@ -145,7 +151,7 @@ async function completeIdbOperation<T>(
     level: "low",
     durable: false,
   });
-  invalidateDb(connectionFor(db));
+  if (onTimeout === "invalidate") invalidateDb(connectionFor(db));
   return null;
 }
 
@@ -172,8 +178,24 @@ export function openDb(): Promise<MatrxSyncDb | null> {
         // Secondary indexes let us purge by identity or slice.
         slices: "key, identityKey, sliceName",
       });
-      const opened = await completeIdbOperation(db, "open", db.open());
-      if (opened === null) return null;
+      const openRequest = db.open();
+      const opened = await completeIdbOperation(db, "open", openRequest, "keep");
+      if (opened === null) {
+        // Slow open (cold browser profile, busy disk): this caller continues on
+        // the localStorage mirror, but the SAME open is allowed to finish and is
+        // then adopted — no second open queued behind it, no second capture.
+        openRequest.then(
+          () => {
+            if (activeConnection === connection) dbPromise = Promise.resolve(db);
+          },
+          () => {
+            setTimeout(() => {
+              if (activeConnection === connection) invalidateDb(connection);
+            }, IDB_OPEN_RETRY_MS);
+          },
+        );
+        return null;
+      }
       logger.info("idb.open.success", {
         meta: { schemaVersion: IDB_SCHEMA_VERSION },
       });

@@ -181,7 +181,7 @@ export function TrashList({
   }, [organizationId, member]);
 
   const fetchPage = useCallback(
-    async (offset: number): Promise<TrashListItem[]> => {
+    async (offset: number, onFirst?: (rows: TrashListItem[]) => void): Promise<TrashListItem[]> => {
       if (organizationId) {
         return listOrgTrash({
           organizationId,
@@ -191,13 +191,18 @@ export function TrashList({
           offset,
         });
       }
-      const merged = await (mergedRef.current ?? Promise.resolve(null)).catch(() => null);
+      // The counts are still loading on a first visit: the main rows never wait for them (FT2).
+      const kindSource = (mergedRef.current ?? Promise.resolve(null)).then(
+        (merged) => merged?.kindSource ?? new Map(),
+        () => new Map(),
+      );
       return listMergedTrash(
         PERSONAL_TRASH_SOURCES,
-        merged?.kindSource ?? new Map(),
+        kindSource,
         kind
           ? { kinds: [kind], limit: TRASH_PAGE, offset }
           : { limit: OVERVIEW_PER_KIND, offset: 0 },
+        onFirst,
       );
     },
     [organizationId, kind, member],
@@ -206,7 +211,11 @@ export function TrashList({
   const loadItems = useCallback(async () => {
     setLoading(true);
     try {
-      const rows = await fetchPage(0);
+      // The main source's rows show the moment they land; a slower source's join them after (FT2).
+      const rows = await fetchPage(0, (first) => {
+        setItems(includeKind ? first.filter((r) => includeKind(r.entity_token)) : first);
+        setLoading(false);
+      });
       setItems(includeKind ? rows.filter((r) => includeKind(r.entity_token)) : rows);
       // Personal "Recent" is an overview (a few of each kind), never paged.
       setMore((organizationId !== null || kind !== null) && rows.length === TRASH_PAGE);

@@ -16,10 +16,11 @@ import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collect
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { xmlElement, xmlList } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
 import {
-  createAssessmentListScope,
   type AssessmentListSummaryRow,
   type MyAssessmentSummary,
 } from "@/features/surfaces/manifests/_assessment-list.manifest";
+import { createEducationQuizzesScope } from "@/features/surfaces/manifests/education-quizzes.manifest";
+import { createEducationPracticeTestsScope } from "@/features/surfaces/manifests/education-practice-tests.manifest";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { archiveRecord, restoreFromTrash } from "@/features/trash/service";
 import { assessmentService } from "../../data/assessmentService";
@@ -102,11 +103,15 @@ const toSummary = (r: AssessmentListItem): AssessmentListSummaryRow => ({
 export function buildAssessmentListScope(input: {
   list: Controller;
   userId: string;
+  kind: KindConfig["kind"];
 }): SurfaceScopePayload {
   const { list, userId } = input;
+  // Each page emits through its own surface's builder (one shared payload).
+  const createScope =
+    input.kind === "quiz" ? createEducationQuizzesScope : createEducationPracticeTestsScope;
   const loaded = !list.isLoading && !list.error;
   const search = list.query.search.trim();
-  return createAssessmentListScope({
+  return createScope({
     assessments_loaded: loaded,
     visibility_filter: list.query.scope.kind,
     list_sort: `${list.view.sort} ${list.view.direction}`,

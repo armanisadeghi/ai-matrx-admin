@@ -15,7 +15,7 @@ and the definition of done below; the census picks the routes.
 
 ## Goal
 
-Every registered surface is agent-readable. While a user is on it, the Surface Context window names
+Every registered surface is agent-readable. While a user is on it, the "This page" window (formerly Surface Context) names
 it and shows every piece of data the page loads, proven on the live site with real data. The
 campaign ends when the census says so, not when workers say so.
 

@@ -31,7 +31,7 @@
 
 import { markdownToPlainText } from "@/lib/markdown/plain-text";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { PublicLinkNotice } from "@/components/public-link/PublicLinkNotice";
@@ -39,6 +39,7 @@ import { FormLookFrame } from "@/features/data-tables/records-ui-host/recordsUiL
 import { isPortalAccent, type PortalStyle as RecordsPortalStyle } from "@ai-matrx/records";
 import { formUnlock, prefillFromLink, publicForm, publicFormOptions, type PublicForm } from "@/features/forms/service";
 import { PublicViewLocked } from "@/features/sharing/public-view/PublicViewLocked";
+import { publicFormInLanguage } from "@/features/forms/formLanguage";
 import { formUnlockCookieName, readUnlockCookieValue } from "@/features/sharing/public-view/unlock";
 
 import { PublicFormRunner } from "./PublicFormRunner";
@@ -99,8 +100,11 @@ export default async function PublicFormPage({
 }) {
   const { formId } = await params;
   const query = await searchParams;
-  const form = await publicForm(formId);
-  if (!form) notFound();
+  const asWritten = await publicForm(formId);
+  if (!asWritten) notFound();
+  // CD-PAGE-08: the form in the visitor's language (?lang= first, then her browser's), words only.
+  const spoken = publicFormInLanguage(asWritten, query["lang"], (await headers()).get("accept-language"), `/f/${formId}`, query);
+  const form = spoken.form;
 
   // CLOSED, FULL AND SWITCHED OFF ARE NOT ERRORS, and they are not 404s either:
   // the link is real and the person following it deserves a sentence rather than
@@ -159,8 +163,24 @@ export default async function PublicFormPage({
         {/* PREFILL BY LINK (lane S7-PRIME): `?<question key>=<answer>` starts the form with
             that answer in its question. Resolved HERE, against the form's own questions and
             Field kinds, so the first paint is already filled in. */}
+        {spoken.choices.length > 0 ? (
+          <nav aria-label="Language" className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs" data-form-languages="">
+            {spoken.choices.map((c) => (
+              <a
+                key={c.code}
+                href={c.href}
+                hrefLang={c.code}
+                aria-current={c.current ? "true" : undefined}
+                className={c.current ? "font-medium text-foreground" : "text-muted-foreground underline underline-offset-2"}
+              >
+                {c.label}
+              </a>
+            ))}
+          </nav>
+        ) : null}
         <PublicFormRunner
           form={form}
+          words={spoken.words}
           prefill={prefillFromLink(form, query).answers}
           linkQuery={query}
           unlock={gate?.unlock ?? null}

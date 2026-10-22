@@ -38,7 +38,8 @@ export function useClassProgressOverview(
   enabled = true,
 ): UseClassProgressOverviewReturn {
   const [overview, setOverview] = useState<ClassProgressOverview | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Loading from the first render (never "empty" before the read starts).
+  const [loading, setLoading] = useState(() => Boolean(classId) && enabled);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
@@ -76,7 +77,8 @@ export function useMyClassProgress(
 ): UseMyClassProgressReturn {
   const userId = useAppSelector(selectUserId);
   const [progress, setProgress] = useState<AssignmentProgress[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Loading from the first render (never "empty" before the read starts).
+  const [loading, setLoading] = useState(() => Boolean(classId) && enabled);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {

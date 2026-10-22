@@ -35,6 +35,9 @@ const ME: Controller = { ...AGENT, kind: "human", isMe: true, controlRevision: 2
 
 let setController: (c: Controller) => void = () => undefined;
 const runState: { current: string | null } = { current: "running" };
+const runError: { code: string | null; detail: string | null } = { code: null, detail: null };
+const restart = jest.fn(async () => undefined);
+const checkRun = jest.fn(async () => undefined);
 let release: () => void = () => undefined;
 const gate = () => new Promise<void>((resolve) => (release = resolve));
 const takeControl = jest.fn(async () => {
@@ -63,11 +66,16 @@ jest.mock("@/features/cloud-browser/hooks/useCloudBrowser", () => {
       const [controller, set] = ReactActual.useState<Controller>(AGENT);
       setController = set;
       return {
-        run: runState.current ? { id: "run-1", state: runState.current, errorDetailSafe: null } : null,
+        run: runState.current
+          ? { id: "run-1", state: runState.current, errorCode: runError.code, errorDetailSafe: runError.detail }
+          : null,
         controller,
         handoff: null,
         error: null,
         retry: jest.fn(),
+        restart,
+        checkRun,
+        loading: false,
         takeControl,
         returnControl,
       };
@@ -160,6 +168,10 @@ beforeEach(async () => {
   mintStreamTicket.mockReset();
   renewStreamTicket.mockReset().mockResolvedValue(undefined);
   runState.current = "running";
+  runError.code = null;
+  runError.detail = null;
+  restart.mockClear();
+  checkRun.mockClear();
   takeControl.mockClear();
   startStills.mockClear();
   container = document.createElement("div");
@@ -242,4 +254,27 @@ it("Take control and Stop say what they are doing while the server works", async
   expect(text()).toContain("Stopping…");
   await act(async () => release());
   expect(text()).toContain("Watching");
+});
+
+
+it("a run whose browser died says Browser not running and Restart starts a fresh run (2026-10-22)", async () => {
+  runState.current = "failed";
+  runError.code = "browser_not_running";
+  runError.detail = "The browser stopped (the browser process is gone) and could not be restarted.";
+  await mount();
+  expect(text()).toContain("Browser not running");
+  expect(text()).toContain("could not be restarted");
+  expect(text()).not.toContain("Reconnecting");
+  await press("Restart");
+  expect(restart).toHaveBeenCalledTimes(1);
+});
+
+it("a picture that goes away re-reads the run, so a run the server ended shows as ended", async () => {
+  mintStreamTicket.mockResolvedValue(ticket("view", "s1"));
+  await mount();
+  await act(async () => undefined);
+  if (!iframe()) return; // this server path shows stills; nothing streams to lose
+  streamSays("reconnecting");
+  await act(async () => undefined);
+  expect(checkRun).toHaveBeenCalled();
 });

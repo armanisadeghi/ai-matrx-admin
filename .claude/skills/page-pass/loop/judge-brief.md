@@ -9,10 +9,10 @@ You grade ONE page of the AI Matrx web app as it is live right now. You have NOT
 - Only the app's standard buttons and controls — no one-off buttons or strange controls.
 - Every button works; loading always ends; errors show; every name opens.
 - Works on a phone; light and dark both right; no emoji; readable text.
-- Agents can work on the page: the "Agents for this page" menu in the header, the right-click menu, and the Surface Context window show the page's real data, and an agent could make the changes a person would make.
+- Agents can work on the page: the "Agents for this page" menu in the header, the right-click menu, and the "This page" window (Agents menu → This page) show the page's real data, and an agent could make the changes a person would make.
 
 ## Expected for your seat
-You are signed in as a platform admin, but on ordinary (non-admin) pages the admin acts as an ordinary person by design: the surface key is NOT shown under the Agents menu title there (it is in the Surface Context window), and its absence is not a finding. Admin-only diagnostics inside /administration are deliberate. The red "Choose org" in the header comes from the test account having no active organization; it is not a finding for this page. If pages return 504 / the database times out, that is a platform incident: say so once and do not grade the page on it.
+You are signed in as a platform admin, but on ordinary (non-admin) pages the admin acts as an ordinary person by design: the surface key is NOT shown under the Agents menu title there (it is in the "This page" window), and its absence is not a finding. Admin-only diagnostics inside /administration are deliberate. The red "Choose org" in the header comes from the test account having no active organization; it is not a finding for this page. If pages return 504 / the database times out, that is a platform incident: say so once and do not grade the page on it.
 
 ## Header controls by owner ruling
 The header's right-side controls (Agents, Canvas, Inbox) never unmount: Canvas shows disabled with a tooltip when empty, by the owner's 2026-09-19 ruling ("never hiding things and only disabling when inactive"). On a phone they fold into one overflow button. Neither is a finding.
@@ -23,7 +23,7 @@ Shared links (/p/<slug>, forms someone was sent) and public promotional pages de
 ## How to look
 - Repo (read-only for you): your checkout of matrx-frontend; every path below is relative to its root. Do NOT edit, commit, or start a dev server.
 - Screens: `TMPDIR=/tmp/judge-<you> pnpm page:look --route <route> --out /tmp/judge-<you>/look` — writes desktop and phone screenshots in light and dark plus measurements (`look.json`). Read every PNG with the Read tool. The measurements are hints; your eyes decide.
-- Agent side: `TMPDIR=/tmp/judge-<you>-p pnpm surface:probe --surface <name> --route <route> --out /tmp/judge-<you>/probe.json` when the page has a surface (`pnpm surface:census` lists every surface; the route→surface map ships in `node_modules/@ai-matrx/chat/dist/surfaces/utils/route-to-surface.js`); compare what the Surface Context supplies against what the page shows.
+- Agent side: `TMPDIR=/tmp/judge-<you>-p pnpm surface:probe --surface <name> --route <route> --out /tmp/judge-<you>/probe.json` when the page has a surface (`pnpm surface:census` lists every surface; the route→surface map ships in `node_modules/@ai-matrx/chat/dist/surfaces/utils/route-to-surface.js`); compare what the "This page" window supplies against what the page shows.
 - You may read the page's source code to confirm a suspicion (e.g. a hand-made button, a dead handler).
 
 ## Report (return exactly this)

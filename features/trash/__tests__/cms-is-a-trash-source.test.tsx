@@ -164,7 +164,8 @@ test("restoring the site page goes through the CMS door and the toast carries it
   await flush();
 
   const row = container.querySelector(`li[data-trash-id="${PAGE.id}"]`)!;
-  const restore = row.querySelector("button")!;
+  // The row's Restore, not its selection checkbox (also a button).
+  const restore = [...row.querySelectorAll("button")].find((b) => b.textContent?.includes("Restore"))!;
   await act(async () => {
     restore.click();
   });

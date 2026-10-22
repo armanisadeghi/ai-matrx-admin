@@ -5,7 +5,7 @@
     "repo-only": "reads the repository and nothing else"
   },
   "counts": {
-    "repo-only": 227,
+    "repo-only": 237,
     "live-db": 70
   },
   "rows": {
@@ -1053,6 +1053,20 @@
       "reason": "no database access in 3 file(s) reached",
       "evidence": []
     },
+    "feature-pages": {
+      "label": "Feature pages",
+      "class": "repo-only",
+      "cmd": "pnpm check:feature-pages",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "feature-pages-self-test": {
+      "label": "Feature pages — self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:feature-pages:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
     "writing-boxes": {
       "label": "Writing boxes",
       "class": "repo-only",
@@ -1689,7 +1703,7 @@
       "label": "Package logic re-grown outside its package",
       "class": "repo-only",
       "cmd": "pnpm check:package-twins:strict",
-      "reason": "no database access in 9 file(s) reached",
+      "reason": "no database access in 10 file(s) reached",
       "evidence": []
     },
     "a-use-client-door-re-exports-a-package-root-beside-its-subpa": {
@@ -2196,7 +2210,7 @@
       "label": "Content IR / kinds test suite",
       "class": "repo-only",
       "cmd": "pnpm test:content-ir",
-      "reason": "no database access in 266 file(s) reached",
+      "reason": "no database access in 267 file(s) reached",
       "evidence": []
     },
     "whole-jest-suite-every-suite-not-ci-s-four-scopes": {
@@ -2389,7 +2403,7 @@
       "label": "Overlay index generated from the definitions is fresh",
       "class": "repo-only",
       "cmd": "pnpm check:overlays",
-      "reason": "no database access in 1 file(s) reached",
+      "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
     "fixed-width-child-in-a-zero-width-layer-phones-squeeze-it-to": {
@@ -2469,6 +2483,20 @@
       "reason": "no database access in 2 file(s) reached",
       "evidence": []
     },
+    "control-shape-drift-pill-glass-focus-ring-double-frame": {
+      "label": "Control shape drift (pill, glass, focus ring, double frame)",
+      "class": "repo-only",
+      "cmd": "pnpm check:control-shape",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
+    "control-shape-guard-self-test": {
+      "label": "Control shape guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:control-shape:self-test",
+      "reason": "no database access in 2 file(s) reached",
+      "evidence": []
+    },
     "hover-card-or-tooltip-opens-from-a-container-holding-buttons": {
       "label": "Hover card or tooltip opens from a container holding buttons",
       "class": "repo-only",
@@ -2525,6 +2553,20 @@
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
+    "unhandled-media-play-promise": {
+      "label": "Unhandled media play() promise",
+      "class": "repo-only",
+      "cmd": "pnpm check:media-play-handled",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "media-play-guard-self-test": {
+      "label": "Media play() guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:media-play-handled:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
     "marketing-text-calls-a-brand-a-client": {
       "label": "Marketing text calls a brand a client",
       "class": "repo-only",
@@ -2578,6 +2620,20 @@
       "label": "No-vendor-names guard self-test",
       "class": "repo-only",
       "cmd": "pnpm check:no-vendor-names:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "local-source-input-copy-outside-the-canonical-sourceinput": {
+      "label": "Local source-input copy outside the canonical SourceInput",
+      "class": "repo-only",
+      "cmd": "pnpm check:one-source-input",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "one-source-input-guard-self-test": {
+      "label": "One-source-input guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:one-source-input:self-test",
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },

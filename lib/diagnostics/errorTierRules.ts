@@ -108,6 +108,18 @@ export interface DowngradeRule {
 // ════════════════════════════════════════════════════════════════════════
 export const DOWNGRADE_RULES: DowngradeRule[] = [
   {
+    id: "sync-idb-operation-timeout-recovered",
+    tier: "orange",
+    persist: false,
+    reason:
+      "The browser's IndexedDB cache answered slower than 1 s (a cold browser profile, a busy disk, a frozen page). The sync engine already fell back to its localStorage mirror and remote reconciliation, so nothing is lost; the capture is declared recoverable/low and its own comment promised it is never red. Shown as a dot so an admin still sees it.",
+    addedAt: "2026-10-22",
+    match: {
+      source: "runtime-exception",
+      code: "sync-idb-operation-timeout",
+    },
+  },
+  {
     id: "sync-engine-warning",
     tier: "orange",
     persist: false,

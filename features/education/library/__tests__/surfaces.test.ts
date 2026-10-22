@@ -1,5 +1,6 @@
 import { condensedList, parseLibraryViewValue } from "../librarySurface";
 import {
+  deckSuggestionWriteHandler,
   parseCopyDecksValue,
   parseCreateDeckSuggestionsValue,
 } from "../communitySurface";
@@ -10,6 +11,13 @@ jest.mock("@ai-matrx/chat/surfaces/runtime/surface-writeback", () => ({
   refuseSurfaceWrite: (m: string) => {
     throw new Error(m);
   },
+}));
+
+// The suggestion handler's default path is the real service function; only
+// the network edge (the Supabase client) is stubbed.
+const rpc = jest.fn();
+jest.mock("@/utils/supabase/client", () => ({
+  supabase: { rpc: (...args: unknown[]) => rpc(...args) },
 }));
 
 const vocab = { subtype: ["quiz", "flashcards"], status: ["ready"], visibility: ["private"] };
@@ -208,5 +216,52 @@ describe("every problem at once (owner ruling 2026-09-27)", () => {
     expect(lines[2]).toMatch(/^2\. update_suggestions\[2\]\.status must be/);
     expect(lines[3]).toMatch(/^3\. update_suggestions\[1\]\.id "zz" is not a suggestion/);
     expect(lines[4]).toMatch(/^4\. .*"s1" \(at \[2\], \[3\]\)/);
+  });
+});
+
+describe("create_deck_suggestions apply runs outside React (feedback aa165959)", () => {
+  const deck = {
+    id: "a36ff20e-3b6f-c0eb-07cd-7253c329c1be",
+    name: "SAT Math: Passport to Advanced Math",
+    description: null,
+    topic: null,
+    difficulty: null,
+    cardCount: 10,
+    certified: false,
+    certifiedNote: null,
+    humanVerified: false,
+    updatedAt: "2026-09-27T00:00:00Z",
+  } as PublicDeck;
+  const refuse = (m: string): never => {
+    throw new Error(m);
+  };
+  const value = [{ deck_id: deck.id, body: "Add a worked example for the quadratic formula card." }];
+
+  beforeEach(() => rpc.mockReset());
+
+  it("sends the suggestion through the direct RPC and reports it created", async () => {
+    rpc.mockResolvedValue({ data: {}, error: null });
+    const handler = deckSuggestionWriteHandler({ decks: [deck], isSignedIn: true, refuse });
+    expect(() => handler.validate?.(value)).not.toThrow();
+    const result = (await handler.apply(value)) as { summary: string };
+    expect(rpc).toHaveBeenCalledWith("edu_suggest_edit", {
+      p_resource_id: deck.id,
+      p_body: value[0].body,
+      p_resource_type: "fc_set",
+    });
+    expect(result.summary).toMatch(
+      /^Created 1 deck suggestion: "Suggestion on SAT Math: Passport to Advanced Math"/,
+    );
+  });
+
+  it("keeps the RPC's own reason when it refuses (never a redacted React error)", async () => {
+    rpc.mockResolvedValue({
+      data: null,
+      error: { message: "cannot suggest an edit to your own deck", code: "P0001" },
+    });
+    const handler = deckSuggestionWriteHandler({ decks: [deck], isSignedIn: true, refuse });
+    await expect(handler.apply(value)).rejects.toThrow(
+      /cannot suggest an edit to your own deck/,
+    );
   });
 });

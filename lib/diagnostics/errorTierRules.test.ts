@@ -27,6 +27,20 @@ function captured(over: Partial<CapturedError>): CapturedError {
 }
 
 describe("classifyTier", () => {
+  it("shows a recovered slow-IndexedDB capture as a dot, never red (defect 85)", () => {
+    const c = classifyTier(
+      captured({
+        source: "runtime-exception",
+        code: "sync-idb-operation-timeout",
+        level: "low",
+        recoverable: true,
+        message: "[sync] IndexedDB operation timed out; persistence recovery continued.",
+      }),
+    );
+    expect(c.tier).toBe("orange");
+    expect(c.ruleId).toBe("sync-idb-operation-timeout-recovered");
+  });
+
   it("shows a handled window-restore warning as a dot, and keeps a window-restore error red", () => {
     const warning = classifyTier(
       captured({

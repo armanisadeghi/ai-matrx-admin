@@ -14,6 +14,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
 import { valueCarriesKind } from "@/features/content-ir/surfaces/json-kind-signal";
+import { kindTextLabel } from "@/features/content-ir/surfaces/kind-text-label";
 import {
   TRIGGER_LABEL,
   listProvisionSnapshots,
@@ -26,7 +27,7 @@ import {
   type ProvisionValue,
 } from "./data";
 
-function ValueRow({ v }: { v: ProvisionValue }) {
+export function ValueRow({ v }: { v: ProvisionValue }) {
   if (v.withheld) {
     // The value stayed on the server (AI Watch off): name and size, never a blank that reads as empty.
     return (
@@ -48,6 +49,10 @@ function ValueRow({ v }: { v: ProvisionValue }) {
   const text = valueText(v.value);
   const help = v.present ? v.source : `${v.missing_reason ?? "Not available here"} · ${v.source}`;
   const structured = v.present && v.value !== null && typeof v.value === "object";
+  // The closed row's one-line summary is the design system's key-by-key glance, which prints
+  // `__kind: <slug>` for a kind. A kind-carrying value is summarised by its kind's own label
+  // instead (the expanded body below already draws it through the kind door).
+  const kindSummary = structured && valueCarriesKind(v.value) ? kindTextLabel(JSON.stringify(v.value)) : null;
   return (
     <PropertyRow
       data-testid={`provision-value-${v.name}`}
@@ -55,8 +60,8 @@ function ValueRow({ v }: { v: ProvisionValue }) {
       label={v.label}
       help={help}
       missing={!v.present}
-      value={v.present && !structured ? text : undefined}
-      data={structured ? v.value : undefined}
+      value={v.present && !structured ? text : (kindSummary ?? undefined)}
+      data={structured && kindSummary === null ? v.value : undefined}
       // A value that carries a kind is drawn as that kind; the raw inspector is for plain data
       // (handing it a kind makes it file the caller as a raw-renderer leak).
       expanded={

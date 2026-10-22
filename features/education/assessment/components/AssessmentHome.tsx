@@ -139,7 +139,7 @@ export function AssessmentHome({ kind }: { kind: AssessmentKind }) {
   // Literal surface names and builders per kind, so the surface checks can
   // read which targets each page registers.
   const getScope = (list: EntityListSurfaceController<AssessmentListItem>) =>
-    buildAssessmentListScope({ list, userId: userId ?? "" });
+    buildAssessmentListScope({ list, userId: userId ?? "", kind });
   const surface = !userId
     ? undefined
     : kind === "quiz"
