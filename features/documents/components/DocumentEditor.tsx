@@ -67,6 +67,7 @@ import {
   type Univer,
   IUndoRedoService,
 } from "@univerjs/core";
+import { DocStateChangeManagerService } from "@univerjs/docs";
 import { defaultTheme } from "@univerjs/themes";
 import { UniverDocsCorePreset } from "@univerjs/preset-docs-core";
 import docsCoreEnUS from "@univerjs/preset-docs-core/locales/en-US";
@@ -448,6 +449,7 @@ export default function DocumentEditor({
         commentOnly: () => commentOnlyRef.current,
         unitId: () => apiRef.current?.getActiveDocument()?.getId?.() ?? null,
         undoRedo: () => resolveUndoRedoService(kept.univer),
+        docHistory: () => resolveDocHistory(kept.univer),
         selection: docSelectionPort(kept.univer),
       });
     const parked = model.takeParkedEditor() as ParkedDocumentEditor<KeptUniver> | null;
@@ -1106,6 +1108,16 @@ function resolveUndoRedoService(univer: Univer): unknown {
   }
 }
 
+/** Univer Docs' typing-burst history, so the co-editing room stacks an open burst before a collaborator's edit applies. */
+function resolveDocHistory(univer: Univer): { flushPendingChanges(unitId: string): void } | null {
+  const injector = (univer as unknown as { __getInjector?: () => { get: <T>(token: unknown) => T | undefined } }).__getInjector?.();
+  try {
+    return injector?.get<{ flushPendingChanges(unitId: string): void }>(DocStateChangeManagerService as unknown) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** This view's body selection, so a collaborator's edit moves the caret with the characters (§6.8). */
 function docSelectionPort(univer: Univer) {
   const svc = () => {
@@ -1126,14 +1138,15 @@ function showCollabNotice(n: DocsOtNotice): void {
   if (showOfflineNotice(n, "document")) return;
   switch (n.kind) {
     case "rolled_back":
-      toast({
-        title: n.reason === "replace" ? "This document was restored" : "Your last edit was undone",
-        description:
-          n.reason === "replace"
-            ? "Someone restored an earlier version while you were typing."
-            : "It clashed with a change someone else made at the same moment.",
-        variant: n.reason === "replace" ? "default" : "destructive",
-      });
+      if (n.reason === "replace") {
+        toast({ title: "A version was restored", description: "Your last few letters weren't kept." });
+        return;
+      }
+      if (n.reason === "opening" || n.reason === "rebuild") {
+        toast({ title: n.reason === "opening" ? "Still connecting" : "Catching up", description: "Your last few letters weren't kept." });
+        return;
+      }
+      toast({ title: "Your last edit was undone", description: "It clashed with a change someone else made at the same moment.", variant: "destructive" });
       return;
     case "overridden":
       toast({ title: "Someone edited the same text", description: "Their change came in last, so it was kept." });

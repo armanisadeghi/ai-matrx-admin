@@ -27,12 +27,15 @@ export function showWorkbookCollabNotice(n: SheetsOtNotice): void {
   if (showOfflineNotice(n, "workbook")) return;
   switch (n.kind) {
     case "rolled_back":
-      toast({
-        title: n.reason === "replace" ? "This workbook was restored" : "Your last change was undone",
-        description:
-          n.reason === "replace" ? "Someone restored an earlier version while you were editing." : "It clashed with a change someone else made at the same moment.",
-        variant: n.reason === "replace" ? "default" : "destructive",
-      });
+      if (n.reason === "replace") {
+        toast({ title: "A version was restored", description: "Your last few changes weren't kept." });
+        return;
+      }
+      if (n.reason === "opening" || n.reason === "rebuild") {
+        toast({ title: n.reason === "opening" ? "Still connecting" : "Catching up", description: "Your last few changes weren't kept." });
+        return;
+      }
+      toast({ title: "Your last change was undone", description: "It clashed with a change someone else made at the same moment.", variant: "destructive" });
       return;
     case "overridden":
       toast({ title: "Someone changed the same cells", description: "Their change came in last, so it was kept." });
