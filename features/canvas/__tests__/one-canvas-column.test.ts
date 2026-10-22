@@ -32,10 +32,16 @@ function filesMatching(pattern: RegExp, { includeTests = true } = {}): string[] 
 }
 
 describe("one canvas", () => {
-  it("only ShellCanvasColumn renders the canvas column, and nothing renders CanvasFrame", () => {
+  it("only ShellCanvasBody renders the canvas column, and nothing renders CanvasFrame", () => {
     // A test may mount the real column to see a tab's body (side-panels-are-canvas-tabs).
-    expect(filesMatching(/<CanvasColumn[\s/>]/, { includeTests: false })).toEqual(["features/canvas/host/ShellCanvasColumn.tsx"]);
+    expect(filesMatching(/<CanvasColumn[\s/>]/, { includeTests: false })).toEqual(["features/canvas/host/ShellCanvasBody.tsx"]);
     expect(filesMatching(/<CanvasFrame[\s/>]/)).toEqual([]);
+  });
+
+  it("the canvas body has two hosts: the classic column and the new frame's canvas panel", () => {
+    expect(filesMatching(/<ShellCanvasBody[\s/>]/, { includeTests: false }).sort()).toEqual(
+      ["features/canvas/host/ShellCanvasColumn.tsx", "features/shell/frame-host/FrameCanvas.tsx"].sort(),
+    );
   });
 
   it("ShellCanvasColumn is mounted only by the three layouts", () => {
