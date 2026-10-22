@@ -67,6 +67,8 @@ const values: SurfaceValue[] = [
   },
 ];
 export const adminLimitsManifest: SurfaceManifest = {
+  situation:
+    "They are on the Limits and Knobs admin page, looking at account add-ons across the platform: {addons_loaded_count} loaded, {processed_addons_count} matching the table's current view. Each row's plan allowance and how much the add-on raises it are in your context.",
   surfaceName: ADMIN_LIMITS_SURFACE_NAME,
   inheritsFrom: "matrx-default/platform",
   client: "matrx-admin",

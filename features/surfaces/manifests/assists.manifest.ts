@@ -129,6 +129,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const assistsManifest: SurfaceManifest = {
+  situation:
+    "They are in their Assists inbox, the one-click help the platform offers them, on the {assist_status_tab} tab: {assist_total_count|an unknown number of} assists match, urgency {assist_urgency_filter|any}. The rows shown are in your context. They can change the view, snooze or dismiss assists and quiet them; an assist only runs when they press it.",
   surfaceName: "matrx-user/assists",
   inheritsFrom: "matrx-default/platform",
   client: "matrx-user",

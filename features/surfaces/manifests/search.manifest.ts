@@ -271,6 +271,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const searchManifest: SurfaceManifest = {
+  situation:
+    "They are on Matrx Search, on the {search_vertical} tab with the {search_engine} engine; they searched for \"{search_query|nothing yet}\" and the search is {search_status}. The results on screen are in your context. They can switch the tab, the engine, or which platform the Social tab searches.",
   surfaceName: "matrx-user/search",
   inheritsFrom: "matrx-default/platform",
   client: "matrx-user",

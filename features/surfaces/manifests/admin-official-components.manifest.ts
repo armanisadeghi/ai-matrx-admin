@@ -289,6 +289,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminOfficialComponentsManifest: SurfaceManifest = {
+  situation:
+    "They are in the Official Components admin, the catalog of {total_component_count} shared interface components, on its {page_section} page. Search \"{search_query|none}\", category {selected_category|all}, {filtered_component_count|all} shown. The component open is {current_component_name|none}; its description and source path are in your context.",
   surfaceName: ADMIN_OFFICIAL_COMPONENTS_SURFACE_NAME,
   inheritsFrom: "matrx-default/platform",
   client: "matrx-admin",

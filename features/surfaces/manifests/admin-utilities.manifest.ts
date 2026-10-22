@@ -438,6 +438,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminUtilitiesManifest: SurfaceManifest = {
+  situation:
+    "They are in the Utilities admin, on its {utilities_section} tool (routes, caches, capture inspector, content blocks, message templates, local storage, markdown tester or text cleaner). What that tool has open, such as the selected item or the text being tested, is in your context.",
   surfaceName: ADMIN_UTILITIES_SURFACE_NAME,
   inheritsFrom: "matrx-default/platform",
   client: "matrx-admin",

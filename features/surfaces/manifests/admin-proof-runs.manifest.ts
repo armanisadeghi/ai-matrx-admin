@@ -689,6 +689,8 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 export const adminProofRunsManifest: SurfaceManifest = {
+  situation:
+    "They are on the Proof runs admin page, where proof checks test agent jobs and leave receipts; spend this month is {month_to_date_usd|not loaded} of a {monthly_ceiling_usd|not loaded} USD ceiling. Check selected: {selected_check|none}, mode {run_mode}. They can open receipts, search history, and write, save or archive test scenarios; nothing runs until they press run.",
   surfaceName: ADMIN_PROOF_RUNS_SURFACE_NAME,
   inheritsFrom: "matrx-default/platform",
   client: "matrx-admin",

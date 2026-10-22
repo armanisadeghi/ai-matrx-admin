@@ -167,6 +167,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminDocumentationManifest: SurfaceManifest = {
+  situation:
+    "They are in the Documentation admin, browsing the platform's feature docs on its {documentation_section} view. The doc open is {current_doc_path|none}; when one is open, its contents are in your context.",
   surfaceName: ADMIN_DOCUMENTATION_SURFACE_NAME,
   inheritsFrom: "matrx-default/platform",
   client: "matrx-admin",
