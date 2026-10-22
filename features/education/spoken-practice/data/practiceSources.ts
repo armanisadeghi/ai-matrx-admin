@@ -6,47 +6,29 @@
 // this module only joins the texts and reports a cut the server made. Pure — no I/O.
 
 import type { ResolvedSourceSet, SourceSet } from "@ai-matrx/agents/sources";
-import { lineageSourceOf } from "@/features/flashcards/data/generateDeckFromSources";
+import { lineageSourcesOf } from "@/features/flashcards/data/generateDeckFromSources";
+import { namerFloorOf } from "@/features/education/create/groundedMaterial";
 import type { ConvertSource } from "@/features/education/convert/types";
 import type { PracticeSource } from "../types";
 
-/** Every Source kind (registry token) a `study_session -> <kind>` pair is registered for. */
-export const PRACTICE_LINEAGE_TARGET_TYPES = [
-  "fc_set",
-  "file",
-  "note",
-  "document",
-  "udt_document",
-  "processed_document",
-  "transcript",
-  "conversation",
-  "dataset",
-  "structured_list",
-  "workbook",
-  "content_ir_kind_instance",
-] as const;
-const REGISTERED = new Set<string>(PRACTICE_LINEAGE_TARGET_TYPES);
-
 /**
  * The lineage anchors of the Sources the session was built on, for the ONE lineage
- * writer (`convert/recordSourceLineage.ts`). A Source whose kind has no registered
- * `study_session` pair is left out rather than failing the whole write.
+ * writer (`convert/recordSourceLineage.ts`). The anchors are the shared Education rule
+ * (`lineageSourcesOf`): pasted text, web pages and YouTube land as `processed_document`,
+ * a stored file as `file`, every other Source as its own token. There is no list of
+ * kinds here: which `study_session -> <kind>` pairs exist is the registry's answer at
+ * write time, and a pair it refuses comes back as a failed edge the screen announces
+ * with Retry (`announceLineage`) — never a Source silently left out.
  */
 export function practiceLineageSources(resolved: ResolvedSourceSet): ConvertSource[] {
+  const readable = { ...resolved, sources: resolved.sources.filter((s) => s.text.trim()) };
   const seen = new Set<string>();
-  const out: ConvertSource[] = [];
-  for (const s of resolved.sources) {
-    if (!s.text.trim()) continue;
-    const anchor = lineageSourceOf(s);
-    const type = anchor.ref?.fileId ? "file" : anchor.ref?.entityType;
-    const id = anchor.ref?.fileId ?? anchor.ref?.entityId;
-    if (!type || !id || !REGISTERED.has(type)) continue;
-    const key = `${type}:${id}`;
-    if (seen.has(key)) continue;
+  return lineageSourcesOf(readable).filter((anchor) => {
+    const key = `${anchor.ref?.fileId ? "file" : anchor.ref?.entityType}:${anchor.ref?.fileId ?? anchor.ref?.entityId}`;
+    if (seen.has(key)) return false;
     seen.add(key);
-    out.push(anchor);
-  }
-  return out;
+    return true;
+  });
 }
 
 export interface PracticeMaterial {
@@ -73,14 +55,6 @@ export function practiceMaterialFromResolved(resolved: ResolvedSourceSet): Pract
   };
 }
 
-/** A short title for what the session is grounded in. */
-export function practiceSourceTitle(labels: readonly string[], onlyDeck: boolean): string {
-  if (labels.length === 0) return "your sources";
-  if (onlyDeck && labels.length === 1) return `${labels[0]} deck`;
-  if (labels.length <= 2) return labels.join(" and ");
-  return `${labels[0]}, ${labels[1]} and ${labels.length - 2} more`;
-}
-
 /**
  * The session's grounding source. A chosen deck is recorded on the session as
  * its set (`study_session.source_set_id`, as before); everything else is a topic
@@ -90,19 +64,20 @@ export function practiceSourceFromResolved(
   resolved: ResolvedSourceSet,
   chosen: SourceSet,
   names: NonNullable<PracticeSource["sourceNames"]>,
+  /** THE kit namer's title (`nameFromSources`); its floor is the first readable Source's name. */
+  title: string = namerFloorOf(resolved.sources),
 ): { source: PracticeSource | null; cut: boolean } {
-  const { material, cut, labels } = practiceMaterialFromResolved(resolved);
+  const { material, cut } = practiceMaterialFromResolved(resolved);
   if (!material) return { source: null, cut: false };
   const deckIds = resolved.sources
     .filter((s) => s.ref.resource_type === "fc_set" && s.text.trim())
     .map((s) => s.ref.resource_id);
-  const onlyDeck = deckIds.length > 0 && deckIds.length === labels.length;
   return {
     cut,
     source: {
       kind: deckIds.length > 0 ? "set" : "topic",
       setId: deckIds[0],
-      title: practiceSourceTitle(labels, onlyDeck),
+      title,
       material,
       sourceSet: chosen,
       sourceNames: names,

@@ -7,7 +7,11 @@
     "app/(core)/transcripts/new/page.tsx": [
       "known-local-copy"
     ],
+    "features/agents/studio/components/ExamplesStart.tsx": [
+      "file-plus-paste-intake-in-one-component"
+    ],
     "features/education/assessment/data/generateQuestionsFromSources.ts": [
+      "second-payload-resolved-text",
       "second-payload-raw-source"
     ],
     "features/education/classes/components/AddClassContentSheet.tsx": [
@@ -16,11 +20,29 @@
     "features/education/classes/components/AssignResourceSheet.tsx": [
       "local-association-picker-for-sources"
     ],
-    "features/education/media/audio/audioBrief.ts": [
-      "second-payload-input-data"
+    "features/education/convert/generators/deck.ts": [
+      "second-payload-resolved-text"
     ],
-    "features/education/spoken-practice/spokenPracticeScope.ts": [
-      "second-payload-raw-source"
+    "features/education/convert/generators/memoryAid.ts": [
+      "second-payload-resolved-text"
+    ],
+    "features/education/convert/generators/mindMap.ts": [
+      "second-payload-resolved-text"
+    ],
+    "features/education/convert/generators/summary.ts": [
+      "second-payload-resolved-text"
+    ],
+    "features/education/media/mindmap/components/MindMapNew.tsx": [
+      "second-payload-resolved-text"
+    ],
+    "features/education/memory/components/MemoryNew.tsx": [
+      "second-payload-resolved-text"
+    ],
+    "features/education/notes/notesGenerator.ts": [
+      "second-payload-resolved-text"
+    ],
+    "features/marketing/seo/topical-map/map-author.ts": [
+      "second-payload-resolved-text"
     ],
     "features/masterwork/components/detail/MeetingScavengerDialog.tsx": [
       "file-plus-paste-intake-in-one-component"
@@ -28,40 +50,22 @@
     "features/masterwork/components/detail/ShadowInboxDialog.tsx": [
       "file-plus-paste-intake-in-one-component"
     ],
+    "features/masterwork/sorting/SortingTablePage.tsx": [
+      "file-plus-paste-intake-in-one-component"
+    ],
     "features/pdf-demo/components/PdfSourcePicker.tsx": [
       "named-source-input-file",
       "file-plus-paste-intake-in-one-component"
     ],
-    "features/podcasts/generator/components/GeneratorForm.tsx": [
-      "second-payload-input-data",
-      "second-payload-raw-source"
-    ],
     "features/podcasts/generator/components/SourceResolverPanel.tsx": [
-      "file-plus-paste-intake-in-one-component",
-      "second-payload-input-data"
+      "file-plus-paste-intake-in-one-component"
     ],
     "features/podcasts/generator/constants.ts": [
       "local-source-options-list",
-      "browser-side-source-resolver",
-      "second-payload-input-data"
-    ],
-    "features/podcasts/generator/sourceReadiness.ts": [
-      "second-payload-input-data"
-    ],
-    "features/podcasts/generator/types.ts": [
-      "second-payload-input-data"
-    ],
-    "features/podcasts/generator/useSourceResolvers.ts": [
-      "second-payload-input-data"
+      "browser-side-source-resolver"
     ],
     "features/podcasts/intelligence-places.ts": [
       "browser-side-source-resolver"
-    ],
-    "features/podcasts/studio/components/SourceSummaryPanel.tsx": [
-      "second-payload-input-data"
-    ],
-    "features/podcasts/studio/runs/runsRepository.ts": [
-      "second-payload-input-data"
     ],
     "features/podcasts/studio/variants/create-a/components/SourcePicker.tsx": [
       "named-source-input-file"
@@ -81,7 +85,7 @@
       "hand-rolled-door-row"
     ],
     "features/podcasts/studio/variants/create-refine/components/CreateRefineView.tsx": [
-      "second-payload-input-data"
+      "second-payload-resolved-text"
     ],
     "features/podcasts/studio/variants/create-refine/components/SourceInput.tsx": [
       "named-source-input-file",
@@ -89,7 +93,7 @@
     ],
     "features/podcasts/studio/variants/create-reimagine/components/Composer.tsx": [
       "browser-side-source-resolver",
-      "second-payload-input-data"
+      "second-payload-resolved-text"
     ],
     "features/search/components/SearchExperience.tsx": [
       "file-plus-paste-intake-in-one-component"

@@ -46,8 +46,9 @@ export default async function EducationLayout({
       {/* The AppShell intentionally pulls (core) content beneath its glass
           header. Education uses a shared static route header, so every screen
           must begin below it; owning that clearance here keeps all present and
-          future education routes aligned without per-page offsets. */}
-      <div className="education-scroll-boundary scroll-page-end-space box-border h-full min-h-0 pt-[var(--shell-header-h)]">
+          future education routes aligned without per-page offsets. It also
+          carries the 44px touch floor for every education screen. */}
+      <div className="education-scroll-boundary matrx-touch-targets scroll-page-end-space box-border h-full min-h-0 pt-[var(--shell-header-h)]">
         {children}
       </div>
       <ScrollAssistantLauncher inputVariant="text-voice" />

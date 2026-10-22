@@ -26,7 +26,8 @@
 // agents can fill in the source text, the show shape, the audience, the prep
 // steer, and the show blurb. Pressing Generate is NOT agent-writable.
 //
-// Request fields sent: input_data / source_set, input_data_type, podcast_type
+// Request fields sent: input_data (typed words only) / source_set (+ edited_from
+// when the person edited the Sources' text: the edit is its own Source), input_data_type, podcast_type
 // (derived from Language + Format), language, format, theme, host_count,
 // speakers (only when customized), post_prep_option, show_id,
 // prep_user_message, first_show_info_text, truncate_audio_for_testing.
@@ -84,7 +85,12 @@ import { SourceInput } from "@/features/resource-manager/source-input/components
 import { sourceSurfaceKey, useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
 import { useResolvedSourceText } from "@/features/resource-manager/source-input/useResolvedSourceText";
 import { ALL_SOURCE_KIND_IDS } from "@/features/resource-manager/source-input/sourceKinds";
-import { useAppStore } from "@/lib/redux/hooks";
+import { landEditedSourceText } from "@/features/resource-manager/source-input/editedSourceText";
+import { sourceRefusalSentence } from "@/features/sources/api/sourcesApi";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { toast } from "@/lib/toast";
+import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { TopicIdeaHelper } from "./TopicIdeaHelper";
 import { topicIdeaOfferFacts } from "../topicIdeaOffer";
 import {
@@ -219,6 +225,9 @@ export function GeneratorForm({
   // The one Source input's picks (pointers only; read on the server at Generate).
   const sourceSet = useSourceSet(PODCAST_SOURCES_SURFACE);
   const store = useAppStore();
+  const userId = useAppSelector(selectUserId);
+  /** True while an edited source text is being saved as its own Source. */
+  const [savingEdit, setSavingEdit] = useState(false);
   const [language, setLanguage] = useState<PodcastLanguageCode>(DEFAULT_LANGUAGE);
   const [format, setFormat] = useState<PodcastFormat>(initialFormat);
   const [theme, setTheme] = useState("");
@@ -302,6 +311,7 @@ export function GeneratorForm({
 
   const canGenerate =
     !busy &&
+    !savingEdit &&
     !resolverBusy &&
     !!activeSource.inputDataType &&
     hasSourceInput &&
@@ -339,17 +349,11 @@ export function GeneratorForm({
       const own = text.trim();
       if (readySources.length > 0) {
         // Pointers — the server reads each Source (a cloud PDF as its clean
-        // text) through resolve_source_set and links it to the episode.
+        // text) through resolve_source_set and links it to the episode. An
+        // edited preview is swapped for its own Source at Generate
+        // (`withEditedSource`), so the request never carries Source text.
         body.source_set = sourceSet.toSourceSet();
-        const edited = sourcePreview.edited ? sourcePreview.text.trim() : "";
-        if (edited) {
-          // The person corrected the preview: their text is what is read, the
-          // server still links each Source but does not add its own text again.
-          body.input_data = own ? `${own}\n\n${edited}` : edited;
-          body.source_text_supplied = true;
-        } else if (own) {
-          body.input_data = own;
-        }
+        if (own) body.input_data = own;
       } else {
         body.input_data = own;
       }
@@ -404,15 +408,53 @@ export function GeneratorForm({
     return body;
   };
 
+  /**
+   * The person corrected "Text from your sources": that text is landed as a
+   * Source of its own ("<first source> (edited)", through /sources/land) and the
+   * request points at it. The server reads it once; the Sources it was made
+   * from ride as `edited_from` (linked to the episode, never read).
+   * Null when the save was refused (the person is told why).
+   */
+  const withEditedSource = async (
+    body: PodcastGenerateRequest,
+  ): Promise<PodcastGenerateRequest | null> => {
+    const edited = sourcePreview.edited ? sourcePreview.text.trim() : "";
+    if (!edited || !body.source_set || !sourcePreview.resolved) return body;
+    if (!userId) {
+      toast.error("Sign in to save your edited text.");
+      return null;
+    }
+    setSavingEdit(true);
+    try {
+      const saved = await landEditedSourceText({
+        text: edited,
+        from: body.source_set,
+        resolved: sourcePreview.resolved,
+        organizationId: await ensureOrgId(null),
+        userId,
+      });
+      return { ...body, source_set: saved.sourceSet, edited_from: saved.editedFrom };
+    } catch (err) {
+      console.error("[GeneratorForm] the edited source text could not be saved:", err);
+      toast.error(`Your edited text could not be saved. ${sourceRefusalSentence(err)}`);
+      return null;
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!canGenerate) return;
-    const body = buildRequestBody();
+    const built = buildRequestBody();
+    if (!built) return;
+    const picked = built.source_set;
+    const body = await withEditedSource(built);
     if (!body) return;
     const started = await onGenerate(body);
     // The run owns its Sources now; the next episode starts from an empty input.
     // Read the draft as it is NOW (a Source added while starting stays).
-    if (started !== false && body.source_set) {
-      const sent = new Set(body.source_set.sources.map((r) => r.resource_id));
+    if (started !== false && picked) {
+      const sent = new Set(picked.sources.map((r) => r.resource_id));
       const live = Object.values(
         store.getState().instanceResources.byConversationId[sourceSurfaceKey(PODCAST_SOURCES_SURFACE)] ?? {},
       ).filter((r) => r.blockType === "source_ref");

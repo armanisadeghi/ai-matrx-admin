@@ -268,7 +268,7 @@ export default function WorkbooksLandingPage() {
               name: wb.workbook_name,
               description: wb.description,
               source: wb.source,
-              is_public: wb.is_public,
+              is_public: wb.visibility === "public",
               version: wb.version,
               updated_at: wb.updated_at,
             })),

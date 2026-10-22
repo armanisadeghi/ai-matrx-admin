@@ -59,4 +59,15 @@ describe("getPodcastSourceReadiness", () => {
     ).toBe(false);
     expect(canRerunPodcastSource(null)).toBe(false);
   });
+
+  it("a request made from Sources can be re-run: the server reads them again", () => {
+    expect(
+      canRerunPodcastSource({
+        input_data_type: "full_content",
+        input_data: "",
+        source_set: { sources: [{ resource_type: "fc_set", resource_id: "d1" }] },
+      }),
+    ).toBe(true);
+    expect(canRerunPodcastSource({ input_data_type: "full_content", input_data: "", source_set: { sources: [] } })).toBe(false);
+  });
 });

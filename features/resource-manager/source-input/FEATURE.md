@@ -86,6 +86,7 @@ Campaign of record (design, frozen contract, register): common-docs `projects/un
 
 ## Change log
 
+- 2026-10-22 — `editedSourceText.ts`: `landEditedSourceText({ text, from, resolved, organizationId, userId })` lands a person's edit of `useResolvedSourceText`'s box as pasted text (`content_already_clean`) and answers the SourceSet pointing at it plus `editedFrom` (the originals, lineage only). Podcast create uses it; any host with an editable preview sends the edit this way, never as text.
 - 2026-10-22 — Podcast Studio create (`/podcast/studio/create`, key `podcasts:create`, every tile but Topic, `deliveries={["direct"]}`) adopts it; the host sends `toSourceSet()` and aidream resolves it inside `/podcast/generate`.
 
 - 2026-10-03 — A Source stuck on "Cleaning…" (its pages queued on the Batch lane, which answers in

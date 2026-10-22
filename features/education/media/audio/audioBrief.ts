@@ -9,6 +9,8 @@
 // flashcards' `buildDeckOverviewRequest` (Phase 7) into the multi-format,
 // weak-area-adaptive education tool.
 
+import { createSourceRef, createSourceSet, type SourceSet } from "@ai-matrx/agents/sources";
+import type { ConvertSource } from "@/features/education/convert/types";
 import type { PodcastGenerateRequest } from "@/features/podcasts/generator/types";
 import type { CardWithDetails, FcSetRow } from "@/features/flashcards/data/types";
 import type { EduAudioFormat } from "../types";
@@ -43,6 +45,26 @@ export function serializeDeck(
     .join("\n\n");
 
   return { markdown: `${header}\n\n${body}`, truncated };
+}
+
+/**
+ * The Sources a converted material was read from, as the SourceSet the podcast
+ * server reads: every Source of a multi-source kit, else the stored file, the
+ * processed document, or the origin entity (a deck, a note). Null when nothing
+ * stands behind the text (it is the words the person gave).
+ */
+export function audioSourceSetOf(source: ConvertSource): SourceSet | null {
+  const ref = source.ref;
+  const refs = ref?.kitSources?.length
+    ? ref.kitSources.map((k) => createSourceRef(k.type, k.id, { delivery: "direct" }))
+    : ref?.fileId
+      ? [createSourceRef("file", ref.fileId, { delivery: "direct" })]
+      : ref?.processedDocumentId
+        ? [createSourceRef("processed_document", ref.processedDocumentId, { delivery: "direct" })]
+        : ref?.entityType && ref.entityId
+          ? [createSourceRef(ref.entityType, ref.entityId, { delivery: "direct" })]
+          : [];
+  return refs.length ? createSourceSet(refs) : null;
 }
 
 /** Per-format base framing for the script agents. */
@@ -80,12 +102,20 @@ function formatFraming(format: EduAudioFormat): {
   }
 }
 
+/**
+ * What the episode is made from. Sources go as their SourceSet — the podcast
+ * server reads them (once, as the person) and links each one to the episode;
+ * the browser never sends their text. A topic, or words with no Source behind
+ * them, are what the person gave and go as `input_data`.
+ */
+export type AudioMaterial =
+  | { kind: "sources"; sourceSet: SourceSet }
+  | { kind: "topic"; topic: string }
+  | { kind: "words"; words: string };
+
 export interface BuildAudioRequestParams {
   format: EduAudioFormat;
-  /** 'deck' | 'note' → full_content; 'topic' → topic. */
-  sourceKind: "deck" | "note" | "topic";
-  /** Serialized material (deck/note markdown) OR the topic string. */
-  content: string;
+  material: AudioMaterial;
   hostCount?: number;
   language?: string;
   /**
@@ -113,11 +143,16 @@ export function buildAudioRequest(
 
   const prep = `${steer}${adaptive}`;
 
-  const isTopic = params.sourceKind === "topic";
+  const from = params.material;
+  const what: Pick<PodcastGenerateRequest, "input_data_type" | "input_data" | "source_set"> =
+    from.kind === "sources"
+      ? { input_data_type: "full_content", input_data: "", source_set: from.sourceSet }
+      : from.kind === "topic"
+        ? { input_data_type: "topic", input_data: from.topic }
+        : { input_data_type: "full_content", input_data: from.words };
 
   return {
-    input_data_type: isTopic ? "topic" : "full_content",
-    input_data: params.content,
+    ...what,
     podcast_type: "educational",
     format: podFormat,
     theme,

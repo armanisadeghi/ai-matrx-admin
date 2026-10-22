@@ -70,16 +70,39 @@ const RESOLVER_HOME = /(^|\/)features\/podcasts\/generator\/(components\/SourceR
 const REAL_FILE_INTAKE = /type=["']file["']|\buseFileUpload\b|\bFilePickerWindow\b|\bonDrop\b|\bDropzone\b|\bFileDropZone\b/;
 // ... living in the same component as a paste / URL / text intake for material.
 const PASTE_OR_URL_INTAKE = /<(?:Pro)?[Tt]extarea\b[^>]*placeholder=\{?["'`][^"'`]*(?:paste|https?:|\burl\b|link|notes|transcript)|<(?:Pro)?[Ii]nput\b[^>]*(?:placeholder=\{?["'`][^"'`]*(?:paste|https?:|\burl\b|link|youtube)|type=["']url["'])|\b(?:onPaste|pasteText|setPastedText|pastedText|sourceUrl|setSourceUrl|setUrl)\b/i;
-// Only a component that talks about material for AI ("source", "material", "transcript") twice or more counts, so
-// image croppers and CRM CSV imports (a file and a URL box, but not material) stay out.
-const MATERIAL_WORDS = /\b(?:sources?|materials?|transcripts?)\b/gi;
-const NOT_MATERIAL_PATH = /image|asset|crop|brand|stock|\/crm\/|envelope|workbook|board\//i;
-const talksAboutMaterial = (src) => (src.match(MATERIAL_WORDS) ?? []).length >= 2;
-// (c) A SECOND PAYLOAD SHAPE. Generation takes a SourceSet (source_set); raw text / blobs under input_data or
-// a { text } source object are the old shape. Scoped to the education + podcast generation code.
-const GEN_SCOPE = /(^|\/)features\/(education|podcasts)\//;
-const INPUT_DATA = /\binput_data\b/;
-const RAW_SOURCE_FIELD = /\b(?:source|sources|material|materials)\s*:\s*\{\s*(?:text|rawText|raw_text|blob|content)\s*:|\b(?:rawSourceText|raw_source_text|sourceText|source_text|sourceBlob|source_blob)\s*:/;
+// What the words on screen say does not matter (a reviewer's plant with no "source"/"material" in it walked
+// through a word-count gate, 2026-10-22): uploads that are not material for AI are excluded by WHERE they live —
+// image croppers, brand / stock assets, CRM CSV imports, envelopes, workbook and board imports.
+const NOT_MATERIAL_PATH = /image|asset|crop|brand|stock|\/crm\/|envelope|workbook|board\/|(^|\/)components\/qr\/|merge-field|handwritten|(^|\/)features\/presentations\//i;
+// (c) A SECOND PAYLOAD SHAPE. Generation takes a SourceSet (source_set) the server reads; text the browser got
+// from reading the Sources, sent back as the material, is the old shape. Scoped to the generation code of
+// education, podcasts and the topical map.
+const GEN_SCOPE = /(^|\/)features\/(education|podcasts|marketing\/seo\/topical-map)\//;
+const RAW_SOURCE_FIELD = /\b(?:source|sources|material|materials)\s*:\s*\{\s*(?:text|rawText|raw_text|blob|content)\s*:|\b(?:rawSourceText|raw_source_text|sourceText|source_text|sourceBlob|source_blob)\s*:(?!\s*(?:async\s*)?(?:\(|function\b|[A-Za-z_$][\w$]*\s*=>))/; // a key whose value is a function is a write handler, not a payload
+// Any wire field (snake_case: input_data, document_text, web_search_text, source_content, …) whose value is read
+// from resolved / previewed / prepared Source text — whatever the field is called. Output fields a generator
+// RETURNS (summary_markdown, content_markdown) are not material and are not matched.
+const WIRE_TEXT_FIELD = /\b(input_data|[a-z]+(?:_[a-z]+)*_(?:text|content|material))\b\s*(?::|=(?![=>]))\s*([^\n,;]*)/g;
+const RESOLVED_TEXT_VALUE = /\b(?:\w*Preview|preview|resolved|plainContent|material|prepared|edited|joinResolvedText|serialize\w*)\b|\.(?:text|content)\b|\b\w*?(?:source|document|webSearch|resolved|preview)\w*Text\b/i;
+// A surface's scope emitter (create<Name>Scope({...})) describes the screen to an assistant; it is not a
+// generation request, so its fields are not payloads.
+function withoutScopeEmitters(src) {
+  let out = "", i = 0;
+  const re = /\bcreate[A-Z]\w*Scope\s*\(/g;
+  let m;
+  while ((m = re.exec(src))) {
+    let depth = 1, j = m.index + m[0].length;
+    for (; j < src.length && depth > 0; j++) { if (src[j] === "(") depth++; else if (src[j] === ")") depth--; }
+    out += src.slice(i, m.index);
+    i = j; re.lastIndex = j;
+  }
+  return out + src.slice(i);
+}
+const withoutComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/[^\n]*/g, "$1");
+function sendsResolvedText(src) {
+  for (const m of src.matchAll(WIRE_TEXT_FIELD)) if (RESOLVED_TEXT_VALUE.test(m[2])) return true;
+  return false;
+}
 
 function* walk(dir) {
   let names;
@@ -105,10 +128,11 @@ export function findings(rel, src) {
   if (KNOWN_LOCAL.has(rel)) out.push("known-local-copy");
   if (EDU_CLASS.test(rel) && ASSOC_IMPORT.test(src)) out.push("local-association-picker-for-sources");
   if (!RESOLVER_HOME.test(rel) && RESOLVER_USE.test(src)) out.push("browser-side-source-resolver");
-  if (REAL_FILE_INTAKE.test(src) && !NOT_MATERIAL_PATH.test(rel) && talksAboutMaterial(src) && (PASTE_OR_URL_INTAKE.test(src) || fams.some((f) => f !== "upload"))) out.push("file-plus-paste-intake-in-one-component");
+  if (REAL_FILE_INTAKE.test(src) && !NOT_MATERIAL_PATH.test(rel) && (PASTE_OR_URL_INTAKE.test(src) || fams.some((f) => f !== "upload"))) out.push("file-plus-paste-intake-in-one-component");
   if (GEN_SCOPE.test(rel)) {
-    if (INPUT_DATA.test(src)) out.push("second-payload-input-data");
-    if (RAW_SOURCE_FIELD.test(src)) out.push("second-payload-raw-source");
+    const code = withoutScopeEmitters(withoutComments(src));
+    if (sendsResolvedText(code)) out.push("second-payload-resolved-text");
+    if (RAW_SOURCE_FIELD.test(code)) out.push("second-payload-raw-source");
   }
   return out;
 }
@@ -157,8 +181,15 @@ function selfTest() {
     // REVIEWER ESCAPE 2 (2026-10-22): the browser-side resolver panel with a bare resolveKind, no door label anywhere
     put("features/foo/Resolve.tsx", `import { SourceResolverPanel } from "@/features/podcasts/generator/components/SourceResolverPanel";\nexport const E = () => <SourceResolverPanel resolveKind="website" onResolved={() => {}} />;`);
     put("features/foo/useIt.ts", `import { useSourceResolvers } from "@/features/podcasts/generator/useSourceResolvers";\nexport const useIt = () => useSourceResolvers();`);
-    // a second payload shape: raw text posted as input_data / a { text } source object in education + podcast generation
-    put("features/education/foo/gen.ts", `export const g = (text: string) => fetch("/x", { body: JSON.stringify({ input_data: text, input_data_type: "full_content" }) });`);
+    // REVIEWER ESCAPE 3 (2026-10-22, round 2): the round-1 plant verbatim — file input + paste box + Upload / Paste
+    // buttons and NOT ONE word "source" / "material" — and a same-shape education file that says "notes"
+    put("features/foo/Intake.tsx", `export const I = () => (<div><input type="file" /><textarea placeholder="Paste text" /><button>Upload</button><button>Paste</button></div>);`);
+    put("features/education/foo/DropNotes.tsx", `export const N = () => (<div><input type="file" onChange={pick} /><ProTextarea placeholder="Drop your notes here" /></div>);`);
+    // a second payload shape: text read from the Sources sent back as the material, under ANY wire field name
+    put("features/education/foo/gen.ts", `export const g = (resolved: R) => fetch("/x", { body: JSON.stringify({ input_data: joinResolvedText(resolved), input_data_type: "full_content" }) });`);
+    put("features/podcasts/foo/edited.ts", `export const b = (body: B, own: string) => { body.input_data = own + sourcePreview.text; };`);
+    put("features/marketing/seo/topical-map/foo/author.ts", `export const a = (input: In) => ({ document_text: input.documentText, web_search_text: webPreview.text });`);
+    put("features/education/foo/vars.ts", `export const v = (prepared: P) => ({ source_content: prepared.content, count: 3 });`);
     put("features/podcasts/foo/gen2.ts", `export const g = (t: string) => run({ source: { text: t }, title: "x" });`);
     // NOT COPIES: each must be ignored
     // the legacy home that DEFINES the resolver (its callers are flagged, not the definition)
@@ -166,8 +197,14 @@ function selfTest() {
     // an image cropper with a file input and a URL box is not material intake; a lone file input is not a door row
     put("features/image-studio/Cropper.tsx", `export const I = () => (<div><input type="file" /><input placeholder="Paste image url" /><p>source image, source crop</p></div>);`);
     put("features/foo/JustAFile.tsx", `export const J = () => <input type="file" />;`);
-    // input_data outside education / podcasts is some other API
-    put("features/foo/other.ts", `export const o = { input_data: 1 };`);
+    // input_data outside education / podcasts / the topical map is some other API
+    put("features/foo/other.ts", `export const o = { input_data: preview.text };`);
+    // what the person TYPED is not a second payload; a screen's scope emitter is not a request; an output is not material
+    put("features/podcasts/foo/typed.ts", `export const t = (text: string, body: B) => { body.input_data = text.trim(); return { input_data: own, source_set: set.toSourceSet() }; };`);
+    put("features/education/foo/scope.ts", `export const s = () => createEducationFooScope({ setup_draft: { source_text: setup.pasted, nested: f(a.text) } });\nexport const w = () => ({ source_text: (value: unknown) => setText(String(value)) });`);
+    put("features/education/foo/out.ts", `export const o = (markdown: string) => ({ summary_markdown: markdown, content_markdown: markdown });`);
+    // uploads that are not material for AI, excluded by where they live (a QR code, a merge-field box)
+    put("components/qr/QrInput.tsx", `export const Q = () => (<div><input type="file" /><input placeholder="Paste a link" /></div>);`);
     put("features/resource-manager/source-input/Ok.tsx", `<b>Upload</b><b>Paste</b><b>Website</b><b>YouTube</b>`);
     put("features/foo/Fine.tsx", `export const C = () => <b>Upload</b>;`);
     // a field form that carries the name but offers no way to add material (data-source link/search fields)
@@ -182,16 +219,17 @@ function selfTest() {
     const hits = scan(dir);
     const keys = Object.keys(hits).sort();
     const expect = [
-      "features/education/foo/gen.ts", "features/foo/AddMaterial.tsx", "features/foo/MySourceInput.tsx",
+      "features/education/foo/DropNotes.tsx", "features/education/foo/gen.ts", "features/education/foo/vars.ts",
+      "features/foo/AddMaterial.tsx", "features/foo/Intake.tsx", "features/foo/MySourceInput.tsx",
       "features/foo/Resolve.tsx", "features/foo/SourceCapture.tsx", "features/foo/TextSourcePicker.tsx",
       "features/foo/Tiles.tsx", "features/foo/constants.ts", "features/foo/tiles.ts", "features/foo/useIt.ts",
-      "features/podcasts/foo/gen2.ts",
+      "features/marketing/seo/topical-map/foo/author.ts", "features/podcasts/foo/edited.ts", "features/podcasts/foo/gen2.ts",
     ];
     if (JSON.stringify(keys) !== JSON.stringify(expect)) { console.error("self-test FAILED: detection", keys); process.exit(1); }
     const { grown } = compare(hits, { "features/foo/Tiles.tsx": ["hand-rolled-door-row"] });
-    if (grown.length !== 10) { console.error("self-test FAILED: baseline compare", grown); process.exit(1); }
+    if (grown.length !== 15) { console.error("self-test FAILED: baseline compare", grown); process.exit(1); }
     if (compare(hits, Object.fromEntries(Object.entries(hits))).grown.length) { console.error("self-test FAILED: full baseline should pass"); process.exit(1); }
-    console.log("check-one-source-input self-test: ok (detects 11 copy shapes incl. both reviewer escapes (hand-rolled file+textarea+buttons, bare SourceResolverPanel) and the input_data / raw-source payloads; ignores the canonical folder, field forms, record pickers, filter lists, label maps and prose; baseline gates growth)");
+    console.log("check-one-source-input self-test: ok (detects 16 copy shapes incl. every reviewer escape (hand-rolled file+paste intake with or without the word \"source\", bare SourceResolverPanel) and Source text sent back under any wire field (input_data, document_text, web_search_text, source_content); ignores typed words, scope emitters, generator outputs, non-material uploads by path, the canonical folder, field forms, record pickers, filter lists, label maps and prose; baseline gates growth)");
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 

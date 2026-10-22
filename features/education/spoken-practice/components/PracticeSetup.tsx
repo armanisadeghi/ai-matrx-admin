@@ -299,8 +299,8 @@ export function PracticeSetup({
             { dispatch, store, orgId: await ensureOrgId(undefined) },
             namerFloorOf(read.resolved.sources),
           );
-          const made = practiceSourceFromResolved(read.resolved, read.chosen, read.names);
-          source = made.source ? { ...made.source, title } : null;
+          const made = practiceSourceFromResolved(read.resolved, read.chosen, read.names, title);
+          source = made.source;
           if (!source) {
             toast.error("Your sources have no readable text — continuing ungrounded");
           } else if (made.cut) {
