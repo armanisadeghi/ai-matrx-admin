@@ -369,8 +369,14 @@ function whatsNewFor(body: ShellLayoutBody, isAdmin: boolean): ShellCatalogEntry
   // places the parent with its children). The Memory menu would otherwise be 24 rows of "New:" (2026-10-22).
   const offeredIds = new Set(offered.map((e) => e.id));
   const parentOf = new Map(catalog.map((e) => [e.id, e.parentId]));
+  const addedInById = new Map(catalog.map((e) => [e.id, e.addedIn ?? 1]));
+  // Dismissing (or adding) a NEW menu covers its whole subtree: its children never surface afterwards.
+  const coveredAncestor = (p: string): boolean =>
+    offeredIds.has(p) ||
+    dismissed.has(p) ||
+    (placed.has(p) && (addedInById.get(p) ?? 1) > body.basedOnCatalogVersion);
   const underOffered = (id: string): boolean => {
-    for (let p = parentOf.get(id) ?? null; p !== null; p = parentOf.get(p) ?? null) if (offeredIds.has(p)) return true;
+    for (let p = parentOf.get(id) ?? null; p !== null; p = parentOf.get(p) ?? null) if (coveredAncestor(p)) return true;
     return false;
   };
   return offered.filter((entry) => !underOffered(entry.id));
