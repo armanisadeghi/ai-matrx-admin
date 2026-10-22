@@ -1564,6 +1564,12 @@
 .spaces-entity-body[data-held] > .spaces-entity-foot { margin-top: auto; }
 /* The rows held stay on screen, dimmed, while the next question is read. */
 .spaces-entity-body[data-pending] > :first-child { opacity: 0.5; transition: opacity 120ms ease; }
+/* A built-in source's board, calendar and timeline (CD-VIEW-11): records-ui's own layouts over the block's rows;
+   a board's sub-group bands stack, each with its name and count; the held rows dim while a new question is read. */
+.spaces-entity-boardbody, .spaces-entity-dated { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.spaces-entity-boardbody[data-pending] > :not(.spaces-entity-foot), .spaces-entity-dated[data-pending] > :not(.spaces-entity-foot) { opacity: 0.5; transition: opacity 120ms ease; }
+.spaces-entity-subgroup { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.spaces-entity-subgroup-head { display: flex; align-items: center; gap: 8px; height: 28px; font-weight: 500; font-size: 14px; border-bottom: 1px solid var(--spaces-rule); }
 .spaces-entity-board { display: flex; gap: 12px; overflow-x: auto; padding: 4px 0 8px; }
 .spaces-entity-lane { flex: 0 0 260px; display: flex; flex-direction: column; gap: 6px; }
 .spaces-entity-lanehead { display: flex; align-items: center; gap: 8px; height: 28px; }
