@@ -180,6 +180,8 @@ that is the exit-test surface.
 
 ## Change Log
 
+- 2026-10-22 — **One `GET /runs/waiting` per page.** `discovery/waitingRunsStore.ts` holds the inbox state for every `useWaitingRuns` mount (badge, bell, inbox, org chart): one read in flight, asks during it collapse to one trailing read, hints debounced 400 ms, failures back off 5 s → 60 s and keep the last rows beside the stated error. Was one fetch per mount per reconnect — five 15 s timeouts on one /agents/org-chart load. Guards: `waiting-runs-one-read-per-page.test.tsx`, `waiting-runs-store.test.ts`. Server half: aidream 41c95c6 (the projection stopped reading run `output`, 55 MB per call).
+
 - 2026-10-15 — **Run reads ride through a server restart (MKT-089).** `transport/read-through-restart.ts`: the attach reads (run row + each replay page) retry a failed fetch / timeout / gateway 502-503-504 with backoff for `RESTART_WINDOW_MS` (3 min, the runtime-continuity reconnect contract) — never a permanent "could not read this run" on one release blip; a refusal (400/401/403/404) still fails at once. Every run read enters the error badge on a refusal at once, on a restart only after it lasted the whole window. SSE reconnects with backoff (2 s → 30 s) through the same window instead of giving up after 3 tries; its gateway failures stay out of the badge (`streamSse` `quietOnRestart`).
 
 - `2026-10-09` — Scopes cutover (lane SCOPES-WEB-CONSUMERS): interrupt and served-form kinds use `ContextFieldKind` from `@ai-matrx/records/scopes` (was `ContextValueType`).
