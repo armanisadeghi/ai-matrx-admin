@@ -1647,6 +1647,7 @@
     "display_mode",
     "auto_run",
     "show_pre_execution_gate",
+    "bypass_gate_seconds",
     "keyboard_shortcut",
     "agent_id",
     "agent_version_id",
@@ -1656,7 +1657,7 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "d9983255e259f5bf25ede56760b1390cd322133ec675c4df1285717fa14be304",
+   "sha256": "38659976051d483a3169c8a4d9850fec2c33e5bad6da37de4856f35fbb74b1c4",
    "version": 1
   },
   "shortcut_hub_replace": {
@@ -1671,6 +1672,7 @@
     "display_mode",
     "auto_run",
     "show_pre_execution_gate",
+    "bypass_gate_seconds",
     "keyboard_shortcut",
     "agent_id",
     "agent_version_id",
@@ -1680,7 +1682,7 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "0fff2f1e0a2fba03160398569d64cce9c099e4421b9ffd77992eb8e53f6e6d90",
+   "sha256": "139263e72b5dcfe89ff54e86d93e0d53dc3cbc7cb4b80a066455375ec0bb7984",
    "version": 1
   },
   "shortcut_hub_manual": {
@@ -1695,6 +1697,7 @@
     "display_mode",
     "auto_run",
     "show_pre_execution_gate",
+    "bypass_gate_seconds",
     "keyboard_shortcut",
     "agent_id",
     "agent_version_id",
@@ -1704,7 +1707,7 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "a42de93760fd5df2c75b54a403ca80d9422f41bc8bf7141ad54bf0a9731dec7c",
+   "sha256": "6373c2fe597bdc252950063c8545e9f6bdbb9eb5dbed7c25dc0dd84160320c74",
    "version": 1
   },
   "skill_dispatch_ref": {
