@@ -18,8 +18,8 @@ import { useShellLayoutStore } from "../useShellLayoutStore";
 import { rowLabel } from "./rowDisplay";
 import { addPageToBody, sidebarGroups, sidebarOf, startingBody, type AddPlace, type MenuPageItem } from "./regions";
 import { ShellLayoutMount } from "./ShellLayoutMount";
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The page's own title without the site suffix ("Acme agent | AI Matrx" → "Acme agent"). */
 function documentTitle(): string {
@@ -39,7 +39,7 @@ export function useThisPageItem(fallbackLabel: string): () => MenuPageItem {
 
 /** A favorite (PinButton's item) as a menu item: a record when its address names one. */
 export function itemFromFavorite(fav: { kind: string; label: string; href: string }): MenuPageItem {
-  const last = fav.href.split("?")[0]?.split("/").filter(Boolean).find((seg) => UUID.test(seg));
+  const last = fav.href.split("?")[0]?.split("/").filter(Boolean).find((seg) => isUuidShape(seg));
   return { href: fav.href, label: fav.label, record: fav.kind !== "nav" && last ? { token: fav.kind, id: last } : null };
 }
 

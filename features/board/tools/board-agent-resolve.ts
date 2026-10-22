@@ -8,6 +8,7 @@
  * agents share a name, and never a guess when none match.
  */
 
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 export interface AgentRow {
   id: string;
   name: string | null;
@@ -29,7 +30,6 @@ export type AgentResolution =
   | { ok: true; id: string; name: string | null }
   | { ok: false; error: string };
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CANDIDATES_SHOWN = 5;
 
 const label = (r: AgentRow) =>
@@ -46,7 +46,7 @@ export async function resolveAgentRef(ref: string, lookup: AgentLookup): Promise
     return { ok: false, error: `The agent catalog could not be read: ${e instanceof Error ? e.message : String(e)}` };
   }
 
-  if (UUID.test(wanted)) {
+  if (isUuidShape(wanted)) {
     let row = lookup.byId(wanted);
     if (!row) {
       await lookup.searchServer(wanted).catch(() => []);

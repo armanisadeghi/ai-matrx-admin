@@ -27,11 +27,11 @@ import {
 } from "@/features/make/gallery/publicGallery";
 import { readPublicCatalogue, readTemplatePage, readTemplatePageState } from "@/features/make/gallery/publicCatalogue.server";
 import { SpaceTemplatePublicBody } from "@/features/make/gallery/SpaceTemplatePublicBody";
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 export const revalidate = 60;
 
 /** An organization's own saved template opens here by its id (signed in); any other unknown key is a real 404. */
-const TEMPLATE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const page = await readTemplatePage(decodeURIComponent(slug));
   // An organization's own saved template opens here by its id (signed in) and is never in the public read: its tab says so, it is not "not found".
-  if (!page) return { title: TEMPLATE_ID.test(decodeURIComponent(slug)) ? "Saved template" : "Template not found", robots: { index: false, follow: true } };
+  if (!page) return { title: isUuidShape(decodeURIComponent(slug)) ? "Saved template" : "Template not found", robots: { index: false, follow: true } };
   const { card, spec } = page;
   const path = publicTemplateHref(card);
   const space = page.pack ? card.space : null;
@@ -107,7 +107,7 @@ export default async function PublicTemplatePage({ params, searchParams }: Props
   if (!page) {
     // ADVERSARIAL-2 #12: an unknown address answered 200. Only a template id can be an organization's own
     // saved template (it opens here signed in); anything else is a real 404 with the gallery one click away.
-    if (!TEMPLATE_ID.test(key)) notFound();
+    if (!isUuidShape(key)) notFound();
     return (
       <div className="bg-textured">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-10 sm:px-6">

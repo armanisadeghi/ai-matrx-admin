@@ -15,8 +15,8 @@ import type {
   AssistActionDefinition,
   AssistActionResult,
 } from "../assist-action-types";
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ASSIST_ID = /^[a-z_]{2,40}$/;
 
 export interface BrandAssistRunResult {
@@ -39,7 +39,7 @@ export const brandAssistAction: AssistActionDefinition = {
     if (action.kind !== "brand_assist") {
       return { ok: false, error: "brand_assist: wrong action payload" };
     }
-    if (!UUID.test(action.brandId) || !ASSIST_ID.test(action.assistId)) {
+    if (!isUuidShape(action.brandId) || !ASSIST_ID.test(action.assistId)) {
       return { ok: false, error: "This assist names an unknown brand or job and was not run." };
     }
     const outcome = await ctx.callServer(`/brand-assists/${action.brandId}/run`, {
