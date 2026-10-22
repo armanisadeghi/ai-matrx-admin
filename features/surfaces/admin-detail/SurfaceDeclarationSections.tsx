@@ -61,6 +61,7 @@ import {
 import { parseProbeRecord, probeUrl, type SurfaceProbeRecord } from "@/features/surfaces/utils/probe-record";
 import { probePreviewValues, renderSituation } from "@/features/surfaces/utils/situation-render";
 import { splitRunSupplyKeys } from "@/features/surfaces/utils/run-supply-keys";
+import { SurfaceReceivesSection } from "@/features/surfaces/admin-detail/SurfaceReceivesSection";
 
 const ROOT_SURFACE = "matrx-default/default";
 
@@ -238,6 +239,7 @@ export function SurfaceDeclarationSections({
       <SituationChainSection chain={chain} self={surface.name} probe={probe} labels={labels} />
       {editors}
       <ProbeSection probe={probe} metric={data.metric} labels={labels} />
+      <SurfaceReceivesSection key={surface.name} surfaceName={surface.name} />
       <RunSupplySection supply={data.supply} metric={data.metric} labels={labels} chain={chain} />
       <DeclarationSection surface={surface} chain={chain} declaration={data.declaration} labels={labels} />
       <BindingsSection chain={chain} self={surface.name} intelligence={data.intelligence} roles={data.roles} />
