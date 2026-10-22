@@ -155,11 +155,20 @@ export interface CoveredContent {
  * piece scrolls clear of it.
  * Content inside the floating chrome itself is never counted.
  */
+/**
+ * A popper layer: a menu, popover or listbox panel (the composer's "Model and overrides"). It is
+ * drawn ABOVE the floating chrome, placed by its popper with collision padding, and gone on the
+ * next click — the bottom band is a page's runway rule, so a panel's scroller is never judged by
+ * it (the assists pill beside a 360px menu panel outlined its last switch, 2026-10-21).
+ */
+export const POPPER_LAYER_SELECTOR = "[data-radix-popper-content-wrapper], [data-composer-panel], [role=menu], [role=listbox]";
+
 export function findContentUnderFloatingChrome(
   scroller: Element,
   boxes: FloatingBox[],
 ): CoveredContent | null {
   if (boxes.length === 0) return null;
+  if (scroller !== document.scrollingElement && scroller.closest(POPPER_LAYER_SELECTOR)) return null;
   const view = scroller === document.scrollingElement
     ? { top: 0, bottom: window.innerHeight }
     : scroller.getBoundingClientRect();
