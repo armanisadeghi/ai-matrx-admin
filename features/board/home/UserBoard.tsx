@@ -54,7 +54,7 @@ import { BoardSurface } from "../components/BoardSurface";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { BOARD_SURFACE_NAME } from "@/features/surfaces/manifests/board.manifest";
-import { useBoardStartRun } from "../templates/open-design-build";
+import { useBoardStartRun } from "../templates/board-start";
 import { BoardViewport } from "../components/BoardViewport";
 import { BoardTile, TileLayersContext } from "../components/BoardTile";
 import { BoardFrameView } from "../components/BoardFrameView";
@@ -231,7 +231,7 @@ export function UserBoard({
   // The board's own design tokens: component samples on it draw in them.
   const tokenTables = useTokenTables(board);
   // A design system board (it holds token tables) runs the Conductor: the Agents menu presents its mandate here,
-  // with a Run door (runHere) that opens the job's run window on this board (the run reads board_id from the page).
+  // with a Run door (runHere) on this board; Build with AI starts the same job in the side chat (the board surface is its input).
   useDeclaredSurfaceMandates(
     tokenTables.length
       ? [{ mandateKey: DESIGN_SYSTEM_BUILD_MANDATE, does: "Builds or adapts this design system to a brand, row by row.", surfaceName: BOARD_SURFACE_NAME, runHere: true }]

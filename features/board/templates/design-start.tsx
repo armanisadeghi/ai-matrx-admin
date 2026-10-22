@@ -1,22 +1,41 @@
 "use client";
 
 // THE START OF A BOARD THAT STARTS EMPTY (Arman 2026-10-21, smart-add-brand VISION Part 30): two ways, AI first.
-//   1. Build with AI (default): the board is made empty, then opens with the design-system Conductor's run window
-//      on it (the Agents menu's Run door, `runHere`), the person's own words about their business as the message.
+//   1. Build with AI (default): the board is made empty, then opens with the side chat already holding the
+//      design-system job on the board surface, the person's own words about their business as its first message
+//      (`board-start.ts`, `startShellChatJob`).
 //   2. Start from a style: a short list of the reference-only styles (`listBoardStyles`, never gallery entries);
 //      the chosen one's rows fill the new board (records door inserts), then the AI is offered to adapt it.
-// The choice rides from the gallery to the opened board in this tab only (`sessionStorage`, never the URL).
+// From the press until the board opens the dialog shows the work in place (`progress`): the stages, the current
+// one shimmering. The choice rides from the gallery to the opened board in this tab only (`sessionStorage`).
 
 import { Palette, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@ai-matrx/design-system";
-import { Button, RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { Button, RegionSkeleton, StageSteps } from "@ai-matrx/design-system/controls";
+import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 
 import { listBoardStyles, type BoardStyle } from "./board-packs";
-import type { BoardStartChoice } from "./open-design-build";
+import type { BoardStartChoice } from "./board-start";
+
+/** The work after the press, shown in place until the board opens. `detail` = the maker's own stage line. */
+export type DesignBoardProgress = { mode: "ai" | "style"; step: "board" | "start"; detail?: string | null };
+
+/** The stages a start goes through; pure (tested). */
+export function designBoardStages(mode: "ai" | "style"): { id: string; label: string }[] {
+  return mode === "ai"
+    ? [
+        { id: "board", label: "Making the board" },
+        { id: "start", label: "Starting the design agent" },
+      ]
+    : [
+        { id: "board", label: "Making the board" },
+        { id: "start", label: "Opening the board" },
+      ];
+}
 
 /** Name the board, then start it: Build with AI (default) or Start from a style. */
 export function DesignBoardStartDialog({
@@ -25,12 +44,15 @@ export function DesignBoardStartDialog({
   packKey,
   defaultName,
   onStart,
+  progress = null,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   packKey: string | null;
   defaultName: string;
   onStart: (choice: BoardStartChoice) => void;
+  /** Set from the press until the board opens: the dialog shows the stages instead of the form. */
+  progress?: DesignBoardProgress | null;
 }) {
   const [name, setName] = useState(defaultName);
   const [brief, setBrief] = useState("");
@@ -65,6 +87,27 @@ export function DesignBoardStartDialog({
 
   const named = name.trim();
   const style = styles?.find((s) => s.templateId === picked) ?? null;
+
+  if (progress) {
+    const stages = designBoardStages(progress.mode);
+    const at = Math.max(0, stages.findIndex((st) => st.id === progress.step));
+    const line = progress.step === "board" && progress.detail ? progress.detail : `${stages[at].label}…`;
+    return (
+      // The work cannot be canceled half way: the dialog stays until the board opens.
+      <Dialog open={open} onOpenChange={() => undefined}>
+        <DialogContent className="max-w-lg" data-testid="design-board-start" data-building="">
+          <DialogHeader>
+            <DialogTitle>{named || defaultName}</DialogTitle>
+            <DialogDescription className="sr-only">Your board is being made.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2" role="status" aria-live="polite">
+            <StageSteps steps={stages} current={at} aria-label="Making your board" />
+            <ShimmerText text={line} className="text-sm" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
