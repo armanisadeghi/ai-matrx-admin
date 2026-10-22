@@ -7,7 +7,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DeckCard } from "./DeckCard";
-import { listPublicDecks, suggestDeckEdit } from "../service";
+import { listPublicDecks } from "../service";
 import type { PublicDeck } from "../types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";
@@ -19,8 +19,8 @@ import { EDUCATION_LIBRARY_COMMUNITY_SURFACE_NAME } from "@/features/surfaces/ma
 import { forkSharedResource } from "@/utils/permissions/shareLinks";
 import {
   buildCommunityLibraryScope,
+  deckSuggestionWriteHandler,
   parseCopyDecksValue,
-  parseCreateDeckSuggestionsValue,
 } from "../communitySurface";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
@@ -126,28 +126,13 @@ export function LibraryBrowser({
     refuseSurfaceWrite,
   );
 
-  const suggestionHandlers = collectionWriteHandlers(
-    {
-      plural: "deck_suggestions",
-      singular: "deck suggestion",
-      create: {
-        parse: (value) =>
-          guard(() =>
-            parseCreateDeckSuggestionsValue(value, decks, isSignedIn),
-          ),
-        run: async (plan: { deck: PublicDeck; body: string }) => {
-          await suggestDeckEdit(plan.deck.id, plan.body);
-          return { id: plan.deck.id, name: `Suggestion on ${plan.deck.name}` };
-        },
-        nameOf: (plan: { deck: PublicDeck }) => `suggestion on ${plan.deck.name}`,
-      },
-    },
-    refuseSurfaceWrite,
-  );
-
   const getWriteHandlers = () => ({
     copy_decks: copyHandlers.create_decks,
-    create_deck_suggestions: suggestionHandlers.create_deck_suggestions,
+    create_deck_suggestions: deckSuggestionWriteHandler({
+      decks,
+      isSignedIn,
+      refuse: refuseSurfaceWrite,
+    }),
   });
 
   return (
