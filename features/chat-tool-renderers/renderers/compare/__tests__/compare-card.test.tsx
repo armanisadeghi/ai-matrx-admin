@@ -28,7 +28,7 @@ jest.mock("@/features/comparison/hooks", () => ({
   ] }),
 }));
 jest.mock("@/features/comparison/chat", () => ({ startChatComparison: (...a: unknown[]) => startChatComparison(...a) }));
-jest.mock("@/components/cost/useCostDisplay", () => ({ useSeesDollars: () => false }));
+jest.mock("@/components/cost/useCostDisplay", () => ({ useSeesDollars: () => false, useIsCostAdmin: () => false, useCostDisplay: () => ({ toPoints: (u: number | null | undefined) => (u == null ? null : u * 1000) }) }));
 jest.mock("@/features/organizations/useOrganizationRequired", () => ({
   useOrganizationRequired: () => ({ organizationId: "org-1" }),
 }));
@@ -95,12 +95,12 @@ describe("parseCompare", () => {
 });
 
 describe("no paid run before Confirm", () => {
-  it("an unconfirmed card shows the lineup with its points and Compare, and starts nothing on its own", async () => {
+  it("an unconfirmed card shows the lineup with Compare (the cost behind a door), and starts nothing on its own", async () => {
     followRun.mockRejectedValue(new ComparisonRefusal("not_found", "none"));
     const host = await mount(awaiting);
     expect(confirmButton(host)).not.toBeNull();
     expect(host.textContent).toContain("Acme");
-    expect(host.textContent).toMatch(/60/);
+    expect(host.textContent).not.toMatch(/60 points/);   // the quote prints only behind the Cost door
     expect(startChatComparison).not.toHaveBeenCalled();
   });
 

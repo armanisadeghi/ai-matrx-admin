@@ -22,7 +22,6 @@ import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { CompareLayerInputs } from "@/features/provision-window/CompareLayerInputs";
 
 import { useComparisonKinds, useComparisonOrganizationId } from "./hooks";
@@ -50,6 +49,13 @@ import { Lineup } from "./components/Lineup";
 import { PickList } from "./components/PickList";
 import { ShareButton } from "./public/ShareButton";
 import { RunProgress, type ProgressRowIdentity } from "./components/RunProgress";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  COMPARE_SURFACE_NAME,
+  createCompareScope,
+  parseCompareLineup,
+} from "@/features/surfaces/manifests/compare.manifest";
 
 export function ComparePage() {
   const organizationId = useComparisonOrganizationId();
@@ -106,7 +112,6 @@ const KIND_UI: Record<string, { label: string; icon: React.ReactNode; soonId?: s
 const sentId = (m: LookupMatch) => m.item.url ?? m.item.label ?? m.name;
 
 function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; organizationId: string }) {
-  const seesDollars = useSeesDollars();
   const params = useSearchParams();
   const live = kinds.filter((k) => k.status === "live");
   const [kindKey, setKindKey] = useState<string>(
@@ -332,10 +337,123 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
     };
   }
 
+  // ── Surface: what the workspace shows, and the lineup writes (nothing runs or spends) ──
+  const getScope = () =>
+    createCompareScope({
+      phase,
+      ...(kind ? { compare_kind: kind.key, compare_kind_label: KIND_UI[kind.key]?.label ?? kind.label } : {}),
+      kind_choices: live.map((k) => ({ key: k.key, label: KIND_UI[k.key]?.label ?? k.label })),
+      ask_text: text,
+      ask_mode: mode,
+      near,
+      search_scope: scope,
+      lineup: rows
+        .filter((r) => !isEmptyRow(r))
+        .map((r) => ({
+          name: r.name,
+          city: r.city,
+          website: r.website,
+          state: r.state,
+          ...(r.match ? { matched_name: r.match.name } : {}),
+          ...(r.message ? { message: r.message } : {}),
+        })),
+      ...(discovered
+        ? {
+            found_candidates: discovered.items.map((i) => ({
+              rank: i.rank,
+              name: i.match.name,
+              detail: i.match.detail,
+              in_lineup: inLineup(rows, i.match),
+            })),
+          }
+        : {}),
+      ...(runParam ? { run_id: runParam } : {}),
+      ...(phase === "running"
+        ? { progress: progress.map((p) => ({ label: p.label, stage: p.stageLabel || p.stage, done: p.done, error: p.error })) }
+        : {}),
+      ...(result
+        ? {
+            result_fields: result.fields.map((f) => ({ key: f.key, label: f.label })),
+            result_items: result.items.map((i) => ({
+              rank: i.rank,
+              name: i.name,
+              website: i.website,
+              error: i.error,
+              values: Object.fromEntries(
+                result.fields.filter((f) => i.values[f.key]).map((f) => [f.label, i.values[f.key].display]),
+              ),
+            })),
+            result_notices: result.notices,
+          }
+        : {}),
+      ...(failure ? { failure } : {}),
+    });
+
+  const refuseUnlessBuilding = () => {
+    if (phase !== "build") refuseSurfaceWrite("The page is showing a run or result. Ask the person to start a new comparison first.");
+  };
+
+  const getWriteHandlers = () => ({
+    ask_text: {
+      validate: (value: unknown) => {
+        refuseUnlessBuilding();
+        if (typeof value !== "string") refuseSurfaceWrite("The ask takes a plain string.");
+      },
+      apply: (value: unknown) => {
+        onText(String(value));
+        return { summary: "The ask is set. Nothing was searched or run." };
+      },
+    },
+    near: {
+      validate: (value: unknown) => {
+        refuseUnlessBuilding();
+        if (typeof value !== "string") refuseSurfaceWrite("Near takes a plain string.");
+      },
+      apply: (value: unknown) => {
+        setNear(String(value));
+        return { summary: "Near is set." };
+      },
+    },
+    compare_kind: {
+      validate: (value: unknown) => {
+        refuseUnlessBuilding();
+        if (typeof value !== "string" || !live.some((k) => k.key === value)) {
+          refuseSurfaceWrite(`Use one of: ${live.map((k) => k.key).join(", ")}.`);
+        }
+      },
+      apply: (value: unknown) => {
+        switchKind(String(value));
+        return { summary: `Now comparing ${KIND_UI[String(value)]?.label ?? String(value)}. The lineup is empty.` };
+      },
+    },
+    lineup: {
+      validate: (value: unknown) => {
+        refuseUnlessBuilding();
+        try {
+          parseCompareLineup(value);
+        } catch (err) {
+          refuseSurfaceWrite((err as Error).message);
+        }
+      },
+      apply: (value: unknown) => {
+        const cards = parseCompareLineup(value);
+        setRows(cards.map((c) => newRow({ name: c.name, city: c.city, website: c.website })));
+        setDiscovered(null);
+        return { summary: `${cards.length} cards are in the lineup, each waiting for its lookup. Nothing was compared.`, data: cards };
+      },
+    },
+  });
+
+  const withSurface = (node: React.ReactNode) => (
+    <SurfaceRuntimeProvider surfaceName={COMPARE_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
+      {node}
+    </SurfaceRuntimeProvider>
+  );
+
   if (phase === "result" && result) {
     const savedRunId = params.get("run");
     const confirmRunId = ownRun.current ?? savedRunId;
-    return (
+    return withSurface(
       <>
         <ComparisonView
           result={result}
@@ -360,14 +478,14 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   }
 
   if (phase === "running") {
-    return (
+    return withSurface(
       <RunProgress kind={runKind} kindLabel={runKindInfo?.label ?? "Comparison"} items={progress}
         identities={identities} startedAt={startedAt} recovering={recovering} />
     );
   }
 
   if (phase === "failed") {
-    return (
+    return withSurface(
       <div className="space-y-4">
         <ErrorNotice message={failure ?? "The comparison could not be run."} />
         <div className="flex gap-2">
@@ -378,7 +496,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
     );
   }
 
-  return (
+  return withSurface(
     <div className="space-y-6 pb-8">
       <div className="space-y-4">
         <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">Compare</h1>
@@ -410,7 +528,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
 
       {kind ? (
         <Lineup kind={kind} rows={rows} onRows={setRows} near={near} onNear={setNear}
-          organizationId={organizationId} seesDollars={seesDollars} onCompare={(m) => void compare(m)} />
+          organizationId={organizationId} onCompare={(m) => void compare(m)} />
       ) : null}
     </div>
   );

@@ -13,7 +13,8 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { SettingRow, Switch } from "@ai-matrx/design-system/controls";
-import { formatPoints, formatDurationSeconds } from "@ai-matrx/kit/format";
+import { CostDoor } from "@/components/cost/CostDoor";
+import { formatDurationSeconds } from "@ai-matrx/kit/format";
 
 import type { ComparisonKindInfo, FacetInfo } from "../contract";
 import { facetChoice, onFacetChoice, setFacetChoice } from "../facet-choice";
@@ -46,9 +47,9 @@ export function FacetOptions({ kind, itemCount }: { kind: ComparisonKindInfo; it
           label={f.label}
           line={f.adds.join(" · ")}
         >
-          <span className="type-secondary whitespace-nowrap tabular-nums text-muted-foreground">
-            +{formatPoints(f.points_per_item * n)}
-            {f.typical_seconds ? ` · ~${formatDurationSeconds(f.typical_seconds, { style: "long", abbreviate: true, round: "nearest" })}` : ""}
+          <span className="type-secondary flex items-center gap-1.5 whitespace-nowrap tabular-nums text-muted-foreground">
+            <CostDoor points={f.points_per_item * n} prefix="+" iconOnly />
+            {f.typical_seconds ? `~${formatDurationSeconds(f.typical_seconds, { style: "long", abbreviate: true, round: "nearest" })}` : ""}
           </span>
           <Switch id={`facet-${f.key}`} checked={on.includes(f.key)} onCheckedChange={(v) => toggle(f, v === true)}
             aria-label={`Gather ${f.label}`} />

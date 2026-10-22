@@ -9,7 +9,6 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 
 import { cn } from "@/lib/utils";
-import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { ItemLogo } from "@/features/comparison/components/ItemLogo";
 import { Lineup } from "@/features/comparison/components/Lineup";
@@ -92,7 +91,6 @@ function ProgressList({ rows, found, startedAt }: { rows: ItemProgress[]; found:
 export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendererProps) {
   const data = useMemo(() => parseCompare(entry), [entry]);
   const { organizationId } = useOrganizationRequired();
-  const seesDollars = useSeesDollars();
   const awaiting = data?.status === "awaiting_confirmation";
   const run = useCompareRun({
     runId: awaiting ? data?.runId ?? null : null,
@@ -137,7 +135,7 @@ export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendere
           </p>
         ) : null}
         {run.failure ? <ErrorNotice size="inline" message={run.failure} /> : null}
-        <ChatLineup data={data} organizationId={organizationId ?? ""} seesDollars={seesDollars}
+        <ChatLineup data={data} organizationId={organizationId ?? ""}
           starting={run.phase === "checking"} onStart={run.confirm} />
       </div>
     );
@@ -155,8 +153,8 @@ export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendere
  * city, each matched or offering its nearest real matches), a concept's found list to pick from, the price,
  * and Compare — which starts the run with exactly the cards the person confirmed.
  */
-function ChatLineup({ data, organizationId, seesDollars, starting, onStart }: {
-  data: ParsedCompare; organizationId: string; seesDollars: boolean; starting: boolean;
+function ChatLineup({ data, organizationId, starting, onStart }: {
+  data: ParsedCompare; organizationId: string; starting: boolean;
   onStart: (request: unknown) => void;
 }) {
   const kinds = useComparisonKinds(organizationId || null);
@@ -188,7 +186,7 @@ function ChatLineup({ data, organizationId, seesDollars, starting, onStart }: {
           onClose={() => setFound(null)} />
       ) : null}
       <Lineup kind={kind} rows={rows} onRows={setRows} near={near} onNear={setNear} organizationId={organizationId}
-        seesDollars={seesDollars} onCompare={start} dense starting={starting} />
+        onCompare={start} dense starting={starting} />
     </div>
   );
 }

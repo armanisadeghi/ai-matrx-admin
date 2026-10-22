@@ -102,12 +102,11 @@ describe("the public hero hands the input to sign-up and keeps it", () => {
 });
 
 describe("the landing says what a visitor gets before the click", () => {
-  it("reads the free-run count and says nothing when it is unknown", () => {
+  it("reads the free-run count but the hero never prints it", () => {
     expect(parsePublicPolicy({ guest_free_runs: 3 }).guestFreeRuns).toBe(3);
     expect(parsePublicPolicy({ guest_free_runs: 0 }).guestFreeRuns).toBeNull();
     const { heroNote } = jest.requireActual("../public/CompareHero") as typeof import("../public/CompareHero");
-    expect(heroNote(false, 3)).toBe("3 free comparisons a day, no account");
-    expect(heroNote(true, 3)).toBe("A free account runs it");
-    expect(heroNote(false, null)).toBeNull();
+    expect(heroNote(true)).toBe("A free account runs it");
+    expect(heroNote(false)).toBeNull();   // never an allowance count on a public hero
   });
 });
