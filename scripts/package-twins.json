@@ -1892,6 +1892,14 @@
         {
           "file": "scripts/check-package-imports-resolve.mjs",
           "why": "NOT A RELATIVE TIME: `((Date.now() - t0) / 1000).toFixed(1)` is the guard's own elapsed RUN time printed as \"19.0s\" with no \"ago\" \u2014 a duration, already censused under formatDurationMs with the reason it cannot import kit. The relative-time lane reads `Date.now() - t0` as an epoch age. (Duplicate watch, 2026-10-08.)"
+        },
+        {
+          "file": "features/agent-comparison/modes/smart-add/components/SmartAddRoundPage.tsx",
+          "reason": "NOT A RELATIVE AGE. The matched text is an error banner sentence (\"Today's AI failed 2 steps: ...\"); no timestamp enters it."
+        },
+        {
+          "file": "features/launchpad/widgets/bodies/AgendaWidget.tsx",
+          "reason": "NOT A RELATIVE AGE. A time-of-day label (\"9:30 AM\") plus a \"N today\" count of occurrences; no distance from now."
         }
       ],
       "shapeCensus": [
@@ -1950,6 +1958,14 @@
         {
           "file": "scripts/partition-runway/core.ts",
           "why": "IS the relative-time capability and has not been collapsed yet. The five bodies the tenth review named \u2014 the spend ledger's `staleness`, the dead-ends and lint-debt consoles' split `ageInDays` + \"scanned today\", the provider sync dashboard's `hoursSince` + \"verified today\", and the masterwork panel's `whenDate` \u2014 were collapsed in this session. The rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
+        },
+        {
+          "file": "features/ai-work/components/connections/CodingAppsSection.tsx",
+          "why": "kit output differs: `ago` strips \"Updated \" from `updatedWords`, so the cell reads \"4 min ago\" / \"2 h ago\"; kit's short voice reads \"4m ago\" / \"2h ago\"."
+        },
+        {
+          "file": "features/rich-document/annotations/AnchoredCommentRail.tsx",
+          "why": "kit output differs in ONE case: a comment older than a year prints \"Jul 15\" here and \"Jul 15, 2025\" in kit; every younger age matches with {style:\"short\", suffix:false, minUnit:\"minute\", absoluteAfter:86400000, absolute:\"monthDay\"}."
         }
       ]
     },
