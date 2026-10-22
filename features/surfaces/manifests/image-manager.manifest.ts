@@ -52,10 +52,10 @@ export interface ImageHubLink { href: string; label: string; description: string
 export interface ImageHubSection { title: string; landing: string; links: ImageHubLink[] }
 
 const surfaceSpecific: SurfaceValue[] = [
-  { name: "image_hub_overview", label: "Image hub overview", description: "Compact XML of the landing's Manager and Studio homes and displayed tools with routes and descriptions. Absent on non-landing hub tabs.", valueType: "string", alwaysAvailable: false, typicalCharCount: 4000, inlineUpTo: 4500, group: "hub_location", sortOrder: 140 },
-  { name: "image_hub_sections", label: "Hub sections", description: "Navigation groups rendered on the Images landing, each with its title, home route, and complete link catalog. Absent on other hub tabs.", valueType: "array", alwaysAvailable: false, typicalCharCount: 3000, group: "hub_location", sortOrder: 110 },
-  { name: "image_hub_links", label: "Hub links", description: "Every tool link shown on the landing, with its label, description and route. Absent on other tabs.", valueType: "array", alwaysAvailable: false, typicalCharCount: 2600, group: "hub_location", sortOrder: 120 },
-  { name: "image_hub_link_count", label: "Hub link count", description: "Number of tool links rendered on the landing. Absent on other tabs.", valueType: "number", alwaysAvailable: false, typicalCharCount: 3, group: "hub_location", sortOrder: 130 },
+  { name: "image_hub_overview", label: "Image hub overview", description: "Compact XML of the tools displayed on a landing (the Images landing's Manager and Studio homes, or the Manager landing's tools) with routes and descriptions. Absent on non-landing hub tabs.", valueType: "string", alwaysAvailable: false, typicalCharCount: 4000, inlineUpTo: 4500, group: "hub_location", sortOrder: 140 },
+  { name: "image_hub_sections", label: "Hub sections", description: "Navigation groups rendered on a landing (Images or Manager), each with its title, home route, and complete link catalog. Absent on other hub tabs.", valueType: "array", alwaysAvailable: false, typicalCharCount: 3000, group: "hub_location", sortOrder: 110 },
+  { name: "image_hub_links", label: "Hub links", description: "Every tool link shown on the landing (Images or Manager), with its label, description and route. Absent on other tabs.", valueType: "array", alwaysAvailable: false, typicalCharCount: 2600, group: "hub_location", sortOrder: 120 },
+  { name: "image_hub_link_count", label: "Hub link count", description: "Number of tool links rendered on the landing (Images or Manager). Absent on other tabs.", valueType: "number", alwaysAvailable: false, typicalCharCount: 3, group: "hub_location", sortOrder: 130 },
   {
     name: "image_hub_tab",
     label: "Hub tab",
@@ -100,17 +100,31 @@ export const imageManagerManifest: SurfaceManifest = {
     "The image hub and its tabs (tools, branded, profile photo, public search, studio library).",
   readiness: "partial",
   readinessNote:
-    "Shared image hub tabs remain partial pending their own runtime audits. The /images navigation landing is the images-home child, which preserves this family vocabulary and inherited bindings.",
+    "The /images/manager landing emits image_hub_tab, the displayed tools and open_image_workspace (page-pass 2026-10-22; live probe pending release). The other hub tabs (tools, branded, profile photo, public search, studio library, presets, all-files) still emit nothing and remain partial pending their own passes. The /images navigation landing is the images-home child.",
   label: "Image Manager",
   urlPattern: "/images/manager",
   intro: `<surface_intro>
 You are in the Image Manager: the hub the user moves through to find, upload, brand, and organize images. image_hub_tab tells you which tab they are on; the selection group tells you which images they have picked.
 Images are always identified here by a durable file_id, never by a URL — a URL you were given may already have expired, so resolve bytes from the id.
 The dedicated image workspaces (library, studio, generate, edit, annotate) are separate surfaces with their own richer vocabulary; do not assume their values are available here. The /images navigation landing is the images-home child. This family identity does not claim runtime completeness for every tab.
+On the Manager landing (image_hub_tab "manager") image_hub_links lists the displayed tools; use open_image_workspace with one of their routes to open it. Nothing on the landing creates, edits or deletes images.
 </surface_intro>`,
-  groups,
+  groups: [...groups, { key: "navigation", label: "Navigation", sortOrder: 300 }],
 
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
+  writeTargets: [
+    {
+      name: "open_image_workspace",
+      label: "Open image workspace",
+      description:
+        "Navigates to a tool displayed on the Manager landing. Value is a route string from image_hub_links, e.g. /images/upload. Refuses unknown or external destinations. No image records change.",
+      valueType: "string",
+      mode: "ui",
+      applyPolicy: "auto",
+      group: "navigation",
+      sortOrder: 100,
+    },
+  ],
 };
 
 /** Type-safe payload helper — required keys mirror `alwaysAvailable: true`. */
