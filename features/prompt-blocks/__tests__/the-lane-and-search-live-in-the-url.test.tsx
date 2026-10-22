@@ -20,11 +20,9 @@ jest.mock("../blocksCache", () => ({ loadBlocks: () => Promise.resolve(BLOCKS), 
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "u1", useAppDispatch: () => () => undefined }));
 jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hooks"));
 jest.mock("@/features/shell/components/header/RouteHeader", () => ({ __esModule: true, default: () => null }));
-jest.mock("@/lib/entity-list/RowSelectionBar", () => ({
-  RowSelectionBar: () => null,
-  useRowSelection: () => ({ rows: [], has: () => false, toggle: () => undefined, toggleAll: () => undefined, setMany: () => undefined, clear: () => undefined, allSelected: false, someSelected: false }),
+jest.mock("@/lib/entity-list/useTableBulkSelection", () => ({
+  useTableBulkSelection: () => ({ selection: undefined, selectedIds: [], clear: () => undefined, select: () => undefined }),
 }));
-jest.mock("@/lib/entity-list/standardBulkActions", () => ({ standardBulkActionsFor: () => [] }));
 jest.mock("next/navigation", () => ({ useSearchParams: () => null }));
 
 import { PromptBlockLibrary } from "../components/PromptBlockLibrary";
