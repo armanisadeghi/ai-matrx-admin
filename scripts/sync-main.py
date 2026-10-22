@@ -103,6 +103,23 @@ def die(msg):
     sys.exit(1)
 
 
+RELEASE_SCREAM = os.path.expanduser("~/code/matrx-ship/scripts/release-scream.py")
+
+
+def release_scream(check, detail, title=None):
+    """On the release path (MATRX_RELEASE_PATH=1) mail the ship-all lanes through release-scream; never fails."""
+    if os.environ.get("MATRX_RELEASE_PATH") != "1" or not os.path.isfile(RELEASE_SCREAM):
+        return
+    cmd = ["python3", RELEASE_SCREAM, "--repo", "matrx-frontend", "--where", "sync-main", "--check", check, "--detail", detail]
+    try:
+        if title and "--title" in subprocess.run(["python3", RELEASE_SCREAM, "--help"], capture_output=True,
+                                                 text=True, timeout=30).stdout:
+            cmd += ["--title", title]
+        subprocess.run(cmd, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
 INDEX_LOCK_WAIT_S = 900  # a `git commit` holds index.lock for its WHOLE pre-commit hook; in this
 # checkout that hook (node guards + matrx-ship lint-guard) was measured holding it 4.5+ min
 # (2026-10-18 17:58). 10 s of retries lost that race twice the same evening ("git add -A failed:
@@ -2189,6 +2206,11 @@ def baseline_health(d, tool, lock_name, rels):
 # 30 min, ship-all 2026-10-15_15-14-02: api 0.1.24->0.1.26, then 0.1.26->0.1.24) recycled the one
 # dev server twice and dropped every agent's browser test. Now the trial runs in a scratch copy of
 # the folder outside the checkout; the checkout's node_modules is touched only to ADOPT, once, forward.
+def snapshot_and_warning_lines(out):
+    """The `release snapshot:` line and every WARNING line of a sync:matrx-packages run, in order."""
+    return [l.strip() for l in (out or "").splitlines() if "release snapshot:" in l or "WARNING" in l.upper()]
+
+
 def update_matrx_packages():
     """Step 4: run every "sync:matrx-packages" script in a trial tree, adopt what may ship. Returns a line."""
     dirs = []
@@ -2226,6 +2248,10 @@ def update_matrx_packages():
                 ok, out = r.returncode == 0, (r.stdout + r.stderr).strip()
             except (OSError, subprocess.TimeoutExpired) as e:
                 ok, out = False, str(e)
+            # Always log the snapshot instant and every WARNING, success or not (2026-10-22: a successful
+            # run dropped its output, so `release snapshot: npm latest as of …` and its warnings never showed).
+            for line in snapshot_and_warning_lines(out):
+                say("  " + line)
             moved_files = [rel for rel in rels if os.path.basename(rel) in PACKAGE_FILES
                            and _read(os.path.join(tmp, rel)) != _read(os.path.join(d, rel))]
             if not ok:
@@ -2379,11 +2405,11 @@ def guard_lockfiles():
 # `check-matrx-packages.mjs --duplicates` refuses two versions of one package. A lockfile like that
 # also fails `pnpm install` for every agent who pulls it. Right before every push, HEAD's
 # pnpm-lock.yaml is judged exactly as a fresh install sees it (scripts/lockfile-twins.sh: no
-# node_modules), twins are remedied lockfile-only and committed, and a lockfile this push would
-# newly break is not pushed. Twins already on origin/main are announced, never a stop: refusing
-# this push would not remove them, and release.sh's own twins guard keeps them out of a release.
+# node_modules), twins are remedied lockfile-only and committed, and twins that cannot be remedied
+# are reported loudly and pushed (2026-10-22: the postinstall only warns since 547292dfb2). Twins
+# already on origin/main are announced, never a stop.
 def guard_twins():
-    """Remedy @ai-matrx twins in HEAD's root pnpm-lock.yaml; die only when this push adds them."""
+    """Remedy @ai-matrx twins in HEAD's root pnpm-lock.yaml; an unremediable twin is reported, never a hold."""
     helper = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lockfile-twins.sh")
     if not os.path.isfile(helper) or not blob_at("HEAD", "pnpm-lock.yaml"):
         return False
@@ -2426,10 +2452,15 @@ def guard_twins():
         say("LOCKFILE TWINS already on %s/%s, not remedied here (%s). release.sh remedies them inside the "
             "release; fix main with `pnpm sync:matrx-packages` and commit the lockfile." % (REMOTE, BRANCH, err.splitlines()[-1] if err else "?"))
         return False
-    die("NOT PUSHED — pnpm-lock.yaml in HEAD holds two versions of one @ai-matrx package, which fails "
-        "`pnpm install` everywhere (the postinstall check-matrx-packages.mjs --duplicates) and every "
-        "Vercel build, and it could not be remedied:\n%s\nRun `pnpm sync:matrx-packages`, commit the "
-        "lockfile, and sync again. Everything else is committed locally; nothing is lost." % err)
+    # 2026-10-22: no longer a hold. Since 547292dfb2 Vercel's postinstall (and release.sh) only WARN on
+    # twins, and the pre-commit refuses them at write time; holding the push here held every agent's
+    # local commits for a lockfile that no longer stops a build. Report loudly and push.
+    detail = ("pnpm-lock.yaml in HEAD holds two versions of one @ai-matrx package and could not be "
+              "remedied:\n%s\nPushed anyway (Vercel's postinstall only warns). Fix: `pnpm sync:matrx-packages`, "
+              "commit the lockfile." % err)
+    say("LOCKFILE TWINS PUSHED — " + detail)
+    release_scream("lockfile twins (unremedied, pushed)", detail, title="LOCKFILE TWINS — PUSHED ANYWAY")
+    return False
 
 
 # ── THE FROZEN-LOCKFILE GUARD (2026-10-17) ──────────────────────────────────────────────────

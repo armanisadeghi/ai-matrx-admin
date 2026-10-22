@@ -5,8 +5,9 @@ Run: python3 scripts/test_sync_main_twins_guard.py
 2026-10-08, v0.4.3061: pnpm-lock.yaml on main held @ai-matrx/design-system 0.86.26 AND 0.86.27;
 `check-matrx-packages.mjs --duplicates` (the postinstall) exited 1 on every Vercel project.
 guard_twins() runs right before the push: twins are remedied lockfile-only and committed; twins
-this push would newly add and that cannot be remedied stop the push; twins already on origin are
-announced (release.sh keeps them out of a release). A stub `pnpm` stands in for the registry.
+that cannot be remedied are reported loudly and PUSHED (2026-10-22: since 547292dfb2 the postinstall
+only warns, so a hold here only held every agent's commits); twins already on origin are announced.
+A stub `pnpm` stands in for the registry. SYNC_MAIN_UNDER_TEST points at another sync-main.py blob.
 """
 import importlib.util
 import os
@@ -15,7 +16,7 @@ import tempfile
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-spec = importlib.util.spec_from_file_location("sync_main", os.path.join(HERE, "sync-main.py"))
+spec = importlib.util.spec_from_file_location("sync_main", os.environ.get("SYNC_MAIN_UNDER_TEST") or os.path.join(HERE, "sync-main.py"))
 sm = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sm)
 
@@ -89,11 +90,25 @@ class TwinsGuard(unittest.TestCase):
         self.assertIn("twins guard", sh(self.repo, "git", "log", "-1", "--format=%s"))
         self.assertEqual(sh(self.repo, "git", "status", "--porcelain").strip(), "")
 
-    def test_unremediable_twins_this_push_adds_stop_the_push(self):
+    def test_unremediable_twins_this_push_adds_are_reported_and_pushed(self):
         self.commit_lock(lock("0.86.26", "0.86.27"))
-        with self.assertRaises(SystemExit):
-            sm.guard_twins()
+        said = []
+        real_say, sm.say = sm.say, said.append
+        try:
+            self.assertFalse(sm.guard_twins())   # never SystemExit: the push goes ahead
+        finally:
+            sm.say = real_say
         self.assertEqual(self.count(), 2)
+        self.assertTrue(any("LOCKFILE TWINS PUSHED" in l for l in said), said)
+
+    def test_snapshot_and_warning_lines_are_kept_from_a_successful_run(self):
+        out = ("[sync:matrx-packages] release snapshot: npm latest as of 2026-10-22T07:00:00Z\n"
+               "Progress: resolved 1200\n"
+               "[check-matrx-packages] WARNING: @ai-matrx/chat 0.8.307 published after the snapshot\n"
+               "Done in 12s\n")
+        self.assertEqual(sm.snapshot_and_warning_lines(out), [
+            "[sync:matrx-packages] release snapshot: npm latest as of 2026-10-22T07:00:00Z",
+            "[check-matrx-packages] WARNING: @ai-matrx/chat 0.8.307 published after the snapshot"])
 
     def test_twins_already_on_origin_are_announced_not_a_stop(self):
         self.commit_lock(lock("0.86.26", "0.86.27"))
