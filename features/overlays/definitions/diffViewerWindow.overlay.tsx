@@ -17,6 +17,7 @@ import type { DiffEngine, DiffView } from "@ai-matrx/diff/react";
 import type { OverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
 import { hookController } from "./hook-controller";
+import { mintInstanceId } from "@ai-matrx/summon/boot";
 
 const OVERLAY_ID = "diffViewerWindow" as const;
 const opener = createOpener<object>(OVERLAY_ID);
@@ -43,7 +44,7 @@ export interface DiffViewerWindowHandle {
 export function createDiffViewerWindowOpener(store: AppStore) {
   const dispatch = store.dispatch;
   return (opts: OpenDiffViewerWindowOptions): DiffViewerWindowHandle => {
-    const instanceId = opts.instanceId ?? `${OVERLAY_ID}-${Date.now()}`;
+    const instanceId = opts.instanceId ?? mintInstanceId(OVERLAY_ID);
     opener.open(dispatch, { instanceId, data: {
           windowInstanceId: instanceId,
           original: opts.original,

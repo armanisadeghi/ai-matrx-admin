@@ -21,6 +21,8 @@
  * window gets this, whatever event produced it.
  */
 
+import { readPanelsParam } from "@ai-matrx/summon/url";
+
 export type NoticeLinkKind =
   /** `null` link — the row opens as "read" only. */
   | "none"
@@ -41,14 +43,10 @@ export function isSafeExternalLink(link: string): boolean {
   return /^https?:\/\//i.test(link);
 }
 
-/** The raw `?panels=` value of an internal link, or null when it has none. */
+/** The raw `?panels=` value of an internal link, or null when it has none (summon's one reader). */
 export function panelsParamOf(link: string): string | null {
   if (!isInternalLink(link)) return null;
-  const q = link.indexOf("?");
-  if (q < 0) return null;
-  const hash = link.indexOf("#", q);
-  const query = link.slice(q + 1, hash < 0 ? undefined : hash);
-  const value = new URLSearchParams(query).get("panels");
+  const value = readPanelsParam(link);
   return value && value.trim() ? value : null;
 }
 

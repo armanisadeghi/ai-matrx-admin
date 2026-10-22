@@ -73,7 +73,7 @@ import { invalidateReferenceLabel } from "@/features/matrx-envelope/referenceRes
 import { BackendApiError } from "@ai-matrx/api";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/boot";
 import { selectActiveOrganizationName } from "@/features/scopes/redux/selectors/active-context";
 import { selectOrganizations } from "@/features/scopes/redux/selectors/tree";
 import { readDirectiveRecord } from "@/features/matrx-envelope/directiveRecordRow";
@@ -413,9 +413,7 @@ function openItem(options: DirectiveOpenItemOptions): void {
     });
     return;
   }
-  const instanceId = `directive-item-${Date.now()}-${Math.random()
-    .toString(36)
-    .slice(2, 8)}`;
+  const instanceId = mintInstanceId(DIRECTIVE_ITEM_OVERLAY_ID);
   store.dispatch(
     openOverlay({
       overlayId: DIRECTIVE_ITEM_OVERLAY_ID,

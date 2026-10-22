@@ -166,6 +166,7 @@ import {
 } from "@/components/official/proFieldControlFit";
 import { motion } from "motion/react";
 import { useOpenDiffViewerWindow } from "@ai-matrx/chat/host/window-openers";
+import { listMediaDevices } from "@ai-matrx/browser-audio/core";
 import { useMicField } from "@/features/audio/hooks/useMicField";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -815,7 +816,7 @@ export const ProTextarea = React.forwardRef<
             return;
           }
           // Just check if we can enumerate devices, don't actually request permission yet
-          await navigator.mediaDevices.enumerateDevices();
+          await listMediaDevices();
           setIsAudioAvailable(true);
         } catch (error) {
           console.warn("Audio not available:", error);

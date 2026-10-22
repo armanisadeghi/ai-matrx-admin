@@ -36,7 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import AudioOutputBlock from "@/components/mardown-display/blocks/audio/AudioOutputBlock";
 import { useAudioRecovery } from "../providers/AudioRecoveryProvider";
 import type { SafetyRecord } from "@ai-matrx/browser-audio/core";
@@ -119,7 +119,7 @@ function RecoveryItem({ item, onDismiss, onClose }: RecoveryItemProps) {
     dispatch(
       openOverlay({
         overlayId: "saveToNotes",
-        instanceId: crypto.randomUUID(),
+        instanceId: mintInstanceId("saveToNotes"),
         data: {
           initialContent: localText.trim(),
           bucketTag: "Voice Notes",

@@ -37,6 +37,7 @@ import {
   Timer,
   Wrench,
   Workflow,
+  Waypoints,
   Captions,
   Share2,
   LayoutDashboard,
@@ -117,6 +118,7 @@ const ICONS: Record<CanvasContentType, LucideIcon> = {
   sandbox: Terminal,
   topical_map: Brain,
   kind_value: Database,
+  visual_map: Waypoints,
 };
 
 /**

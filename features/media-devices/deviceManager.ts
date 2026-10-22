@@ -50,6 +50,7 @@ import {
   setPreferredInputDeviceId,
   notifyMicPermissionRevoked,
   listMediaDevices,
+  watchMediaDevices,
 } from "@ai-matrx/browser-audio/core";
 import { setPreferredOutputDeviceId } from "@ai-matrx/media/speech";
 
@@ -524,9 +525,10 @@ export function startDeviceListeners(): void {
   if (m.listenersWired) return;
   if (typeof navigator === "undefined" || !navigator.mediaDevices) return;
   m.listenersWired = true;
-  navigator.mediaDevices.addEventListener("devicechange", () => {
-    void listDevices();
-  });
+  // The package's one `devicechange` watcher. The manager keeps its own ordered, coalesced read
+  // (generation + queue), so a change just asks it to re-list; the watcher's own read is the
+  // trigger, not the source of truth.
+  watchMediaDevices(() => void listDevices(), { skipInitial: true });
   // Seed the permission states + an initial (possibly label-less) enumeration
   // so pickers can show device counts before the user grants.
   void queryPermission();

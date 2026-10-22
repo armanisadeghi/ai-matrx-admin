@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay, closeOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, closeOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createContentEditorCallbackGroup,
   type ContentEditorWindowHandlers,
@@ -104,7 +104,7 @@ export function useOpenContentEditorWindow() {
     (options: AnyOpenContentEditorOptions): ContentEditorWindowHandle => {
       const overlayId = OVERLAY_BY_VARIANT[options.variant];
       const instanceId =
-        options.windowInstanceId ?? `${overlayId}-${Date.now()}`;
+        options.windowInstanceId ?? mintInstanceId(overlayId);
 
       const { callbackGroupId, dispose } =
         createContentEditorCallbackGroup(options);

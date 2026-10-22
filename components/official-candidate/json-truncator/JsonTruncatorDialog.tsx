@@ -14,7 +14,11 @@
  *   />
  */
 
-import { WindowPanel, type WindowPanelProps } from "@ai-matrx/summon/window";
+import {
+  WindowPanel,
+  type WindowPanelCloseBinding,
+  type WindowPanelProps,
+} from "@ai-matrx/summon/window";
 import {
   JsonTruncator,
   type JsonTruncatorProps,
@@ -35,9 +39,12 @@ type InlineWindowPanelProps = Extract<
 export interface JsonTruncatorDialogProps
   extends
     JsonTruncatorProps,
-    Omit<InlineWindowPanelProps, "children" | "title" | "id" | "onClose"> {
+    Omit<InlineWindowPanelProps, "children" | "title" | "id" | "onClose" | "overlayId"> {
   isOpen?: boolean;
   onClose: () => void;
+  /** The overlay this window renders for. Bound, summon remembers it: back in place after a
+   *  same-tab reload, and its last rect per device. Omit for a page-local window. */
+  overlayId?: string;
   title?: string;
   id?: string;
   /** Which tab to show when `initialValue` is non-empty. Empty input always
@@ -56,15 +63,19 @@ export function JsonTruncatorDialog({
   defaultArrayKeep,
   defaultMaxDepth,
   id = "json-truncator-window",
+  overlayId,
   ...windowProps
 }: JsonTruncatorDialogProps) {
   if (isOpen === false) return null;
+  const closeBinding: WindowPanelCloseBinding = overlayId
+    ? { overlayId, onClose }
+    : { onClose };
 
   return (
     <WindowPanel
       id={id}
       title={title}
-      onClose={onClose}
+      {...closeBinding}
       width={800}
       height={600}
       minWidth={400}

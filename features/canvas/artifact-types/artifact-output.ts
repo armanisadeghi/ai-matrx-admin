@@ -111,6 +111,8 @@ export const ARTIFACT_OUTPUT: Record<CanvasContentType, ArtifactOutputDef> = {
   // The map workspace is React Flow too: the whole graph, when the graph view is showing.
   topical_map: { surface: "dom", ...GRAPH_OUTPUT },
   kind_value: DOM,
+  // An engine-checked diagram: inline SVG in the same document, so DOM print and capture draw it as seen.
+  visual_map: DOM,
 };
 
 export function artifactOutputDef(type: CanvasContentType): ArtifactOutputDef {

@@ -16,6 +16,7 @@
 
 import { lazy, Suspense, useSyncExternalStore } from "react";
 import type { WindowHandle, WindowOpenOptions, WindowPort } from "@ai-matrx/alchemy/ports";
+import { mintInstanceId } from "@ai-matrx/summon/boot";
 
 export type OpenWindow = {
   handle: WindowHandle;
@@ -39,7 +40,6 @@ export function createAlchemyWindowController(options: {
   focusPanel: (panelId: string) => void;
 }): AlchemyWindowController {
   let open: readonly OpenWindow[] = [];
-  let sequence = 0;
   const listeners = new Set<() => void>();
   const emit = () => listeners.forEach((listener) => listener());
 
@@ -62,7 +62,7 @@ export function createAlchemyWindowController(options: {
         options.focusPanel(alchemyPanelId(existing.handle.instanceId));
         return existing.handle;
       }
-      const instanceId = opts.instanceId ?? `session-${Date.now().toString(36)}-${++sequence}`;
+      const instanceId = opts.instanceId ?? mintInstanceId("alchemy-prepare");
       const handle: WindowHandle = {
         instanceId,
         close: () => close(instanceId),
