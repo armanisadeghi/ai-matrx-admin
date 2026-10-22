@@ -155,6 +155,7 @@ function LaunchpadSlot({
       controls={controls}
       editing={Boolean(editing)}
       previewing={previewing}
+      phoneBodyPx={type.phoneBodyPx?.(widget.config)}
     >
       {hydrated ? (
         <Body config={widget.config} editing={Boolean(editing)} capacity={capacity} />

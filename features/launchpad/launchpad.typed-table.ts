@@ -30,13 +30,22 @@ export const launchpadTable = defineTypedTable({
   },
 });
 
-/** `org` = the organization's own launchpad; `person:<uuid>` = one person's. */
-export type LaunchpadOwner = "org" | `person:${string}`;
+/** `org` = the organization's own launchpad (every member sees it); `person:<uuid>` = one person's. */
+export type LaunchpadPadOwner = "org" | `person:${string}`;
+/** A launchpad saved as a template: the organization's (`template:org`) or one person's (`template:person:<uuid>`). */
+export type LaunchpadTemplateOwner = "template:org" | `template:person:${string}`;
+export type LaunchpadOwner = LaunchpadPadOwner | LaunchpadTemplateOwner;
 
-export const personOwner = (userId: string): LaunchpadOwner => `person:${userId}`;
+export const personOwner = (userId: string): LaunchpadPadOwner => `person:${userId}`;
+
+/** Where a launchpad saved as a template goes: the organization's templates, or the person's own. */
+export const templateOwner = (owner: LaunchpadPadOwner): LaunchpadTemplateOwner => `template:${owner}`;
+
+/** The organization owns it (its launchpad or its template): only an owner or admin changes it. */
+export const isOrganizationOwned = (owner: string | null | undefined): boolean => owner === "org" || owner === "template:org";
 
 export function launchpadSlot(owner: LaunchpadOwner, key: string): LaunchpadSlot {
-  return owner === "org" ? `org:${key}` : `${owner}:${key}`;
+  return `${owner}:${key}` as LaunchpadSlot;
 }
 
 /** A launchpad key: lower-case words joined by dashes, 1–40 characters (it is the bookmarkable URL). */
@@ -57,25 +66,54 @@ export function keyFromTitle(title: string, taken: readonly string[]): string {
 }
 
 /**
- * The launchpad rows a person sees, newest first, one per key and owner: their own (every organization;
- * newest wins per key) plus the `org` launchpads of `activeOrg`. Pure — the browser read
- * (`useLaunchpads`) and the server read (`server/readLaunchpads.ts`) pick with this one rule.
+ * The launchpad rows a person sees, newest first: their own (every organization; newest wins per key) plus the
+ * `org` launchpads of EVERY organization they read (the active organization is never a list filter; one per
+ * organization and key). `activeOrg` only decides which organization's launchpad a shared key opens
+ * (`useLaunchpads().byKey`). Pure — the browser read (`useLaunchpads`) and the server read
+ * (`server/readLaunchpads.ts`, `{ organizations: false }`: its own only) pick with this one rule. Template rows
+ * are never launchpads.
  */
 export function visibleLaunchpadRows<R extends { key: string; owner?: string | null; saved_at?: string | null; _organizationId: string }>(
   rows: readonly R[],
   userId: string | null,
-  activeOrg: string | null,
+  _activeOrg: string | null,
+  options: { organizations?: boolean } = {},
 ): R[] {
-  const mineOwner = userId ? personOwner(userId) : null;
+  if (!userId) return [];
+  const mineOwner = personOwner(userId);
+  const withOrganizations = options.organizations ?? true;
+  return pickNewest(rows, (r) => {
+    if (r.owner === mineOwner) return `p:${r.key}`;
+    if (withOrganizations && r.owner === "org") return `o:${r._organizationId}:${r.key}`;
+    return null;
+  });
+}
+
+/**
+ * The launchpads saved as templates that a person sees, newest first: their own (every organization; newest wins
+ * per key) and every organization's they read (one per organization and key). The template gallery lists these
+ * beside the role templates.
+ */
+export function visibleTemplateRows<R extends { key: string; owner?: string | null; saved_at?: string | null; _organizationId: string }>(
+  rows: readonly R[],
+  userId: string | null,
+): R[] {
+  const mine = userId ? templateOwner(personOwner(userId)) : null;
+  return pickNewest(rows, (r) => {
+    if (mine !== null && r.owner === mine) return `p:${r.key}`;
+    if (r.owner === "template:org") return `o:${r._organizationId}:${r.key}`;
+    return null;
+  });
+}
+
+/** Rows newest first, one per identity (`null` = not shown). */
+function pickNewest<R extends { saved_at?: string | null }>(rows: readonly R[], identity: (r: R) => string | null): R[] {
   const newestFirst = [...rows].sort((a, b) => (b.saved_at ?? "").localeCompare(a.saved_at ?? ""));
   const seen = new Set<string>();
   const picked: R[] = [];
   for (const r of newestFirst) {
-    const isMine = mineOwner !== null && r.owner === mineOwner;
-    const isOrg = r.owner === "org" && activeOrg !== null && r._organizationId === activeOrg;
-    if (!isMine && !isOrg) continue;
-    const id = `${isMine ? "p" : "o"}:${r.key}`;
-    if (seen.has(id)) continue;
+    const id = identity(r);
+    if (id === null || seen.has(id)) continue;
     seen.add(id);
     picked.push(r);
   }

@@ -22,15 +22,22 @@ import type { HeaderButton, HeaderControlId, ShellNode } from "./contract";
 /**
  * The catalog's version. Bump it (and add the new ids to `CATALOG_ADDED_IN` at the new number)
  * whenever destinations are added that a customized layout should be offered in What's new.
+ * Enforced: features/shell/__tests__/nav-ids.test.ts fails on a menu or tile id that is neither in the
+ * version-1 list (`nav-ids.catalog-v1.json`) nor in `CATALOG_ADDED_IN`, and on a version left unbumped.
  */
-export const SHELL_CATALOG_VERSION = 1;
+export const SHELL_CATALOG_VERSION = 2;
 
 /**
  * The catalog version each destination arrived in, for ids added after version 1. Absent = 1
  * (present at the start). A layout reviewed against an older version is offered the newer ids
  * in What's new; they are never injected into its tree (PLAN.md §5.5).
  */
-export const CATALOG_ADDED_IN: Readonly<Record<string, number>> = {};
+export const CATALOG_ADDED_IN: Readonly<Record<string, number>> = {
+  // 2026-10-19, after the catalog froze at version 1 (nav-ids.known.json 363 → 366).
+  "account.authenticator": 2,
+  "data.library": 2,
+  "web.search-tools": 2,
+};
 
 /** `destination` opens a page; `group` holds a menu (its href is its landing); `action` creates or opens a window. */
 export type ShellCatalogEntryKind = "destination" | "group" | "action";

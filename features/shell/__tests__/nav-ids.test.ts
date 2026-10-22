@@ -23,9 +23,12 @@ import {
   type ShellNavItem,
 } from "../constants/nav-data";
 import { RETIRED_NAV_IDS } from "../shell-layout/retired-nav-ids";
+import { CATALOG_ADDED_IN, SHELL_CATALOG_VERSION } from "../shell-layout/catalog";
 import { TOOLS_GRID_TILES } from "@/features/window-panels/tools-grid/toolsGridTiles";
 
 const KNOWN_PATH = join(__dirname, "nav-ids.known.json");
+/** Every menu and Tools-grid tile id when the catalog froze at version 1 (2026-10-19, 7c41321c3). Never edited. */
+const CATALOG_V1_PATH = join(__dirname, "nav-ids.catalog-v1.json");
 const ID_SHAPE = /^[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 
 type Node = ShellNavItem | ShellNavChild;
@@ -116,5 +119,35 @@ describe("every nav node has a permanent id", () => {
         .map((child) => `ai-work ${child.id}`),
     ];
     expect(strays).toEqual([]);
+  });
+});
+
+describe("a destination added after the catalog froze is offered in What's new", () => {
+  // Without a CATALOG_ADDED_IN row a new id never reaches anyone whose menu is customized: an explicit
+  // sidebar does not grow, and What's new compares `addedIn` to the body's `basedOnCatalogVersion`.
+  // Three ids shipped that way on 2026-10-19 (audit 2026-10-22 #3).
+  const v1 = new Set(JSON.parse(readFileSync(CATALOG_V1_PATH, "utf8")) as string[]);
+  const tileIds = TOOLS_GRID_TILES.map((t) => t.id);
+
+  it("every menu or tile id newer than version 1 has a CATALOG_ADDED_IN row", () => {
+    const missing = [...menuIds, ...tileIds].filter((id) => !v1.has(id) && !Object.hasOwn(CATALOG_ADDED_IN, id));
+    expect(missing).toEqual([]);
+  });
+
+  it("every CATALOG_ADDED_IN row names a live id at a version above 1 and no higher than SHELL_CATALOG_VERSION", () => {
+    const wrong = Object.entries(CATALOG_ADDED_IN).flatMap(([id, version]) => [
+      ...(!menuIds.has(id) && !tileIds.includes(id) && !Object.hasOwn(RETIRED_NAV_IDS, id) ? [`${id} is not in the catalog`] : []),
+      ...(v1.has(id) ? [`${id} was already in version 1`] : []),
+      ...(!Number.isInteger(version) || version < 2 || version > SHELL_CATALOG_VERSION ? [`${id} → ${version}`] : []),
+    ]);
+    expect(wrong).toEqual([]);
+  });
+
+  it("SHELL_CATALOG_VERSION was bumped to the newest CATALOG_ADDED_IN version", () => {
+    expect(SHELL_CATALOG_VERSION).toBe(Math.max(1, ...Object.values(CATALOG_ADDED_IN)));
+  });
+
+  it("the version-1 list is frozen (only ever read): 363 menu ids + 87 tiles", () => {
+    expect(v1.size).toBe(450);
   });
 });

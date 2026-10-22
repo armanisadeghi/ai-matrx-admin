@@ -34,12 +34,15 @@ import type {
 } from "./contract";
 import {
   buildShellCatalog,
+  defaultDockTree,
   defaultHeaderButtons,
+  defaultSidebarTree,
   getCatalogEntry,
   getCatalogNavNode,
   type ShellCatalogEntry,
 } from "./catalog";
 import { resolveRetiredNavId } from "./retired-nav-ids";
+import { EDIT_SIDEBAR_HREF } from "./addPagesHref";
 import { isShellLookId, STANDARD_SHELL_LOOK, type ShellLookId } from "./looks";
 
 /**
@@ -86,6 +89,11 @@ export interface ResolvedShellLayout {
   source: ShellLayoutSource;
   sidebar: ResolvedNavItem[];
   dock: ResolvedNavItem[];
+  /**
+   * The winning body carries its own Dock. The phone dock is hidden on every route by default (shell.css
+   * §13); a person (or organization) who customized it gets it shown (`data-show-dock` on `.shell-root`).
+   */
+  customDock: boolean;
   header: ResolvedHeaderButton[];
   /** Where sign-in lands; null = the platform default. `shellLandingHref` turns it into a path. */
   landing: ShellLanding | null;
@@ -105,8 +113,6 @@ export interface ResolvedShellLayout {
 
 const LAUNCHPAD_ICON: ShellIconName = "LayoutGrid";
 const RECORD_ICON: ShellIconName = "FileText";
-/** The add row of an empty group: runs the `edit-sidebar` action; the anchor never navigates. */
-const EDIT_SIDEBAR_HREF = "#shell.edit-sidebar";
 
 /** The page a launchpad key opens. */
 export function launchpadHref(key: string): string {
@@ -240,7 +246,7 @@ function resolveNode(
       // pages (the editor, in place). Until 2026-10-19 an empty group was dropped from render, so a saved
       // "QA Group" showed in the editor and nowhere else.
       if (children.length === 0) {
-        const base = { id: node.id, label: node.label, href: USER_LAUNCHPAD_PATH, iconName: node.icon };
+        const base = { id: node.id, label: node.label, href: EDIT_SIDEBAR_HREF, iconName: node.icon };
         const add: ResolvedNavChild = { id: `${node.id}.add`, label: "Add pages…", href: EDIT_SIDEBAR_HREF, iconName: "Plus", action: "edit-sidebar" };
         return top ? { ...base, section: "primary", children: [add] } : { ...base, children: [add] };
       }
@@ -348,10 +354,12 @@ function collectRefs(nodes: readonly ShellNode[] | undefined, into: Set<string>)
 
 function whatsNewFor(body: ShellLayoutBody, isAdmin: boolean): ShellCatalogEntry[] {
   const dismissed = new Set(body.dismissedNew ?? []);
+  // "Placed" = what the person SEES: a region the body does not carry shows its default (which grows
+  // with the catalog on its own), so nothing already showing there is offered as new.
   const placed = new Set<string>();
-  collectRefs(body.sidebar, placed);
-  collectRefs(body.dock, placed);
-  for (const button of body.header ?? []) if (button.kind === "nav") placed.add(button.ref);
+  collectRefs(body.sidebar ?? defaultSidebarTree(), placed);
+  collectRefs(body.dock ?? defaultDockTree(), placed);
+  for (const button of body.header ?? defaultHeaderButtons()) if (button.kind === "nav") placed.add(button.ref);
   return buildShellCatalog({ isAdmin }).filter(
     (entry) =>
       (entry.addedIn ?? 1) > body.basedOnCatalogVersion && !dismissed.has(entry.id) && !placed.has(entry.id),
@@ -367,6 +375,7 @@ function defaultLayout(source: ShellLayoutSource): ResolvedShellLayout {
     source,
     sidebar: primaryNavItems,
     dock: dockItems,
+    customDock: false,
     header: defaultHeader(),
     landing: null,
     look: null,
@@ -374,6 +383,11 @@ function defaultLayout(source: ShellLayoutSource): ResolvedShellLayout {
     whatsNew: [],
     problems: [],
   };
+}
+
+/** The winning body carries its own Dock (shown on phones only then). */
+export function bodyShowsDock(body: ShellLayoutBody | null): boolean {
+  return body?.dock !== undefined;
 }
 
 /** The look a winning body names; null = standard. */
@@ -407,6 +421,7 @@ export function resolveShellLayout({
     source,
     sidebar: body.sidebar ? resolveTopNodes(body.sidebar, "sidebar", walk, true) : primaryNavItems,
     dock: body.dock ? resolveTopNodes(body.dock, "dock", walk, false) : dockItems,
+    customDock: body.dock !== undefined,
     header: body.header ? resolveHeader(body.header, walk) : defaultHeader(),
     landing: body.landing ?? null,
     look: bodyShellLook(body),

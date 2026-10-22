@@ -9,6 +9,8 @@
 //      predict it).
 //   5. The Look: the server stamped `data-shell-look` on `.shell-root` for the first frame; a save, the
 //      editor's live preview or the Standard view switch changes it here, in place (no reload).
+//   7. The Dock: a body that carries its own Dock shows the phone dock (`data-show-dock` on `.shell-root`,
+//      stamped by the server for the first frame); a save, preview or reset turns it on or off in place.
 //   6. The accent: the server stamped the design system's `data-matrx-accent` + tokens on `.shell-root`;
 //      changes land here in place, and the same stamp is mirrored onto <html> so portaled menus,
 //      dialogs and toasts (outside `.shell-root`) wear it too. Portals only open after hydration, so the
@@ -27,7 +29,7 @@ import { holdsShellLayout, initialShellLayoutState, shellLayoutOrganizationChang
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB } from "./knob";
-import { selectShellAccent, selectShellLook } from "./useResolvedShellLayout";
+import { selectShellAccent, selectShellCustomDock, selectShellLook } from "./useResolvedShellLayout";
 import { ACCENT_ATTRIBUTE, ACCENT_PROPERTIES, accentAttributes } from "@ai-matrx/design-system/accents";
 import type { ShellAccentRef } from "./contract";
 
@@ -112,6 +114,15 @@ export default function ShellLayoutSync() {
     if (look && root.dataset.shellLook !== look) root.dataset.shellLook = look;
     if (!look && root.dataset.shellLook !== undefined) delete root.dataset.shellLook;
   }, [enabled, look]);
+
+  const customDock = useAppSelector(selectShellCustomDock);
+  useEffect(() => {
+    if (!enabled) return;
+    const root = document.querySelector<HTMLElement>(".shell-root");
+    if (!root) return;
+    if (customDock && root.dataset.showDock === undefined) root.dataset.showDock = "";
+    if (!customDock && root.dataset.showDock !== undefined) delete root.dataset.showDock;
+  }, [enabled, customDock]);
 
   const accent = useAppSelector(selectShellAccent);
   useEffect(() => {
