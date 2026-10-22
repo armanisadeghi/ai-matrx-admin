@@ -37,6 +37,16 @@ export async function applyEnhance(
     });
     return { fileId: r.file_id, previewUrl: r.primary_url };
   }
+  if (mode === "clean") {
+    // Text-first cleanup: divides out shadows and uneven lighting, paper → white.
+    const r = await applyEdit({
+      source_id: sourceFileId,
+      op: "document_clean",
+      params: { mode: "gray" },
+      output: OUTPUT,
+    });
+    return { fileId: r.file_id, previewUrl: r.primary_url };
+  }
   const gray = await applyEdit({
     source_id: sourceFileId,
     op: "grayscale",
@@ -56,6 +66,7 @@ export async function applyEnhance(
 
 export const ENHANCE_LABELS: Record<ScanEnhanceMode, string> = {
   auto: "Auto",
+  clean: "Clean",
   grayscale: "Grayscale",
   bw: "B&W",
 };

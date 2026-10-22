@@ -80,7 +80,8 @@ export function PersonFoundStage({
               </span>
               {/* The bio's line is reserved from the first frame, so it lands without moving anything. */}
               <p className="min-h-6 truncate text-base text-muted-foreground" data-testid="welcome-found-bio">
-                {cards.bio?.text ?? ""}
+                {/* Their confirmed company leads the line (the picked card showed it). */}
+                {[cards.work, cards.bio?.text].filter(Boolean).join(" · ")}
               </p>
             </div>
           </div>
@@ -125,7 +126,9 @@ export function PersonFoundStage({
                   >
                     <AccountPicture account={a} size="size-10" />
                     <span className="flex min-w-0 flex-col">
-                      <span className="truncate text-lg font-semibold leading-tight text-foreground">{handleOf(a)}</span>
+                      <span className="text-lg font-semibold text-foreground">
+                        <FitText text={handleOf(a)} />
+                      </span>
                       <span className="text-sm text-muted-foreground">
                         {a.followers != null ? `${formatCount(a.followers, { style: "compact" })} followers` : platformLabel(a.platform)}
                       </span>

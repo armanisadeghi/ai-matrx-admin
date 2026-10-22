@@ -455,6 +455,26 @@ describe("camera-stream-manager", () => {
     expect(a.getTrackSummary()).toBeNull();
   });
 
+  test("torch: reported only when the track has one, applied as an advanced constraint", async () => {
+    const mgr = await loadManager();
+    const plain = await mgr.acquireCameraLease({ profile: "720p", facingMode: "user" });
+    expect(plain.supportsTorch()).toBe(false);
+    await expect(plain.setTorch(true)).rejects.toThrow(/no torch/);
+    plain.release();
+
+    const torchTrack = new FakeMediaStreamTrack("video", {
+      settings: { width: 1280, height: 720 },
+      capabilities: { width: { max: 3840 }, torch: true } as MediaTrackCapabilities,
+    });
+    getUserMedia.mockImplementationOnce(async () => mint([torchTrack]));
+    const lit = await mgr.acquireCameraLease({ profile: "720p", facingMode: "environment" });
+    expect(lit.supportsTorch()).toBe(true);
+    await lit.setTorch(true);
+    expect(torchTrack.getConstraints()).toEqual({ advanced: [{ torch: true }] });
+    lit.release();
+    expect(lit.supportsTorch()).toBe(false);
+  });
+
   test("shouldCombineMicPrompt: only 'prompt'/'unknown' fold the mic into the camera call", async () => {
     const mgr = await loadManager();
     expect(mgr.shouldCombineMicPrompt("prompt")).toBe(true);

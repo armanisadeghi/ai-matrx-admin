@@ -1,0 +1,278 @@
+{
+ "searched_name": "Thomas Frank",
+ "run_id": "04d96a39-2f83-4c58-931b-aa316bbc4392",
+ "node": "person_anchor_extract",
+ "evidence": [
+  {
+   "key": "social:linkedin:thomas-frank-8026a916",
+   "url": "https://uk.linkedin.com/in/thomas-frank-8026a916",
+   "hits": [
+    {
+     "rank": 8,
+     "query": "\"Thomas Frank\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Thomas Frank",
+   "value": "https://uk.linkedin.com/in/thomas-frank-8026a916",
+   "anchor": {
+    "kind": "account",
+    "score": 3.8,
+    "reasons": [
+     "named exactly \"Thomas Frank\"",
+     "found by 1 result, best rank 8",
+     "a personal LinkedIn profile"
+    ],
+    "bio_line": "********* ** *** ******** ************ *** *** ** ****** ***** *** *** ***** **** ** * ****** **** ** *** **** ******************** ** *** ***** *** *** *** ** ",
+    "location": "London Area, United Kingdom",
+    "followers": 2461,
+    "display_name": "Thomas Frank",
+    "person_profile": true
+   },
+   "handle": "thomas-frank-8026a916",
+   "source": {
+    "url": "https://uk.linkedin.com/in/thomas-frank-8026a916",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "linkedin profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:linkedin:handle:thomas-frank-8026a916"
+   ],
+   "snippet": "1 billion members | Manage your professional identity. Build and engage with your professional network. Access knowledge, insights and opportunities.",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": null,
+   "followers": 2461,
+   "image_url": "https://static.licdn.com/aero-v1/sc/h/bgaqk7x4ntjz0wg67d8u723eb",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "eae745e5-057c-4580-b5ae-499274f47daf",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:linkedin:tomfrankly",
+   "url": "https://www.linkedin.com/in/tomfrankly",
+   "hits": [
+    {
+     "rank": 5,
+     "query": "\"Thomas Frank\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Thomas Frank",
+   "value": "https://www.linkedin.com/in/tomfrankly",
+   "anchor": {
+    "kind": "account",
+    "score": 4.1,
+    "reasons": [
+     "named exactly \"Thomas Frank\"",
+     "found by 1 result, best rank 5",
+     "a personal LinkedIn profile"
+    ],
+    "bio_line": "I'm an educator and software developer focused on helping ambitious folks stay organized\u2026",
+    "location": "Des Moines, Iowa, United States",
+    "followers": 3437,
+    "display_name": "Thomas Frank",
+    "person_profile": true
+   },
+   "handle": "tomfrankly",
+   "source": {
+    "url": "https://www.linkedin.com/in/tomfrankly",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "linkedin profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:linkedin:handle:tomfrankly"
+   ],
+   "snippet": "I'm an educator and software developer focused on helping ambitious folks stay organized\u2026 \u00b7 Experience: Flylighter \u00b7 Education: Iowa State University \u00b7 Location: Des Moines \u00b7 500+ connections on LinkedIn. Es un privilegio poder decir que personas como Paula Gonz\u00e1lez Ram\u00edrez y Mateo Bermudez, con quienes empec\u00e9 trabajando, hoy considero mis mejores amigos. Y conocer a referentes que admiro como son",
+   "platform": "linkedin",
+   "verified": null,
+   "certainty": null,
+   "followers": 3437,
+   "image_url": "https://media.licdn.com/dms/image/v2/C4E03AQE_qmUKCbuJiQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1529958556287?e=2147483647&v=beta&t=A-idCzA4dKO5x4sy1sEXovahTc-aRFdweSZGXC3nm1s",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "d553dac2-ab63-4723-9041-1afbc1c1961b",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:youtube:thomasfrankexplains",
+   "url": "http://www.youtube.com/@ThomasFrankExplains",
+   "hits": [
+    {
+     "rank": 3,
+     "query": "\"Thomas Frank\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Thomas Frank Explains",
+   "value": "http://www.youtube.com/@ThomasFrankExplains",
+   "anchor": {
+    "kind": "account",
+    "score": 3.3,
+    "reasons": [
+     "names \"Thomas Frank\"",
+     "found by 1 result, best rank 3"
+    ],
+    "bio_line": "Notion tutorials and other deep dives into productivity tools with Thomas Frank.",
+    "location": "United States",
+    "display_name": "Thomas Frank Explains",
+    "person_profile": false
+   },
+   "handle": "ThomasFrankExplains",
+   "source": {
+    "url": "http://www.youtube.com/@ThomasFrankExplains",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "youtube profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:youtube:ucd_wbvzbg1ubhe8j8mil5ng"
+   ],
+   "snippet": "Notion tutorials and other deep dives into productivity tools with Thomas Frank.",
+   "platform": "youtube",
+   "verified": true,
+   "certainty": null,
+   "followers": 301000,
+   "image_url": "https://yt3.googleusercontent.com/WAXbGANixqwpdjvtpUBCLtSwIr6IjEPpmRClw8jstjmQMcBF9AKsVPdhC0T49OcLr9xCEPviuLg=s800-c-k-c0x00ffffff-no-rj",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "600390b1-d12d-4833-85d3-ff2c81061b3b",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:youtube:thomasfrank",
+   "url": "http://www.youtube.com/@Thomasfrank",
+   "hits": [
+    {
+     "rank": 1,
+     "query": "\"Thomas Frank\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    },
+    {
+     "rank": 2,
+     "query": "\"Thomas Frank\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    },
+    {
+     "rank": 10,
+     "query": "\"Thomas Frank\"",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Thomas Frank",
+   "value": "http://www.youtube.com/@Thomasfrank",
+   "anchor": {
+    "kind": "account",
+    "score": 4.75,
+    "reasons": [
+     "named exactly \"Thomas Frank\"",
+     "found by 3 results, best rank 1"
+    ],
+    "bio_line": "I make videos that help you be more productive - whether you're in high school, college, university, or the real world. That includes study tips to help you lea",
+    "location": "United States",
+    "display_name": "Thomas Frank",
+    "person_profile": false
+   },
+   "handle": "Thomasfrank",
+   "source": {
+    "url": "http://www.youtube.com/@Thomasfrank",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "youtube profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:youtube:ucg-knty7avnigxyebqvmbaq"
+   ],
+   "snippet": "I make videos that help you be more productive - whether you're in high school, college, university, or the real world. That includes study tips to help you learn faster and ace your exams, advice on destroying procrastination, reading and ...",
+   "platform": "youtube",
+   "verified": true,
+   "certainty": null,
+   "followers": 3010000,
+   "image_url": "https://yt3.googleusercontent.com/ytc/AIdro_nIr5PB90HA3Uoa6w6PNkbMDZVVINovFpKb5hbHd7JwG0nP=s800-c-k-c0x00ffffff-no-rj",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "f07dd011-7abb-4265-89ff-f518eb161d60",
+   "raw_results": [],
+   "certainty_reasons": []
+  },
+  {
+   "key": "social:instagram:tomfrankly",
+   "url": "https://www.instagram.com/tomfrankly/",
+   "hits": [
+    {
+     "rank": 4,
+     "query": "\"Thomas Frank\" (site:instagram.com OR site:linkedin.com/in OR site:youtube.com OR site:tiktok.com)",
+     "engine": "brave",
+     "endpoint": "web"
+    }
+   ],
+   "field": "social",
+   "label": "Thomas Frank",
+   "value": "https://www.instagram.com/tomfrankly/",
+   "anchor": {
+    "kind": "account",
+    "score": 3.7,
+    "reasons": [
+     "named exactly \"Thomas Frank\"",
+     "found by 1 result, best rank 4"
+    ],
+    "bio_line": "Video creator focused on productivity, learning, and Notion. Trying to become more capable every day.",
+    "followers": 102089,
+    "display_name": "Thomas Frank",
+    "person_profile": false
+   },
+   "handle": "tomfrankly",
+   "source": {
+    "url": "https://www.instagram.com/tomfrankly/",
+    "kind": "social_profile",
+    "node": "person_anchor_extract",
+    "where": "instagram profile"
+   },
+   "engines": [
+    "brave"
+   ],
+   "same_as": [
+    "social:instagram:3483780"
+   ],
+   "snippet": "104K seguidores 263 seguidos, 675 publicaciones - Thomas Frank (@tomfrankly) en Instagram: \"Video creator focused on productivity, learning, and Notion. Trying to become more capable every day. \ud83d\udc47Newest video, Notion templates, and more:\"",
+   "platform": "instagram",
+   "verified": false,
+   "certainty": null,
+   "followers": 102089,
+   "image_url": "https://scontent-ord5-1.cdninstagram.com/v/t51.2885-19/35616912_2244656428908975_6613207019643994112_n.jpg?_nc_cat=101&ig_cache_key=GJB4HwKvgRbNgPkHAAAAAAC-1MZbbkULAAAB0j-ccb7-5&ccb=7-5&_nc_sid=669407&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=Pt6HTHkflLgQ7kNvwGuA5vm&_nc_oc=AdoiCELgKdFJ-fLxR4GAIp5n9thUOeZMV7oc0KWJzlzsr3noZ1-VFrSUdK0eSpfUBuE&_nc_zt=24&_nc_ht=scontent-ord5-1.cdninstagram.com&_nc_ss=78a8c&oh=00_AQNzeLQ2bSt2ZzWj5c4a8m0NijqlGv44-a-FY0psN_5NMA&oe=6ADF5B24",
+   "site_kind": null,
+   "confidence": 0.97,
+   "profile_id": "17a1ddbf-f3d6-485c-9a6e-773f1437d9b8",
+   "raw_results": [],
+   "certainty_reasons": []
+  }
+ ]
+}

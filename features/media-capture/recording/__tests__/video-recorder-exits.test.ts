@@ -114,6 +114,8 @@ function makeLease(tracks: FakeMediaStreamTrack[]): CameraLease {
     id: "lease-1",
     stream: new FakeMediaStream(tracks),
     getTrackSummary: () => null,
+    supportsTorch: () => false,
+    setTorch: () => Promise.resolve(),
     on: () => () => undefined,
     release: () => undefined,
   } satisfies CameraLease;

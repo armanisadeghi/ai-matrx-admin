@@ -17,6 +17,9 @@
  * object URL. Filmstrip thumbs open a full-screen preview (stay in capture
  * mode) so blurry shots can be re-taken immediately.
  *
+ * Flash: when the camera exposes a torch (Android Chrome; most iOS/desktop
+ * cameras do not), a toggle keeps the light on while shooting.
+ *
  * When getUserMedia is unavailable (permission denied, in-app webview), the
  * fallback button opens the OS camera via `<input capture="environment">` —
  * the raw file is passed through byte-identical (the scan pipeline handles
@@ -30,7 +33,7 @@ import React, {
   useState,
   useSyncExternalStore,
 } from "react";
-import { Camera as CameraIcon, SwitchCamera, Trash2, X } from "lucide-react";
+import { Camera as CameraIcon, SwitchCamera, Trash2, X, Zap, ZapOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -74,7 +77,9 @@ export function CaptureView({
   const [notSupported, setNotSupported] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [deviceId, setDeviceId] = useState<string | null>(null);
-  const [flash, setFlash] = useState(false);
+  const [shutterFlash, setShutterFlash] = useState(false);
+  const [torchAvailable, setTorchAvailable] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
   const [previewShot, setPreviewShot] = useState<CaptureShot | null>(null);
 
   const leaseRef = useRef<CameraLease | null>(null);
@@ -138,6 +143,32 @@ export function CaptureView({
 
   const cameraBlocked = notSupported || permissionDenied;
 
+  // Torch is a property of the live track: re-check on every new stream and
+  // re-apply the person's choice (a camera switch or reconfigure drops it).
+  useEffect(() => {
+    const lease = leaseRef.current;
+    const available = Boolean(stream && lease?.supportsTorch());
+    setTorchAvailable(available);
+    if (!available || !lease || !torchOn) return;
+    lease.setTorch(true).catch((err: unknown) => {
+      console.error("[pdf-scanner] torch re-apply failed", err);
+      setTorchOn(false);
+    });
+  }, [stream, torchOn]);
+
+  const toggleTorch = useCallback(() => {
+    const lease = leaseRef.current;
+    if (!lease) return;
+    const next = !torchOn;
+    lease
+      .setTorch(next)
+      .then(() => setTorchOn(next))
+      .catch((err: unknown) => {
+        console.error("[pdf-scanner] torch toggle failed", err);
+        setTorchAvailable(false);
+      });
+  }, [torchOn]);
+
   const switchCamera = useCallback(() => {
     const cams = getMediaDevicesSnapshot().cameras;
     if (cams.length < 2) return;
@@ -168,8 +199,8 @@ export function CaptureView({
     })
       .then((result) => {
         onCapture(result.blob);
-        setFlash(true);
-        window.setTimeout(() => setFlash(false), 120);
+        setShutterFlash(true);
+        window.setTimeout(() => setShutterFlash(false), 120);
       })
       .catch((err: unknown) => {
         console.error("[pdf-scanner] shutter capture failed", err);
@@ -192,7 +223,7 @@ export function CaptureView({
     <div className="fixed inset-0 z-50 flex flex-col bg-black">
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <CameraPreview stream={stream} framing="full-frame" videoRef={videoRef} />
-        {flash && <div className="absolute inset-0 z-20 bg-white/70" />}
+        {shutterFlash && <div className="absolute inset-0 z-20 bg-white/70" />}
         {cameraBlocked && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/80 px-8 text-center">
             <p className="text-sm text-white/90">
@@ -242,13 +273,22 @@ export function CaptureView({
           </div>
         )}
         <div className="flex items-center justify-between py-3">
-          <div className="w-16">
+          <div className="flex w-24 items-center gap-1">
             {numberOfCameras > 1 && !cameraBlocked && (
               <Button
                 icon={<SwitchCamera />}
                 variant="quiet"
                 onClick={switchCamera}
                 aria-label="Switch camera"
+              />
+            )}
+            {torchAvailable && !cameraBlocked && (
+              <Button
+                icon={torchOn ? <Zap /> : <ZapOff />}
+                variant="quiet"
+                onClick={toggleTorch}
+                aria-label={torchOn ? "Turn flash off" : "Turn flash on"}
+                aria-pressed={torchOn}
               />
             )}
           </div>
@@ -264,7 +304,7 @@ export function CaptureView({
           >
             <span className="block h-14 w-14 rounded-full bg-white" />
           </button>
-          <div className="flex w-16 justify-end">
+          <div className="flex w-24 justify-end">
             <Button
               variant="primary"
               onClick={onDone}

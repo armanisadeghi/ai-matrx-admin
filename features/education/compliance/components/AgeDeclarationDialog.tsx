@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { Button } from "@ai-matrx/design-system";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import type { AgeBand } from "../types";
 
 /** Which caller opened it — drives copy only, never the write path. */
@@ -128,56 +129,50 @@ export function useAgeDeclarationContent({
       </>
     );
 
+  // The choices are the ONE UI system's controls (design-system/controls), never the legacy Button's `outline`:
+  // its accent hover hid the "I'm under 18" label on the sign-up welcome (live 2026-10-21).
+  const spin = <Loader2 aria-hidden className="animate-spin" />;
   const choices =
     step === "minor_band" ? (
       <div className="flex w-full flex-col gap-2">
         <div className="flex flex-col gap-2 sm:flex-row">
           {MINOR_BANDS.map((b) => (
-            <Button
+            <ControlButton
               key={b.value}
               variant="outline"
               className="flex-1"
               disabled={busy}
+              icon={saving === b.value ? spin : undefined}
               onClick={() => onPick(b.value)}
             >
-              {saving === b.value ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
               {b.label}
-            </Button>
+            </ControlButton>
           ))}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="self-start text-muted-foreground"
+        <ControlButton
+          variant="quiet"
+          className="self-start"
           disabled={busy}
+          icon={<ArrowLeft aria-hidden />}
           onClick={() => setStep("over_under_18")}
         >
-          <ArrowLeft className="mr-1 h-4 w-4" />
           Back
-        </Button>
+        </ControlButton>
       </div>
     ) : (
       <div className="flex w-full flex-col gap-2 sm:flex-row">
-        <Button
+        <ControlButton
+          variant="primary"
           className="flex-1"
           disabled={busy}
+          icon={saving === "adult" ? spin : undefined}
           onClick={() => onPick("adult")}
         >
-          {saving === "adult" ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
           I&apos;m 18 or older
-        </Button>
-        <Button
-          variant="outline"
-          className="flex-1"
-          disabled={busy}
-          onClick={() => setStep("minor_band")}
-        >
+        </ControlButton>
+        <ControlButton variant="outline" className="flex-1" disabled={busy} onClick={() => setStep("minor_band")} data-testid="age-under-18">
           I&apos;m under 18
-        </Button>
+        </ControlButton>
       </div>
     );
 

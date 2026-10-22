@@ -56,7 +56,7 @@ The 13 enforced invariants live in [docs/media-capture-plan.md](../../docs/media
 
 `runtime/camera-stream-manager.ts` — framework-free singleton, the ONE legal `getUserMedia({video})` call site (ESLint `cameraGetUserMediaChokepointBan` in `eslint.config.mjs` enforces; legal exceptions carry an inline justified disable). The mic twin of `features/audio/micStream.ts`, minus keepalive:
 
-- `acquireCameraLease({deviceId?, facingMode?, profile})` → ref-counted `CameraLease` (`id`, live `stream` getter, `getTrackSummary()` requested/capability/effective via `summarizeTrackState`, `on("reconfigured")`, `release()`).
+- `acquireCameraLease({deviceId?, facingMode?, profile})` → ref-counted `CameraLease` (`id`, live `stream` getter, `getTrackSummary()` requested/capability/effective via `summarizeTrackState`, `on("reconfigured")`, `supportsTorch()` / `setTorch(on)` (phone flashlight on the shared track; holders re-apply after "reconfigured"), `release()`).
 - **Compatibility policy:** equal deviceId+facingMode+profile share the stream. Incompatible acquire: no pin → reacquire at the new spec, stop old tracks, fire `"reconfigured"` to every holder with the new stream; pinned → reject with typed `CameraBusyError` (carries `pinOwner`). Never a silent wrong-spec stream.
 - `pinForRecording(leaseId, ownerLabel)` / `unpin()` — pin blocks incompatible acquires; releasing the pinned lease auto-unpins.
 - **Camera stops IMMEDIATELY on last release** — no keepalive, no boot prompt.

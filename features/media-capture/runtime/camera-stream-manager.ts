@@ -121,6 +121,13 @@ export interface CameraLease {
   /** Requested vs capability vs effective settings for the live video track
    *  (null once the lease is released or the stream died). */
   getTrackSummary(): TrackStateSummary | null;
+  /** True when the live video track exposes a torch (phone flashlight).
+   *  Chrome on Android reports it; iOS Safari and most desktops do not. */
+  supportsTorch(): boolean;
+  /** Turn the torch on/off. Shared track, so it lights for every holder; it
+   *  goes off when the camera stops. Re-apply after "reconfigured". Rejects
+   *  when the track has no torch. */
+  setTorch(on: boolean): Promise<void>;
   /** Subscribe to lease events ("reconfigured"). Returns an unsubscribe fn. */
   on(event: CameraLeaseEvent, listener: CameraLeaseListener): () => void;
   /** Release this hold. When the LAST lease releases, the camera stops
@@ -604,6 +611,25 @@ export async function acquireCameraLease(
         capabilities,
         track.getSettings(),
       );
+    },
+    supportsTorch(): boolean {
+      if (lease.released || !streamIsLive(m.stream)) return false;
+      const track = m.stream.getVideoTracks()[0];
+      if (!track || typeof track.getCapabilities !== "function") return false;
+      // `torch` is in the Image Capture spec, not yet in lib.dom's typings.
+      return (track.getCapabilities() as { torch?: boolean }).torch === true;
+    },
+    async setTorch(on: boolean): Promise<void> {
+      if (lease.released || !streamIsLive(m.stream)) {
+        throw new Error("[cameraStream] setTorch: no live stream.");
+      }
+      const track = m.stream.getVideoTracks()[0];
+      if (!track || !publicLease.supportsTorch()) {
+        throw new Error("[cameraStream] setTorch: this camera has no torch.");
+      }
+      await track.applyConstraints({
+        advanced: [{ torch: on } as MediaTrackConstraintSet],
+      });
     },
     on(event: CameraLeaseEvent, listener: CameraLeaseListener): () => void {
       // Only "reconfigured" exists today; the event arg keeps the surface
