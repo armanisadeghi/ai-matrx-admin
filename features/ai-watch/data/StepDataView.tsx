@@ -48,7 +48,7 @@ export function StepDataView({ step }: { step: NodeOutcomeRow }) {
       {error ? <ErrorNotice title="The step's output could not be read" message={error} /> : null}
       {stepError ? <ErrorNotice title="The step failed" message={stepError} /> : null}
       {capture && capture.raw.length ? (
-        capture.raw.map((e, i) => <RawEntryView key={i} entry={e} />)
+        capture.raw.map((e, i) => <RawEntryView key={i} entry={e} organizationId={step.organization_id} />)
       ) : (
         <DataPane tier="raw" title="What came back from outside" size="size unknown" open>
           <div className="text-muted-foreground">

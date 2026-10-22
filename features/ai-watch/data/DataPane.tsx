@@ -27,14 +27,21 @@ export interface DataPaneProps {
   open?: boolean;
   /** One short line under the title (where it came from). */
   note?: string | null;
+  /** Told when the person opens or closes the pane (a stored answer loads on first open). */
+  onToggle?: (open: boolean) => void;
 }
 
-export function DataPane({ tier, title, size, value, children, open = false, note }: DataPaneProps) {
+export function DataPane({ tier, title, size, value, children, open = false, note, onToggle }: DataPaneProps) {
   const { copyText } = useClipboard({ notify: copyNotify });
   const verbatim = typeof value === "string";
   const text = value === undefined ? null : verbatim ? (value as string) : JSON.stringify(value, null, 2);
   return (
-    <details open={open} className="rounded border border-border" data-ai-watch-tier={tier}>
+    <details
+      open={open}
+      className="rounded border border-border"
+      data-ai-watch-tier={tier}
+      onToggle={onToggle ? (e) => onToggle(e.currentTarget.open) : undefined}
+    >
       <summary className="flex select-none items-center gap-2 px-2 py-1">
         <span
           className={cn(

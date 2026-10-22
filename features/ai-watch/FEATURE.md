@@ -70,8 +70,10 @@ lands with the package adoption.
 **Data — the three tiers (2026-10-22)** — `data/`: every step's exact data in labelled panes
 (`DataPane`, the ONE place a value is shown; tier + size in every title). Per tool call of the run
 (`RunDataSection`, `chat.tool_call` by `user_request_id`, read direct): **RAW** from the server's
-capture index `metadata.raw_capture` (inline bytes, a stored `run-captures` file opened in the file
-preview window, or "Not kept — why"; a row recorded before capture says so), a web read's **page as
+capture index `metadata.raw_capture` (inline bytes; a stored `run-captures` `.raw.gz` fetched on first
+open in the row's organization and gunzipped in the browser — `features/files/utils/gunzip.ts` — shown
+inline as JSON laid out or exact bytes, a very large answer showing its first `RAW_PREVIEW_CHARS` with
+the count and "Show all"; or "Not kept — why"; a row recorded before capture says so), a web read's **page as
 fetched** (`pages[].processed_document_id` → `docproc.processed_documents.original_file_id`), the
 **cut trail** (`cutLine`), **SENT TO MODEL** = the `tool_result` block with the call id in every later
 iteration's provider request (`sentToModel`: Anthropic, OpenAI Responses, chat-completions, Gemini),
@@ -97,6 +99,9 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
 - `__tests__/raw-data-tiers.test.ts` — a recorded web read (`chat.tool_call` b8393cef) and its next
   request's `tool_result`: SENT per provider shape, the capture index, the cut trail, page originals,
   rail steps. Guard: `pnpm check:ai-watch` also fails a Data pane without a literal tier.
+- `__tests__/raw-stored-answer-decodes.test.ts` — the recorded ScrapeCreators Instagram profile answer
+  (151 KB) gzipped as the sink files it: decodes to the exact bytes, lays out as JSON, says how much of
+  a large answer is shown and expands to all of it.
 - `__tests__/continuation-turn-frame.test.ts` — the recorded `applets.build` fix round's frame.
 - Package: `every-request-creation-binds-its-identity.test.ts`, `watch-ai-identity-is-per-request.test.ts`
   (aidream `apps/shared/chat`); server: `aidream/services/mandates/tests/test_watch_frame.py`,
@@ -105,6 +110,9 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
 ---
 
 ## Change Log
+
+- **2026-10-22 (c)** — A stored raw answer (over 16 KB, kept as `.raw.gz`) shows decoded inline
+  instead of a door to a binary file preview; large answers show a counted first part and "Show all".
 
 - **2026-10-22 (b)** — The Watch AI and Workflow run windows are `ephemeral` (never restored on reload; the page's run ids still survive in `sessionStorage`). `callAgentStart` / `callConversationContinue` / `callConversationForkAndRun` (`lib/api/run-helpers.ts`) now adopt their stream, so the reply composer, debrief and assignment demo are watchable (`check:ai-watch` green).
 - **2026-10-22** — Raw data (phase 1): the Data section (RAW · SENT TO MODEL · DISPLAY per tool call,

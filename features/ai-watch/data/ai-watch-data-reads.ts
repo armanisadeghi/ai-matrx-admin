@@ -9,7 +9,7 @@ import { supabase } from "@/utils/supabase/client";
 
 /** The `chat.tool_call` columns the Data section needs (the renderer's columns + the capture index). */
 export const TOOL_CALL_DATA_COLUMNS =
-  "id, call_id, message_id, conversation_id, user_request_id, tool_name, tool_name_as_called, tool_type, status, success, is_error, error_type, error_message, duration_ms, started_at, completed_at, output_chars, output_preview, output_type, iteration, parent_call_id, retry_count, persist_key, file_path, created_at, updated_at, created_by, updated_by, deleted_at, input_tokens, output_tokens, total_tokens, cost_usd, arguments, output, execution_events, metadata";
+  "id, call_id, message_id, conversation_id, user_request_id, tool_name, tool_name_as_called, tool_type, status, success, is_error, error_type, error_message, duration_ms, started_at, completed_at, output_chars, output_preview, output_type, iteration, parent_call_id, retry_count, persist_key, file_path, created_at, updated_at, created_by, updated_by, deleted_at, input_tokens, output_tokens, total_tokens, cost_usd, arguments, output, execution_events, metadata, organization_id";
 
 export type ToolCallDataRow = Record<string, unknown> & {
   id: string;
@@ -19,6 +19,7 @@ export type ToolCallDataRow = Record<string, unknown> & {
   output: string | null;
   output_chars: number | null;
   metadata: unknown;
+  organization_id?: string | null;
 };
 
 /** Every tool call one run (`chat.user_request.id`) made, in order. */
@@ -51,6 +52,7 @@ export interface NodeOutcomeRow {
   duration_ms: number | null;
   completed_at: string | null;
   metadata: unknown;
+  organization_id?: string | null;
 }
 
 /** Every recorded step of the given workflow runs (AI and non-AI), in run order. */
@@ -61,7 +63,7 @@ export async function fetchRunSteps(runIds: readonly string[]): Promise<NodeOutc
       supabase
         .schema("workflow")
         .from("node_outcome")
-        .select("id, run_id, step, node_id, attempt, output_kind, error, duration_ms, completed_at, metadata")
+        .select("id, run_id, step, node_id, attempt, output_kind, error, duration_ms, completed_at, metadata, organization_id")
         .in("run_id", [...runIds])
         .is("deleted_at", null)
         .order("step", { ascending: true })

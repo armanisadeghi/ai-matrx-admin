@@ -15,6 +15,8 @@
  * Pure functions only (tested); the readers are in `ai-watch-data-reads.ts`.
  */
 
+import { detectJson, formatJsonText } from "@ai-matrx/kit/json-format";
+
 /** The tier labels. Every pane that shows a value carries one (guard: `pnpm check:ai-watch`). */
 export const DATA_TIERS = {
   raw: "RAW",
@@ -127,6 +129,44 @@ export function cutLine(cut: CutEntry): string {
 /** A size for a tab title. */
 export function sizeLabel(n: number | null | undefined, unit: "chars" | "bytes" = "chars"): string {
   return n == null ? "size unknown" : `${n.toLocaleString()} ${unit}`;
+}
+
+/** How much of a stored raw answer shows before the person asks for all of it (render cost only —
+ *  the whole answer is always one click away and the pane says how much is hidden). */
+export const RAW_PREVIEW_CHARS = 100_000;
+
+export interface RawTextView {
+  /** What the pane shows (the exact text, or its JSON laid out one entry per line). */
+  text: string;
+  /** True when `text` is the JSON re-laid out, not the bytes as received. */
+  formatted: boolean;
+  /** Characters of the full view; `shownChars < totalChars` means the rest is one click away. */
+  totalChars: number;
+  shownChars: number;
+}
+
+/** The view of one decoded raw answer: JSON laid out when asked and it parses, else exact; cut to
+ *  `limit` characters unless `full` — and the numbers always say how much is shown. */
+export function rawTextView(
+  decoded: string,
+  { formatted, full, limit = RAW_PREVIEW_CHARS }: { formatted: boolean; full: boolean; limit?: number },
+): RawTextView {
+  let text = decoded;
+  let isFormatted = false;
+  if (formatted) {
+    const laidOut = formatJsonText(decoded, { style: "pretty" });
+    if (laidOut.ok) {
+      text = laidOut.text;
+      isFormatted = laidOut.changed;
+    }
+  }
+  const shown = full || text.length <= limit ? text : text.slice(0, limit);
+  return { text: shown, formatted: isFormatted, totalChars: text.length, shownChars: shown.length };
+}
+
+/** True when the decoded answer is JSON (offer the laid-out view). */
+export function rawIsJson(decoded: string): boolean {
+  return detectJson(decoded).ok;
 }
 
 export interface SentCopy {

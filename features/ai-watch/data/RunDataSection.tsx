@@ -96,7 +96,7 @@ function ToolCallDataCard({ row, snapshots }: { row: ToolCallDataRow; snapshots:
       </div>
       <WebOriginals row={row} />
       {capture ? (
-        capture.raw.map((e, i) => <RawEntryView key={i} entry={e} storedText={row.output} />)
+        capture.raw.map((e, i) => <RawEntryView key={i} entry={e} storedText={row.output} organizationId={row.organization_id} />)
       ) : (
         <DataPane tier="raw" title="Raw answer" size="size unknown" open>
           <div className="text-muted-foreground">{rawMissingReason(capture)}</div>
