@@ -80,7 +80,7 @@ import { useDrillAttributes } from "./useDrillAttributes";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { DrillSiblingFindings } from "./DrillSiblingFindings";
 import { drillAddressMisfit, drillSiblingDimensions, drillSiblingMeasures, drillSiblingQuestion, openDrillSibling, useDrillSiblings } from "./drillSiblings";
-import { DrillRecords, useRecordsNoun } from "./DrillRecords";
+import { DrillRecords, recordsNounOf } from "./DrillRecords";
 import { hidePinnedDistinct, recordsForTrail } from "./drillPinned";
 import { DrillSavedViews, type DrillOpenView } from "./DrillSavedViews";
 import { drillSavedViewSurface, readDrillView } from "./savedViews";
@@ -342,7 +342,7 @@ export function DrillExplorer({
   const records = def && declaredRecords ? recordsForTrail(def, declaredRecords, question) : declaredRecords;
   const stale = useDrillStaleAfter(staleAfterKnobOf(def), seat);
   // the "See …" chip names what the list holds (executions), not what the count counts (requests)
-  const recordsChipNoun = def && records ? useRecordsNoun(def, records, { offered: (siblings ?? []).map((x) => x.token), described: siblingDefs }) : null;
+  const recordsChipNoun = def && records ? recordsNounOf(def, records, { offered: (siblings ?? []).map((x) => x.token), described: siblingDefs }) : null;
 
   // FRESHNESS: the door's own `as_of` when the answers carry it; the host's count until then.
   const countedThrough = asOf ?? freshness?.countedThrough ?? null;

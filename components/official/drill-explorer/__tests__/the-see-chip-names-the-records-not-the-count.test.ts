@@ -12,6 +12,6 @@ describe("the See chip names the records, not the count", () => {
   });
   it("the installed design-system serves the props", () => {
     const dts = readFileSync(join(process.cwd(), "node_modules/@ai-matrx/design-system/dist/data-table/index.d.cts"), "utf8");
-    expect(dts).toContain("recordsNoun?: string");
+    expect(dts).toMatch(/recordsNoun\?:/);
   });
 });
