@@ -114,6 +114,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -823,6 +824,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -1540,6 +1542,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -2248,6 +2251,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -2960,6 +2964,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -3660,6 +3665,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -4360,6 +4366,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -5071,6 +5078,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -5780,6 +5788,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -6489,6 +6498,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -7198,6 +7208,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -7903,6 +7914,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -8608,6 +8620,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -9317,6 +9330,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -10026,6 +10040,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -10735,6 +10750,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -11444,6 +11460,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -12153,6 +12170,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -12852,6 +12870,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -13556,6 +13575,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -14258,6 +14278,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -14969,6 +14990,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -15678,6 +15700,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -16387,6 +16410,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -17101,6 +17125,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -17815,6 +17840,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -18524,6 +18550,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -19235,6 +19262,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -19946,6 +19974,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -20657,6 +20686,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -21373,6 +21403,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -22119,6 +22150,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -22837,6 +22869,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -23565,6 +23598,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -24282,6 +24316,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -24997,6 +25032,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -25722,6 +25758,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -26433,6 +26470,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -27142,6 +27180,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -27851,6 +27890,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -28563,6 +28603,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -29277,6 +29318,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -29979,6 +30021,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -30671,6 +30714,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -31376,6 +31420,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -32085,6 +32130,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -32794,6 +32840,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -33503,6 +33550,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -34212,6 +34260,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -34921,6 +34970,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -35630,6 +35680,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -36347,6 +36398,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -37060,6 +37112,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -37777,6 +37830,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.jpg",
@@ -38456,6 +38510,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/cdn-cgi/image/w=800/hero",
@@ -39133,6 +39188,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -39842,6 +39898,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -40551,6 +40608,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -41274,6 +41332,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -41983,6 +42042,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -42694,6 +42754,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -43405,6 +43466,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -44114,6 +44176,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -44825,6 +44888,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -45531,6 +45595,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -46240,6 +46305,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -46949,6 +47015,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -47654,6 +47721,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -48363,6 +48431,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -49075,6 +49144,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -49787,6 +49857,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -50498,6 +50569,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -51236,6 +51308,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -51954,6 +52027,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -52675,6 +52749,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -53384,6 +53459,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -54097,6 +54173,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -54806,6 +54883,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -55515,6 +55593,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -56224,6 +56303,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -56927,6 +57007,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -57634,6 +57715,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -58335,6 +58417,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -59040,6 +59123,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -59749,6 +59833,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -60465,6 +60550,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -61160,6 +61246,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -61872,6 +61959,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -62582,6 +62670,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -63292,6 +63381,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -63997,6 +64087,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -64720,6 +64811,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -65435,6 +65527,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -66138,6 +66231,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -66827,6 +66921,7 @@
         "app_shell_words": 9,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [],
         "http_status": 200,
         "fetch_blocked_reason": null,
@@ -67373,6 +67468,7 @@
         "app_shell_words": 3,
         "root_text_words": 3,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [],
         "http_status": 200,
         "fetch_blocked_reason": null,
@@ -67919,6 +68015,7 @@
         "app_shell_words": 12,
         "root_text_words": 12,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [],
         "http_status": 200,
         "fetch_blocked_reason": null,
@@ -68425,6 +68522,3237 @@
       }
     },
     {
+      "name": "canonical_names_start_url",
+      "why": "The canonical names the URL the crawl started at, which redirected here — canonical_conflicts: 'points to a redirect', fail 30.",
+      "evidence": {
+        "url": "https://example.com/guides/seo-basics",
+        "title": "SEO Basics: A Practical Guide for Teams",
+        "title_metrics": {
+          "pixel_width": 370,
+          "character_count": 39,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "title_ok": true
+        },
+        "description": "A practical, example-led introduction to technical SEO for product teams who ship changes every week and need the basics right.",
+        "description_metrics": {
+          "pixel_width": 750,
+          "character_count": 127,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "description_ok": true
+        },
+        "meta_robots": "index, follow",
+        "canonical_url": "http://example.com/guides/seo-basics",
+        "canonical_matches": false,
+        "noindex": false,
+        "nofollow": false,
+        "h1_count": 1,
+        "headings": [
+          {
+            "level": 1,
+            "text": "SEO Basics"
+          },
+          {
+            "level": 2,
+            "text": "Why it matters"
+          },
+          {
+            "level": 3,
+            "text": "Titles and descriptions"
+          },
+          {
+            "level": 2,
+            "text": "Where to start"
+          }
+        ],
+        "word_count": 1200,
+        "text_bytes": 18000,
+        "schema_types": [
+          "Article"
+        ],
+        "image_count": 8,
+        "images_missing_alt": 0,
+        "link_count": 24,
+        "internal_link_count": 18,
+        "app_root": false,
+        "executable_script": true,
+        "app_shell_words": null,
+        "root_text_words": null,
+        "bot_wall": null,
+        "kept_soft_404": false,
+        "image_items": [
+          {
+            "src": "https://cdn.example.com/photo-0.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-0-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 0",
+            "width": 600,
+            "height": 400,
+            "loading": null,
+            "featured": true
+          },
+          {
+            "src": "https://cdn.example.com/photo-1.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-1-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 1",
+            "width": 600,
+            "height": 400,
+            "loading": null,
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-2.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-2-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 2",
+            "width": 600,
+            "height": 400,
+            "loading": null,
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-3.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-3-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 3",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-4.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-4-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 4",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-5.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-5-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 5",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-6.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-6-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 6",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-7.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-7-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 7",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          }
+        ],
+        "http_status": 200,
+        "fetch_blocked_reason": null,
+        "redirect_chain": [
+          {
+            "url": "http://example.com/guides/seo-basics",
+            "status": 301
+          },
+          {
+            "url": "https://example.com/guides/seo-basics",
+            "status": 200
+          }
+        ],
+        "mixed_content": [],
+        "response_headers": {
+          "strict-transport-security": "max-age=63072000"
+        },
+        "http_variant_probe": {
+          "status": 301,
+          "location": "https://example.com/guides/seo-basics"
+        },
+        "response_bytes": 120000,
+        "response_time_ms": 320,
+        "ttfb_ms": 180,
+        "ttfb_measured_at": null,
+        "pagination": {},
+        "hreflang": [
+          {
+            "lang": "en",
+            "href": "https://example.com/guides/seo-basics"
+          },
+          {
+            "lang": "es",
+            "href": "https://example.com/es/guias/seo-basico"
+          },
+          {
+            "lang": "x-default",
+            "href": "https://example.com/guides/seo-basics"
+          }
+        ],
+        "structured_data": {
+          "parse_errors": [],
+          "json_ld_raw": [
+            "{\"@type\":\"Article\"}"
+          ],
+          "blocks": [
+            {
+              "source": "json-ld",
+              "types": [
+                "Article"
+              ],
+              "data": {
+                "@type": "Article",
+                "headline": "SEO Basics",
+                "image": "https://cdn.example.com/share.png",
+                "author": {
+                  "@type": "Person",
+                  "name": "A. Writer"
+                },
+                "datePublished": "2026-01-05",
+                "dateModified": "2026-02-02",
+                "publisher": {
+                  "@type": "Organization",
+                  "name": "Example"
+                }
+              }
+            }
+          ]
+        },
+        "head_captured": true,
+        "lang": "en",
+        "og": {
+          "og:title": "SEO Basics",
+          "og:description": "A practical introduction to technical SEO.",
+          "og:image": "https://cdn.example.com/share.png",
+          "og:url": "https://example.com/guides/seo-basics",
+          "og:type": "article"
+        },
+        "twitter": {
+          "twitter:card": "summary_large_image"
+        },
+        "head_meta": {
+          "viewport": "width=device-width, initial-scale=1",
+          "refresh": null
+        },
+        "lab_performance": {
+          "strategy": "mobile",
+          "observed_at": null,
+          "lcp_ms": 1800.0,
+          "tbt_ms": 120.0,
+          "cls": 0.03,
+          "delivery_savings_ms": 120.0,
+          "delivery_audits": {
+            "unused-javascript": 90.0,
+            "unminified-css": 30.0
+          },
+          "cache_static_bytes": 500000.0,
+          "cache_short_ttl_resources": [],
+          "cache_static_bytes_by_host": {},
+          "cache_list_truncated": false,
+          "field_metrics": {}
+        }
+      },
+      "expected": {
+        "url_design_quality": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This URL is short, readable, and free of tracking-state clutter.",
+          "issue_count": 0,
+          "evidence": {
+            "url_length": 37,
+            "parameter_count": 0,
+            "has_uppercase": false,
+            "has_underscores": false,
+            "has_non_ascii": false,
+            "session_params": []
+          },
+          "remediation": null
+        },
+        "title_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Title present: \"SEO Basics: A Practical Guide for Teams\".",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "title_length": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Title length is in the optimal window (39 chars, about 370px wide).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Meta description present.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_length": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Meta description length is in the optimal window (127 chars, about 750px wide).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "h1_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Exactly one H1.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "heading_hierarchy": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Clean heading outline across 4 headings.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "thin_content": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "1200 words of visible text.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "content_depth": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "1200 words — full depth for an article.",
+          "issue_count": 0,
+          "evidence": {
+            "page_type": "article",
+            "word_count": 1200
+          },
+          "remediation": null
+        },
+        "text_html_ratio": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "15.0% of the page is readable text.",
+          "issue_count": 0,
+          "evidence": {
+            "text_bytes": 18000,
+            "html_bytes": 120000,
+            "ratio": 0.15
+          },
+          "remediation": null
+        },
+        "image_alt_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "All 8 meaningful images carry alt text.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_dimension_attrs": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "8 of 8 images declare width and height.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_lazy_loading": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Lazy-loading policy is correct in both directions across 8 images.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_modern_format": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Image transfer sizes have not been captured, so the promised byte-weighted modern-format share cannot be calculated.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": {
+            "command": "page_fetch",
+            "scope": "page",
+            "label": "Capture this page again",
+            "explainer": "We fetch a fresh copy of this one page right now and measure it. It takes a few seconds and changes nothing on your website."
+          }
+        },
+        "image_oversized": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No image has all three measurements needed here: display width, decoded natural width, and transfer bytes.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": {
+            "command": "page_fetch",
+            "scope": "page",
+            "label": "Capture this page again",
+            "explainer": "We fetch a fresh copy of this one page right now and measure it. It takes a few seconds and changes nothing on your website."
+          }
+        },
+        "broken_images": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "None of this page's 8 images have been status-checked — the crawl fetches pages, not their images, so whether they load is unverified.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "viewport_meta": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Responsive viewport declared (\"width=device-width, initial-scale=1\").",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "html_lang_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Language declared as \"en\", a valid code. (Whether the writing is actually in that language is not measured from a crawl.)",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "og_image_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Share image declared as a full web address (https://cdn.example.com/share.png). Its pixel size is not measured here — that needs the image file itself.",
+          "issue_count": 0,
+          "evidence": {
+            "og_image": "https://cdn.example.com/share.png"
+          },
+          "remediation": null
+        },
+        "social_meta_completeness": {
+          "status": "warn",
+          "score": 80,
+          "reasoning": "Shares of this page will not render a full preview — og:url (https://example.com/guides/seo-basics) disagrees with the canonical URL (http://example.com/guides/seo-basics), so shares may credit the wrong page.",
+          "issue_count": 1,
+          "evidence": {
+            "missing_og_tags": [],
+            "twitter_card": "summary_large_image",
+            "og_url": "https://example.com/guides/seo-basics",
+            "canonical_url": "http://example.com/guides/seo-basics"
+          },
+          "remediation": null
+        },
+        "meta_robots_conflicts": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Robots directives are clean (\"index, follow\").",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "rel=canonical present: http://example.com/guides/seo-basics",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_conflicts": {
+          "status": "fail",
+          "score": 30,
+          "reasoning": "Canonical points to a redirect (http://example.com/guides/seo-basics), which sends visitors on to this page — name the page's final address in the canonical instead.",
+          "issue_count": 1,
+          "evidence": {
+            "canonical_url": "http://example.com/guides/seo-basics",
+            "redirects_to": "https://example.com/guides/seo-basics"
+          },
+          "remediation": null
+        },
+        "meta_refresh_redirect": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This page does not redirect itself through a meta refresh tag.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "broken_page_4xx": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTTP 200 — not a client error.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "server_error_5xx": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTTP 200 — not a server error.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "redirect_chain": {
+          "status": "pass",
+          "score": 85,
+          "reasoning": "One clean redirect before this page resolves.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "redirect_loop": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Every hop in the redirect chain is a distinct URL.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "temporary_redirect_usage": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Every redirect on the way to this page is permanent (301/308).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "soft_404_detection": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This page answers HTTP 200 and serves real content.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "content_needs_rendering": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "The page's content is in the HTML we fetched.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "dead_end_page": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is noindexed or names another page as its canonical, so it is not meant to be a page people arrive on from search.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "pagination_markup": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is not part of a next/previous page series, so there is nothing to check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "mixed_content": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No insecure http:// resources on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "https_enforcement": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Served over HTTPS, and the http:// variant redirects permanently (HTTP 301).",
+          "issue_count": 0,
+          "evidence": {
+            "http_variant": {
+              "status": 301,
+              "location": "https://example.com/guides/seo-basics"
+            }
+          },
+          "remediation": null
+        },
+        "page_weight": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTML document is 120,000 bytes.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "ttfb_server_response": {
+          "status": "pass",
+          "score": 98,
+          "reasoning": "The server sent the first byte in 180 ms — comfortably inside the 800 ms bar for a good server response.",
+          "issue_count": 0,
+          "evidence": {
+            "ttfb_ms": 180
+          },
+          "remediation": null
+        },
+        "structured_data_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Structured data parses cleanly and every rich-result type in use (Article) declares its required and recommended properties.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "hreflang_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Valid hreflang set: 3 version(s), all codes and URLs well formed, self-reference present, x-default declared.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "cwv_lcp": {
+          "status": "pass",
+          "score": 93,
+          "reasoning": "In a simulated phone test, the main content appeared in 1.8s (a lab estimate) — inside Google's 2.5 second target.",
+          "issue_count": 0,
+          "evidence": {
+            "lcp_ms": 1800.0,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "cwv_inp_tbt": {
+          "status": "pass",
+          "score": 94,
+          "reasoning": "In a simulated phone test, this page ignored taps and clicks for only 120ms while loading (a lab estimate) — comfortably responsive.",
+          "issue_count": 0,
+          "evidence": {
+            "tbt_ms": 120.0,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "cwv_cls": {
+          "status": "pass",
+          "score": 97,
+          "reasoning": "In a simulated phone test, this page holds still as it loads (layout shift 0.030) — under Google's 0.1 limit.",
+          "issue_count": 0,
+          "evidence": {
+            "cls": 0.03,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "asset_delivery": {
+          "status": "pass",
+          "score": 96,
+          "reasoning": "The biggest delivery cost on this page is about 90ms (on a phone) — nothing worth chasing.",
+          "issue_count": 0,
+          "evidence": {
+            "largest_saving_ms": 90.0,
+            "largest_saving_audit": "unused-javascript",
+            "audits": {
+              "unused-javascript": 90.0,
+              "unminified-css": 30.0
+            },
+            "strategy": "mobile"
+          },
+          "remediation": null
+        },
+        "caching_policy": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Visitors' browsers keep this page's own images, styling and code for a month or more, so returning visits reuse them instead of re-downloading them.",
+          "issue_count": 0,
+          "evidence": {
+            "static_bytes": 500000.0,
+            "strategy": "mobile",
+            "third_party_not_yours": [],
+            "third_party_hosts": [],
+            "well_cached_bytes": 500000.0,
+            "short_ttl_urls": [],
+            "list_truncated": false
+          },
+          "remediation": null
+        }
+      }
+    },
+    {
+      "name": "canonical_names_middle_hop",
+      "why": "The canonical names a middle hop of a two-hop chain — also a redirect, fail 30.",
+      "evidence": {
+        "url": "https://example.com/guides/seo-basics",
+        "title": "SEO Basics: A Practical Guide for Teams",
+        "title_metrics": {
+          "pixel_width": 370,
+          "character_count": 39,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "title_ok": true
+        },
+        "description": "A practical, example-led introduction to technical SEO for product teams who ship changes every week and need the basics right.",
+        "description_metrics": {
+          "pixel_width": 750,
+          "character_count": 127,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "description_ok": true
+        },
+        "meta_robots": "index, follow",
+        "canonical_url": "https://example.com/guides/seo",
+        "canonical_matches": false,
+        "noindex": false,
+        "nofollow": false,
+        "h1_count": 1,
+        "headings": [
+          {
+            "level": 1,
+            "text": "SEO Basics"
+          },
+          {
+            "level": 2,
+            "text": "Why it matters"
+          },
+          {
+            "level": 3,
+            "text": "Titles and descriptions"
+          },
+          {
+            "level": 2,
+            "text": "Where to start"
+          }
+        ],
+        "word_count": 1200,
+        "text_bytes": 18000,
+        "schema_types": [
+          "Article"
+        ],
+        "image_count": 8,
+        "images_missing_alt": 0,
+        "link_count": 24,
+        "internal_link_count": 18,
+        "app_root": false,
+        "executable_script": true,
+        "app_shell_words": null,
+        "root_text_words": null,
+        "bot_wall": null,
+        "kept_soft_404": false,
+        "image_items": [
+          {
+            "src": "https://cdn.example.com/photo-0.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-0-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 0",
+            "width": 600,
+            "height": 400,
+            "loading": null,
+            "featured": true
+          },
+          {
+            "src": "https://cdn.example.com/photo-1.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-1-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 1",
+            "width": 600,
+            "height": 400,
+            "loading": null,
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-2.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-2-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 2",
+            "width": 600,
+            "height": 400,
+            "loading": null,
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-3.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-3-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 3",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-4.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-4-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 4",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-5.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-5-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 5",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-6.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-6-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 6",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-7.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-7-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 7",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          }
+        ],
+        "http_status": 200,
+        "fetch_blocked_reason": null,
+        "redirect_chain": [
+          {
+            "url": "http://example.com/seo",
+            "status": 301
+          },
+          {
+            "url": "https://example.com/guides/seo",
+            "status": 301
+          },
+          {
+            "url": "https://example.com/guides/seo-basics",
+            "status": 200
+          }
+        ],
+        "mixed_content": [],
+        "response_headers": {
+          "strict-transport-security": "max-age=63072000"
+        },
+        "http_variant_probe": {
+          "status": 301,
+          "location": "https://example.com/guides/seo-basics"
+        },
+        "response_bytes": 120000,
+        "response_time_ms": 320,
+        "ttfb_ms": 180,
+        "ttfb_measured_at": null,
+        "pagination": {},
+        "hreflang": [
+          {
+            "lang": "en",
+            "href": "https://example.com/guides/seo-basics"
+          },
+          {
+            "lang": "es",
+            "href": "https://example.com/es/guias/seo-basico"
+          },
+          {
+            "lang": "x-default",
+            "href": "https://example.com/guides/seo-basics"
+          }
+        ],
+        "structured_data": {
+          "parse_errors": [],
+          "json_ld_raw": [
+            "{\"@type\":\"Article\"}"
+          ],
+          "blocks": [
+            {
+              "source": "json-ld",
+              "types": [
+                "Article"
+              ],
+              "data": {
+                "@type": "Article",
+                "headline": "SEO Basics",
+                "image": "https://cdn.example.com/share.png",
+                "author": {
+                  "@type": "Person",
+                  "name": "A. Writer"
+                },
+                "datePublished": "2026-01-05",
+                "dateModified": "2026-02-02",
+                "publisher": {
+                  "@type": "Organization",
+                  "name": "Example"
+                }
+              }
+            }
+          ]
+        },
+        "head_captured": true,
+        "lang": "en",
+        "og": {
+          "og:title": "SEO Basics",
+          "og:description": "A practical introduction to technical SEO.",
+          "og:image": "https://cdn.example.com/share.png",
+          "og:url": "https://example.com/guides/seo-basics",
+          "og:type": "article"
+        },
+        "twitter": {
+          "twitter:card": "summary_large_image"
+        },
+        "head_meta": {
+          "viewport": "width=device-width, initial-scale=1",
+          "refresh": null
+        },
+        "lab_performance": {
+          "strategy": "mobile",
+          "observed_at": null,
+          "lcp_ms": 1800.0,
+          "tbt_ms": 120.0,
+          "cls": 0.03,
+          "delivery_savings_ms": 120.0,
+          "delivery_audits": {
+            "unused-javascript": 90.0,
+            "unminified-css": 30.0
+          },
+          "cache_static_bytes": 500000.0,
+          "cache_short_ttl_resources": [],
+          "cache_static_bytes_by_host": {},
+          "cache_list_truncated": false,
+          "field_metrics": {}
+        }
+      },
+      "expected": {
+        "url_design_quality": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This URL is short, readable, and free of tracking-state clutter.",
+          "issue_count": 0,
+          "evidence": {
+            "url_length": 37,
+            "parameter_count": 0,
+            "has_uppercase": false,
+            "has_underscores": false,
+            "has_non_ascii": false,
+            "session_params": []
+          },
+          "remediation": null
+        },
+        "title_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Title present: \"SEO Basics: A Practical Guide for Teams\".",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "title_length": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Title length is in the optimal window (39 chars, about 370px wide).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Meta description present.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_length": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Meta description length is in the optimal window (127 chars, about 750px wide).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "h1_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Exactly one H1.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "heading_hierarchy": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Clean heading outline across 4 headings.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "thin_content": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "1200 words of visible text.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "content_depth": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "1200 words — full depth for an article.",
+          "issue_count": 0,
+          "evidence": {
+            "page_type": "article",
+            "word_count": 1200
+          },
+          "remediation": null
+        },
+        "text_html_ratio": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "15.0% of the page is readable text.",
+          "issue_count": 0,
+          "evidence": {
+            "text_bytes": 18000,
+            "html_bytes": 120000,
+            "ratio": 0.15
+          },
+          "remediation": null
+        },
+        "image_alt_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "All 8 meaningful images carry alt text.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_dimension_attrs": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "8 of 8 images declare width and height.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_lazy_loading": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Lazy-loading policy is correct in both directions across 8 images.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_modern_format": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Image transfer sizes have not been captured, so the promised byte-weighted modern-format share cannot be calculated.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": {
+            "command": "page_fetch",
+            "scope": "page",
+            "label": "Capture this page again",
+            "explainer": "We fetch a fresh copy of this one page right now and measure it. It takes a few seconds and changes nothing on your website."
+          }
+        },
+        "image_oversized": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No image has all three measurements needed here: display width, decoded natural width, and transfer bytes.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": {
+            "command": "page_fetch",
+            "scope": "page",
+            "label": "Capture this page again",
+            "explainer": "We fetch a fresh copy of this one page right now and measure it. It takes a few seconds and changes nothing on your website."
+          }
+        },
+        "broken_images": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "None of this page's 8 images have been status-checked — the crawl fetches pages, not their images, so whether they load is unverified.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "viewport_meta": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Responsive viewport declared (\"width=device-width, initial-scale=1\").",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "html_lang_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Language declared as \"en\", a valid code. (Whether the writing is actually in that language is not measured from a crawl.)",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "og_image_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Share image declared as a full web address (https://cdn.example.com/share.png). Its pixel size is not measured here — that needs the image file itself.",
+          "issue_count": 0,
+          "evidence": {
+            "og_image": "https://cdn.example.com/share.png"
+          },
+          "remediation": null
+        },
+        "social_meta_completeness": {
+          "status": "warn",
+          "score": 80,
+          "reasoning": "Shares of this page will not render a full preview — og:url (https://example.com/guides/seo-basics) disagrees with the canonical URL (https://example.com/guides/seo), so shares may credit the wrong page.",
+          "issue_count": 1,
+          "evidence": {
+            "missing_og_tags": [],
+            "twitter_card": "summary_large_image",
+            "og_url": "https://example.com/guides/seo-basics",
+            "canonical_url": "https://example.com/guides/seo"
+          },
+          "remediation": null
+        },
+        "meta_robots_conflicts": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Robots directives are clean (\"index, follow\").",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "rel=canonical present: https://example.com/guides/seo",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_conflicts": {
+          "status": "fail",
+          "score": 30,
+          "reasoning": "Canonical points to a redirect (https://example.com/guides/seo), which sends visitors on to this page — name the page's final address in the canonical instead.",
+          "issue_count": 1,
+          "evidence": {
+            "canonical_url": "https://example.com/guides/seo",
+            "redirects_to": "https://example.com/guides/seo-basics"
+          },
+          "remediation": null
+        },
+        "meta_refresh_redirect": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This page does not redirect itself through a meta refresh tag.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "broken_page_4xx": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTTP 200 — not a client error.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "server_error_5xx": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTTP 200 — not a server error.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "redirect_chain": {
+          "status": "warn",
+          "score": 60,
+          "reasoning": "2 redirect hops before this page resolves — every hop wastes crawl budget and leaks link equity.",
+          "issue_count": 2,
+          "evidence": {
+            "redirect_chain": [
+              "http://example.com/seo",
+              "https://example.com/guides/seo",
+              "https://example.com/guides/seo-basics"
+            ]
+          },
+          "remediation": null
+        },
+        "redirect_loop": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Every hop in the redirect chain is a distinct URL.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "temporary_redirect_usage": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Every redirect on the way to this page is permanent (301/308).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "soft_404_detection": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This page answers HTTP 200 and serves real content.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "content_needs_rendering": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "The page's content is in the HTML we fetched.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "dead_end_page": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is noindexed or names another page as its canonical, so it is not meant to be a page people arrive on from search.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "pagination_markup": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is not part of a next/previous page series, so there is nothing to check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "mixed_content": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No insecure http:// resources on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "https_enforcement": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Served over HTTPS, and the http:// variant redirects permanently (HTTP 301).",
+          "issue_count": 0,
+          "evidence": {
+            "http_variant": {
+              "status": 301,
+              "location": "https://example.com/guides/seo-basics"
+            }
+          },
+          "remediation": null
+        },
+        "page_weight": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTML document is 120,000 bytes.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "ttfb_server_response": {
+          "status": "pass",
+          "score": 98,
+          "reasoning": "The server sent the first byte in 180 ms — comfortably inside the 800 ms bar for a good server response.",
+          "issue_count": 0,
+          "evidence": {
+            "ttfb_ms": 180
+          },
+          "remediation": null
+        },
+        "structured_data_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Structured data parses cleanly and every rich-result type in use (Article) declares its required and recommended properties.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "hreflang_validity": {
+          "status": "fail",
+          "score": 40,
+          "reasoning": "The hreflang self-reference (https://example.com/guides/seo-basics) and the rel=canonical (https://example.com/guides/seo) name DIFFERENT URLs — the page is annotating a URL it also says is not the canonical one, and the two signals cancel out.",
+          "issue_count": 1,
+          "evidence": {
+            "self_href": "https://example.com/guides/seo-basics",
+            "canonical_url": "https://example.com/guides/seo"
+          },
+          "remediation": null
+        },
+        "cwv_lcp": {
+          "status": "pass",
+          "score": 93,
+          "reasoning": "In a simulated phone test, the main content appeared in 1.8s (a lab estimate) — inside Google's 2.5 second target.",
+          "issue_count": 0,
+          "evidence": {
+            "lcp_ms": 1800.0,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "cwv_inp_tbt": {
+          "status": "pass",
+          "score": 94,
+          "reasoning": "In a simulated phone test, this page ignored taps and clicks for only 120ms while loading (a lab estimate) — comfortably responsive.",
+          "issue_count": 0,
+          "evidence": {
+            "tbt_ms": 120.0,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "cwv_cls": {
+          "status": "pass",
+          "score": 97,
+          "reasoning": "In a simulated phone test, this page holds still as it loads (layout shift 0.030) — under Google's 0.1 limit.",
+          "issue_count": 0,
+          "evidence": {
+            "cls": 0.03,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "asset_delivery": {
+          "status": "pass",
+          "score": 96,
+          "reasoning": "The biggest delivery cost on this page is about 90ms (on a phone) — nothing worth chasing.",
+          "issue_count": 0,
+          "evidence": {
+            "largest_saving_ms": 90.0,
+            "largest_saving_audit": "unused-javascript",
+            "audits": {
+              "unused-javascript": 90.0,
+              "unminified-css": 30.0
+            },
+            "strategy": "mobile"
+          },
+          "remediation": null
+        },
+        "caching_policy": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Visitors' browsers keep this page's own images, styling and code for a month or more, so returning visits reuse them instead of re-downloading them.",
+          "issue_count": 0,
+          "evidence": {
+            "static_bytes": 500000.0,
+            "strategy": "mobile",
+            "third_party_not_yours": [],
+            "third_party_hosts": [],
+            "well_cached_bytes": 500000.0,
+            "short_ttl_urls": [],
+            "list_truncated": false
+          },
+          "remediation": null
+        }
+      }
+    },
+    {
+      "name": "kept_soft_404",
+      "why": "The crawl kept a page the read judge called a soft 404: soft_404_detection judges it, every other check answers n_a with one reason.",
+      "evidence": {
+        "url": "https://example.com/guides/seo-basics",
+        "title": "Page not found",
+        "title_metrics": {
+          "pixel_width": 370,
+          "character_count": 39,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "title_ok": true
+        },
+        "description": "A practical, example-led introduction to technical SEO for product teams who ship changes every week and need the basics right.",
+        "description_metrics": {
+          "pixel_width": 750,
+          "character_count": 127,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "description_ok": true
+        },
+        "meta_robots": "index, follow",
+        "canonical_url": "https://example.com/guides/seo-basics",
+        "canonical_matches": true,
+        "noindex": false,
+        "nofollow": false,
+        "h1_count": 1,
+        "headings": [
+          {
+            "level": 1,
+            "text": "SEO Basics"
+          },
+          {
+            "level": 2,
+            "text": "Why it matters"
+          },
+          {
+            "level": 3,
+            "text": "Titles and descriptions"
+          },
+          {
+            "level": 2,
+            "text": "Where to start"
+          }
+        ],
+        "word_count": 12,
+        "text_bytes": 18000,
+        "schema_types": [
+          "Article"
+        ],
+        "image_count": 8,
+        "images_missing_alt": 0,
+        "link_count": 24,
+        "internal_link_count": 18,
+        "app_root": false,
+        "executable_script": true,
+        "app_shell_words": null,
+        "root_text_words": null,
+        "bot_wall": null,
+        "kept_soft_404": true,
+        "image_items": [
+          {
+            "src": "https://cdn.example.com/photo-0.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-0-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 0",
+            "width": 600,
+            "height": 400,
+            "loading": null,
+            "featured": true
+          },
+          {
+            "src": "https://cdn.example.com/photo-1.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-1-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 1",
+            "width": 600,
+            "height": 400,
+            "loading": null,
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-2.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-2-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 2",
+            "width": 600,
+            "height": 400,
+            "loading": null,
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-3.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-3-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 3",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-4.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-4-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 4",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-5.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-5-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 5",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-6.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-6-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 6",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          },
+          {
+            "src": "https://cdn.example.com/photo-7.webp",
+            "srcset": [
+              "https://cdn.example.com/photo-7-800.webp"
+            ],
+            "srcset_widths": [
+              800
+            ],
+            "picture_formats": [],
+            "sizes": null,
+            "alt": "Photo 7",
+            "width": 600,
+            "height": 400,
+            "loading": "lazy",
+            "featured": false
+          }
+        ],
+        "http_status": 200,
+        "fetch_blocked_reason": null,
+        "redirect_chain": [],
+        "mixed_content": [],
+        "response_headers": {
+          "strict-transport-security": "max-age=63072000"
+        },
+        "http_variant_probe": {
+          "status": 301,
+          "location": "https://example.com/guides/seo-basics"
+        },
+        "response_bytes": 120000,
+        "response_time_ms": 320,
+        "ttfb_ms": 180,
+        "ttfb_measured_at": null,
+        "pagination": {},
+        "hreflang": [
+          {
+            "lang": "en",
+            "href": "https://example.com/guides/seo-basics"
+          },
+          {
+            "lang": "es",
+            "href": "https://example.com/es/guias/seo-basico"
+          },
+          {
+            "lang": "x-default",
+            "href": "https://example.com/guides/seo-basics"
+          }
+        ],
+        "structured_data": {
+          "parse_errors": [],
+          "json_ld_raw": [
+            "{\"@type\":\"Article\"}"
+          ],
+          "blocks": [
+            {
+              "source": "json-ld",
+              "types": [
+                "Article"
+              ],
+              "data": {
+                "@type": "Article",
+                "headline": "SEO Basics",
+                "image": "https://cdn.example.com/share.png",
+                "author": {
+                  "@type": "Person",
+                  "name": "A. Writer"
+                },
+                "datePublished": "2026-01-05",
+                "dateModified": "2026-02-02",
+                "publisher": {
+                  "@type": "Organization",
+                  "name": "Example"
+                }
+              }
+            }
+          ]
+        },
+        "head_captured": true,
+        "lang": "en",
+        "og": {
+          "og:title": "SEO Basics",
+          "og:description": "A practical introduction to technical SEO.",
+          "og:image": "https://cdn.example.com/share.png",
+          "og:url": "https://example.com/guides/seo-basics",
+          "og:type": "article"
+        },
+        "twitter": {
+          "twitter:card": "summary_large_image"
+        },
+        "head_meta": {
+          "viewport": "width=device-width, initial-scale=1",
+          "refresh": null
+        },
+        "lab_performance": {
+          "strategy": "mobile",
+          "observed_at": null,
+          "lcp_ms": 1800.0,
+          "tbt_ms": 120.0,
+          "cls": 0.03,
+          "delivery_savings_ms": 120.0,
+          "delivery_audits": {
+            "unused-javascript": 90.0,
+            "unminified-css": 30.0
+          },
+          "cache_static_bytes": 500000.0,
+          "cache_short_ttl_resources": [],
+          "cache_static_bytes_by_host": {},
+          "cache_list_truncated": false,
+          "field_metrics": {}
+        }
+      },
+      "expected": {
+        "url_design_quality": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "title_presence": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "title_length": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_presence": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_length": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "h1_presence": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "heading_hierarchy": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "thin_content": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "content_depth": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "text_html_ratio": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_alt_presence": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_dimension_attrs": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_lazy_loading": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_modern_format": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_oversized": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "broken_images": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "viewport_meta": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "html_lang_validity": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "og_image_validity": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "social_meta_completeness": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_robots_conflicts": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_presence": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_conflicts": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_refresh_redirect": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "broken_page_4xx": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "server_error_5xx": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "redirect_chain": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "redirect_loop": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "temporary_redirect_usage": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "soft_404_detection": {
+          "status": "fail",
+          "score": 15,
+          "reasoning": "This page answers HTTP 200 while its title says \"Page not found\" and it carries only 12 words — it is an error page in disguise. Search engines index it as a real page and visitors hit a dead end.",
+          "issue_count": 1,
+          "evidence": {
+            "word_count": 12,
+            "title": "Page not found",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "content_needs_rendering": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "dead_end_page": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "pagination_markup": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "mixed_content": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "https_enforcement": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "page_weight": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "ttfb_server_response": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "structured_data_validity": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "hreflang_validity": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "cwv_lcp": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "cwv_inp_tbt": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "cwv_cls": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "asset_delivery": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "caching_policy": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is a soft 404 — it answers as a working page but says it does not exist — so it is judged only by the soft-404 check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        }
+      }
+    },
+    {
+      "name": "js_shell_bot_wall",
+      "why": "Shell markup that is a bot wall: never a shell, so content checks judge it.",
+      "evidence": {
+        "url": "https://example.com/guides/seo-basics",
+        "title": "SEO Basics: A Practical Guide for Teams",
+        "title_metrics": {
+          "pixel_width": 370,
+          "character_count": 39,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "title_ok": true
+        },
+        "description": "A practical, example-led introduction to technical SEO for product teams who ship changes every week and need the basics right.",
+        "description_metrics": {
+          "pixel_width": 750,
+          "character_count": 127,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "description_ok": true
+        },
+        "meta_robots": "index, follow",
+        "canonical_url": "https://example.com/guides/seo-basics",
+        "canonical_matches": true,
+        "noindex": false,
+        "nofollow": false,
+        "h1_count": 0,
+        "headings": [],
+        "word_count": 4,
+        "text_bytes": 18000,
+        "schema_types": [
+          "Article"
+        ],
+        "image_count": 0,
+        "images_missing_alt": 0,
+        "link_count": 0,
+        "internal_link_count": 0,
+        "app_root": true,
+        "executable_script": true,
+        "app_shell_words": 4,
+        "root_text_words": null,
+        "bot_wall": true,
+        "kept_soft_404": false,
+        "image_items": [],
+        "http_status": 200,
+        "fetch_blocked_reason": null,
+        "redirect_chain": [],
+        "mixed_content": [],
+        "response_headers": {
+          "strict-transport-security": "max-age=63072000"
+        },
+        "http_variant_probe": {
+          "status": 301,
+          "location": "https://example.com/guides/seo-basics"
+        },
+        "response_bytes": 120000,
+        "response_time_ms": 320,
+        "ttfb_ms": 180,
+        "ttfb_measured_at": null,
+        "pagination": {},
+        "hreflang": [
+          {
+            "lang": "en",
+            "href": "https://example.com/guides/seo-basics"
+          },
+          {
+            "lang": "es",
+            "href": "https://example.com/es/guias/seo-basico"
+          },
+          {
+            "lang": "x-default",
+            "href": "https://example.com/guides/seo-basics"
+          }
+        ],
+        "structured_data": {
+          "parse_errors": [],
+          "json_ld_raw": [
+            "{\"@type\":\"Article\"}"
+          ],
+          "blocks": [
+            {
+              "source": "json-ld",
+              "types": [
+                "Article"
+              ],
+              "data": {
+                "@type": "Article",
+                "headline": "SEO Basics",
+                "image": "https://cdn.example.com/share.png",
+                "author": {
+                  "@type": "Person",
+                  "name": "A. Writer"
+                },
+                "datePublished": "2026-01-05",
+                "dateModified": "2026-02-02",
+                "publisher": {
+                  "@type": "Organization",
+                  "name": "Example"
+                }
+              }
+            }
+          ]
+        },
+        "head_captured": true,
+        "lang": "en",
+        "og": {
+          "og:title": "SEO Basics",
+          "og:description": "A practical introduction to technical SEO.",
+          "og:image": "https://cdn.example.com/share.png",
+          "og:url": "https://example.com/guides/seo-basics",
+          "og:type": "article"
+        },
+        "twitter": {
+          "twitter:card": "summary_large_image"
+        },
+        "head_meta": {
+          "viewport": "width=device-width, initial-scale=1",
+          "refresh": null
+        },
+        "lab_performance": {
+          "strategy": "mobile",
+          "observed_at": null,
+          "lcp_ms": 1800.0,
+          "tbt_ms": 120.0,
+          "cls": 0.03,
+          "delivery_savings_ms": 120.0,
+          "delivery_audits": {
+            "unused-javascript": 90.0,
+            "unminified-css": 30.0
+          },
+          "cache_static_bytes": 500000.0,
+          "cache_short_ttl_resources": [],
+          "cache_static_bytes_by_host": {},
+          "cache_list_truncated": false,
+          "field_metrics": {}
+        }
+      },
+      "expected": {
+        "url_design_quality": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This URL is short, readable, and free of tracking-state clutter.",
+          "issue_count": 0,
+          "evidence": {
+            "url_length": 37,
+            "parameter_count": 0,
+            "has_uppercase": false,
+            "has_underscores": false,
+            "has_non_ascii": false,
+            "session_params": []
+          },
+          "remediation": null
+        },
+        "title_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Title present: \"SEO Basics: A Practical Guide for Teams\".",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "title_length": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Title length is in the optimal window (39 chars, about 370px wide).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Meta description present.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_length": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Meta description length is in the optimal window (127 chars, about 750px wide).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "h1_presence": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Blocked — could not assess: a bot-protection challenge (Cloudflare or similar) stopped our crawler. A page that shuts out a crawler is not a broken page; it may load fine for people. Check it in a browser, or allow our crawler and crawl again.",
+          "issue_count": 0,
+          "evidence": {
+            "blocked_reason": "cloudflare_block",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "heading_hierarchy": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Blocked — could not assess: a bot-protection challenge (Cloudflare or similar) stopped our crawler. A page that shuts out a crawler is not a broken page; it may load fine for people. Check it in a browser, or allow our crawler and crawl again.",
+          "issue_count": 0,
+          "evidence": {
+            "blocked_reason": "cloudflare_block",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "thin_content": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Blocked — could not assess: a bot-protection challenge (Cloudflare or similar) stopped our crawler. A page that shuts out a crawler is not a broken page; it may load fine for people. Check it in a browser, or allow our crawler and crawl again.",
+          "issue_count": 0,
+          "evidence": {
+            "blocked_reason": "cloudflare_block",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "content_depth": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Blocked — could not assess: a bot-protection challenge (Cloudflare or similar) stopped our crawler. A page that shuts out a crawler is not a broken page; it may load fine for people. Check it in a browser, or allow our crawler and crawl again.",
+          "issue_count": 0,
+          "evidence": {
+            "blocked_reason": "cloudflare_block",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "text_html_ratio": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Blocked — could not assess: a bot-protection challenge (Cloudflare or similar) stopped our crawler. A page that shuts out a crawler is not a broken page; it may load fine for people. Check it in a browser, or allow our crawler and crawl again.",
+          "issue_count": 0,
+          "evidence": {
+            "blocked_reason": "cloudflare_block",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "image_alt_presence": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Blocked — could not assess: a bot-protection challenge (Cloudflare or similar) stopped our crawler. A page that shuts out a crawler is not a broken page; it may load fine for people. Check it in a browser, or allow our crawler and crawl again.",
+          "issue_count": 0,
+          "evidence": {
+            "blocked_reason": "cloudflare_block",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "image_dimension_attrs": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_lazy_loading": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_modern_format": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_oversized": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "broken_images": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "viewport_meta": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Responsive viewport declared (\"width=device-width, initial-scale=1\").",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "html_lang_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Language declared as \"en\", a valid code. (Whether the writing is actually in that language is not measured from a crawl.)",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "og_image_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Share image declared as a full web address (https://cdn.example.com/share.png). Its pixel size is not measured here — that needs the image file itself.",
+          "issue_count": 0,
+          "evidence": {
+            "og_image": "https://cdn.example.com/share.png"
+          },
+          "remediation": null
+        },
+        "social_meta_completeness": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Share tags are complete: Open Graph title, description, url and type plus a Twitter card (\"summary_large_image\"), and og:url agrees with the canonical URL (the share image is judged separately).",
+          "issue_count": 0,
+          "evidence": {
+            "missing_og_tags": [],
+            "twitter_card": "summary_large_image",
+            "og_url": "https://example.com/guides/seo-basics",
+            "canonical_url": "https://example.com/guides/seo-basics"
+          },
+          "remediation": null
+        },
+        "meta_robots_conflicts": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Robots directives are clean (\"index, follow\").",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "rel=canonical present: https://example.com/guides/seo-basics",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_conflicts": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Canonical is self-referential — no conflict.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_refresh_redirect": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This page does not redirect itself through a meta refresh tag.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "broken_page_4xx": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTTP 200 — not a client error.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "server_error_5xx": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTTP 200 — not a server error.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "redirect_chain": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No redirects — the URL serves content directly.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "redirect_loop": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No redirect chain to loop.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "temporary_redirect_usage": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No redirect — the URL serves content directly.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "soft_404_detection": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Blocked — could not assess: a bot-protection challenge (Cloudflare or similar) stopped our crawler. A page that shuts out a crawler is not a broken page; it may load fine for people. Check it in a browser, or allow our crawler and crawl again.",
+          "issue_count": 0,
+          "evidence": {
+            "blocked_reason": "cloudflare_block",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "content_needs_rendering": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Blocked — could not assess: a bot-protection challenge (Cloudflare or similar) stopped our crawler. A page that shuts out a crawler is not a broken page; it may load fine for people. Check it in a browser, or allow our crawler and crawl again.",
+          "issue_count": 0,
+          "evidence": {
+            "blocked_reason": "cloudflare_block",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "dead_end_page": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "Blocked — could not assess: a bot-protection challenge (Cloudflare or similar) stopped our crawler. A page that shuts out a crawler is not a broken page; it may load fine for people. Check it in a browser, or allow our crawler and crawl again.",
+          "issue_count": 0,
+          "evidence": {
+            "blocked_reason": "cloudflare_block",
+            "http_status": 200
+          },
+          "remediation": null
+        },
+        "pagination_markup": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is not part of a next/previous page series, so there is nothing to check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "mixed_content": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No insecure http:// resources on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "https_enforcement": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Served over HTTPS, and the http:// variant redirects permanently (HTTP 301).",
+          "issue_count": 0,
+          "evidence": {
+            "http_variant": {
+              "status": 301,
+              "location": "https://example.com/guides/seo-basics"
+            }
+          },
+          "remediation": null
+        },
+        "page_weight": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTML document is 120,000 bytes.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "ttfb_server_response": {
+          "status": "pass",
+          "score": 98,
+          "reasoning": "The server sent the first byte in 180 ms — comfortably inside the 800 ms bar for a good server response.",
+          "issue_count": 0,
+          "evidence": {
+            "ttfb_ms": 180
+          },
+          "remediation": null
+        },
+        "structured_data_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Structured data parses cleanly and every rich-result type in use (Article) declares its required and recommended properties.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "hreflang_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Valid hreflang set: 3 version(s), all codes and URLs well formed, self-reference present, x-default declared.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "cwv_lcp": {
+          "status": "pass",
+          "score": 93,
+          "reasoning": "In a simulated phone test, the main content appeared in 1.8s (a lab estimate) — inside Google's 2.5 second target.",
+          "issue_count": 0,
+          "evidence": {
+            "lcp_ms": 1800.0,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "cwv_inp_tbt": {
+          "status": "pass",
+          "score": 94,
+          "reasoning": "In a simulated phone test, this page ignored taps and clicks for only 120ms while loading (a lab estimate) — comfortably responsive.",
+          "issue_count": 0,
+          "evidence": {
+            "tbt_ms": 120.0,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "cwv_cls": {
+          "status": "pass",
+          "score": 97,
+          "reasoning": "In a simulated phone test, this page holds still as it loads (layout shift 0.030) — under Google's 0.1 limit.",
+          "issue_count": 0,
+          "evidence": {
+            "cls": 0.03,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "asset_delivery": {
+          "status": "pass",
+          "score": 96,
+          "reasoning": "The biggest delivery cost on this page is about 90ms (on a phone) — nothing worth chasing.",
+          "issue_count": 0,
+          "evidence": {
+            "largest_saving_ms": 90.0,
+            "largest_saving_audit": "unused-javascript",
+            "audits": {
+              "unused-javascript": 90.0,
+              "unminified-css": 30.0
+            },
+            "strategy": "mobile"
+          },
+          "remediation": null
+        },
+        "caching_policy": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Visitors' browsers keep this page's own images, styling and code for a month or more, so returning visits reuse them instead of re-downloading them.",
+          "issue_count": 0,
+          "evidence": {
+            "static_bytes": 500000.0,
+            "strategy": "mobile",
+            "third_party_not_yours": [],
+            "third_party_hosts": [],
+            "well_cached_bytes": 500000.0,
+            "short_ttl_urls": [],
+            "list_truncated": false
+          },
+          "remediation": null
+        }
+      }
+    },
+    {
+      "name": "js_shell_non_2xx",
+      "why": "Shell markup on a 503: a real answer, not an app frame — never a shell.",
+      "evidence": {
+        "url": "https://example.com/guides/seo-basics",
+        "title": "SEO Basics: A Practical Guide for Teams",
+        "title_metrics": {
+          "pixel_width": 370,
+          "character_count": 39,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "title_ok": true
+        },
+        "description": "A practical, example-led introduction to technical SEO for product teams who ship changes every week and need the basics right.",
+        "description_metrics": {
+          "pixel_width": 750,
+          "character_count": 127,
+          "desktop_ok": true,
+          "mobile_ok": true,
+          "seo_length_ok": true,
+          "too_short": false,
+          "issues": [],
+          "description_ok": true
+        },
+        "meta_robots": "index, follow",
+        "canonical_url": "https://example.com/guides/seo-basics",
+        "canonical_matches": true,
+        "noindex": false,
+        "nofollow": false,
+        "h1_count": 0,
+        "headings": [],
+        "word_count": 4,
+        "text_bytes": 18000,
+        "schema_types": [
+          "Article"
+        ],
+        "image_count": 0,
+        "images_missing_alt": 0,
+        "link_count": 0,
+        "internal_link_count": 0,
+        "app_root": true,
+        "executable_script": true,
+        "app_shell_words": 4,
+        "root_text_words": null,
+        "bot_wall": null,
+        "kept_soft_404": false,
+        "image_items": [],
+        "http_status": 503,
+        "fetch_blocked_reason": null,
+        "redirect_chain": [],
+        "mixed_content": [],
+        "response_headers": {
+          "strict-transport-security": "max-age=63072000"
+        },
+        "http_variant_probe": {
+          "status": 301,
+          "location": "https://example.com/guides/seo-basics"
+        },
+        "response_bytes": 120000,
+        "response_time_ms": 320,
+        "ttfb_ms": 180,
+        "ttfb_measured_at": null,
+        "pagination": {},
+        "hreflang": [
+          {
+            "lang": "en",
+            "href": "https://example.com/guides/seo-basics"
+          },
+          {
+            "lang": "es",
+            "href": "https://example.com/es/guias/seo-basico"
+          },
+          {
+            "lang": "x-default",
+            "href": "https://example.com/guides/seo-basics"
+          }
+        ],
+        "structured_data": {
+          "parse_errors": [],
+          "json_ld_raw": [
+            "{\"@type\":\"Article\"}"
+          ],
+          "blocks": [
+            {
+              "source": "json-ld",
+              "types": [
+                "Article"
+              ],
+              "data": {
+                "@type": "Article",
+                "headline": "SEO Basics",
+                "image": "https://cdn.example.com/share.png",
+                "author": {
+                  "@type": "Person",
+                  "name": "A. Writer"
+                },
+                "datePublished": "2026-01-05",
+                "dateModified": "2026-02-02",
+                "publisher": {
+                  "@type": "Organization",
+                  "name": "Example"
+                }
+              }
+            }
+          ]
+        },
+        "head_captured": true,
+        "lang": "en",
+        "og": {
+          "og:title": "SEO Basics",
+          "og:description": "A practical introduction to technical SEO.",
+          "og:image": "https://cdn.example.com/share.png",
+          "og:url": "https://example.com/guides/seo-basics",
+          "og:type": "article"
+        },
+        "twitter": {
+          "twitter:card": "summary_large_image"
+        },
+        "head_meta": {
+          "viewport": "width=device-width, initial-scale=1",
+          "refresh": null
+        },
+        "lab_performance": {
+          "strategy": "mobile",
+          "observed_at": null,
+          "lcp_ms": 1800.0,
+          "tbt_ms": 120.0,
+          "cls": 0.03,
+          "delivery_savings_ms": 120.0,
+          "delivery_audits": {
+            "unused-javascript": 90.0,
+            "unminified-css": 30.0
+          },
+          "cache_static_bytes": 500000.0,
+          "cache_short_ttl_resources": [],
+          "cache_static_bytes_by_host": {},
+          "cache_list_truncated": false,
+          "field_metrics": {}
+        }
+      },
+      "expected": {
+        "url_design_quality": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This URL is short, readable, and free of tracking-state clutter.",
+          "issue_count": 0,
+          "evidence": {
+            "url_length": 37,
+            "parameter_count": 0,
+            "has_uppercase": false,
+            "has_underscores": false,
+            "has_non_ascii": false,
+            "session_params": []
+          },
+          "remediation": null
+        },
+        "title_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Title present: \"SEO Basics: A Practical Guide for Teams\".",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "title_length": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Title length is in the optimal window (39 chars, about 370px wide).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Meta description present.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_description_length": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Meta description length is in the optimal window (127 chars, about 750px wide).",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "h1_presence": {
+          "status": "fail",
+          "score": 30,
+          "reasoning": "No H1 on the page — the primary on-page topic signal is missing.",
+          "issue_count": 1,
+          "evidence": null,
+          "remediation": null
+        },
+        "heading_hierarchy": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No headings, but too little content on the page to need them.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "thin_content": {
+          "status": "fail",
+          "score": 20,
+          "reasoning": "Only 4 words of visible text — effectively an empty page to a search engine.",
+          "issue_count": 1,
+          "evidence": null,
+          "remediation": null
+        },
+        "content_depth": {
+          "status": "warn",
+          "score": 55,
+          "reasoning": "This page presents itself as an article but runs only 4 words (articles that compete usually clear 500).",
+          "issue_count": 1,
+          "evidence": {
+            "page_type": "article",
+            "word_count": 4
+          },
+          "remediation": null
+        },
+        "text_html_ratio": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page has only 4 words, which the thin-content check already reports — a low text share is the same fact, not a second defect.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_alt_presence": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_dimension_attrs": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_lazy_loading": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_modern_format": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "image_oversized": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "broken_images": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "No images on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "viewport_meta": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Responsive viewport declared (\"width=device-width, initial-scale=1\").",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "html_lang_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Language declared as \"en\", a valid code. (Whether the writing is actually in that language is not measured from a crawl.)",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "og_image_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Share image declared as a full web address (https://cdn.example.com/share.png). Its pixel size is not measured here — that needs the image file itself.",
+          "issue_count": 0,
+          "evidence": {
+            "og_image": "https://cdn.example.com/share.png"
+          },
+          "remediation": null
+        },
+        "social_meta_completeness": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Share tags are complete: Open Graph title, description, url and type plus a Twitter card (\"summary_large_image\"), and og:url agrees with the canonical URL (the share image is judged separately).",
+          "issue_count": 0,
+          "evidence": {
+            "missing_og_tags": [],
+            "twitter_card": "summary_large_image",
+            "og_url": "https://example.com/guides/seo-basics",
+            "canonical_url": "https://example.com/guides/seo-basics"
+          },
+          "remediation": null
+        },
+        "meta_robots_conflicts": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Robots directives are clean (\"index, follow\").",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_presence": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "rel=canonical present: https://example.com/guides/seo-basics",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "canonical_conflicts": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Canonical is self-referential — no conflict.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "meta_refresh_redirect": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This page does not redirect itself through a meta refresh tag.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "broken_page_4xx": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTTP 503 — not a client error.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "server_error_5xx": {
+          "status": "fail",
+          "score": 5,
+          "reasoning": "The server returned HTTP 503 — the page is broken for users and will be dropped from the index if it persists.",
+          "issue_count": 1,
+          "evidence": {
+            "http_status": 503
+          },
+          "remediation": null
+        },
+        "redirect_chain": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No redirects — the URL serves content directly.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "redirect_loop": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No redirect chain to loop.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "temporary_redirect_usage": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No redirect — the URL serves content directly.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "soft_404_detection": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "This URL answers with HTTP 503 — whatever it is, it is not pretending to be a working page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "content_needs_rendering": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This URL answers with HTTP 503, so it has no page content to render.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "dead_end_page": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This URL answers with HTTP 503, so it is not a page people land on.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "pagination_markup": {
+          "status": "n_a",
+          "score": null,
+          "reasoning": "This page is not part of a next/previous page series, so there is nothing to check.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "mixed_content": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "No insecure http:// resources on this page.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "https_enforcement": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Served over HTTPS, and the http:// variant redirects permanently (HTTP 301).",
+          "issue_count": 0,
+          "evidence": {
+            "http_variant": {
+              "status": 301,
+              "location": "https://example.com/guides/seo-basics"
+            }
+          },
+          "remediation": null
+        },
+        "page_weight": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "HTML document is 120,000 bytes.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "ttfb_server_response": {
+          "status": "pass",
+          "score": 98,
+          "reasoning": "The server sent the first byte in 180 ms — comfortably inside the 800 ms bar for a good server response.",
+          "issue_count": 0,
+          "evidence": {
+            "ttfb_ms": 180
+          },
+          "remediation": null
+        },
+        "structured_data_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Structured data parses cleanly and every rich-result type in use (Article) declares its required and recommended properties.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "hreflang_validity": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Valid hreflang set: 3 version(s), all codes and URLs well formed, self-reference present, x-default declared.",
+          "issue_count": 0,
+          "evidence": null,
+          "remediation": null
+        },
+        "cwv_lcp": {
+          "status": "pass",
+          "score": 93,
+          "reasoning": "In a simulated phone test, the main content appeared in 1.8s (a lab estimate) — inside Google's 2.5 second target.",
+          "issue_count": 0,
+          "evidence": {
+            "lcp_ms": 1800.0,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "cwv_inp_tbt": {
+          "status": "pass",
+          "score": 94,
+          "reasoning": "In a simulated phone test, this page ignored taps and clicks for only 120ms while loading (a lab estimate) — comfortably responsive.",
+          "issue_count": 0,
+          "evidence": {
+            "tbt_ms": 120.0,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "cwv_cls": {
+          "status": "pass",
+          "score": 97,
+          "reasoning": "In a simulated phone test, this page holds still as it loads (layout shift 0.030) — under Google's 0.1 limit.",
+          "issue_count": 0,
+          "evidence": {
+            "cls": 0.03,
+            "strategy": "mobile",
+            "source": "lab"
+          },
+          "remediation": null
+        },
+        "asset_delivery": {
+          "status": "pass",
+          "score": 96,
+          "reasoning": "The biggest delivery cost on this page is about 90ms (on a phone) — nothing worth chasing.",
+          "issue_count": 0,
+          "evidence": {
+            "largest_saving_ms": 90.0,
+            "largest_saving_audit": "unused-javascript",
+            "audits": {
+              "unused-javascript": 90.0,
+              "unminified-css": 30.0
+            },
+            "strategy": "mobile"
+          },
+          "remediation": null
+        },
+        "caching_policy": {
+          "status": "pass",
+          "score": 100,
+          "reasoning": "Visitors' browsers keep this page's own images, styling and code for a month or more, so returning visits reuse them instead of re-downloading them.",
+          "issue_count": 0,
+          "evidence": {
+            "static_bytes": 500000.0,
+            "strategy": "mobile",
+            "third_party_not_yours": [],
+            "third_party_hosts": [],
+            "well_cached_bytes": 500000.0,
+            "short_ttl_urls": [],
+            "list_truncated": false
+          },
+          "remediation": null
+        }
+      }
+    },
+    {
       "name": "js_shell_unknown",
       "why": "A snapshot older than the app-shell capture: shell status unknown, content_needs_rendering n_a with the recapture button, nothing silenced.",
       "evidence": {
@@ -68489,6 +71817,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -69203,6 +72532,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -69912,6 +73242,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -70616,6 +73947,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [
           {
             "src": "https://cdn.example.com/photo-0.webp",
@@ -71269,6 +74601,7 @@
         "app_shell_words": null,
         "root_text_words": null,
         "bot_wall": null,
+        "kept_soft_404": false,
         "image_items": [],
         "http_status": null,
         "fetch_blocked_reason": null,

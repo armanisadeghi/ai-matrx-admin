@@ -73,6 +73,8 @@ interface PythonEvidence {
   executable_script: boolean | null;
   app_shell_words: number | null;
   root_text_words: number | null;
+  bot_wall: boolean | null;
+  kept_soft_404: boolean;
   image_items: PageImageItem[];
   http_status: number | null;
   fetch_blocked_reason: string | null;
@@ -163,6 +165,8 @@ function toPageEvidence(raw: PythonEvidence): PageEvidence {
     executableScript: raw.executable_script,
     appShellWords: raw.app_shell_words,
     rootTextWords: raw.root_text_words,
+    botWall: raw.bot_wall,
+    keptSoft404: raw.kept_soft_404,
     imageItems: raw.image_items,
     httpStatus: raw.http_status,
     fetchBlockedReason: raw.fetch_blocked_reason,

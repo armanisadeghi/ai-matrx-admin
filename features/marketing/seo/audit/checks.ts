@@ -28,6 +28,7 @@
 
 import { evaluateMetaDescription, evaluateMetaTitle } from "../serp/metrics";
 import type { StoredMetaFieldMetrics } from "../serp/metrics";
+import { canonicalIsSelf } from "./indexability";
 
 // ---------------------------------------------------------------------------
 // Thresholds — every decision boundary, declared exactly once.
@@ -660,6 +661,16 @@ export interface PageEvidence {
    * real text there is evidence against a shell. Null = not measured.
    */
   rootTextWords?: number | null;
+  /**
+   * A bot wall / interstitial in app-shell markup (`app_shell.bot_wall`).
+   * Never a shell. Null = not measured.
+   */
+  botWall?: boolean | null;
+  /**
+   * The crawl KEPT this page although the read judge called it a soft 404:
+   * only `soft_404_detection` judges it; every other check answers n_a.
+   */
+  keptSoft404?: boolean;
   /**
    * Per-<img> inventory in DOM order, capped while `imageCount` stays the true
    * total. Empty with a non-zero `imageCount` means the snapshot predates the
@@ -1473,8 +1484,33 @@ export function checkCanonicalPresence(ev: PageEvidence): CheckOutcome {
   );
 }
 
+/** The redirecting chain URL (start or middle — anything but the final) the canonical names, if any. */
+function canonicalRedirectHop(ev: PageEvidence, canonical: string): string | null {
+  const hops = chainUrls(ev);
+  // Every URL in the chain but the last redirected — the start URL included.
+  const redirected = hops.length > 1 ? hops.slice(0, -1) : [];
+  for (const hop of redirected) {
+    if (canonicalIsSelf(canonical, hop) && !canonicalIsSelf(canonical, ev.url)) return hop;
+  }
+  return null;
+}
+
 export function checkCanonicalConflicts(ev: PageEvidence): CheckOutcome {
   const canonical = ev.canonicalUrl;
+  if (canonical && ev.canonicalMatches !== true) {
+    const hop = canonicalRedirectHop(ev, canonical);
+    if (hop) {
+      // `canonical_conflicts.score_contract`: "Canonical target redirects (chain)" = 30.
+      return outcome(
+        "fail",
+        30,
+        `Canonical points to a redirect (${sliceCodePoints(hop, 160)}), which sends visitors on to ` +
+          "this page — name the page's final address in the canonical instead.",
+        1,
+        { canonical_url: canonical, redirects_to: ev.url },
+      );
+    }
+  }
   if (
     !canonical ||
     (!canonical.startsWith("http://") && !canonical.startsWith("https://"))
@@ -4516,6 +4552,13 @@ export function pageIsJsShell(
   wordLimit: number = JS_SHELL_WORD_LIMIT,
   rootTextLimit: number = JS_SHELL_ROOT_TEXT_WORDS,
 ): boolean | null {
+  const status = ev.httpStatus;
+  // A 503 maintenance page, an error page: a real answer, not an app frame.
+  if (status !== null && status !== undefined && !(status >= 200 && status < 300)) {
+    return false;
+  }
+  // A wall in app-shell markup is a blocked read, never a shell.
+  if (ev.botWall) return false;
   const words =
     ev.appShellWords !== null && ev.appShellWords !== undefined
       ? ev.appShellWords
@@ -4551,7 +4594,22 @@ export const JS_SHELL_NOT_APPLICABLE_REASON =
   "without running that JavaScript, so there is no content to judge here. See the " +
   '"content needs rendering" finding for how to crawl it rendered.';
 
+/** A bot wall that reached a snapshot gets the EXISTING blocked-page answer. */
+function botWallOutcome(ev: PageEvidence): CheckOutcome | null {
+  if (!ev.botWall) return null;
+  return blockedFetchOutcome({
+    ...ev,
+    fetchBlockedReason: ev.fetchBlockedReason || "cloudflare_block",
+  });
+}
+
+/**
+ * n_a for a content check on an app shell — never a false thin/H1/alt
+ * finding. A bot wall in shell markup answers with the blocked-page reason.
+ */
 export function jsShellNotApplicable(ev: PageEvidence): CheckOutcome | null {
+  const wall = botWallOutcome(ev);
+  if (wall) return wall;
   if (pageIsJsShell(ev)) {
     return outcome("n_a", null, JS_SHELL_NOT_APPLICABLE_REASON);
   }
@@ -4594,6 +4652,8 @@ export function checkContentNeedsRendering(ev: PageEvidence): CheckOutcome {
       `This URL answers with HTTP ${status}, so it has no page content to render.`,
     );
   }
+  const wall = botWallOutcome(ev);
+  if (wall) return wall;
   const shell = pageIsJsShell(ev);
   if (shell === null) {
     return outcome(
@@ -4676,7 +4736,7 @@ export function checkDeadEndPage(ev: PageEvidence): CheckOutcome {
  * twin) or it does not exist — no surface may re-derive one of these verdicts
  * from raw evidence in a component.
  */
-export const PAGE_CHECKS: Record<
+const PAGE_CHECK_FUNCTIONS: Record<
   string,
   (ev: PageEvidence) => CheckOutcome
 > = {
@@ -4725,6 +4785,29 @@ export const PAGE_CHECKS: Record<
   asset_delivery: checkAssetDelivery,
   caching_policy: checkCachingPolicy,
 };
+
+/**
+ * What every check except `soft_404_detection` answers on a kept soft 404:
+ * one cause, one finding.
+ */
+export const KEPT_SOFT_404_REASON =
+  "This page is a soft 404 — it answers as a working page but says it does not exist — " +
+  "so it is judged only by the soft-404 check.";
+
+export function keptSoft404NotApplicable(ev: PageEvidence): CheckOutcome | null {
+  return ev.keptSoft404 ? outcome("n_a", null, KEPT_SOFT_404_REASON) : null;
+}
+
+/** Every check but the soft-404 one stands aside on a kept soft 404. */
+export const PAGE_CHECKS: Record<string, (ev: PageEvidence) => CheckOutcome> =
+  Object.fromEntries(
+    Object.entries(PAGE_CHECK_FUNCTIONS).map(([key, check]) => [
+      key,
+      key === "soft_404_detection"
+        ? check
+        : (ev: PageEvidence) => keptSoft404NotApplicable(ev) ?? check(ev),
+    ]),
+  );
 
 /** Every per-page check, keyed by check name. */
 export function runPageChecks(ev: PageEvidence): Record<string, CheckOutcome> {
