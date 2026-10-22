@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0503",
-  "version": 8,
+  "version": 9,
   "title": "Residential Cleaning Service HQ",
   "description": "For house cleaning companies: recurring cleans, teams, home details, supplies, billing.",
   "forWho": "Residential cleaning businesses",
@@ -2489,7 +2489,7 @@
         "Larkspur Avenue"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2853,7 +2853,8 @@
                   "on_hand",
                   "reorder_at",
                   "stock_value",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {

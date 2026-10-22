@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0100",
-  "version": 8,
+  "version": 9,
   "title": "Projects, Tasks & Sprints",
   "description": "Product teams that plan by project: tasks, two-week sprints and a live sprint dashboard.",
   "forWho": "Software and product teams working in sprints",
@@ -1525,7 +1525,7 @@
         "Fennimore Court"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1795,7 +1795,8 @@
                   "points_total",
                   "points_done",
                   "progress",
-                  "add_task_btn"
+                  "add_task_btn",
+                  "budget"
                 ]
               },
               {
@@ -1803,7 +1804,15 @@
                 "name": "Timeline",
                 "icon": "ChartGantt",
                 "dateField": "start_on",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "task_count",
+                  "points_total",
+                  "points_done",
+                  "progress",
+                  "add_task_btn",
+                  "budget"
+                ]
               },
               {
                 "layout": "grid",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0408",
-  "version": 7,
+  "version": 8,
   "title": "Law Firm Case Management",
   "description": "For lawyers and paralegals: conflicts, matters, court deadlines, time and trust balances.",
   "forWho": "Small law firms, solo attorneys and paralegals",
@@ -2030,7 +2030,7 @@
         "Cannery Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2457,7 +2457,8 @@
                 "hiddenFields": [
                   "hours",
                   "billable",
-                  "billed"
+                  "billed",
+                  "rate"
                 ]
               },
               {

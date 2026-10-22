@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0314",
-  "version": 10,
+  "version": 11,
   "title": "Event Planner",
   "description": "Event organisers: guests and RSVPs, vendors, tasks, budget and run of show.",
   "forWho": "Small organisers and event planners",
@@ -2401,7 +2401,7 @@
         "Starling Passage"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -2509,7 +2509,8 @@
                   "est_total",
                   "add_task_btn",
                   "add_guest_btn",
-                  "updated_at"
+                  "updated_at",
+                  "budget"
                 ]
               },
               {
@@ -2800,7 +2801,9 @@
                 "hiddenFields": [
                   "variance",
                   "event",
-                  "logged_at"
+                  "logged_at",
+                  "estimated",
+                  "actual"
                 ]
               },
               {

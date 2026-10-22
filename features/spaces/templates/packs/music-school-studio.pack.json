@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0559",
-  "version": 6,
+  "version": 7,
   "title": "Music School Studio Desk",
   "description": "Music school desk: students, weekly lessons, tuition owed, recitals, exams and rentals.",
   "forWho": "Music schools, studios and lesson programs",
@@ -2876,7 +2876,7 @@
         "Cantor Row"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3031,7 +3031,8 @@
                   "add_rental",
                   "btn_mail",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "billed"
                 ]
               },
               {
@@ -3056,7 +3057,8 @@
                   "add_rental",
                   "btn_mail",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "billed"
                 ]
               },
               {
@@ -3436,7 +3438,9 @@
                   "btn_returned",
                   "btn_claim",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "monthly",
+                  "deposit"
                 ]
               },
               {
@@ -3452,7 +3456,8 @@
                   "btn_returned",
                   "btn_claim",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "monthly"
                 ]
               },
               {

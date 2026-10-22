@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0461",
-  "version": 8,
+  "version": 9,
   "title": "Translation Agency Desk",
   "description": "For translation project managers: jobs, word counts, linguists, glossaries and reviews.",
   "forWho": "Translation and localization agencies",
@@ -2497,7 +2497,7 @@
         "Cormorant Way"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2716,7 +2716,8 @@
                   "jobs_done",
                   "jobs_open",
                   "btn_mail",
-                  "added_at"
+                  "added_at",
+                  "rate"
                 ]
               },
               {
@@ -2787,7 +2788,8 @@
                   "added_at",
                   "btn_send_to_client",
                   "add_review",
-                  "take_btn"
+                  "take_btn",
+                  "rate"
                 ]
               },
               {

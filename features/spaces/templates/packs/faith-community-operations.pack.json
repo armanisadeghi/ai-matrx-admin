@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0553",
-  "version": 6,
+  "version": 7,
   "title": "Faith Community Operations Hub",
   "description": "For congregations: members, attendance, giving, care requests, rooms and volunteers.",
   "forWho": "Churches, temples, mosques and other faith communities",
@@ -3101,7 +3101,7 @@
         "Kestrel Avenue"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3554,7 +3554,9 @@
                   "capacity",
                   "booked_count",
                   "all_bookings",
-                  "added_at"
+                  "added_at",
+                  "rental_rate",
+                  "rental_income"
                 ]
               },
               {

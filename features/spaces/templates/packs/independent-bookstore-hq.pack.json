@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0521",
-  "version": 8,
+  "version": 9,
   "title": "Independent Bookstore HQ",
   "description": "For bookstores: titles and stock, special orders, publisher orders and returns, events.",
   "forWho": "Independent bookstores and book sellers",
@@ -3087,7 +3087,7 @@
         "Chapter Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3580,7 +3580,8 @@
                 "hiddenFields": [
                   "units",
                   "ret_notes",
-                  "added_at"
+                  "added_at",
+                  "credit"
                 ]
               },
               {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0511",
-  "version": 8,
+  "version": 9,
   "title": "Personal Trainer Business HQ",
   "description": "For personal trainers: client programs, sessions left, weekly check-ins, renewals.",
   "forWho": "Personal trainers and small coaching businesses",
@@ -2298,7 +2298,8 @@
               "staff": "tm-1",
               "when_on": "@today-7d",
               "visit_type": "Training session",
-              "location": "Studio"
+              "location": "Studio",
+              "mine": "@installer"
             }
           },
           {
@@ -2369,7 +2370,8 @@
               "when_on": "@today-2d",
               "visit_type": "Training session",
               "location": "Client's home",
-              "focus": "Sit-to-stand, step-ups"
+              "focus": "Sit-to-stand, step-ups",
+              "mine": "@installer"
             }
           },
           {
@@ -2382,7 +2384,8 @@
               "when_on": "@today-5d",
               "visit_type": "Program review",
               "location": "Online",
-              "focus": "Phase 3 plan"
+              "focus": "Phase 3 plan",
+              "mine": "@installer"
             }
           },
           {
@@ -3514,7 +3517,7 @@
         "Granary Row"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {

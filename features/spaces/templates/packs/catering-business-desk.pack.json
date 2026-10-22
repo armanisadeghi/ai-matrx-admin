@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0464",
-  "version": 8,
+  "version": 9,
   "title": "Catering Business Desk",
   "description": "For caterers: proposals, event orders, prep and pack lists, food and labor cost per event.",
   "forWho": "Caterers and event food companies",
@@ -2506,7 +2506,7 @@
         "Millrace Drive"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2901,7 +2901,9 @@
                 "hiddenFields": [
                   "food_pct",
                   "uses",
-                  "added_at"
+                  "added_at",
+                  "cost_head",
+                  "price_head"
                 ]
               },
               {
@@ -2957,7 +2959,9 @@
                   "dish",
                   "cook",
                   "added_at",
-                  "btn_pack_it"
+                  "btn_pack_it",
+                  "cost_each",
+                  "food_cost"
                 ]
               },
               {
@@ -2972,7 +2976,9 @@
                   "dish",
                   "cook",
                   "added_at",
-                  "btn_pack_it"
+                  "btn_pack_it",
+                  "cost_each",
+                  "food_cost"
                 ]
               },
               {
@@ -3091,7 +3097,9 @@
                   "event",
                   "person",
                   "added_at",
-                  "btn_lock_in"
+                  "btn_lock_in",
+                  "rate",
+                  "labor_cost"
                 ]
               },
               {

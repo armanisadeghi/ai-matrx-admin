@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 10,
+  "version": 11,
   "title": "Agency OS",
   "description": "Small agencies: clients, retainers, projects, capacity and proposals in one place.",
   "forWho": "Small design, marketing and dev agencies",
@@ -2734,7 +2734,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -2826,14 +2826,42 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "margin",
+                  "margin_pct",
+                  "tasks_total",
+                  "tasks_done",
+                  "progress",
+                  "est_hours",
+                  "lead",
+                  "client",
+                  "done_btn",
+                  "add_task_btn",
+                  "budget",
+                  "cost"
+                ]
               },
               {
                 "id": "view-tl",
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "start_on"
+                "dateField": "start_on",
+                "hiddenFields": [
+                  "cost",
+                  "margin",
+                  "margin_pct",
+                  "tasks_total",
+                  "tasks_done",
+                  "progress",
+                  "est_hours",
+                  "lead",
+                  "client",
+                  "done_btn",
+                  "add_task_btn",
+                  "budget"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -3018,7 +3046,8 @@
                   "hours_month",
                   "hours_left",
                   "used_pct",
-                  "updated_at"
+                  "updated_at",
+                  "monthly_fee"
                 ]
               },
               {
@@ -3170,7 +3199,8 @@
                   "won_props",
                   "email_btn",
                   "added_at",
-                  "add_project_btn"
+                  "add_project_btn",
+                  "fee_sum"
                 ]
               },
               {

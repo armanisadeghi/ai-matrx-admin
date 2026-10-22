@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0465",
-  "version": 8,
+  "version": 9,
   "title": "Boutique Hotel Desk",
   "description": "For innkeepers: rooms, reservations, housekeeping status, repairs, occupancy and ADR.",
   "forWho": "Boutique hotels, inns and bed and breakfasts",
@@ -2440,7 +2440,7 @@
         "Cobbler's Green"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2607,7 +2607,8 @@
                   "added_at",
                   "btn_open_for_guests",
                   "add_repair",
-                  "add_cleaning"
+                  "add_cleaning",
+                  "rate"
                 ]
               },
               {
@@ -2671,7 +2672,8 @@
                   "owner_me",
                   "added_at",
                   "btn_check_in_guest",
-                  "btn_check_out_guest"
+                  "btn_check_out_guest",
+                  "rate"
                 ]
               },
               {

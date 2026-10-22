@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0505",
-  "version": 8,
+  "version": 9,
   "title": "Electrician Business HQ",
   "description": "For electrical contractors: estimates, jobs, permits and inspections, materials, invoices.",
   "forWho": "Electrical contractors and electricians",
@@ -2657,7 +2657,7 @@
         "Anvil Court"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3015,7 +3015,8 @@
                   "on_hand",
                   "reorder_at",
                   "stock_value",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {

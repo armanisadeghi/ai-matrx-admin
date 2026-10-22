@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0569",
-  "version": 6,
+  "version": 7,
   "title": "Small Manufacturer Production Desk",
   "description": "Small manufacturer: orders, bill of materials, unit cost, work orders, scrap, QC holds.",
   "forWho": "Small manufacturers and workshops making products to order",
@@ -3160,7 +3160,7 @@
         "Foundry Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3608,7 +3608,9 @@
                   "btn_claim",
                   "add_line",
                   "add_order",
-                  "added_at"
+                  "added_at",
+                  "price",
+                  "labor_rate"
                 ]
               },
               {
@@ -3676,7 +3678,8 @@
                   "short",
                   "btn_restocked",
                   "btn_claim",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
@@ -3694,7 +3697,8 @@
                   "btn_restocked",
                   "btn_claim",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
@@ -3809,7 +3813,8 @@
                 "hiddenFields": [
                   "qty",
                   "line_cost",
-                  "added_at"
+                  "added_at",
+                  "part_cost"
                 ]
               },
               {

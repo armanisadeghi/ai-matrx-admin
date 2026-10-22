@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0213",
-  "version": 9,
+  "version": 10,
   "title": "Wedding Planner",
   "description": "Couples: tasks, guest list, vendors, budget and seating for your wedding.",
   "forWho": "Couples planning a wedding",
@@ -1803,7 +1803,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2046,7 +2046,14 @@
                 "name": "By category",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "diff_pct",
+                  "paid",
+                  "estimated",
+                  "actual",
+                  "difference"
+                ]
               },
               {
                 "id": "view-12",

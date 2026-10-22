@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0518",
-  "version": 8,
+  "version": 9,
   "title": "Wholesale Distributor HQ",
   "description": "For distributors: case stock and best-by dates, POs, routes, invoices and collections.",
   "forWho": "Small wholesale distributors and suppliers",
@@ -3144,7 +3144,7 @@
         "Warehouse Road"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3517,7 +3517,9 @@
                 "groupField": "po_status",
                 "hiddenFields": [
                   "cases",
-                  "added_at"
+                  "added_at",
+                  "po_total",
+                  "freight"
                 ]
               },
               {

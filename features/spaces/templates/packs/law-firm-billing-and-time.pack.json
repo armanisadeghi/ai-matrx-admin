@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0412",
-  "version": 7,
+  "version": 8,
   "title": "Law Firm Billing and Time",
   "description": "For law firm billing: time, invoices, trust payments, write-downs and collections.",
   "forWho": "Law firm billing staff, office managers and attorneys",
@@ -1894,7 +1894,7 @@
         "Wacker Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2176,7 +2176,9 @@
                   "hours",
                   "value",
                   "owner",
-                  "billed_btn"
+                  "billed_btn",
+                  "rate",
+                  "write_down"
                 ]
               },
               {
@@ -2190,7 +2192,9 @@
                   "value",
                   "status",
                   "owner",
-                  "billed_btn"
+                  "billed_btn",
+                  "rate",
+                  "write_down"
                 ]
               },
               {
@@ -2285,14 +2289,35 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "method",
+                  "balance",
+                  "collector",
+                  "sent_btn",
+                  "paid_btn",
+                  "amount",
+                  "paid_amount",
+                  "from_trust"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "method",
+                  "balance",
+                  "status",
+                  "collector",
+                  "sent_btn",
+                  "paid_btn",
+                  "amount",
+                  "paid_amount",
+                  "from_trust"
+                ]
               },
               {
                 "id": "vall",

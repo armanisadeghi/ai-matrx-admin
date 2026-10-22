@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0303",
-  "version": 10,
+  "version": 11,
   "title": "Small Business OS",
   "description": "Owners of 1 to 15 person businesses: sales, projects, money, team and goals in one.",
   "forWho": "Owners of 1 to 15 person businesses",
@@ -3067,7 +3067,7 @@
         "Weatherby Road"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -3326,7 +3326,8 @@
                   "open_tasks",
                   "progress",
                   "pj_done",
-                  "add_task_btn"
+                  "add_task_btn",
+                  "budget"
                 ]
               },
               {
@@ -3341,7 +3342,8 @@
                   "open_tasks",
                   "progress",
                   "pj_done",
-                  "add_task_btn"
+                  "add_task_btn",
+                  "budget"
                 ]
               }
             ],

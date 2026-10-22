@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0467",
-  "version": 8,
+  "version": 9,
   "title": "Coffee Shop Operations",
   "description": "For cafe owners and baristas: drink margins, dial-ins, pars, waste, orders, machine care.",
   "forWho": "Independent coffee shops and cafes",
@@ -2443,7 +2443,7 @@
         "Almond Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2659,7 +2659,9 @@
                   "to_order",
                   "vendor",
                   "counter",
-                  "added_at"
+                  "added_at",
+                  "unit_cost",
+                  "stock_value"
                 ]
               },
               {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0550",
-  "version": 5,
+  "version": 6,
   "title": "Nonprofit Fundraising Desk",
   "description": "Donor CRM for nonprofits: gifts, pledges, monthly donors, campaigns and thank-you letters.",
   "forWho": "Small and mid-size nonprofits with a development team",
@@ -3371,7 +3371,7 @@
         "Larkspur Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3681,7 +3681,9 @@
                   "btn_claim",
                   "add_gift",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "goal",
+                  "raised"
                 ]
               },
               {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0507",
-  "version": 8,
+  "version": 9,
   "title": "Pest Control Business HQ",
   "description": "For pest control operators: service plans, routes, application records, callbacks.",
   "forWho": "Pest control and extermination companies",
@@ -2671,7 +2671,7 @@
         "Plover Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3031,7 +3031,8 @@
                   "reorder_at",
                   "reorder_flag",
                   "stock_value",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
