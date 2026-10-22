@@ -35,3 +35,20 @@ describe("mind map node citations", () => {
     expect(citeDiagramNodes({ nodes: [{ id: "a", label: "x y z" }] }, []).citedCount).toBe(0);
   });
 });
+
+describe("mind map node text", () => {
+  it("never carries a chunk marker, and honors a chunk id the agent cited", () => {
+    const spec = {
+      __kind: "diagram_spec",
+      nodes: [
+        { id: "a", label: "Ribosomes ### Chunk pd1:2 (page 7)", description: "### Chunk pd1:2\nassemble proteins", chunk_id: "pd1:1" },
+      ],
+      edges: [],
+    };
+    const { spec: out } = citeDiagramNodes(spec, chunks);
+    const n = (out.nodes as { label: string; description: string }[])[0]!;
+    expect(JSON.stringify(n)).not.toMatch(/### Chunk/);
+    expect(n.label).toBe("Ribosomes");
+    expect(nodeCitationOf(n)).toMatchObject({ sourceId: "pd1:1" });
+  });
+});
