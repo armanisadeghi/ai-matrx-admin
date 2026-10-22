@@ -10,7 +10,7 @@
  */
 
 import type { SurfaceScopePayload, SurfaceValueGroup } from "@ai-matrx/chat/surfaces/types";
-import { hrPageSurface, hrTarget, hrValue } from "./_hr-page-values";
+import { hrPageSurface, hrTarget, hrValue } from "./hr-surface-kit";
 
 export const HR_LEAVE_POLICY_ENROLLMENT_SURFACE = "matrx-user/hr-leave-policy-enrollment";
 
@@ -54,7 +54,7 @@ Enrollment of one leave policy. enrolled_people are on it (with the balance sent
       "Active people not on the policy: { employment_id, name, job_title } (first 100; the page loads the first directory page).",
       { typicalCharCount: 2500, inlineUpTo: 4000 },
     ),
-    hrValue("can_enroll", "Can enroll", "boolean", "enrollment", 70, "True when this viewer may enroll people."),
+    hrValue("can_enroll", "Can enroll", "boolean", "enrollment", 70, "True when this viewer may enroll people.", { typicalCharCount: 4 }),
   ],
   writeTargets: [
     hrTarget(

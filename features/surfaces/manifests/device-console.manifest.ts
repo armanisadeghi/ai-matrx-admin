@@ -5,9 +5,9 @@
  * (terminal, files, sessions, info), the folder being browsed and the terminal session. Emitter:
  * `DeviceConsole` (`features/files/devices/console/`).
  *
- * Parent: the domain tree's `computer` node has no module surface (W1 did not create one), so it sits
- * under Files — the devices feature lives in `features/files/devices` and the page is "terminal and
- * files on this computer". Revisit if a Computer module is created.
+ * Parent: the Computer module (`matrx-default/computer`, the domain tree's `computer` node: the
+ * person's own computer through the desktop app). Created in W2-B for /devices and this page; it was
+ * under Files until then.
  *
  * READ-ONLY: typing into the terminal and moving files are the person's own hands on their machine.
  */
@@ -60,7 +60,7 @@ const declared: SurfaceManifest = {
   surfaceName: DEVICE_CONSOLE_SURFACE_NAME,
   situation:
     "They are on the console of their computer {device_name|this computer} ({device_status|status unknown}), in the {console_view|terminal} view. Only they type into it.",
-  inheritsFrom: "matrx-default/files",
+  inheritsFrom: "matrx-default/computer",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -139,6 +139,7 @@ export const audioModuleManifest = moduleSurface("audio", "Audio", "working with
 export const contentModuleManifest = moduleSurface("content", "Content", "writing or editing content (notes, documents, workbooks, maps, presentations)");
 export const dataModuleManifest = moduleSurface("data", "Data", "working with structured data (tables, pick lists, scopes and context items)");
 export const codeModuleManifest = moduleSurface("code", "Code", "writing code in the code workspace");
+export const computerModuleManifest = moduleSurface("computer", "Computer", "working with their own computers through the desktop app (connected devices, terminal, files on that computer)");
 export const workspaceModuleManifest = moduleSurface("workspace", "Workspace", "in their workspace (dashboard, projects, tasks, boards, war rooms)");
 export const webModuleManifest = moduleSurface("web", "Web", "pulling information from the web (scraper)");
 export const publishModuleManifest = moduleSurface("publish", "Publish", "publishing (sites and pages, podcasts, artifacts, printing, sharing)");

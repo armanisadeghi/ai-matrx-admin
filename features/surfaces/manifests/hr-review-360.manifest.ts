@@ -11,7 +11,7 @@
  */
 
 import type { SurfaceScopePayload, SurfaceValueGroup } from "@ai-matrx/chat/surfaces/types";
-import { hrPageSurface, hrTarget, hrValue } from "./_hr-page-values";
+import { hrPageSurface, hrTarget, hrValue } from "./hr-surface-kit";
 
 export const HR_REVIEW_360_SURFACE = "matrx-user/hr-review-360";
 

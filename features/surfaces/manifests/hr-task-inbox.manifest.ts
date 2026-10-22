@@ -10,7 +10,7 @@
  */
 
 import type { SurfaceScopePayload, SurfaceValueGroup } from "@ai-matrx/chat/surfaces/types";
-import { hrPageSurface, hrTarget, hrValue } from "./_hr-page-values";
+import { hrPageSurface, hrTarget, hrValue } from "./hr-surface-kit";
 
 export const HR_TASK_INBOX_SURFACE = "matrx-user/hr-task-inbox";
 

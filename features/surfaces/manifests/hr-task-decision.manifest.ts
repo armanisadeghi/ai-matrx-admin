@@ -11,7 +11,7 @@
  */
 
 import type { SurfaceScopePayload, SurfaceValueGroup } from "@ai-matrx/chat/surfaces/types";
-import { hrPageSurface, hrTarget, hrValue } from "./_hr-page-values";
+import { hrPageSurface, hrTarget, hrValue } from "./hr-surface-kit";
 
 export const HR_TASK_DECISION_SURFACE = "matrx-user/hr-task-decision";
 
@@ -49,8 +49,8 @@ One HR request. hr_request says what it is and its state; request_change lists w
       typicalCharCount: 300,
     }),
     hrValue("request_summary", "Summary", "string", "request", 40, "The one-line summary the page shows when there is no field-by-field change.", { typicalCharCount: 160 }),
-    hrValue("can_decide", "Can decide", "boolean", "decision", 100, "True when a step is waiting on this person and they are not its subject."),
-    hrValue("reason_required_to_approve", "Reason to approve", "boolean", "decision", 110, "True when this step needs a reason even to approve."),
+    hrValue("can_decide", "Can decide", "boolean", "decision", 100, "True when a step is waiting on this person and they are not its subject.", { typicalCharCount: 4 }),
+    hrValue("reason_required_to_approve", "Reason to approve", "boolean", "decision", 110, "True when this step needs a reason even to approve.", { typicalCharCount: 4 }),
     hrValue("decision_reason", "Reason box", "string", "decision", 120, "The reason box as typed.", { typicalCharCount: 200, inlineUpTo: 2000 }),
   ],
   writeTargets: [

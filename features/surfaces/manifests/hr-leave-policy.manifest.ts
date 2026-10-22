@@ -11,7 +11,7 @@
  */
 
 import type { SurfaceScopePayload, SurfaceValueGroup } from "@ai-matrx/chat/surfaces/types";
-import { hrPageSurface, hrTarget, hrValue } from "./_hr-page-values";
+import { hrPageSurface, hrTarget, hrValue } from "./hr-surface-kit";
 
 export const HR_LEAVE_POLICY_SURFACE = "matrx-user/hr-leave-policy";
 
@@ -56,8 +56,8 @@ One leave policy's editor. policy_form is the form as it stands (field names as 
       { typicalCharCount: 900, inlineUpTo: 3000 },
     ),
     hrValue("visible_fields", "Fields shown", "array", "policy", 40, "The form fields this accrual method shows; the others are hidden and cleared on save.", { typicalCharCount: 400 }),
-    hrValue("has_unsaved_changes", "Unsaved changes", "boolean", "policy", 50, "True when the form differs from what is saved."),
-    hrValue("can_edit_policy", "Can edit", "boolean", "policy", 60, "True when this viewer may save leave policies."),
+    hrValue("has_unsaved_changes", "Unsaved changes", "boolean", "policy", 50, "True when the form differs from what is saved.", { typicalCharCount: 4 }),
+    hrValue("can_edit_policy", "Can edit", "boolean", "policy", 60, "True when this viewer may save leave policies.", { typicalCharCount: 4 }),
     hrValue("form_problems", "What stops Save", "array", "checks", 100, "Every problem the form has now, in the page's words: { field, message }.", { typicalCharCount: 200 }),
     hrValue(
       "policy_checks",

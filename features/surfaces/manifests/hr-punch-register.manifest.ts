@@ -10,7 +10,7 @@
  */
 
 import type { SurfaceScopePayload, SurfaceValueGroup } from "@ai-matrx/chat/surfaces/types";
-import { hrPageSurface, hrValue } from "./_hr-page-values";
+import { hrPageSurface, hrValue } from "./hr-surface-kit";
 
 export const HR_PUNCH_REGISTER_SURFACE = "matrx-user/hr-punch-register";
 

@@ -323,6 +323,7 @@ import {
   contentModuleManifest,
   dataModuleManifest,
   codeModuleManifest,
+  computerModuleManifest,
   workspaceModuleManifest,
   webModuleManifest,
   publishModuleManifest,
@@ -438,7 +439,7 @@ import { adminQuestionDeskInterviewManifest } from "./admin-question-desk-interv
  * vocabulary in two. See THE FAMILY DOCTRINE in `.claude/skills/surface-authoring`.
  */
 export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
-  // The 30 module surfaces (AI Matrx › module): every page below names one as its root parent.
+  // The 31 module surfaces (AI Matrx › module): every page below names one as its root parent.
   agentsModuleManifest,
   appletsModuleManifest,
   chatModuleManifest,
@@ -452,6 +453,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   contentModuleManifest,
   dataModuleManifest,
   codeModuleManifest,
+  computerModuleManifest,
   workspaceModuleManifest,
   webModuleManifest,
   publishModuleManifest,

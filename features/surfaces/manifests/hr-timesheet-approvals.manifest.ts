@@ -12,7 +12,7 @@
  */
 
 import type { SurfaceScopePayload, SurfaceValueGroup } from "@ai-matrx/chat/surfaces/types";
-import { hrPageSurface, hrValue } from "./_hr-page-values";
+import { hrPageSurface, hrValue } from "./hr-surface-kit";
 
 export const HR_TIMESHEET_APPROVALS_SURFACE = "matrx-user/hr-timesheet-approvals";
 
