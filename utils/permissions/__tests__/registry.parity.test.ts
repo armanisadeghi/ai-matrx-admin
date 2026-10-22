@@ -3,7 +3,7 @@
  *
  * The single source of truth is the Postgres table
  * `public.shareable_resource_registry`. The TS module
- * `utils/permissions/registry.ts` is a hand-mirrored copy so the FE doesn't
+ * `@ai-matrx/sharing src/core/registry.ts` is a hand-mirrored copy so the FE doesn't
  * have to fetch it on every page load. This test is the forcing function that
  * keeps them locked together: if anyone adds/removes/changes a row in EITHER
  * the DB or the TS file without updating the other, this test fails loudly.
@@ -42,7 +42,7 @@ import {
   RESOURCE_TYPES,
   getShareableResource,
   type ShareableResourceEntry,
-} from "../registry";
+} from "@ai-matrx/sharing/core";
 
 interface DbRegistryRow {
   resource_type: string;

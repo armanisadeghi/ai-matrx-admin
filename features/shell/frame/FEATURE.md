@@ -417,6 +417,10 @@ removes it on the first `requestAnimationFrame`; it is not a second mount.
   maps the platform's one favourites store (`usePinned`) in `frame-host/useFramePins.ts`; the header
   star IS the pin.
 
+- 2026-10-22: Pinned stays empty once a person removed every pin (`favorites.chosen`; the starting
+  set is only for someone who never chose). `shell.sidebar.places` merges per product (person, then
+  the organization rung, then default). Grid props no longer take `onGo`.
+
 - 2026-10-21 (P1 live switch): admins opt in with `?frame=new`; FrameShell, FrameHostGate,
   FrameHostImpl, the generated route table, header slots, legacy page contract.
 

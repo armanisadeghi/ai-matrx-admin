@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
-import { forkSharedResource } from "@/utils/permissions/shareLinks";
+import { forkSharedResource } from "@ai-matrx/sharing/core";
 
 /**
  * Duplicate-to-edit — the canonical "Make a copy & use it" action for a resource

@@ -1,0 +1,5 @@
+app/(public)/p/e/[resourceType]/[id]/PublicResourceView.tsx.held	app/(public)/p/e/[resourceType]/[id]/PublicResourceView.tsx
+features/file-actions/FileMenu.tsx.held	features/file-actions/FileMenu.tsx
+features/files/files-host.ts.held	features/files/files-host.ts
+features/meet/components/record/RecordingsLibrary.tsx.held	features/meet/components/record/RecordingsLibrary.tsx
+features/rag/components/data-stores/DataStoresPage.tsx.held	features/rag/components/data-stores/DataStoresPage.tsx

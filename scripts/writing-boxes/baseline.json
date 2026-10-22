@@ -671,7 +671,6 @@
     "bare-textarea|features/scraper/parts/BookmarkViewer.tsx": 1,
     "bare-textarea|features/secrets/components/VaultCreateDialog.tsx": 2,
     "bare-textarea|features/secrets/components/VaultItemDetail.tsx": 1,
-    "bare-textarea|features/sharing/secure/SecureLinkPanel.tsx": 1,
     "bare-textarea|features/source-studio/components/SourceStudio.tsx": 1,
     "bare-textarea|features/sources/components/SourcesPage.tsx": 1,
     "bare-textarea|features/spaces/data/ai-autofill.tsx": 1,

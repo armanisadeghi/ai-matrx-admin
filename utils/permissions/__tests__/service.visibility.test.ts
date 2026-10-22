@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 /**
- * utils/permissions/service.ts — the record's row controls (getResourceVisibility,
+ * @ai-matrx/sharing src/core/service.ts — the record's row controls (getResourceVisibility,
  * makePublic, makePrivate, setResourceShownTo): "Published to the web" and "Shown to"
  * (access ladder Words table, T-13 phase 5). The retiring row column is never read or written.
  *
@@ -87,7 +87,7 @@ import {
   makePrivate,
   makePublic,
   setResourceShownTo,
-} from "../service";
+} from "@ai-matrx/sharing/core";
 
 // CAPTURED — an agent: an Organization table whose body is never published; its CARD is.
 const AGENT_CAPS = {

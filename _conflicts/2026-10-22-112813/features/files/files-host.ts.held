@@ -1,0 +1,91 @@
+/**
+ * features/files/files-host.ts — THE HOST WIRING for the files engine
+ * (`@ai-matrx/media/files/engine`). All behavior lives in the package; this
+ * module only hands it this app's supabase client, server client, store,
+ * share links, organization chooser and toasts.
+ *
+ * Imported for its side effect by `lib/redux/store.ts` (before the store is
+ * created) and by every `features/files` shim whose engine module reaches the
+ * host, so any route that loads one is wired. A host configured first (jest's
+ * lazy test host, a private chat store) is kept. Every member is read at CALL time — the
+ * module namespaces and getters below keep a test's `jest.mock` of
+ * `@/lib/api/server-api`, `@/lib/python-client`, `@/utils/supabase/client` or
+ * `@/lib/toast` in force.
+ */
+
+import {
+  configureFilesHost,
+  isFilesHostConfigured,
+} from "@ai-matrx/media/files/engine/host/configure";
+import * as pythonClient from "@/lib/python-client";
+import * as serverApiModule from "@/lib/api/server-api";
+import * as supabaseClient from "@/utils/supabase/client";
+import * as shareLinks from "@ai-matrx/sharing/core";
+import * as toastModule from "@/lib/toast";
+import { filesUiHost } from "@/features/files/files-ui-host";
+import { getStoreSingleton } from "@/lib/redux/store-singleton";
+import {
+  selectOrganizationId,
+  selectProjectId,
+  selectTaskId,
+} from "@/lib/redux/slices/appContextSlice";
+import type { ResourceType } from "@ai-matrx/sharing/core";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
+
+// org-filter: write-target the files engine files uploads in the organization the person works in
+type AppContextState = Parameters<typeof selectOrganizationId>[0];
+
+if (!isFilesHostConfigured()) configureFilesHost({
+  // The duplicate-upload guard: a summon overlay asked through requestOverlay, loaded on the first upload.
+  requestUploadGuard: (arg) => import("@/features/files/upload/requestUploadGuard").then((m) => m.requestUploadGuard(arg)),
+  get db() {
+    return supabaseClient.supabase;
+  },
+  // THE website's @ai-matrx/api client: every file-server call is an @ai-matrx/files operation over
+  // it, so its identity, organization admission, server toggle and Error Inspector capture apply.
+  get api() {
+    return serverApiModule.serverApi;
+  },
+  // The resumable (TUS) lane's headers: the same builder every website request uses.
+  wireHeaders: async (organizationId) =>
+    (await pythonClient.buildHeaders(organizationId ? { organizationId } : {}, false)).headers,
+  store: () => getStoreSingleton(),
+  scope: (state) => {
+    const s = state as
+      | (Partial<AppContextState> & { userAuth?: { id?: string | null } })
+      | null
+      | undefined;
+    // org-filter: write-target the files engine files uploads in the organization the person works in
+    const ctx = s?.appContext ? (s as AppContextState) : null;
+    return {
+      userId: s?.userAuth?.id ?? null,
+      // org-filter: write-target the files engine files uploads in the organization the person works in
+      organizationId: ctx ? selectOrganizationId(ctx) : null,
+      projectId: ctx ? selectProjectId(ctx) : null,
+      taskId: ctx ? selectTaskId(ctx) : null,
+    };
+  },
+  ensureOrganizationContext: async (options) => {
+    const { ensureOrgId } = await import("@/lib/organizations/ensureOrgId");
+    return ensureOrgId(options?.organizationId ?? null);
+  },
+  shareLinks: {
+    shareLinkUrl: (token) => shareLinks.shareLinkUrl(token),
+    createShareLink: (options) =>
+      shareLinks.createShareLink({
+        ...options,
+        resourceType: options.resourceType as ResourceType,
+        permissionLevel: options.permissionLevel as PermissionLevel | undefined,
+      }),
+    listShareLinks: (resourceType, resourceId) =>
+      shareLinks.listShareLinks(resourceType as ResourceType, resourceId),
+    revokeShareLink: (linkId) => shareLinks.revokeShareLink(linkId),
+  },
+  // The files UI's app-only pieces (preview window, right-click menus, error copy menu, access
+  // summary, copy notices) — @ai-matrx/media/files/engine/host/ui.
+  ui: filesUiHost,
+  notify: {
+    success: (message, options) => toastModule.toast.success(message, options),
+    error: (message, options) => toastModule.toast.error(message, options),
+  },
+});

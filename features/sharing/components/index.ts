@@ -6,14 +6,14 @@
  */
 
 export { ShareButton } from './ShareButton';
-export { ShareModal } from './ShareModal';
-export { AccessSummaryPanel } from './AccessSummaryPanel';
+export { ShareModal } from '@ai-matrx/sharing/react';
+export { AccessSummaryPanel } from '@ai-matrx/sharing/react';
 /** The `share` port binding @ai-matrx/records-ui asks its host for. */
 export { recordStoreShare } from './RecordStoreShareSurface';
-export { PermissionsList } from './PermissionsList';
-export { PermissionBadge, PublicBadge, PermissionLevelDescription } from './PermissionBadge';
+export { PermissionsList } from '@ai-matrx/sharing/react';
+export { PermissionBadge, PublicBadge, PermissionLevelDescription } from '@ai-matrx/sharing/react';
 
 // Tab components (internal use, but exported for flexibility)
-export { ShareWithUserTab } from './tabs/ShareWithUserTab';
-export { PublicAccessTab } from './tabs/PublicAccessTab';
+export { ShareWithUserTab } from '@ai-matrx/sharing/react';
+export { PublicAccessTab } from '@ai-matrx/sharing/react';
 

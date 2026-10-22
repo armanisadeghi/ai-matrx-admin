@@ -24,6 +24,8 @@ import dynamic from "next/dynamic";
 import { registerChatUi } from "@ai-matrx/chat/host/ui-slots";
 // Binds @ai-matrx/records-ui/entity-ref (EntityRef, doors, toastDoor, RecordStamps) to this app, once.
 import "@/features/data-tables/records-ui-host/entityRefHost";
+// Binds @ai-matrx/design-system/settings (links, error menu, deep-link anchor, navigate, copy notice) to this app, once.
+import "@/features/settings/doors/settingsHost";
 import { surfaceManifestHost } from "./surfaceManifestHost";
 import {
   lazySlotsFrom,
@@ -131,7 +133,7 @@ const ChangeDiff = lazySlot("ChangeDiff", SlotLoadingBlock);
 
 const ShareModal = dynamic(
   () =>
-    import("@/features/sharing/components/ShareModal").then((m) => ({
+    import("@ai-matrx/sharing/react").then((m) => ({
       default: m.ShareModal,
     })),
   { ssr: false },

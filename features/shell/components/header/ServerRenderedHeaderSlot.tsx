@@ -50,6 +50,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { TapSurface } from "@ai-matrx/design-system/tap-target";
 
 import { PrepaintScript } from "@/components/ssr/PrepaintScript";
 
@@ -225,6 +226,9 @@ export function ServerRenderedHeaderSlot({
   const anchorRef = useRef<HTMLDivElement>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
   const [target, setTarget] = useState<HTMLElement | null>(null);
+  // Glass only floats: the app frame's header is a solid row, the classic shell header floats.
+  // Portaled/moved content keeps its SOURCE tree's context, so the slot declares the surface.
+  const [solid, setSolid] = useState(false);
 
   useLayoutEffect(() => {
     const node = nodeRef.current;
@@ -234,6 +238,7 @@ export function ServerRenderedHeaderSlot({
 
     const place = (found: HTMLElement) => {
       sweepOrphanedGhosts();
+      setSolid(found.closest('[data-mf-region="header"]') !== null);
       if (mode === "portal") {
         setTarget(found);
         return;
@@ -283,7 +288,7 @@ export function ServerRenderedHeaderSlot({
 
   const node = (
     <div ref={nodeRef} {...nodeProps}>
-      {children}
+      <TapSurface surface={solid ? "solid" : "glass"}>{children}</TapSurface>
     </div>
   );
 

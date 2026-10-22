@@ -903,6 +903,8 @@ export interface FavoriteItem {
 export interface FavoritesPreferences {
   /** Ordered list of pinned items. Capped at FAVORITES_MAX. */
   items: FavoriteItem[];
+  /** True once the person has pinned, unpinned or reordered anything: an empty list is then THEIR choice, not "never chose". */
+  chosen?: boolean;
 }
 
 /** Hard cap on pinned favorites — keeps the preferences blob tiny (~6KB max). */
@@ -1776,6 +1778,7 @@ const preferenceEditReducers = {
     state: Draft<UserPreferencesState>,
     action: PayloadAction<FavoriteItem>,
   ) => {
+    state.favorites.chosen = true;
     const item = action.payload;
     const next = state.favorites.items.filter((f) => f.id !== item.id);
     next.unshift(item); // newest first
@@ -1785,6 +1788,7 @@ const preferenceEditReducers = {
     state: Draft<UserPreferencesState>,
     action: PayloadAction<string>,
   ) => {
+    state.favorites.chosen = true;
     state.favorites.items = state.favorites.items.filter(
       (f) => f.id !== action.payload,
     );
@@ -1793,6 +1797,7 @@ const preferenceEditReducers = {
     state: Draft<UserPreferencesState>,
     action: PayloadAction<FavoriteItem>,
   ) => {
+    state.favorites.chosen = true;
     const item = action.payload;
     const exists = state.favorites.items.some((f) => f.id === item.id);
     if (exists) {
@@ -1809,6 +1814,7 @@ const preferenceEditReducers = {
     state: Draft<UserPreferencesState>,
     action: PayloadAction<string[]>,
   ) => {
+    state.favorites.chosen = true;
     // payload = new ordered list of ids; unknown ids dropped, missing ones appended
     const byId = new Map(state.favorites.items.map((f) => [f.id, f]));
     const next: FavoriteItem[] = [];
@@ -1826,6 +1832,7 @@ const preferenceEditReducers = {
     state: Draft<UserPreferencesState>,
     action: PayloadAction<FavoriteItem[]>,
   ) => {
+    state.favorites.chosen = true;
     state.favorites.items = action.payload.slice(0, FAVORITES_MAX);
   },
 };

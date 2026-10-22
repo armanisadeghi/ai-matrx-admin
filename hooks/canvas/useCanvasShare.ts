@@ -11,7 +11,7 @@ import {
 } from "@ai-matrx/chat/host/org";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectDisplayName } from "@/lib/redux/slices/userSlice";
-import { createShareLink } from "@/utils/permissions/shareLinks";
+import { createShareLink } from "@ai-matrx/sharing/core";
 import { publishedToWebPatch } from "@/lib/row-access";
 import { resolveArtifactData } from "@/features/canvas/artifact-types/resolveArtifactData";
 import type {

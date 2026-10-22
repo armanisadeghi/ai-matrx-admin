@@ -14,7 +14,7 @@
 // covers PostgrestFilterBuilder / PostgrestTransformBuilder generically
 // without erasing to `any`.
 import type { ListScope } from "./types";
-import { shownToFilter, type ShownToContext } from "./shownTo";
+import { shownToFilter, type ShownToContext } from "@ai-matrx/sharing/core";
 
 export interface EqCapable<Self> {
   eq(column: string, value: string): Self;

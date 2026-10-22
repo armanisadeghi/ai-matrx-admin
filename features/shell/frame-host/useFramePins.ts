@@ -11,7 +11,7 @@
 // writes); elsewhere the page. An unsaved page (a `/new` address) has no star at all.
 import type { LucideIcon } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectPreferencesLoadStatus } from "@/lib/redux/preferences/userPreferenceSelectors";
+import { selectFavoritesChosen, selectPreferencesLoadStatus } from "@/lib/redux/preferences/userPreferenceSelectors";
 import { favoriteId, isFavoritableRecordKind, usePinned } from "@/components/favorites/usePinned";
 import { useCurrentRecord } from "@/features/shell/current-record/currentRecord";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
@@ -62,7 +62,9 @@ export function useFramePins(pathname: string, pageLabel: string, startingPins: 
   const known = useAppSelector(selectPreferencesLoadStatus) === "loaded";
   // A person with no pins yet starts with the starting set (owner, 2026-10-22); saving any edit
   // writes their own. Until the saved preferences land, the starting set is not shown as theirs.
-  const pins = favorites.length > 0 ? favorites.map(pinFromFavorite) : known ? [...startingPins] : [];
+  // A person who removed every pin chose none: that stays empty (only the add slot shows).
+  const chosen = useAppSelector(selectFavoritesChosen);
+  const pins = favorites.length > 0 || chosen ? favorites.map(pinFromFavorite) : known ? [...startingPins] : [];
   const savePins = (next: FramePin[]) => savePinsTo(store, next);
   if (isUnsavedPath(pathname)) return { pins, favorite: undefined, savePins };
   const target =

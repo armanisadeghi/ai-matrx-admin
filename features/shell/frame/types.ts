@@ -107,11 +107,49 @@ export interface FrameCrumb {
   iconOnly?: boolean;
   /** Siblings to switch to: the crumb gets a down chevron that lists them. */
   options?: readonly FrameCrumbOption[];
+  /** Siblings fetched when the door first opens (a record's list, the route tree). */
+  loadOptions?: () => Promise<readonly FrameCrumbOption[]>;
+  /**
+   * EVERY CRUMB IS A DOOR (Arman, 2026-10-22): what this level's dropdown offers — every other
+   * product (the product icon), the product's first-tier places (the first level) or the sibling
+   * records (a record). Always searchable. Without it a crumb with `options` is a sibling door.
+   */
+  door?: FrameCrumbDoor;
   /** The heading over the sibling list ("People"). */
   optionsLabel?: string;
   /** A "see all" row under the list. */
   optionsAllHref?: string;
   optionsAllLabel?: string;
+}
+
+/** The kinds of crumb door (FEATURE.md § Every crumb is a door). */
+export type FrameCrumbDoorKind = "products" | "places" | "siblings";
+
+/** A crumb's dropdown: a searchable list of everything at its level. */
+export interface FrameCrumbDoor {
+  kind: FrameCrumbDoorKind;
+  /** The list's heading ("Products", "Marketing", "Brands"). */
+  label: string;
+  /** Rows (the current one `active`). A row's `icon` stands where the check mark would (product marks). */
+  options?: readonly (FrameCrumbOption & { icon?: LucideIcon })[];
+  /** Rows fetched on first open (a record's siblings). */
+  loadOptions?: () => Promise<readonly FrameCrumbOption[]>;
+  /** The search also ranks every page the app has (the Go-to index), loaded on the first keystroke. */
+  loadSearchIndex?: () => Promise<readonly FrameDoorSearchEntry[]>;
+  /** Rows open in a new tab (the products door: the app grid's rule). */
+  newTab?: boolean;
+  allHref?: string;
+  allLabel?: string;
+}
+
+/** One page the door's search can reach (a Go-to index entry, kept structural so the frame stays light). */
+export interface FrameDoorSearchEntry {
+  id: string;
+  label: string;
+  trail: string[];
+  href: string;
+  keywords?: readonly string[];
+  description?: string;
 }
 
 export interface FrameAction {

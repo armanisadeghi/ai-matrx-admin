@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1587,
+  "routeCount": 1583,
   "routes": [
     {
       "pattern": "/",
@@ -2299,11 +2299,6 @@
       "source": "app/(core)/chat/message-templates/page.tsx"
     },
     {
-      "pattern": "/chat/message-templates/[id]",
-      "status": "live",
-      "source": "app/(core)/chat/message-templates/[id]/page.tsx"
-    },
-    {
       "pattern": "/chat/message-templates/edit/[id]",
       "status": "live",
       "source": "app/(core)/chat/message-templates/edit/[id]/page.tsx"
@@ -4233,11 +4228,6 @@
       "pattern": "/invitations/share/accept/[token]",
       "status": "live",
       "source": "app/(core)/invitations/share/accept/[token]/page.tsx"
-    },
-    {
-      "pattern": "/invitations/table/accept/[token]",
-      "status": "live",
-      "source": "app/(core)/invitations/table/accept/[token]/page.tsx"
     },
     {
       "pattern": "/kiosk",
@@ -6435,11 +6425,6 @@
       "source": "app/(core)/organizations/speed-test/page.tsx"
     },
     {
-      "pattern": "/p/e/[resourceType]/[id]",
-      "status": "live",
-      "source": "app/(public)/p/e/[resourceType]/[id]/page.tsx"
-    },
-    {
       "pattern": "/pick-lists",
       "status": "live",
       "source": "app/(core)/pick-lists/page.tsx"
@@ -7058,11 +7043,6 @@
       "pattern": "/rsvp/[secret]",
       "status": "live",
       "source": "app/(link)/rsvp/[secret]/page.tsx"
-    },
-    {
-      "pattern": "/s/[token]",
-      "status": "live",
-      "source": "app/(public)/s/[token]/page.tsx"
     },
     {
       "pattern": "/samples",

@@ -42,6 +42,7 @@ import {
   toPackageResolved,
 } from "@ai-matrx/chat/surfaces/declare/surface-declare";
 import { executeSyncPlan } from "@/features/surfaces/services/execute-sync-plan";
+import { withDatabaseRoot } from "@/features/surfaces/services/surface-database-root";
 import { findStaleRows, type SurfaceSyncPlan } from "@ai-matrx/alchemy/checks";
 import { listRegisteredNamespaces } from "@ai-matrx/chat/surfaces/config/namespace-registry";
 import { readAllRows } from "@ai-matrx/data/db";
@@ -1577,13 +1578,13 @@ export async function applyManifestSync(
   const dbUrlPatternByName = new Map(
     parentRowsBefore.map((r) => [r.name, r.url_pattern]),
   );
-  const plan = planManifestSync(
-    toPackageResolved(targetManifests, getRawManifest),
-    {
+  const plan = withDatabaseRoot(
+    planManifestSync(toPackageResolved(targetManifests, getRawManifest), {
       organizationId: systemOrganizationId,
       syncedFrom: provenance.syncedFrom,
       syncedBy: provenance.syncedBy,
-    },
+    }),
+    targetManifests,
   );
   const executed = await executeSyncPlan(sb, plan, {
     existingSurfaces,

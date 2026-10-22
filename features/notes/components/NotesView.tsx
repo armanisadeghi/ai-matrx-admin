@@ -836,7 +836,7 @@ export function NotesView({
                 <MandateDoorLink feature="notes" label="Notes agents" />
                 {compactHeader ? (
                   // Tight row: the tools fold into ONE menu so the toolbar keeps its marks and lists.
-                  <TapTargetButtonGroup surface={inFrame ? "solid" : undefined}>
+                  <TapTargetButtonGroup>
                     {headerNoteId && <NoteCleanupButton noteId={headerNoteId} asTapGroup />}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -856,9 +856,7 @@ export function NotesView({
                     </DropdownMenu>
                   </TapTargetButtonGroup>
                 ) : (
-                // Glass only floats: the classic shell header floats over the page, the new app
-                // frame's header is a solid row, so there the group is solid (tap placement rule 1).
-                <TapTargetButtonGroup surface={inFrame ? "solid" : undefined}>
+                <TapTargetButtonGroup>
                   {headerNoteId && (
                     <>
                       <NoteRecordTools instanceId={instanceId} noteId={headerNoteId} />

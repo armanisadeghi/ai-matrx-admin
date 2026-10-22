@@ -33,7 +33,7 @@ function Host() {
   const { pins, favorite } = useFramePins("/crm/people", "People");
   return (
     <div>
-      <button data-testid="star" aria-pressed={favorite.starred} data-known={String(favorite.known)} onClick={favorite.onToggle} />
+      <button data-testid="star" aria-pressed={favorite!.starred} data-known={String(favorite!.known)} onClick={favorite!.onToggle} />
       <ul>{pins.map((p) => <li key={p.id}>{p.label}</li>)}</ul>
     </div>
   );
@@ -123,5 +123,26 @@ it("an unsaved page (/chat/new) has no star: favoritable means a real, saved thi
   markLoaded(store);
   mountPath(store, "/chat/new", "New chat");
   expect(host.querySelector('[data-testid="no-star"]')).not.toBeNull();
+  unmount();
+});
+
+it("removing every pin leaves Pinned empty: the starting set comes back only for a person who never chose", () => {
+  const store = makeStore();
+  markLoaded(store);
+  const starting = [{ id: "/chat", label: "Chat", href: "/chat" }];
+  let api!: ReturnType<typeof useFramePins>;
+  function StartHost() {
+    api = useFramePins("/crm/people", "People", starting as never);
+    return <ul>{api.pins.map((p) => <li key={p.id}>{p.label}</li>)}</ul>;
+  }
+  host = document.createElement("div");
+  document.body.appendChild(host);
+  root = createRoot(host);
+  act(() => root.render(<Provider store={store}><StartHost /></Provider>));
+  expect(rows()).toEqual(["Chat"]);
+  act(() => api.savePins([...api.pins, { id: "/x", label: "X", href: "/x" } as never]));
+  expect(rows()).toContain("X");
+  act(() => api.savePins([]));
+  expect(rows()).toEqual([]);
   unmount();
 });

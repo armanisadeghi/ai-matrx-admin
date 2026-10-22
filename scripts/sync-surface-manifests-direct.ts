@@ -40,6 +40,8 @@ import {
   lifecycleFailures,
   mirrorLifecycle,
   rowsByKey,
+  surfaceMetadataFailures,
+  withDatabaseRoot,
   type MirrorLifecycle,
   type Row,
 } from "./lib/surface-sync-check";
@@ -92,20 +94,12 @@ function syncPlan(
   manifests: ReturnType<typeof getAllManifests>,
   organizationId: string,
 ): SurfaceSyncPlan {
-  return planManifestSync(toPackageResolved(manifests, getRawManifest), {
-    organizationId,
-    syncedFrom: "check",
-  });
-}
-
-function expectedMetadata(
-  surface: SurfaceSyncPlan["surfaces"][number],
-  row: Row,
-): string[] {
-  return Object.entries(surface.update).flatMap(([key, expected]) =>
-    canonical(row[key]) === canonical(expected)
-      ? []
-      : [`surface ${surface.name}: ${key} differs`],
+  return withDatabaseRoot(
+    planManifestSync(toPackageResolved(manifests, getRawManifest), {
+      organizationId,
+      syncedFrom: "check",
+    }),
+    manifests,
   );
 }
 
@@ -264,7 +258,7 @@ async function main() {
           );
         const planned = plan.surfaces.find((p) => p.name === manifest.surfaceName);
         if (!registrationOnly && planned)
-          failures.push(...expectedMetadata(planned, row));
+          failures.push(...surfaceMetadataFailures(planned, row));
       }
     }
     // A declared domain-tree node must exist (`taxonomyNode` → `taxonomy_node_slug`): placement

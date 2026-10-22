@@ -10,7 +10,6 @@ import type { ReactNode } from "react";
 import {
   ArrowLeft,
   Bell as BellIcon,
-  Check,
   ChevronDown,
   ChevronRight,
   CircleUserRound as AccountIcon,
@@ -28,14 +27,15 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
+import { TapSurface } from "@ai-matrx/design-system/tap-target";
 import type { FrameAction, FrameCrumb, FrameForm, FrameHeaderTool } from "./types";
 import { CHAT_PRODUCT_ICON } from "./products";
+import { CrumbDoor, crumbDoorOf } from "./CrumbDoor";
 
 export interface FrameFavorite {
   starred: boolean;
@@ -131,7 +131,16 @@ function PageMenu({ actions }: { actions: readonly FrameAction[] }) {
   );
 }
 
-export function SheetHeader({
+/** The frame's header is a solid row: every tap group inside declares solid once, here. */
+export function SheetHeader(props: SheetHeaderProps) {
+  return (
+    <TapSurface surface="solid">
+      <SheetHeaderBody {...props} />
+    </TapSurface>
+  );
+}
+
+function SheetHeaderBody({
   form,
   crumbs,
   favorite,
@@ -214,14 +223,7 @@ export function SheetHeader({
                   </li>
                 ) : null}
                 <li className={cn("flex min-w-0 items-center", isLast ? "shrink" : "max-w-45 shrink-[2]")}>
-                  {isLast && !crumb.iconOnly ? (
-                    <h1 aria-current="page" className="type-title truncate px-1">
-                      {crumb.label}
-                    </h1>
-                  ) : (
-                    <CrumbLink crumb={crumb} current={isLast} />
-                  )}
-                  {crumb.options && crumb.options.length > 0 ? <CrumbSwitcher crumb={crumb} /> : null}
+                  <CrumbLevel crumb={crumb} isLast={isLast} />
                 </li>
               </Fragment>
             );
@@ -332,53 +334,38 @@ function CrumbLink({ crumb, current }: { crumb: FrameCrumb; current?: boolean })
 }
 
 /**
- * A switchable level's down chevron and its sibling list — the org/scopes breadcrumb's pattern
- * (features/scopes/components/pages/ScopeBreadcrumb.tsx `OptionsMenu`): the crumb's text goes to
- * the level, the chevron beside it lists the siblings with the current one checked, an optional
- * heading and an optional "see all" row.
+ * One level of the trail. EVERY CRUMB IS A DOOR (Arman, 2026-10-22): the text is a link to the level
+ * (the current page is the title), and the level's door (CrumbDoor) lists everything else at that
+ * level, searchable. The product icon has no text, so the icon itself opens the products door.
  */
-function CrumbSwitcher({ crumb }: { crumb: FrameCrumb }) {
-  const options = crumb.options ?? [];
+function CrumbLevel({ crumb, isLast }: { crumb: FrameCrumb; isLast: boolean }) {
+  const door = crumbDoorOf(crumb);
+  if (door && crumb.iconOnly && door.kind === "products") {
+    return (
+      <CrumbDoor
+        door={door}
+        trigger={
+          <button type="button" data-crumb-door={door.kind} aria-label={`${crumb.label}: all products`} className={cn(CRUMB_CLASS, "flex items-center gap-0.5")}>
+            <CrumbFace crumb={crumb} />
+            <ChevronDown className="size-3 text-muted-foreground" aria-hidden />
+          </button>
+        }
+      />
+    );
+  }
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button type="button" aria-label={`Switch ${crumb.optionsLabel ?? crumb.label}`} className={SWITCH_CLASS}>
-          <ChevronDown className="size-3.5" aria-hidden />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" surface="solid">
-        {crumb.optionsLabel ? <DropdownMenuLabel>{crumb.optionsLabel}</DropdownMenuLabel> : null}
-        {options.map((o) => (
-          <DropdownMenuItem key={`${o.href}|${o.label}`} asChild size="sm">
-            <a
-              href={o.href}
-              aria-current={o.active ? "page" : undefined}
-              onClick={(e) => {
-                if (!o.onSelect || !isPlainClick(e)) return;
-                e.preventDefault();
-                o.onSelect();
-              }}
-            >
-              <Check aria-hidden className={cn(!o.active && "invisible")} />
-              <span className="truncate">{o.label}</span>
-            </a>
-          </DropdownMenuItem>
-        ))}
-        {crumb.optionsAllHref ? (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild size="sm">
-              <a href={crumb.optionsAllHref}>{crumb.optionsAllLabel ?? "View all"}</a>
-            </DropdownMenuItem>
-          </>
-        ) : null}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      {isLast && !crumb.iconOnly ? (
+        <h1 aria-current="page" className="type-title truncate px-1">
+          {crumb.label}
+        </h1>
+      ) : (
+        <CrumbLink crumb={crumb} current={isLast} />
+      )}
+      {door ? <CrumbDoor door={door} /> : null}
+    </>
   );
 }
-
-const SWITCH_CLASS =
-  "flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
 
 /** Header tools given as data, drawn as the frame's quiet icon buttons (the phone header, the lab's stand-ins). */
 export function HeaderToolButtons({ tools }: { tools: readonly FrameHeaderTool[] }) {

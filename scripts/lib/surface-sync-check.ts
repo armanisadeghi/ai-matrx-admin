@@ -121,3 +121,26 @@ export function lifecycleFailures(lifecycle: readonly MirrorLifecycle[], plan: S
     ];
   });
 }
+
+/**
+ * Every `ui.ui_surface` column the plan owns or the manifest claims, compared to the live row.
+ * The plan's `update` carries `parent_surface_name`, `situation` and `taxonomy_node_slug`
+ * whenever the code declares them (and `withDatabaseRoot` makes every root manifest claim its
+ * parent), so a pure re-parent, a situation edit or a taxonomy move is drift on its own — it
+ * never needs a value change to be noticed and synced.
+ */
+export function surfaceMetadataFailures(
+  surface: SurfaceSyncPlan["surfaces"][number],
+  row: Row,
+): string[] {
+  return Object.entries(surface.update).flatMap(([key, expected]) =>
+    canonical(row[key]) === canonical(expected) ? [] : [`surface ${surface.name}: ${key} differs`],
+  );
+}
+
+export { DATABASE_ROOT_SURFACE, withDatabaseRoot } from "../../features/surfaces/services/surface-database-root";
+
+/** The surfaces a `--check` run names for repair (its `--surface <name>` lines), in order, once each. */
+export function driftedSurfaceNames(checkOutput: string): string[] {
+  return [...new Set([...checkOutput.matchAll(/--surface (\S+)/g)].map((m) => m[1]!))];
+}

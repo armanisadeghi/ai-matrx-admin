@@ -10,7 +10,7 @@
 
 import { kindTextLabel } from "@/features/content-ir/surfaces/kind-text-label";
 import { readKeywordResearchArtifact } from "@/features/marketing/seo/keyword-research/data/artifact";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 import {
   firstUserText,
   readSharedConversation,

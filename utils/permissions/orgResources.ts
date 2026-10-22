@@ -5,7 +5,7 @@
  * shared with a given organization. They are intentionally generic across
  * resource types (driven by `shareable_resource_registry`).
  *
- * Pairs with utils/permissions/service.ts (which handles user-level grants).
+ * Pairs with @ai-matrx/sharing src/core/service.ts (which handles user-level grants).
  *
  * Counts include rows in `permissions` where `granted_to_organization_id = orgId`
  * for the specified resource_type. They do NOT count items owned by the org
@@ -14,9 +14,9 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
-import type { ResourceType } from "./registry";
-import { resolveResourceToken } from "./registry";
-import { parsePermissionLevel, type PermissionLevel } from "./levels";
+import type { ResourceType } from "@ai-matrx/sharing/core";
+import { resolveResourceToken } from "@ai-matrx/sharing/core";
+import { parsePermissionLevel, type PermissionLevel } from "@ai-matrx/sharing/core";
 
 export interface OrgSharedResourceRef {
   resourceId: string;

@@ -30,7 +30,7 @@ import { supabase } from "@/utils/supabase/client";
 import {
   getResourceSharePath,
   getShareableResource,
-} from "@/utils/permissions/registry";
+} from "@ai-matrx/sharing/core";
 import {
   listOrgShareGrants,
   reviewOrgShare,

@@ -9,7 +9,7 @@
 import { updateTag } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { SEARCH_ENGINE_INDEXED_TAG } from "@/lib/seo/search-engine-indexed";
-import type { SearchEngineIndexedState } from "./types";
+import type { SearchEngineIndexedState } from "@ai-matrx/sharing/core";
 
 type RpcClient = {
   rpc: (

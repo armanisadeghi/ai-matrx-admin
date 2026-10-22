@@ -230,6 +230,9 @@ export const selectFavoriteItems = createSelector(
   (favorites): FavoriteItem[] => favorites.items,
 );
 
+/** True once the person has ever changed their pins (an empty list is then their choice). */
+export const selectFavoritesChosen = (state: RootState): boolean => state.userPreferences.favorites.chosen === true;
+
 export const selectFavoriteCount = createSelector(
   selectFavoriteItems,
   (items): number => items.length,

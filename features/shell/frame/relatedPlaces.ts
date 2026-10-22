@@ -84,13 +84,17 @@ export function defaultPlacesAboveMore(productId: string): string[] {
 }
 
 /**
- * The places above More for this product from the knob's effective map (organization or person
- * rung), else the system default. Unknown ids are dropped; a stored empty list means "none above".
+ * The places above More for this product, merged per product key (person, then organization,
+ * then the system default). Unknown ids are dropped; a stored empty list means "none above".
  */
-export function chosenPlacesAboveMore(productId: string, knobValue: unknown): string[] {
+export function chosenPlacesAboveMore(productId: string, knobValue: unknown, organizationValue?: unknown): string[] {
   const declared = new Set(relatedPlacesOf(productId));
-  const map = knobValue && typeof knobValue === "object" && !Array.isArray(knobValue) ? (knobValue as Record<string, unknown>) : {};
-  const stored = map[productId];
+  const asMap = (v: unknown): Record<string, unknown> =>
+    v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
+  // Per product: the person's entry wins, else the organization's, else the built-in default. The
+  // resolver answers the nearest rung's whole map, so the organization's rung is read beside it.
+  const own = asMap(knobValue)[productId];
+  const stored = Array.isArray(own) ? own : asMap(organizationValue)[productId];
   if (!Array.isArray(stored)) return defaultPlacesAboveMore(productId);
   return stored.filter((id): id is string => typeof id === "string" && declared.has(id));
 }

@@ -58,7 +58,7 @@ export const filesUiHost: FilesUiHost = {
     import("@/components/errors/ErrorAlchemyMenu").then((m) => m.ErrorAlchemyMenu as unknown as ComponentType<Loose>),
   ),
   AccessSummaryPanel: lazyPiece<{ entityType: string; entityId: string } & Loose>(() =>
-    import("@/features/sharing/components/AccessSummaryPanel").then(
+    import("@ai-matrx/sharing/react").then(
       (m) => m.AccessSummaryPanel as unknown as ComponentType<{ entityType: string; entityId: string } & Loose>,
     ),
   ),

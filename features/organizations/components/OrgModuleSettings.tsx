@@ -43,7 +43,7 @@ import {
 import {
   PERMISSION_LEVEL_HINTS,
   PERMISSION_LEVEL_SHORT_LABELS,
-} from "@/utils/permissions/levels";
+} from "@ai-matrx/sharing/core";
 import { cn } from "@/lib/utils";
 import {
   MOBILE_TABLE,

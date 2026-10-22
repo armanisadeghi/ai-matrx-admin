@@ -4,6 +4,16 @@ import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { loadDbEnv } from "./lib/direct-db";
+import { driftedSurfaceNames } from "./lib/surface-sync-check";
+import {
+  firstErrorLine,
+  isModuleMissing,
+  retryOptionsFromEnv,
+  runWithRetry,
+  syncSummaryLines,
+  syncSurfacesWithRetry,
+  type SyncRunResult,
+} from "./lib/surface-sync-runner";
 
 async function main() {
   const root = execFileSync("git", ["rev-parse", "--show-toplevel"], {
@@ -47,37 +57,47 @@ async function main() {
       SUPABASE_MATRIX_DATABASE_NAME: env.database,
     };
     const tsx = resolve(root, "node_modules/.bin/tsx");
-    const run = (args: string[]) =>
-      spawnSync(tsx, ["scripts/sync-surface-manifests-direct.ts", ...args], {
+    const run = (args: string[]): SyncRunResult => {
+      const r = spawnSync(tsx, ["scripts/sync-surface-manifests-direct.ts", ...args], {
         cwd: snapshot,
         env: childEnv,
         encoding: "utf8",
         maxBuffer: 64 * 1024 * 1024,
       });
-    if (apply) {
-      // Full mirror check (values, roles, write targets, client tools, metadata), then sync
-      // ONLY the surfaces it names. A manifest can no longer ship with a missing/stale row.
-      const full = run(["--check"]);
-      const drifted = [
-        ...new Set(
-          [...(full.stderr ?? "").matchAll(/--surface (\S+)/g)].map((m) => m[1]),
-        ),
-      ];
-      if (full.status !== 0 && drifted.length === 0) {
-        console.error(full.stdout, full.stderr);
-        throw new Error("Surface mirror check failed with nothing syncable");
-      }
-      for (const name of drifted) {
-        const r = run(["--surface", name]);
-        console.log(`SURFACE SYNC ${name}: ${r.status === 0 ? "synced" : "FAILED"}`);
-        if (r.status !== 0) console.error(r.stdout, r.stderr);
-      }
-      if (drifted.length === 0) console.log("Surface mirror already matches the committed candidate.");
+      return { status: r.status, stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
+    };
+    // The snapshot's node_modules is the shared checkout's (a symlink): another session's
+    // install can swap a package mid-run. A run that dies on a missing module is retried after
+    // a wait, and every surface that fails is retried in later rounds (v0.4.3448: 87 surfaces
+    // failed on `Cannot find module …/surface-declare` and nothing retried).
+    const retry = { ...retryOptionsFromEnv(), log: (line: string) => console.log(line) };
+    // Full mirror check: values, roles, write targets, client tools AND every surface column
+    // the code claims — parent_surface_name, situation, taxonomy_node_slug — so a pure
+    // re-parent is drift on its own. Read-only mode reports it; --apply syncs exactly those.
+    const { result: full } = await runWithRetry(run, ["--check"], retry, (r) => r.status === 0 || driftedSurfaceNames(r.stderr).length > 0);
+    if (full.status !== 0 && isModuleMissing(full))
+      throw new Error(`Surface mirror check could not load its modules after ${retry.attempts} tries (the shared node_modules kept changing): ${firstErrorLine(full)}`);
+    const drifted = driftedSurfaceNames(full.stderr);
+    if (full.status !== 0 && drifted.length === 0) {
+      console.error(full.stdout, full.stderr);
+      throw new Error("Surface mirror check failed with nothing syncable");
     }
-    const final = run(["--check", "--registration-only"]);
-    process.stdout.write(final.stdout ?? "");
-    process.stderr.write(final.stderr ?? "");
+    let syncFailed = 0;
+    if (apply) {
+      const outcome = await syncSurfacesWithRetry(run, drifted, retry);
+      syncFailed = outcome.failed.length;
+      const summary = syncSummaryLines(outcome, drifted.length);
+      (syncFailed ? console.error : console.log)(summary.join("\n"));
+    } else if (drifted.length) {
+      console.error(full.stderr);
+      console.error(`SURFACE MIRROR DRIFT: ${drifted.length} surface(s) differ from the committed candidate; repair: pnpm exec tsx scripts/check-release-surface-registration.ts --apply`);
+    } else console.log("Surface mirror already matches the committed candidate.");
+    const { result: final } = await runWithRetry(run, ["--check", "--registration-only"], retry);
+    process.stdout.write(final.stdout);
+    process.stderr.write(final.stderr);
     if (final.status !== 0) throw new Error("Surface registration admission failed");
+    if (syncFailed) throw new Error(`Surface sync FAILED for ${syncFailed} surface(s) after retries; the live mirror lags the code (summary above)`);
+    if (!apply && drifted.length) throw new Error(`Surface mirror drift: ${drifted.length} surface(s)`);
     const after = execFileSync("git", ["rev-parse", "HEAD"], {
       cwd: root,
       encoding: "utf8",

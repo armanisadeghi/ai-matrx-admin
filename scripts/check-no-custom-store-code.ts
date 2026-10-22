@@ -222,8 +222,6 @@ export const TOUCHES_THE_STORE: Record<string, string> = {
     "ready to move: work_approval_read → RecordsClient.workApprovalRead",
   "features/scheduling/hooks/useArchivedWatchTriggers.ts":
     "ready to move: table_list_everywhere → RecordsClient.tableListEverywhere",
-  "features/sharing/outside/outsideShareService.ts":
-    "move: table_share_outside* / table_share_peek → new records share-outside doors",
   "features/sharing/service/sharedResourceDetails.ts":
     "move: where_id_opens → new door whereIdOpens; table_kernel_id/read_records_by_ids → existing tableKernelId/readRecordsByIds doors",
   "features/sharing/service/tableTransfer.ts":
@@ -242,10 +240,6 @@ export const TOUCHES_THE_STORE: Record<string, string> = {
     "justified: a register of campaign entry points; its `why` prose quotes store calls, it calls nothing",
   "lib/organizations/linkOrganizationAdmission.ts":
     "move: tables_shared_with_me → new records door tablesSharedWithMe",
-  "utils/permissions/registry.ts":
-    "justified: the shareable-resource registry declares which schema each type lives in — data, not a call",
-  "utils/permissions/service.ts":
-    "move: share_lane_set → new records door shareLaneSet",
 };
 
 export interface Finding {

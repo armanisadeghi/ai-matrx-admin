@@ -38,6 +38,7 @@ import {
   planManifestSync,
   toPackageResolved,
 } from "@ai-matrx/chat/surfaces/declare/surface-declare";
+import { withDatabaseRoot } from "../features/surfaces/services/surface-database-root";
 import { renderStaleArchiveSql } from "./lib/surface-sync-archive";
 import { sqlSyncedFrom } from "@/features/surfaces/services/sync-provenance";
 import {
@@ -164,11 +165,14 @@ export function emitSurfaceSyncSql({
   const manifests = selectedManifests([...new Set(surfaceNames)]);
   // PROVENANCE: every row stamps synced_by / synced_from. synced_by is NULL by
   // contract — this channel has no session, and the applier is whoever runs the SQL.
-  const plan = planManifestSync(toPackageResolved(manifests, getRawManifest), {
-    organizationId,
-    syncedFrom: sqlSyncedFrom(currentGitSha()),
-    syncedBy: null,
-  });
+  const plan = withDatabaseRoot(
+    planManifestSync(toPackageResolved(manifests, getRawManifest), {
+      organizationId,
+      syncedFrom: sqlSyncedFrom(currentGitSha()),
+      syncedBy: null,
+    }),
+    manifests,
+  );
   const guides = manifests
     .map((manifest) => renderSurfaceGuideSkillSql(manifest, organizationId))
     .filter(Boolean);
@@ -201,10 +205,13 @@ export function emitSurfaceCheckSql({
     throw new Error("--organization-id must be a UUID");
   }
   const manifests = selectedManifests([...new Set(surfaceNames)]);
-  const plan = planManifestSync(toPackageResolved(manifests, getRawManifest), {
-    organizationId,
-    syncedFrom: "check",
-  });
+  const plan = withDatabaseRoot(
+    planManifestSync(toPackageResolved(manifests, getRawManifest), {
+      organizationId,
+      syncedFrom: "check",
+    }),
+    manifests,
+  );
   const L = (v: unknown) => sqlLiteral(String(v));
   const J = (v: Record<string, unknown>) => {
     const compared = Object.fromEntries(

@@ -367,7 +367,7 @@ const TABLE_GREEN_PLANTS: string[] = [
 
 const RED_PLANTS: Array<[string, string]> = [
   ["features/x/kinds.ts", 'export const KINDS = ["feature_doc", "flexible_data", "folder"] as const;'],
-  ["utils/permissions/registry.ts", "export const R = {\n  flexible_data: {\n    resourceType: \"flexible_data\",\n  },\n};"],
+  ["features/x/registry.ts", "export const R = {\n  flexible_data: {\n    resourceType: \"flexible_data\",\n  },\n};"],
   ["aidream:aidream/services/x/sync.py", "perform = '_search_item_sync_flexible_data'"],
   ["features/x/a.ts", 'const { data } = await supabase.schema("platform").from("flexible_data").select("*");'],
   ["features/x/b.ts", 'await supabase.rpc("flexible_data_write", { p_patch: {} });'],

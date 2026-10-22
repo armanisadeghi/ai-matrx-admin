@@ -13,7 +13,7 @@
 //
 // Tiny and eager on purpose: the classic templates import it, so it carries nothing of the frame.
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import type { FrameAction, FrameCrumb, FrameProduct } from "@/features/shell/frame/types";
+import type { FrameAction, FrameCrumb, FrameCrumbDoor, FrameDoorSearchEntry, FrameProduct } from "@/features/shell/frame/types";
 
 export interface FramePageCrumbOption {
   label: string;
@@ -36,6 +36,8 @@ export interface FramePageCrumb {
   optionsLabel?: string;
   optionsAllHref?: string;
   optionsAllLabel?: string;
+  /** Siblings fetched when the level's door first opens (a record's list, the route tree). */
+  loadOptions?: () => Promise<readonly FramePageCrumbOption[]>;
 }
 
 export interface FramePageHeaderHost {
@@ -179,6 +181,7 @@ export function frameCrumbOf(crumb: FramePageCrumb): FramePageCrumb {
     optionsLabel: crumb.optionsLabel,
     optionsAllHref: crumb.optionsAllHref,
     optionsAllLabel: crumb.optionsAllLabel,
+    loadOptions: crumb.loadOptions,
   };
 }
 
@@ -193,8 +196,28 @@ export function frameHostCrumbs(
   derived: readonly FramePageCrumb[],
   go: (href: string) => void,
   pathname?: string,
+  doors?: CrumbDoorSources,
 ): FrameCrumb[] {
-  return pageTrailCrumbs(product, resolvePageTrail(declared, derived.map(frameCrumbOf), pathname), go);
+  return pageTrailCrumbs(product, resolvePageTrail(declared, derived.map(frameCrumbOf), pathname), go, doors);
+}
+
+/** What the host gives the trail's doors: every product, and the full page index for their search. */
+export interface CrumbDoorSources {
+  products: readonly FrameProduct[];
+  loadSearchIndex?: () => Promise<readonly FrameDoorSearchEntry[]>;
+}
+
+/** The product's first-tier places (its sidebar rows), the current level's row active. */
+export function productPlaces(product: FrameProduct, currentHref?: string): FrameCrumbDoor["options"] {
+  const bare = (h: string) => h.split(/[?#]/, 1)[0]!.replace(/\/+$/, "");
+  return product.menu.flatMap((section) =>
+    section.items
+      .filter((item) => !item.external)
+      .map((item) => {
+        const href = item.href ?? `${product.homeHref}/${item.id}`;
+        return { label: item.label, href, icon: item.icon, active: currentHref != null && bare(href) === bare(currentHref) };
+      }),
+  );
 }
 
 const bareAddress = (href: string) => `/${href.split(/[?#]/, 1)[0]!.split("/").filter(Boolean).join("/")}`;
@@ -254,6 +277,7 @@ export function pageTrailCrumbs(
   product: FrameProduct,
   trail: readonly FramePageCrumb[],
   go: (href: string) => void,
+  doors?: CrumbDoorSources,
 ): FrameCrumb[] {
   const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
   // Never the same level twice: a level that repeats the next one (a list page named like its
@@ -268,19 +292,49 @@ export function pageTrailCrumbs(
       iconOnly: true,
       href: product.homeHref,
       onSelect: () => go(product.homeHref),
+      // EVERY CRUMB IS A DOOR: the product icon lists every product (new tab, the app grid's rule;
+      // the product you are in goes home here) and searches every page.
+      door: doors
+        ? {
+            kind: "products",
+            label: "Products",
+            newTab: true,
+            options: doors.products.map((p) => ({
+              label: p.name,
+              href: p.homeHref,
+              icon: p.icon,
+              active: p.id === product.id,
+              onSelect: () => go(p.homeHref),
+            })),
+            loadSearchIndex: doors.loadSearchIndex,
+          }
+        : undefined,
     },
     ...levels.map((level, i): FrameCrumb => {
       const isLast = i === levels.length - 1;
       const href = isLast ? undefined : level.href;
+      const levelHref = level.href ?? level.at;
+      // The product's first level opens the product's first-tier places (+ search over everything).
+      const places = i === 0 && doors ? productPlaces(product, levelHref) : undefined;
       return {
         id: `page-${i}`,
         label: level.label,
         href,
         onSelect: href ? () => go(href) : undefined,
         options: level.options?.map((o) => ({ ...o, onSelect: () => go(o.href) })),
+        loadOptions: level.loadOptions,
         optionsLabel: level.optionsLabel,
         optionsAllHref: level.optionsAllHref,
         optionsAllLabel: level.optionsAllLabel,
+        door:
+          places && places.length > 0
+            ? {
+                kind: "places",
+                label: product.name,
+                options: places.map((o) => ({ ...o, onSelect: () => go(o.href) })),
+                loadSearchIndex: doors?.loadSearchIndex,
+              }
+            : undefined,
       };
     }),
   ];

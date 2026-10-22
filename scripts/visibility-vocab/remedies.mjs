@@ -51,8 +51,8 @@ export const REMEDIES = {
     fix:
       'Say what you know ("Personal" describes the setting, not who can read it), or show the true answer ' +
       'with <AccessSummaryPanel entityType entityId /> — import { AccessSummaryPanel } from ' +
-      '"@/features/sharing/components/AccessSummaryPanel". Changing on-screen words is a person\'s decision.',
-    imports: [{ name: "AccessSummaryPanel", from: "@/features/sharing/components/AccessSummaryPanel" }],
+      '"@ai-matrx/sharing/react". Changing on-screen words is a person\'s decision.',
+    imports: [{ name: "AccessSummaryPanel", from: "@ai-matrx/sharing/react" }],
     before: `export const hint = "Only you can see it.";\n`,
     after: `export const hint = "Personal — visible according to its sharing.";\n`,
   },

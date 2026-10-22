@@ -14,9 +14,8 @@
 //   Search      finds any of those places and the product's own pages; Enter opens the first
 //
 // "Edit sidebar…" changes THIS product's entry in the person's own map (setUserKnobMapEntry keeps
-// their other entries). The resolver answers the nearest rung's WHOLE map, so once a person has a map
-// an organization's entries for other products stop reaching them (they get the declared default)
-// — open item in common-docs projects/app-frame/SIDEBARS.md § Known gaps.
+// their other entries). The resolver answers the nearest rung's WHOLE map, so the organization's rung
+// is read beside it and merged per product (person's entry, else the organization's, else default).
 import { useState } from "react";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import {
@@ -31,6 +30,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { invalidateEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs";
 import { setUserKnobMapEntry } from "@/lib/scoped-config/service";
+import { useOrganizationPlaces } from "./useOrganizationPlaces";
 import {
   PAGE_PLACES,
   SIDEBAR_PLACES_KNOB,
@@ -92,6 +92,7 @@ export function FrameProductTop({
   const knob = useSessionKnob(SIDEBAR_PLACES_KNOB);
   const organizationId = useAppSelector((s) => s.appContext?.organization_id ?? null);
   const userId = useAppSelector((s) => s.userAuth?.id ?? null);
+  const organizationPlaces = useOrganizationPlaces(organizationId);
   // A saved choice shows at once; the write runs behind it and a refusal puts it back.
   const [ownChoice, setOwnChoice] = useState<{ productId: string; ids: string[] } | null>(null);
   const [editing, setEditing] = useState(false);
@@ -100,7 +101,7 @@ export function FrameProductTop({
 
   const places = resolveRelatedPlaces(product, products);
   const chosen =
-    ownChoice?.productId === product.id ? ownChoice.ids : chosenPlacesAboveMore(product.id, knob);
+    ownChoice?.productId === product.id ? ownChoice.ids : chosenPlacesAboveMore(product.id, knob, organizationPlaces);
   const ownPages = productPagePlaces(product, "own");
   const moreGroups: SidebarMoreGroup[] =
     ownPagesInMore && ownPages.length > 0 ? [{ id: "own", label: product.name, places: ownPages }] : [];

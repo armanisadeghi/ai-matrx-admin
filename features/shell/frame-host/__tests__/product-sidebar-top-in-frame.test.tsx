@@ -45,13 +45,16 @@ jest.mock("@/features/shell/constants/route-menu-loaders", () => {
 
 // The session: a signed-in person in an organization, and the knob's effective map.
 let mockKnob: unknown = undefined;
+import { forgetOrganizationPlaces } from "../useOrganizationPlaces";
 jest.mock("@/lib/scoped-config/sessionKnob", () => ({ useSessionKnob: () => mockKnob }));
 jest.mock("@/lib/redux/hooks", () => ({
   useAppSelector: (pick: (s: unknown) => unknown) =>
     pick({ appContext: { organization_id: "org-1" }, userAuth: { id: "user-1" } }),
 }));
 const mockSetEntry = jest.fn();
+let mockOrgMap: unknown = undefined;
 jest.mock("@/lib/scoped-config/service", () => ({
+  fetchKnobRungOverrides: () => Promise.resolve(mockOrgMap === undefined ? [] : [{ scope_kind: "organization", scope_id: "org-1", value: mockOrgMap }]),
   setUserKnobMapEntry: (...args: unknown[]) => mockSetEntry(...args),
 }));
 jest.mock("@/lib/scoped-config/effectiveKnobs", () => ({ invalidateEffectiveKnob: jest.fn() }));
@@ -169,6 +172,21 @@ describe("every product sidebar opens with its related places and More", () => {
     await mount(<FrameHost pathname="/crm" productId="crm" />);
     expect(aboveMore()).toEqual(["data", "meet"]);
     expect(chosenPlacesAboveMore("marketing", mockKnob)).toEqual(RELATED_PLACES.marketing!.slice(0, 3));
+  });
+
+  it("a person's map for one product does not hide the organization's choice for another", async () => {
+    forgetOrganizationPlaces();
+    mockKnob = { crm: ["data", "meet"] };
+    mockOrgMap = { marketing: ["messages"], crm: ["hr"] };
+    await mount(<FrameHost pathname="/marketing" productId="marketing" />);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(aboveMore()).toEqual(["messages"]);
+    expect(chosenPlacesAboveMore("crm", mockKnob, mockOrgMap)).toEqual(["data", "meet"]);
+    expect(chosenPlacesAboveMore("hr", mockKnob, mockOrgMap)).toEqual(RELATED_PLACES.hr!.slice(0, 3));
+    mockOrgMap = undefined;
+    forgetOrganizationPlaces();
   });
 
   it("Edit sidebar… saves the person's own choice for this product through the knob's map door", async () => {

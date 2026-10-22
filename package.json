@@ -1121,6 +1121,7 @@
     "@ai-matrx/records": "latest",
     "@ai-matrx/records-ui": "latest",
     "@ai-matrx/rich-content": "latest",
+    "@ai-matrx/sharing": "latest",
     "@ai-matrx/summon": "latest",
     "@ai-matrx/terminal": "latest",
     "@ai-matrx/vault": "latest",

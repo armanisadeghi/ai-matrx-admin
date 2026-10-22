@@ -192,7 +192,12 @@ export default function FrameHostImpl({
       : undefined;
   // ONE crumb derivation: the trail the page declared, else the one derived from the address.
   const { host: pageHeaderHost, pageCrumbs, pageActions } = useFramePageHeaderHost();
-  const crumbs = frameHostCrumbs(product, pageCrumbs, useDerivedTrail({ pathname }), go, pathname);
+  const crumbs = frameHostCrumbs(product, pageCrumbs, useDerivedTrail({ pathname }), go, pathname, {
+    products,
+    // The doors' search reaches every page (the Go-to index), loaded on the first keystroke.
+    loadSearchIndex: () =>
+      import("@/features/shell/frame/goToSearchIndex").then((m) => m.fullGoToIndex(products, PRODUCT_FAMILIES, goToEntries)),
+  });
   const { pins, favorite, savePins } = useFramePins(pathname, crumbs[crumbs.length - 1].label, defaultPins(products));
 
   // THE PRODUCT'S OWN SIDEBAR (owner, 2026-10-22): the page's own sidebar, else the route

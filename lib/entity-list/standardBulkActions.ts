@@ -45,7 +45,7 @@ import type { ArchivedFilter } from "./types";
 import { pickHome } from "@/features/scopes/homes/homePickerOpener";
 import { resolveHomeScopeId, setHome } from "@/features/scopes/homes/setHome";
 import { shareWithPeople } from "@/features/sharing/bulk/shareWithPeopleOpener";
-import type { PermissionLevel, ShareActionResult } from "@/utils/permissions/types";
+import type { PermissionLevel, ShareActionResult } from "@ai-matrx/sharing/core";
 import { BulkNoneDoneError, copySkippedAction, skippedLine } from "./bulkSkipped";
 import { isCmsTrashToken } from "@/features/trash/cmsKinds";
 import {
@@ -421,12 +421,12 @@ export async function shareSelectionWithPerson<TRow>(
   args: BuiltInVerbArgs<TRow>,
 ): Promise<ShareActionResult> {
   // Loaded on use: this module rides every list page.
-  const { RESOURCE_TYPES } = await import("@/utils/permissions/registry");
+  const { RESOURCE_TYPES } = await import("@ai-matrx/sharing/core");
   const resourceType = RESOURCE_TYPES.find((type) => type === args.token);
   if (!resourceType) {
     return { success: false, error: `${args.noun} records cannot be shared from a list yet.` };
   }
-  const { shareWithUser } = await import("@/utils/permissions/service");
+  const { shareWithUser } = await import("@ai-matrx/sharing/core");
   try {
     const result = await runPerRow(
       selection,
@@ -463,7 +463,7 @@ export function shareBulkAction<TRow>(args: BuiltInVerbArgs<TRow>): EntityBulkAc
     label: "Share…",
     icon: Share2,
     run: async (selection) => {
-      const { RESOURCE_TYPES } = await import("@/utils/permissions/registry");
+      const { RESOURCE_TYPES } = await import("@ai-matrx/sharing/core");
       const resourceType = RESOURCE_TYPES.find((type) => type === args.token);
       if (!resourceType) throw new Error(`${args.noun} records cannot be shared from a list yet.`);
       const organizations = new Set(selection.rows.map((row) => rowString(row, "organization_id")));

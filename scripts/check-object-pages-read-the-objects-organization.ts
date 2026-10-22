@@ -86,12 +86,6 @@ export const OBJECT_HELPERS: readonly string[] = [
 export const ACTION_SURFACES: readonly string[] = [
   // The one share dialog, as the record store's table and record screens mount it.
   "features/sharing/components/RecordStoreShareSurface.tsx",
-  "features/sharing/components/ShareModal.tsx",
-  "features/sharing/components/tabs/ShareWithUserTab.tsx",
-  "features/sharing/components/AddEveryoneInOrg.tsx",
-  "features/sharing/components/tabs/PublicAccessTab.tsx",
-  "utils/permissions/hooks.ts",
-  "utils/permissions/service.ts",
   // A row's agent button on the table page.
   "features/unified-data/row-agent-action/rowAgentAction.ts",
 ];

@@ -795,12 +795,6 @@
   "features/settings/pages/IntegrationsSettingsPage.tsx": 2,
   "features/settings/tabs/EmailTab.tsx": 1,
   "features/settings/tabs/NotificationsTab.tsx": 5,
-  "features/sharing/components/AddEveryoneInOrg.tsx": 2,
-  "features/sharing/components/ShareLinkPanel.tsx": 1,
-  "features/sharing/components/ShareModal.tsx": 1,
-  "features/sharing/components/tabs/PublicAccessTab.tsx": 1,
-  "features/sharing/components/tabs/ShareWithUserTab.tsx": 1,
-  "features/sharing/hooks/useAccessSummary.ts": 1,
   "features/skills/components/SkillCategoryTreeEditor.tsx": 6,
   "features/skills/components/SkillDetailEditor.tsx": 2,
   "features/skills/components/SkillResourcesPanel.tsx": 3,
@@ -917,7 +911,6 @@
   "types/feedback-row-mapper.ts": 2,
   "utils/loadFileContent.server.ts": 1,
   "utils/permissions/orgModeration.ts": 2,
-  "utils/permissions/shareLinks.ts": 2,
   "utils/ts-function-registry/applet-utils.ts": 1,
   "features/data-tables/template-utils.ts": 3
 }

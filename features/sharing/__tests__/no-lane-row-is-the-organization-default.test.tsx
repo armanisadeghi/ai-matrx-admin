@@ -27,8 +27,8 @@ jest.mock("@/utils/supabase/client", () => ({
   supabase: { rpc },
 }));
 
-import { getResourceVisibility } from "@/utils/permissions/service";
-import { OrgAvailabilityNote } from "@/features/sharing/components/OrgAvailabilityNote";
+import { getResourceVisibility } from "@ai-matrx/sharing/core";
+import { OrgAvailabilityNote } from "@ai-matrx/sharing/react";
 
 describe("a record-store thing with no lane row is the organization default", () => {
   it("the reader carries the organization default the lane door names", async () => {

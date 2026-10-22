@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MediumComponentLoading } from "@/components/matrx/LoadingComponents";
-import { getResourceSharePath } from "@/utils/permissions/registry";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import { getResourceSharePath } from "@ai-matrx/sharing/core";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 import {
   AiVisibilityReport,
   parsePublicVisibilityResult,

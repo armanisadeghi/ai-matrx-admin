@@ -33,7 +33,7 @@
 
 import type { ShareSubject } from "@ai-matrx/records-ui";
 
-import { ShareModal } from "./ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 
 /**
  * Bind as `host={{ share: recordStoreShare }}` on `<RecordsMount>`.

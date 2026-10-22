@@ -32,12 +32,12 @@ import {
   parsePermissionLevel,
   permissionLevelRank,
   toDbPermissionLevel,
-} from "../levels";
+} from "@ai-matrx/sharing/core";
 import {
   getPermissionLevelLabel,
   getPermissionLevelsAtOrAbove,
   satisfiesPermissionLevel,
-} from "../types";
+} from "@ai-matrx/sharing/core";
 
 const REPO_ROOT = path.resolve(__dirname, "../../..");
 
@@ -176,7 +176,7 @@ describe("an unknown level is announced, never swallowed", () => {
     expect(parsePermissionLevel("superuser", "test")).toBeNull();
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain("superuser");
-    expect(errors[0]).toContain("utils/permissions/levels.ts");
+    expect(errors[0]).toContain("PERMISSION_LEVELS");
   });
 
   it("parsePermissionLevel stays quiet for a genuinely absent value", () => {
@@ -231,7 +231,7 @@ describe("the code ladder is a superset of the database enum", () => {
  * app moves on.
  */
 const CENSUS_SITES = [
-  "utils/permissions/types.ts",
+  "../aidream/apps/shared/sharing/src/core/types.ts",
   "utils/permissions/orgModeration.ts",
   "utils/permissions/orgResources.ts",
   "features/notes/redux/notes.types.ts",
@@ -258,7 +258,7 @@ describe("no ladder site restates the level union", () => {
     expect(source).not.toMatch(RESTATED_ARRAY);
     expect(source).not.toMatch(SILENT_DOWNGRADE);
     // and it reaches the canonical module, directly or by re-export
-    expect(source).toMatch(/permissions\/levels|ui\/permission-levels|from "\.\/levels"/);
+    expect(source).toMatch(/permissions\/levels|ui\/permission-levels|from "\.\/levels"|@ai-matrx\/sharing\/core|@ai-matrx\/data\/access/);
   });
 });
 
@@ -271,8 +271,8 @@ describe("no ladder site restates the level union", () => {
  * goes red and names the pickers that must gain the option.
  */
 const PERMISSION_PICKERS = [
-  "features/sharing/components/tabs/ShareWithUserTab.tsx",
-  "features/sharing/components/PermissionsList.tsx",
+  "../aidream/apps/shared/sharing/src/react/sheet/ShareWithUserTab.tsx",
+  "../aidream/apps/shared/sharing/src/react/sheet/PermissionsList.tsx",
   "features/organizations/components/OrgModuleSettings.tsx",
 ] as const;
 

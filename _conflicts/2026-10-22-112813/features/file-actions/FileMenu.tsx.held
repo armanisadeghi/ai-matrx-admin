@@ -1,0 +1,272 @@
+"use client";
+
+/**
+ * The ONE menu of a file-like record (workbook, document): the row menu in a
+ * list and the File menu in an editor are this component. It owns the Share and
+ * Move dialogs so they outlive the dropdown that opened them.
+ */
+
+import { isValidElement, useState, type ReactElement, type ReactNode } from "react";
+import { MoreHorizontal, MoreVertical, Share2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Button as ToolbarButton } from "@ai-matrx/design-system";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ShareModal } from "@ai-matrx/sharing/react";
+import type { ResourceType } from "@ai-matrx/sharing/core";
+import {
+  GoogleLinkMenuItems,
+  useGoogleLink,
+  type GoogleLinkAdapter,
+} from "@/features/google-workspace/linked/GoogleLinkControl";
+import { FileMenuItems, promptRename, type FileMenuItemsProps } from "./FileMenuItems";
+import { buildEditorFileMenu, type EditorFileSpec } from "./editor-file-menu";
+import { renderMenuEntries } from "@/components/editor-chrome/EditorMenuBar";
+import { useRouter } from "next/navigation";
+import { useOfficeLook } from "./skin/useOfficeLook";
+import { restoreEditorFocus } from "@/components/editor-chrome/EditorMenuBar";
+import { EditorMenuContent } from "@/components/editor-chrome/editor-menu-surface";
+import { EmailFileDialog } from "./EmailFileDialog";
+import { MoveToProjectDialog } from "./MoveToProjectDialog";
+import { SaveAsTemplateDialog } from "@/features/templates/files/components/SaveAsTemplateDialog";
+import type { TemplateKind } from "@/features/templates/files/types";
+
+export type FileMenuProps = Omit<
+  FileMenuItemsProps,
+  "onShare" | "onMoveRequest" | "onSaveAsTemplateRequest"
+> & {
+  resourceType: ResourceType;
+  id: string;
+  /** A Share row (and, in lists, a Share button). Editors have Share in their header: false. */
+  shareable?: boolean;
+  /** A visible Share button next to the menu (list rows). */
+  shareButton?: boolean;
+  projectId?: string | null;
+  onMove?: (
+    projectId: string | null,
+    projectName: string | null,
+  ) => Promise<void> | void;
+  /** "icon" is the ⋯ of a list row; "label" is a text "File" button; an element is the editor menu bar's own "File" trigger. */
+  trigger?: "icon" | "label" | ReactElement;
+  /** The "icon" trigger's dots. Default: vertical (Google's ⋮) in the Google look, horizontal (Office's ⋯) in Microsoft 365. */
+  menuIcon?: "vertical" | "horizontal";
+  disabled?: boolean;
+  /**
+   * Google Sheets / Docs rows (Open in Google, Create, Update, Push). The ONE Google link
+   * implementation (`GoogleLinkMenuItems`); the adapter says where this record's content comes from.
+   */
+  google?: { adapter: GoogleLinkAdapter; editable: boolean };
+  /** Open the menu from outside (a card's right-click — `FileCardContextArea`). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** A "Save as template" row (the editor File menu): the record's kind. */
+  templateKind?: TemplateKind;
+  /** In an editor's menu bar: Google's File menu (order, groups, Coming Soon rows) for this kind. */
+  editorFile?: EditorFileSpec;
+};
+
+/** Mounts the Google link state beside the dropdown, so its dialogs outlive the menu closing. */
+function GoogleHost({
+  google,
+  active,
+  children,
+}: {
+  google: NonNullable<FileMenuProps["google"]>;
+  active: boolean;
+  children: (rows: ReactNode) => ReactNode;
+}): ReactNode {
+  const g = useGoogleLink(google.adapter, google.editable, active);
+  return (
+    <>
+      {children(
+        <>
+          <DropdownMenuSeparator />
+          <GoogleLinkMenuItems g={g} withLabel={false} />
+        </>,
+      )}
+      {g.dialog}
+    </>
+  );
+}
+
+function GoogleSlot({
+  google,
+  active,
+  children,
+}: {
+  google: FileMenuProps["google"];
+  active: boolean;
+  children: (rows: ReactNode) => ReactNode;
+}): ReactNode {
+  if (!google) return children(null);
+  return (
+    <GoogleHost google={google} active={active}>
+      {children}
+    </GoogleHost>
+  );
+}
+
+export function FileMenu({
+  resourceType,
+  id,
+  shareable = true,
+  shareButton = false,
+  projectId = null,
+  onMove,
+  trigger = "icon",
+  menuIcon,
+  disabled,
+  google,
+  open,
+  onOpenChange,
+  templateKind,
+  editorFile,
+  ...items
+}: FileMenuProps): ReactNode {
+  const router = useRouter();
+  const [look] = useOfficeLook();
+  const vertical = (menuIcon ?? (look === "google" ? "vertical" : "horizontal")) === "vertical";
+  const [menuOpened, setMenuOpened] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [emailMode, setEmailMode] = useState<"file" | "collaborators" | null>(null);
+  const [moveOpen, setMoveOpen] = useState(false);
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const { name, trashed } = items;
+  // In an editor's menu bar the File menu wears the editor menus' look; in a list, the app's.
+  const MenuContent = isValidElement(trigger) ? EditorMenuContent : DropdownMenuContent;
+
+  return (
+    <span className="matrx-touch-targets flex shrink-0 items-center gap-0.5">
+      {shareButton && !trashed && (
+        <Button
+          icon={<Share2 />}
+          aria-label={`Share ${name}`}
+          title="Share"
+          variant="quiet"
+          disabled={disabled}
+          onClick={() => setShareOpen(true)}
+        />
+      )}
+      {/* In Trash only the owner can act (Restore); anyone else would open an empty menu. */}
+      {!(trashed && !items.canManage) && (
+        <GoogleSlot google={trashed ? undefined : google} active={menuOpened || open === true}>
+          {(googleRows) => (
+            <DropdownMenu
+              {...(isValidElement(trigger) ? { modal: false } : {})}
+              {...(open !== undefined ? { open } : {})}
+              onOpenChange={(next) => {
+                if (next) setMenuOpened(true);
+                onOpenChange?.(next);
+              }}
+            >
+              <DropdownMenuTrigger asChild>
+                {isValidElement(trigger) ? (
+                  trigger
+                ) : trigger === "label" ? (
+                  <ToolbarButton
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 px-2 text-xs"
+                    title="File"
+                    disabled={disabled}
+                  >
+                    File
+                  </ToolbarButton>
+                ) : (
+                  <Button
+                    type="submit"
+                    icon={vertical ? <MoreVertical /> : <MoreHorizontal />}
+                    aria-label={`Actions for ${name}`}
+                    title="More actions"
+                    variant="quiet"
+                    disabled={disabled}
+                  />
+                )}
+              </DropdownMenuTrigger>
+              <MenuContent
+                {...(isValidElement(trigger) ? { onCloseAutoFocus: restoreEditorFocus } : {})}
+                align={isValidElement(trigger) ? "start" : "end"}
+                className={isValidElement(trigger) ? "max-h-[75vh] min-w-[15rem] overflow-y-auto" : "min-w-[11rem]"}
+              >
+                {editorFile && isValidElement(trigger) && !trashed ? (
+                  <>
+                    {renderMenuEntries(
+                      buildEditorFileMenu(editorFile, {
+                        ...(shareable ? { share: () => setShareOpen(true) } : {}),
+                        email: (mode) => setEmailMode(mode),
+                        ...(items.onCopy ? { copy: () => void items.onCopy?.() } : {}),
+                        ...(items.canManage && items.onRename
+                          ? { rename: () => void promptRename(name, items.onRename!) }
+                          : {}),
+                        ...(items.canManage && onMove ? { move: () => setMoveOpen(true) } : {}),
+                        ...(items.canManage && items.onTrash ? { trash: () => void items.onTrash?.() } : {}),
+                        ...(templateKind ? { saveAsTemplate: () => setTemplateOpen(true) } : {}),
+                        download: (d) => void items.onDownload?.(d),
+                        navigate: (href) => router.push(href),
+                      }),
+                      "file/",
+                    )}
+                    {items.extra}
+                    {googleRows}
+                  </>
+                ) : (
+                <FileMenuItems
+                  {...items}
+                  extra={
+                    <>
+                      {items.extra}
+                      {googleRows}
+                    </>
+                  }
+                  {...(shareable ? { onShare: () => setShareOpen(true) } : {})}
+                  {...(onMove ? { onMoveRequest: () => setMoveOpen(true) } : {})}
+                  {...(templateKind ? { onSaveAsTemplateRequest: () => setTemplateOpen(true) } : {})}
+                />
+                )}
+              </MenuContent>
+            </DropdownMenu>
+          )}
+        </GoogleSlot>
+      )}
+      {shareOpen && (
+        <ShareModal
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
+          resourceType={resourceType}
+          resourceId={id}
+          resourceName={name}
+        />
+      )}
+      {emailMode && (
+        <EmailFileDialog
+          mode={emailMode}
+          resourceType={resourceType}
+          resourceId={id}
+          name={name}
+          onClose={() => setEmailMode(null)}
+        />
+      )}
+      {moveOpen && onMove && (
+        <MoveToProjectDialog
+          name={name}
+          currentProjectId={projectId}
+          onClose={() => setMoveOpen(false)}
+          onMove={onMove}
+        />
+      )}
+      {templateOpen && templateKind && (
+        <SaveAsTemplateDialog
+          kind={templateKind}
+          recordId={id}
+          name={name}
+          onClose={() => setTemplateOpen(false)}
+        />
+      )}
+    </span>
+  );
+}
