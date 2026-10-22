@@ -119,6 +119,7 @@ import { PlatformMark, platformLabel } from "@/features/marketing/social/compone
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ToolSearchPanel } from "@/features/search/tools/ToolSearchPanel";
 import { useTopStories } from "@/features/search/hooks/useTopStories";
+import { organicResultCount } from "@/features/search/result-count";
 import { isNewsQuery } from "@/components/mardown-display/blocks/search-kinds/search-kind-data";
 import { selectIsAuthenticated, selectUserAvatarUrl, selectDisplayName } from "@/lib/redux/selectors/userSelectors";
 import {
@@ -258,7 +259,7 @@ export function countResult(query: string, result: Record<string, unknown>): num
     const len = (v: unknown) => (Array.isArray(v) ? v.length : 0);
     return len(result.series) + len(result.rising) + len(result.top);
   }
-  return kindToSearchItems(query, result).length;
+  return organicResultCount(result) ?? kindToSearchItems(query, result).length;
 }
 
 /** What a run is called on screen: the engine on engine tabs, else the tab. */
@@ -1244,7 +1245,7 @@ function RunColumn({
           <SearchKindView value={outcome.result} />
         ))}
 
-      {outcome && hits === 0 && run.phase === "done" && <NoResults />}
+      {outcome && kindToSearchItems(query, outcome.result).length === 0 && countResult(query, outcome.result) === 0 && run.phase === "done" && <NoResults />}
       {!outcome && run.phase === "done" && run.empty && <NoResults message={run.empty} />}
     </section>
   );
