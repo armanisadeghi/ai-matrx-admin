@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { useEffect, useMemo, useState } from "react";
 import { Scale, Star } from "lucide-react";
 import type { ToolRendererProps } from "@ai-matrx/chat/tool-call-visualization/types";
@@ -59,7 +60,7 @@ function ProgressList({ rows, found, startedAt }: { rows: ItemProgress[]; found:
     <div className="space-y-2.5 px-3 py-3" aria-live="polite" data-compare-progress="">
       <div className="flex items-baseline justify-between">
         <span className="text-sm font-medium text-foreground">Getting the facts <span className="tabular-nums text-muted-foreground">{done} of {shown.length}</span></span>
-        <span className="type-meta tabular-nums text-muted-foreground">{Math.floor(s / 60)}:{String(s % 60).padStart(2, "0")}</span>
+        <span className="type-meta tabular-nums text-muted-foreground">{formatDurationSeconds(s, { style: "clock" })}</span>
       </div>
       <ul className="space-y-2">
         {shown.map((r) => (
