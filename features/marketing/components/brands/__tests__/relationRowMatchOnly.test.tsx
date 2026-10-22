@@ -28,9 +28,12 @@ describe("RelationRowView", () => {
     expect(html).toContain(URL);
   });
 
-  it("still links a row in use through the referral link", () => {
+  it("still links a row in use, through the outbound door", () => {
+    // Since @ai-matrx/kit 0.44.1 OutboundLink renders the author's href (copy keeps the plain link); the referral
+    // parameters are added by the root OutboundReferralDecorator at the moment the link is followed, so the
+    // rendered markup carries the plain address.
     const html = renderToStaticMarkup(<RelationRowView canEdit row={{ ...base, kindLabel: "Partner" }} />);
-    expect(html).toContain("<a ");
-    expect(html).toContain("utm_");
+    expect(html).toContain(`<a href="${URL}"`);
+    expect(html).toContain('target="_blank"');
   });
 });

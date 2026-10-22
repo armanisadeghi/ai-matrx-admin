@@ -41,6 +41,14 @@ export interface SavedAnswers {
   facts: BrandFact[];
 }
 
+/**
+ * Where an answer was given that the tray lists: the validation page AND Create (an account or website answered Yes at
+ * Create is recorded through the same writer, `persistAnswer(... { created })`, from "smart_add.create"). A Create answer
+ * left out could be neither seen nor undone here (2026-10-22). Undo is the same path for both: the homes the answer
+ * names (Create's property / site) are taken back, then the finding goes back to pending.
+ */
+export const ANSWERED_FROM = ["smart_add.validate", "smart_add.create"] as const;
+
 const ANSWERS: ReadonlySet<string> = new Set(["preferred", "ours", "alias", "not_us", "related", "correct", "wrong", "ignore"]);
 
 const rec = (j: Json | null | undefined): Record<string, Json | undefined> => (isJsonRecord(j) ? (j as Record<string, Json | undefined>) : {});
@@ -110,7 +118,7 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
     .eq("brand_id", brand.id)
     .eq("source", "smart_add")
     .in("status", ["confirmed", "dismissed"])
-    .eq("context->answer->>from", "smart_add.validate")
+    .in("context->answer->>from", [...ANSWERED_FROM])
     .is("deleted_at", null)
     .order("reviewed_at", { ascending: false })
     .limit(300);
