@@ -198,6 +198,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const taskCreateManifest: SurfaceManifest = {
   surfaceName: TASK_CREATE_SURFACE_NAME,
+  situation:
+    "They have the quick task form open to capture a new task; it links to {source_label|nothing, it is a blank capture}. What the form holds right now is in your context, and you can fill in or change the draft before they create it.",
   inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

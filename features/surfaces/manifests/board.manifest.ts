@@ -92,6 +92,8 @@ const values: SurfaceValue[] = [
 
 export const boardManifest: SurfaceManifest = {
   surfaceName: BOARD_SURFACE_NAME,
+  situation:
+    "They are looking at the board {board_title}, an endless zoomable space of tiles grouped into frames that they pan and zoom like a map. Everything on it, and any tile they selected, is in your context. You can add, move, group, connect, change or remove tiles with the board tools.",
   inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

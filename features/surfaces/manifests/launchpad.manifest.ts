@@ -50,6 +50,8 @@ const values: SurfaceValue[] = [
 
 export const launchpadManifest: SurfaceManifest = {
   surfaceName: LAUNCHPAD_SURFACE_NAME,
+  situation:
+    "They are on one of their launchpads: a grid of widgets from across the app, their data pages and Applets. You can read it and add, remove, move, resize or set up widgets; while they are editing it by hand, your changes wait until they press Done.",
   inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

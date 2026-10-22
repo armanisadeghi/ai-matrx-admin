@@ -428,6 +428,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const warRoomManifest: SurfaceManifest = {
   surfaceName: "matrx-user/war-room",
+  situation:
+    "They are in the War Room {room_name}, a saved set of {thread_count} threads they work side by side, in the {view_mode} view; the thread in focus is {active_thread_title|none}. Every thread is in your context. They can rename the room, rewrite its description, retitle the thread in focus and add threads.",
   inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

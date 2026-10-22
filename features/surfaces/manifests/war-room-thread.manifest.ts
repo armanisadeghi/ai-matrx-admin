@@ -515,6 +515,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const warRoomThreadManifest: SurfaceManifest = {
   surfaceName: "matrx-user/war-room-thread",
+  situation:
+    "They are on one thread of the War Room {room_name|they have open}: {thread_title|untitled}, about {thread_anchor_label}, showing its {active_tab} tab. Its task is {task_title|none} ({task_status|no status}) and its note is {note_title|none}; the note's text is in your context. They can edit the note and the task's title and status.",
   inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -407,6 +407,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const projectsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/projects",
+  situation:
+    "They have a project open: {active_project_name|none, they are on the project list}, status {active_project_status|not set}, with {open_task_count|no} open and {done_task_count|no} done tasks and {member_count|no} members; their role is {viewer_role|not known}. They can change its name, description, status, priority and target date.",
   inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

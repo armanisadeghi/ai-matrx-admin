@@ -189,6 +189,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const dashboardManifest: SurfaceManifest = {
   surfaceName: "matrx-user/dashboard",
+  situation:
+    "They are on their dashboard, the home page: what they have built ({agents_count|some} agents, {conversations_count|some} conversations, {notes_count|some} notes, {tasks_count|some} tasks), their {pinned_count} pinned items and suggested places to go next. Nothing is edited here; it is a place to jump off from.",
   inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

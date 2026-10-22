@@ -442,6 +442,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const tasksManifest: SurfaceManifest = {
   surfaceName: "matrx-user/tasks",
+  situation:
+    "They have a task open: {active_task_title|none yet}, status {active_task_status|unknown}, priority {active_task_priority|not set}, due {active_task_due_date|no date}, with {completed_subtask_count|0} of {subtask_count|0} subtasks done. They can edit its title, description, status, priority, due date and labels, add subtasks and save it.",
   inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

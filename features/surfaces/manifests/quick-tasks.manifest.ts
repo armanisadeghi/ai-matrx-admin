@@ -397,6 +397,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const quickTasksManifest: SurfaceManifest = {
   surfaceName: QUICK_TASKS_SURFACE_NAME,
+  situation:
+    "They have the quick tasks window open over whatever they were doing: {visible_task_count} tasks listed, and {selected_task_title|no task} open in the details pane. They can capture a new task, and change the open task's title, description, priority, due date and labels or add subtasks.",
   inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
