@@ -456,7 +456,7 @@ export function AppFrame(props: AppFrameProps) {
   const canvasMounted = useLatched(canvasOpen);
 
   const [pinsEditor, setPinsEditor] = useState<"edit" | "add" | null>(null);
-  const grid: AppGridProps = { products, families, favorites, onFavoritesChange, goToEntries: props.goToEntries, onGo: props.onGoTo };
+  const grid: AppGridProps = { products, families, favorites, onFavoritesChange, goToEntries: props.goToEntries };
   const sidebarExtras = {
     pins: props.pins ? withProductMarks(props.pins, products) : undefined,
     pinProducts: products,
