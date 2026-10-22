@@ -10,6 +10,7 @@
 import { fetchOutputFeedbackForSubjects } from "./service";
 import { hydrateOutputFeedback, peekOutputFeedback } from "./store";
 import { durableRecordId } from "@ai-matrx/kit/ids";
+import { hasBrowserSession } from "@/lib/supabase/hasBrowserSession";
 
 const MAX_IDS_PER_QUERY = 200;
 const BATCH_WINDOW_MS = 16;
@@ -22,6 +23,16 @@ async function flush(): Promise<void> {
   timer = null;
   const batches = [...pending.entries()];
   pending.clear();
+
+  // A signed-out visitor has no session, so the database refuses this read (401) and nobody can have
+  // rated anything yet. Ask nothing and record no answer: the subjects stay unanswered, so they load
+  // for real once a session exists.
+  if (!(await hasBrowserSession())) {
+    for (const [subjectType, idSet] of batches) {
+      for (const id of idSet) inFlight.delete(`${subjectType}:${id}`);
+    }
+    return;
+  }
 
   await Promise.all(
     batches.map(async ([subjectType, idSet]) => {
