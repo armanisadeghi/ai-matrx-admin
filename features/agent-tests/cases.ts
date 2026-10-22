@@ -21,6 +21,7 @@ import { readAllRows } from "@ai-matrx/data/db";
 import {
   SAMPLE_INPUT_CONTENT_KEY,
   fetchRunFinalResponse,
+  fetchRunPersonTurn,
   type AgentContractHead,
   type CandidateRun,
 } from "@/features/agents/samples/service";
@@ -160,7 +161,22 @@ export async function saveRunAsTestCase(input: {
   head: AgentContractHead | null;
   label?: string;
 }): Promise<TestCaseRow> {
-  const answer = await fetchRunFinalResponse(input.run.conversationId);
+  // The person's turn the answer replies to, with its files: a two-turn run saved its FIRST request
+  // beside its LAST answer, and the file attached on the last turn was dropped (live 2026-10-21, case
+  // dc6fdb16: input_content [] and "ERROR: missing sender").
+  const [answer, turn] = await Promise.all([
+    fetchRunFinalResponse(input.run.conversationId),
+    fetchRunPersonTurn(input.run.conversationId),
+  ]);
+  const typed = turn.isFirst ? (input.run.userInput ?? "") : turn.text;
+  const firstTurnParts = turn.isFirst ? input.run.inputContent : [];
+  const known = new Set(
+    firstTurnParts.map((p) => (p as { file_id?: unknown }).file_id).filter((id): id is string => typeof id === "string"),
+  );
+  const inputContent = [
+    ...(turn.isFirst ? firstTurnParts : typed ? [{ type: "text", text: typed }] : []),
+    ...turn.files.filter((p) => !known.has((p as { file_id?: string }).file_id ?? "")),
+  ];
   return createTestCase({
     agentId: input.agentId,
     label:
@@ -168,8 +184,8 @@ export async function saveRunAsTestCase(input: {
       input.run.title?.trim() ||
       `Run of ${new Date(input.run.createdAt).toLocaleDateString()}`,
     variables: input.run.variables as Record<string, Json>,
-    userInput: input.run.userInput ?? "",
-    inputContent: input.run.inputContent,
+    userInput: typed,
+    inputContent,
     approvedAnswer: answer,
     sourceConversationId: input.run.conversationId,
     source: "borrowed",

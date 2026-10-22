@@ -631,6 +631,87 @@ export async function fetchRunFinalResponse(
 }
 
 /**
+ * A file as a case input part: a durable reference (`file_id`, the MediaRef identity), never a URL.
+ * The replay resolves it through the file handler; the server reads `cld_files.mime_type` for it.
+ */
+export function fileRefPart(file: { fileId: string; mimeType?: string | null; fileName?: string | null }): MessagePart {
+  const mime = file.mimeType ?? "";
+  const kind = mime.startsWith("image/")
+    ? "image"
+    : mime.startsWith("audio/")
+      ? "audio"
+      : mime.startsWith("video/")
+        ? "video"
+        : "document";
+  return {
+    type: "media",
+    kind,
+    file_id: file.fileId,
+    ...(mime ? { mime_type: mime } : {}),
+    ...(file.fileName ? { metadata: { file_name: file.fileName } } : {}),
+  } as unknown as MessagePart;
+}
+
+/**
+ * The files a person attached on one turn. An attachment does not ride in the stored message: the
+ * request records it as a context object (`resource_file_<id>`, `source.kind = "file"`, label = the
+ * file's name) in `chat.user_request.metadata.context_objects` (live 2026-10-21, conversation e99f13c8).
+ */
+export function attachedFilesOf(requestMetadata: unknown): MessagePart[] {
+  if (!isJsonObject(requestMetadata)) return [];
+  const objects = requestMetadata.context_objects;
+  if (!Array.isArray(objects)) return [];
+  const parts: MessagePart[] = [];
+  for (const o of objects) {
+    if (!isJsonObject(o) || !isJsonObject(o.source)) continue;
+    const { kind, id } = o.source;
+    if (kind !== "file" || typeof id !== "string" || !id) continue;
+    parts.push(fileRefPart({ fileId: id, fileName: typeof o.label === "string" ? o.label : null }));
+  }
+  return parts;
+}
+
+/**
+ * The person's turn the run ends on — the one its final answer replies to: what they typed on it and
+ * the files they attached to it. `isFirst` when the run has one turn (its typed text then comes from
+ * the run's recorded inputs, since a first message is the rendered template).
+ */
+export async function fetchRunPersonTurn(
+  conversationId: string,
+): Promise<{ isFirst: boolean; text: string; files: MessagePart[] }> {
+  const supabase = createClient();
+  const [messages, requests] = await Promise.all([
+    supabase
+      .schema("chat")
+      .from("message")
+      .select("content, user_content, position")
+      .eq("conversation_id", conversationId)
+      .eq("role", "user")
+      .is("deleted_at", null)
+      .order("position", { ascending: false })
+      .limit(2),
+    supabase
+      .schema("chat")
+      .from("user_request")
+      .select("metadata, created_at")
+      .eq("conversation_id", conversationId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1),
+  ]);
+  if (messages.error) throw messages.error;
+  if (requests.error) throw requests.error;
+  const last = messages.data?.[0];
+  const content = last?.user_content ?? last?.content;
+  const text = Array.isArray(content) ? (textFromMessageContent(parseMessageContent(content)) ?? "") : "";
+  return {
+    isFirst: (messages.data?.length ?? 0) <= 1,
+    text,
+    files: attachedFilesOf(requests.data?.[0]?.metadata),
+  };
+}
+
+/**
  * Save one real run as a candidate sample. Inputs follow the raw-values
  * invariant; the reference output is the run's final assistant message; the
  * contract hashes + version come from the run's pinned definition version, so

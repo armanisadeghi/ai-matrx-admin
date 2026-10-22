@@ -7,13 +7,14 @@
  * and the Agent Studio's Cases tab.
  */
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useRef, useState } from "react";
+import { Paperclip, Plus, X } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import type { AgentContractHead } from "@/features/agents/samples/service";
+import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
+import { fileRefPart, type AgentContractHead } from "@/features/agents/samples/service";
 import { createTestCase, factsFromLines, type TestCaseRow } from "../cases";
 
 /** A declared input's pretty name: its label, or its key in plain words. */
@@ -40,6 +41,23 @@ export function TestCaseForm({
   const [facts, setFacts] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  /** Files the case runs with: durable references from the one upload door, never URLs. */
+  const [files, setFiles] = useState<Array<{ fileId: string; fileName: string; mimeType: string | null }>>([]);
+  const fileInput = useRef<HTMLInputElement | null>(null);
+  const { upload, uploading } = useFileUpload();
+  const attach = async (list: FileList | null) => {
+    for (const file of Array.from(list ?? [])) {
+      try {
+        const uploaded = await upload({ kind: "file", file }, { folderPath: "agent-tests/cases" });
+        setFiles((prev) => [
+          ...prev,
+          { fileId: uploaded.fileId, fileName: file.name, mimeType: uploaded.meta.mime ?? (file.type || null) },
+        ]);
+      } catch (err) {
+        setError(err);
+      }
+    }
+  };
   const declarations = head?.variableDeclarations ?? [];
   const ready = label.trim() !== "" && factsFromLines(facts).length > 0;
   /** Why the button waits: the first missing piece, in the field's own words. */
@@ -54,6 +72,9 @@ export function TestCaseForm({
         label,
         variables: values,
         userInput,
+        ...(files.length > 0
+          ? { inputContent: [...(userInput ? [{ type: "text", text: userInput }] : []), ...files.map(fileRefPart)] }
+          : {}),
         facts: factsFromLines(facts),
         head,
       });
@@ -61,6 +82,7 @@ export function TestCaseForm({
       setValues({});
       setUserInput("");
       setFacts("");
+      setFiles([]);
       onCreated(row);
     } catch (err) {
       setError(err);
@@ -100,6 +122,32 @@ export function TestCaseForm({
         value={userInput}
         onChange={(e) => setUserInput(e.target.value)}
       />
+      <div className="flex flex-wrap items-center gap-1.5" data-testid="test-case-form-files">
+        {files.map((f) => (
+          <Button
+            key={f.fileId}
+            variant="outline"
+            icon={<X />}
+            title={`Remove ${f.fileName}`}
+            onClick={() => setFiles((prev) => prev.filter((x) => x.fileId !== f.fileId))}
+          >
+            {f.fileName}
+          </Button>
+        ))}
+        <Button variant="quiet" icon={<Paperclip />} disabled={uploading} onClick={() => fileInput.current?.click()}>
+          {uploading ? "Attaching…" : "Attach file"}
+        </Button>
+        <input
+          ref={fileInput}
+          type="file"
+          multiple
+          hidden
+          onChange={(e) => {
+            void attach(e.target.files);
+            e.target.value = "";
+          }}
+        />
+      </div>
       <ProTextarea
         aria-label="A good reply"
         placeholder="A good reply… (one per line)"
