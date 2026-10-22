@@ -12,8 +12,8 @@
 // does not already draw: display name, title, department, location, manager,
 // FTE, worker class. No Confidential-tier column is in `hr_org_chart`'s payload
 // at all, so none can leak into this file. The DIRECTORY export is a different
-// story and is deliberately not shipped unaudited — see
-// `hr.people.directory-export` in the coming-soon registry.
+// story: it is audited, see
+// `directoryExportAction.ts`.
 
 import type { HrOrgChart } from "../../types";
 import { toDelimitedText } from "@ai-matrx/alchemy/operate/read";

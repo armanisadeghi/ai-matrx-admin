@@ -44,6 +44,7 @@ import { useFramePins } from "./useFramePins";
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
 import { FrameSidebarSlotContext } from "./frameSidebarSlot";
 import { useFrameProductSidebar } from "./frameProductSidebar";
+import { FrameProductTop } from "./FrameProductTop";
 import { menuGoToEntries } from "./goToMenuEntries";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
@@ -197,7 +198,18 @@ export default function FrameHostImpl({
   // THE PRODUCT'S OWN SIDEBAR (owner, 2026-10-22): the page's own sidebar, else the route
   // family's registered menu, else the route table's rows (frameProductSidebar.tsx).
   const ProductIcon = product.icon;
-  const { slotHost, sidebarContent } = useFrameProductSidebar(pathname, <ProductIcon aria-hidden />);
+  const { slotHost, sidebarContent, productRows, ownsTop } = useFrameProductSidebar(pathname, <ProductIcon aria-hidden />);
+  // THE TOP OF EVERY PRODUCT SIDEBAR (owner, 2026-10-22): Search, chosen related places, More —
+  // unless the body draws its own (the chat menu). The product's own pages go under More when the
+  // body is a module menu or a page's sidebar that is not the whole menu.
+  const sidebarTop = ownsTop ? undefined : (
+    <FrameProductTop
+      product={product}
+      products={products}
+      ownPagesInMore={sidebarContent != null && productRows}
+      onGo={go}
+    />
+  );
 
   // The page's own "…" items (declared through the page-header channel) first, then the frame's.
   const actions: FrameAction[] = [
@@ -232,6 +244,7 @@ export default function FrameHostImpl({
           onSelectPin={(pin) => go(pin.href)}
           favorite={isAuthenticated ? favorite : undefined}
           sidebarContent={sidebarContent}
+          sidebarTop={sidebarTop}
           activeMenuItemId={item?.id}
           onSelectMenuItem={(selected) => selected.href && go(selected.href)}
           crumbs={crumbs}

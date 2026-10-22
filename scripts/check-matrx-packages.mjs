@@ -862,6 +862,7 @@ function readRegistry(name, projectRoot) {
             execFileSync('npm', ['view', name, '--json'], {
                 cwd: projectRoot,
                 encoding: 'utf8',
+                timeout: NPM_VIEW_TIMEOUT_MS,
                 stdio: ['ignore', 'pipe', 'inherit'],
             }),
         );
@@ -877,12 +878,21 @@ function readRegistry(name, projectRoot) {
     }
 }
 
+const TARBALL_PROBE_TIMEOUT_MS = 20_000;
+const NPM_VIEW_TIMEOUT_MS = 60_000;
+
 async function probeTarball(url) {
     if (!url) return false;
     // A ranged GET, not HEAD: the npm CDN answers HEAD inconsistently for objects
     // it has not replicated yet, and a 1-byte body costs nothing.
     try {
-        const response = await fetch(url, { method: 'GET', headers: { Range: 'bytes=0-0' } });
+        // Bounded: a CDN socket that never answers left this check (and every sync and release
+        // gate that runs it) idle at 0% CPU for 10+ minutes (2026-10-22). Unanswered = unreachable.
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { Range: 'bytes=0-0' },
+            signal: AbortSignal.timeout(TARBALL_PROBE_TIMEOUT_MS),
+        });
         return response.ok || response.status === 206;
     } catch {
         return false;

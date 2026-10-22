@@ -31,6 +31,17 @@ jest.mock("@/lib/toast", () => ({
 }));
 const plainConfirm = jest.fn(async () => true);
 jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({ confirm: () => plainConfirm() }));
+// The package DateField is a text field that commits on blur (0.86+); the contract this suite
+// tests is "the value it reports reaches run", so a plain date input stands in for it here.
+jest.mock("@ai-matrx/design-system/controls", () => {
+  const actual = jest.requireActual("@ai-matrx/design-system/controls");
+  const R = jest.requireActual("react");
+  return {
+    ...actual,
+    DateField: ({ value, onValueChange, "aria-label": label }: { value: string | null; onValueChange: (v: string | null) => void; "aria-label"?: string }) =>
+      R.createElement("input", { type: "date", "aria-label": label, value: value ?? "", onChange: (e: { target: { value: string } }) => onValueChange(e.target.value || null) }),
+  };
+});
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 
 import { EntityBulkActions } from "../components/EntityBulkBar";

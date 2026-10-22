@@ -60,7 +60,7 @@ features/tts/              ← Production TTS feature (Cartesia + Groq)
     useTextToSpeech.ts      ← Groq/PlayAI hook (REST, WAV blob)
   components/
     SpeakerButton.tsx       ← Single play/pause toggle (lazy-loads core)
-    SpeakerButtonCore.tsx   ← Dynamically imported Cartesia logic
+    (SpeakerButton itself lives in @ai-matrx/media/react; this file re-exports it)
     SpeakerGroup.tsx        ← 3-button group shell (Play, Pause, Stop)
     SpeakerGroupCore.tsx    ← Dynamically imported 3-button core
     SpeakerCompactGroup.tsx ← 2-button group shell (Play/Pause, Stop)

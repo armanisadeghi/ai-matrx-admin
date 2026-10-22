@@ -62,6 +62,8 @@ that gap is exactly why this skill exists (Arman, 2026-08-21).
 
 ## 1. Measure (read-only, via Supabase MCP)
 
+**Start with the one command: `cd aidream && .venv/bin/python scripts/db_conformance_report.py`** — certification score from `audit.summary` (with snapshot age), the sign-in-table rule (`auth.users` referenced only by `iam.users` + the `platform.sign_in_fk_legacy` allowlist, guard `sign_in_table_guard` enabled, `on_auth_user_mirror` the only trigger), event-trigger and cron counts (sentinels 1, 4, 5). Exit 1 = a hard sign-in-table failure. The table below covers the rest.
+
 Run these against live; record each number with its query framing so the next run diffs
 apples to apples:
 

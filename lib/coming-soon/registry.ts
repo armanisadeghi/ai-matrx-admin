@@ -680,17 +680,8 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
       "Acknowledgment campaigns live in Documents & Forms (route 54), which is not built.",
     surfaces: ["/hr/people — bulk action bar"],
   },
-  "hr.people.directory-export": {
-    id: "hr.people.directory-export",
-    label: "Export this list",
-    owner: "hr",
-    promise:
-      "Download exactly the people this filtered list is showing, with the columns the list is showing, as a file — and have the export recorded, because who exported the people list and when is itself a record.",
-    stage: "blocked",
-    blockedBy:
-      "SPEC-EMPLOYEES §2.2 makes an export an AUDITED action (hr.access_audit action='export'). There is no hr_directory_export door, and a browser cannot write that audit row — so an unaudited CSV of everyone is deliberately NOT shipped. Copy / Copy for AI on the table remain available for the directory-tier columns already on screen.",
-    surfaces: ["/hr/people — bulk action bar", "/hr/people — toolbar"],
-  },
+  // "hr.people.directory-export" was deleted: hr.directory_export_log now records the audited
+  // export and /hr/people builds the file (directoryExportAction.ts).
   // "hr.people.start-offboarding" was a stage:"blocked" stub while hr_separation_record was
   // already live. The separation FORM is now built (OffboardEmployeeDialog, wired from the
   // /hr/people row menu), so the coming-soon entry is deleted — no dead path left behind.

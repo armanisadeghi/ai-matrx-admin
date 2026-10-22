@@ -7,7 +7,7 @@
 // Nodes that match no passage stay uncited. Never throws.
 
 import type { SourceCitation } from "@/features/education/trust/types";
-import { citationForItem } from "@/features/education/create/chunkCitations";
+import { citationForItem, stripChunkMarkersDeep } from "@/features/education/create/chunkCitations";
 import type { GroundedChunk } from "@/features/education/create/groundedMaterial";
 
 interface SpecNode {
@@ -29,11 +29,12 @@ export function citeDiagramNodes<T extends { nodes?: unknown[] } | Record<string
   chunks: readonly GroundedChunk[],
 ): { spec: T; citedCount: number } {
   const nodes = (spec as { nodes?: unknown[] }).nodes;
-  if (!Array.isArray(nodes) || chunks.length === 0) return { spec, citedCount: 0 };
+  if (!Array.isArray(nodes)) return { spec, citedCount: 0 };
   let citedCount = 0;
   const cited = nodes.map((raw) => {
-    const node = { ...(raw as SpecNode) };
-    const citation = citationForItem(node, nodeText(node), chunks);
+    // The generator reads `### Chunk` markers; none of that text belongs in a node.
+    const node = stripChunkMarkersDeep({ ...(raw as SpecNode) });
+    const citation = chunks.length === 0 ? null : citationForItem(node, nodeText(node), chunks);
     if (!citation) return node;
     citedCount += 1;
     node.metadata = { ...(node.metadata ?? {}), citation };

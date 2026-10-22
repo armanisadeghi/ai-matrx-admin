@@ -153,6 +153,10 @@ import { SaveViewDialog, type SaveViewValues } from "@/features/knowledge/hub/co
 import type { SavedViewAction } from "@/features/knowledge/hub/components/HubSidebar";
 import type { HubSavedView } from "@/features/knowledge/hub/hooks/useHubSidebarData";
 import { HubSidebar } from "@/features/knowledge/hub/components/HubSidebar";
+import {
+  FrameSidebarContent,
+  useFrameSidebarSlot,
+} from "@/features/shell/frame-host/frameSidebarSlot";
 import { HubSearchBox } from "@/features/knowledge/hub/components/HubSearchBox";
 import { HubFilterMenu } from "@/features/knowledge/hub/components/HubFilterMenu";
 import {
@@ -365,6 +369,8 @@ export function KnowledgeHubPage({
   });
   const router = useRouter();
   const isMobile = useIsMobile();
+  // The new app frame: the Knowledge views rail is the frame's ONE sidebar column (kind B).
+  const inFrame = useFrameSidebarSlot();
   const { state, setState } = useHubUrlState();
   const sample = state.data === "sample";
   const sidebar = useHubSidebarData(state.data);
@@ -2365,6 +2371,7 @@ export function KnowledgeHubPage({
   return (
     <SurfaceRuntimeProvider surfaceName={HUB_LIBRARY_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers} isEditable={false}>
       {header}
+      {inFrame ? <FrameSidebarContent>{sidebarNode}</FrameSidebarContent> : null}
       <div className="h-full w-full overflow-hidden" data-testid="knowledge-hub">
         <ClientGroup
           id={GROUP_ID}
@@ -2374,22 +2381,26 @@ export function KnowledgeHubPage({
           defaultLayout={defaultLayout}
           className="h-full w-full"
         >
-          <RegisteredPanel
-            registerAs="sidebar"
-            groupKey={GROUP_KEY}
-            id="sidebar"
-            collapsible
-            collapsedSize="0%"
-            defaultSize="18%"
-            minSize="12%"
-            maxSize="30%"
-          >
-            {/* The sidebar is the tinted canvas itself; the content beside it is the card. */}
-            <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">{sidebarNode}</div>
-          </RegisteredPanel>
-          <Handle hideWhenCollapsed={["sidebar"]} />
+          {inFrame ? null : (
+            <>
+              <RegisteredPanel
+                registerAs="sidebar"
+                groupKey={GROUP_KEY}
+                id="sidebar"
+                collapsible
+                collapsedSize="0%"
+                defaultSize="18%"
+                minSize="12%"
+                maxSize="30%"
+              >
+                {/* The sidebar is the tinted canvas itself; the content beside it is the card. */}
+                <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">{sidebarNode}</div>
+              </RegisteredPanel>
+              <Handle hideWhenCollapsed={["sidebar"]} />
+            </>
+          )}
           <Panel id="main" minSize="30%">
-            <div className="h-full overflow-hidden pb-2 pr-2 pt-[var(--shell-header-h)]">
+            <div className={cn("h-full overflow-hidden pb-2 pr-2 pt-[var(--shell-header-h)]", inFrame && "pl-2")}>
               <div className="h-full overflow-hidden rounded-xl border border-border bg-card shadow-sm">{main}</div>
             </div>
           </Panel>

@@ -60,9 +60,12 @@ export function useAudioStudyCreate() {
       // 2. Build the podcast request for this format + adaptivity.
       const request = buildAudioRequest({
         format: input.format,
-        sourceKind: resolved.fromSources ? "deck" : "topic",
-        // What is read aloud never carries the grounding markers; audio stays cited per Source.
-        content: resolved.plainContent,
+        // The server reads the Sources (once) and links each one to the episode;
+        // a topic alone is what the person typed. Audio stays cited per Source.
+        material:
+          resolved.fromSources && resolved.chosen
+            ? { kind: "sources", sourceSet: resolved.chosen }
+            : { kind: "topic", topic: resolved.plainContent },
         hostCount: input.hostCount,
         language: input.language,
         weakAreaNote,

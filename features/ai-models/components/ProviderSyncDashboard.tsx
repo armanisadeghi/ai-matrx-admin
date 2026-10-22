@@ -64,6 +64,8 @@ import type {
 } from "../types";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { cn } from "@/lib/utils";
 import { MOBILE_TABLE_FROZEN } from "@/components/official/mobile-table/mobileTable";
 import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
@@ -958,6 +960,7 @@ function ComparisonTable({
   onOpenModel,
   onAddMissing,
   onToggleExclusion,
+  onBatchExclusion,
   policyBusy,
 }: {
   comparisons: ModelComparison[];
@@ -968,6 +971,7 @@ function ComparisonTable({
   onOpenModel: (id: string) => void;
   onAddMissing: (c: ModelComparison) => void;
   onToggleExclusion: (c: ModelComparison) => void;
+  onBatchExclusion: (ids: string[], exclude: boolean) => Promise<boolean>;
   policyBusy: boolean;
 }) {
   const copy = useMemo<MatrxDataTableCopyConfig<ModelComparison>>(
@@ -1004,6 +1008,53 @@ function ComparisonTable({
     }),
     [providerName],
   );
+  // Exclude / Un-exclude: row and bulk from ONE declaration. The bulk twin is a single batch door
+  // (one policy write for the whole set), so ticking 30 models never races 30 list rewrites.
+  const { rowActionDefs, bulkActions } = defineRowVerbs<ModelComparison>(
+    [
+      {
+        id: "exclude", icon: Ban, label: "Exclude", tone: "destructive",
+        appliesTo: (c) => c.status !== "excluded" && c.status !== "extra_local",
+        unavailableTooltip: "Not an excludable provider model",
+        onClick: onToggleExclusion,
+        bulk: {
+          label: "Exclude",
+          done: "Excluded",
+          confirm: () => null,
+          run: async (targets) => {
+            const ok = await onBatchExclusion(targets.ids, true);
+            if (!ok) return undefined;
+            return {};
+          },
+        },
+      },
+      {
+        id: "unexclude", icon: Undo2, label: "Un-exclude",
+        appliesTo: (c) => c.status === "excluded",
+        unavailableTooltip: "Not excluded",
+        onClick: onToggleExclusion,
+        bulk: {
+          label: "Un-exclude",
+          done: "No longer excluded",
+          run: async (targets) => {
+            const ok = await onBatchExclusion(targets.ids, false);
+            if (!ok) return undefined;
+            return {};
+          },
+        },
+      },
+    ],
+    { noun: "model", getRowId: (c) => c.id, getRowName: (c) => c.display_name },
+  );
+  const bulkSel = useTableBulkSelection<ModelComparison>({
+    noun: "model",
+    rows: comparisons,
+    getRowId: (c) => c.id,
+    getRowName: (c) => c.display_name,
+    actions: bulkActions,
+    standardBulkActions: false,
+  });
+
   const columns = useMemo<MatrxColumnDef<ModelComparison>[]>(
     () => [
       {
@@ -1219,15 +1270,10 @@ function ComparisonTable({
                 Add
               </Button>
             )}
-            {comparison.status !== "extra_local" && (
-              <ExcludeButton
-                comparison={comparison}
-                onToggle={onToggleExclusion}
-                busy={policyBusy}
-              />
-            )}
           </div>
         ) }]}
+        rowActionDefs={rowActionDefs}
+        selection={bulkSel.selection}
         getRowId={(comparison) => comparison.id}
         density="condensed"
         defaultSort={{ id: "released", direction: "desc" }}
@@ -1265,6 +1311,7 @@ function ProviderSection({
   onAddMissing,
   onEditPolicy,
   onToggleExclusion,
+  onBatchExclusion,
   policyBusy,
 }: {
   summary: ProviderSummary;
@@ -1277,6 +1324,7 @@ function ProviderSection({
   onAddMissing: (c: ModelComparison, summary: ProviderSummary) => void;
   onEditPolicy: (s: ProviderSummary) => void;
   onToggleExclusion: (c: ModelComparison, s: ProviderSummary) => void;
+  onBatchExclusion: (s: ProviderSummary, ids: string[], exclude: boolean) => Promise<boolean>;
   policyBusy: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -1473,6 +1521,7 @@ function ProviderSection({
               onOpenModel={onOpenModel}
               onAddMissing={(c) => onAddMissing(c, summary)}
               onToggleExclusion={(c) => onToggleExclusion(c, summary)}
+              onBatchExclusion={(ids, exclude) => onBatchExclusion(summary, ids, exclude)}
               policyBusy={policyBusy}
             />
           </div>
@@ -1640,6 +1689,36 @@ export default function ProviderSyncDashboard({
       toast.error("Could not update the exclusion list", {
         description: extractErrorMessage(err),
       });
+    } finally {
+      setPolicyBusyProviderId(null);
+    }
+  };
+
+  /** Many models at once: one confirm naming the count, one policy write. */
+  const handleBatchExclusion = async (
+    summary: ProviderSummary,
+    modelIds: string[],
+    exclude: boolean,
+  ): Promise<boolean> => {
+    const providerLabel = summary.name ?? summary.id;
+    const n = modelIds.length;
+    const ok = await confirm({
+      title: exclude
+        ? `Exclude ${n} ${n === 1 ? "model" : "models"} from ${providerLabel} sync?`
+        : `Stop excluding ${n} ${n === 1 ? "model" : "models"}?`,
+      description: exclude
+        ? `The model sync agent will never add these ${n} to the registry, now or on any future run. Un-exclude them here to undo that.`
+        : `These ${n} become sync candidates again and may be added on the agent's next run.`,
+      confirmLabel: exclude ? "Exclude" : "Un-exclude",
+      variant: exclude ? "destructive" : "default",
+    });
+    if (!ok) return false;
+    setPolicyBusyProviderId(summary.id);
+    try {
+      const saved = await aiModelService.setModelsExcluded(summary.id, modelIds, exclude);
+      setPolicies((prev) => ({ ...prev, [summary.id]: saved }));
+      setCandidates(await aiModelService.fetchProviderSyncCandidates());
+      return true;
     } finally {
       setPolicyBusyProviderId(null);
     }
@@ -1878,6 +1957,7 @@ export default function ProviderSyncDashboard({
                   })
                 }
                 onToggleExclusion={handleToggleExclusion}
+                onBatchExclusion={handleBatchExclusion}
                 policyBusy={policyBusyProviderId === summary.id}
               />
             ))

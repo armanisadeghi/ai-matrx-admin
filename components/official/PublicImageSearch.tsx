@@ -497,13 +497,13 @@ export function PublicImageSearch({
                         "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyA4QzMgOC41NTIyOCAzLjQ0NzcyIDkgNCA5SDIwQzIwLjU1MjMgOSAyMSA4LjU1MjI4IDIxIDhDMjEgNy40NDc3MiAyMC41NTIzIDcgMjAgN0g0QzMuNDQ3NzIgNyAzIDcuNDQ3NzIgMyA4WiIgZmlsbD0iY3VycmVudENvbG9yIi8+PHBhdGggZD0iTTMgMTZDMyAxNi41NTIzIDMuNDQ3NzIgMTcgNCAxN0gyMEMyMC41NTIzIDE3IDIxIDE2LjU1MjMgMjEgMTZDMjEgMTUuNDQ3NyAyMC41NTIzIDE1IDIwIDE1SDRDMy40NDc3MiAxNSAzIDE1LjQ0NzcgMyAxNloiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==";
                     }}
                   />
-                  <div className="absolute top-0 right-0 bg-black/50 text-white type-secondary px-1 rounded-bl">
+                  <div className="absolute top-0 left-0 bg-black/50 text-white type-secondary px-1 rounded-br">
                     {index + 1}
                   </div>
                   <button
                     className="absolute top-1 right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center opacity-100 transition-opacity sm:[@media(hover:hover)]:opacity-0 sm:[@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100"
                     onClick={(e) => handleRemoveImage(url, e)}
-                    aria-label={`Remove image ${index + 1}`}
+                    aria-label="Remove image"
                   >
                     <X className="h-3 w-3 text-white" />
                   </button>
@@ -514,19 +514,20 @@ export function PublicImageSearch({
         )}
 
         <div className="flex items-center justify-center gap-1 p-2 pt-0">
-          <div className="relative max-w-[180px]">
+          <div className="flex max-w-[180px] items-center gap-1">
             <Input
               value={inputValue}
               onChange={handleInputChange}
               placeholder={placeholder}
-              className={cn("w-full", inputClassName)} adornment="end"
+              className={cn("w-full", inputClassName)}
               disabled={disabled}
             />
             {inputValue && (
               <button
                 type="button"
                 onClick={handleClearInput}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground"
+                aria-label="Clear"
+                className="shrink-0 text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground"
                 disabled={disabled}
               >
                 <X className="h-3 w-3" />

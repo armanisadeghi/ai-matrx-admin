@@ -169,7 +169,16 @@ export function RowSelectionBar<TRow>({
       >
         <EntityBulkActions
           actions={actions}
-          selection={{ build, clear: selection.clear, count }}
+          selection={{
+            build,
+            clear: selection.clear,
+            count,
+            // A partial result keeps exactly the skipped rows ticked.
+            setIds: (keep) => {
+              selection.clear();
+              selection.setMany(keep, true);
+            },
+          }}
           noun={noun}
           compact={compact}
           onRemoveRows={onRemoveRows ?? (() => {})}

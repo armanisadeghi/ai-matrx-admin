@@ -306,8 +306,8 @@ export default function SqlFunctionsContainer({
                   </label>
                   <div className="w-36">
                     {customSchemaSearch ? (
-                      <div className="relative">
-                        <Input adornment="end"
+                      <div className="flex items-center gap-1">
+                        <Input
                           type="text"
                           placeholder="Enter schema..."
                           value={filter.schema || ""}
@@ -319,7 +319,7 @@ export default function SqlFunctionsContainer({
                           icon={<X />} aria-label="Close"
                           type="button"
                           variant="quiet"
-                          className="absolute right-0 top-0"
+                          className="shrink-0"
                           onClick={() => setCustomSchemaSearch(false)}
                         />
                       </div>

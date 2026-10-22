@@ -81,6 +81,7 @@ import {
   selectSortBy,
   selectSortDir,
   selectTreeStatus,
+  selectTreeHydrating,
   selectTreeError,
   selectViewMode,
   selectVisibleColumns,
@@ -582,8 +583,10 @@ function PageShellDesktop({
   );
 
   const treeLoaded = treeStatus === "loaded";
+  const treeHydrating = useAppSelector(selectTreeHydrating);
   const isEmpty =
     treeLoaded &&
+    !treeHydrating &&
     allFolders.filter((f) => !f.deletedAt).length === 0 &&
     allFiles.filter((f) => !f.deletedAt).length === 0;
 

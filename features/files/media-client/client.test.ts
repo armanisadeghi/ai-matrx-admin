@@ -12,10 +12,26 @@
  * Only HOST identity is mocked (bases, Redux store, byte cache, batch door).
  */
 
-jest.mock("@/lib/python-client", () => ({
-  resolveBaseUrl: () => "https://server.app.matrxserver.com",
-  resolveFilesBaseUrl: () => "https://files.matrxserver.com",
-}));
+// THE website's API client + credential port (the media client is built over them): the contract
+// routes the files deployment to the files host and everything else to the main server.
+jest.mock("@/lib/api/server-api", () => {
+  const { createApi } = jest.requireActual("@ai-matrx/api");
+  const user = jest.requireMock("@/lib/redux/slices/userSlice");
+  return {
+    serverApi: createApi({
+      resolveBaseUrl: (d: string) =>
+        d === "files" ? "https://files.matrxserver.com" : "https://server.app.matrxserver.com",
+    }),
+    serverApiCredentials: {
+      get: async () => {
+        const accessToken = user.selectAccessToken({});
+        if (accessToken) return { kind: "user", accessToken };
+        const fingerprintId = user.selectFingerprintId({});
+        return fingerprintId ? { kind: "guest", fingerprintId } : null;
+      },
+    },
+  };
+});
 jest.mock("@/lib/redux/store-singleton", () => ({
   getStoreSingleton: () => ({
     getState: () => ({}),

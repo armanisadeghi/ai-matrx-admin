@@ -5,7 +5,8 @@
  * As admin@admin.com (the seat with the largest organizations) and test@test.com, inside a
  * transaction that is ROLLED BACK, with `role authenticated` and the person's JWT claims:
  *   - `public.trash_list(array[kind], 50, 0)` for EVERY registered kind   — ceiling 300 ms each
- *   - `public.trash_list(null, 10, 0)` (the personal Recent overview)      — ceiling 1 s
+ *   - `public.trash_list(null, 10, 0)` (the personal Recent overview)      — ceiling 1 s and 30k blocks
+ *   - the same overview as the FIRST call on a fresh connection (cold)    — ceiling 1 s (FT3, 2026-10-22)
  *   - `public.trash_counts()`                                              — ceiling 2 s
  *   - for the organization admin@admin.com administers with the most archived rows:
  *     `public.org_trash_list(org, array[kind], null, 50, 0)` per kind       — 300 ms each
@@ -29,7 +30,7 @@ async function timed(
   uid: string,
   sql: string,
   params: unknown[],
-): Promise<{ ms: number | null; error?: string }> {
+): Promise<{ ms: number | null; blocks?: number; error?: string }> {
   await db.query("begin");
   try {
     await db.query("set local statement_timeout = '5s'");
@@ -37,11 +38,14 @@ async function timed(
     await db.query("select set_config('request.jwt.claims', $1, true)", [
       JSON.stringify({ sub: uid, role: "authenticated" }),
     ]);
-    const { rows } = await db.query<{ "QUERY PLAN": Array<{ "Execution Time": number }> }>(
-      `explain (analyze, timing off, summary on, format json) ${sql}`,
-      params,
-    );
-    return { ms: rows[0]!["QUERY PLAN"][0]!["Execution Time"] };
+    const { rows } = await db.query<{
+      "QUERY PLAN": Array<{ "Execution Time": number; Plan: { "Shared Hit Blocks"?: number; "Shared Read Blocks"?: number } }>;
+    }>(`explain (analyze, buffers, timing off, summary on, format json) ${sql}`, params);
+    const plan = rows[0]!["QUERY PLAN"][0]!;
+    return {
+      ms: plan["Execution Time"],
+      blocks: (plan.Plan["Shared Hit Blocks"] ?? 0) + (plan.Plan["Shared Read Blocks"] ?? 0),
+    };
   } catch (e) {
     return { ms: null, error: e instanceof Error ? e.message : String(e) };
   } finally {
@@ -74,6 +78,16 @@ async function main(): Promise<number> {
     if (seats.length !== SEATS.length) {
       console.error(`UNMEASURED: expected seats ${SEATS.join(", ")}; found ${seats.map((s) => s.email).join(", ")}`);
       return 2;
+    }
+    // FT3: the Recent overview as the FIRST statement on a fresh connection (a cold session) - the call that took ~5 s.
+    for (const seat of seats) {
+      const fresh = await connectDirect(env, "check:trash-answers-fast cold");
+      try {
+        const cold = await timed(fresh, seat.id, "select * from public.trash_list(null, 10, 0)", []);
+        rows.push({ label: `trash_list Recent overview, cold first call (${seat.email})`, class: "cold", ms: cold.ms, error: cold.error });
+      } finally {
+        await fresh.end();
+      }
     }
     for (const seat of seats) {
       for (const { kind } of kinds) {
@@ -118,6 +132,9 @@ async function main(): Promise<number> {
   const worst = [...rows].sort((a, b) => (b.ms ?? Infinity) - (a.ms ?? Infinity)).slice(0, 8);
   console.log("slowest:");
   for (const r of worst) console.log(`  ${r.ms === null ? "  --  " : r.ms.toFixed(1).padStart(8)} ms  ${r.label}`);
+  for (const r of rows.filter((x) => x.class === "overview" || x.class === "cold")) {
+    console.log(`overview: ${r.ms === null ? "--" : r.ms.toFixed(1)} ms, ${r.blocks ?? "-"} blocks  ${r.label}`);
+  }
   for (const f of findings) console.log(`FAIL  ${f.door}: ${f.problem}`);
   console.log(`\n${rows.length} measurement(s), ${findings.length} over a ceiling.`);
   return findings.length ? 1 : 0;

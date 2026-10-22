@@ -69,16 +69,18 @@ export default function FeedbackHighlight({
       </span>
 
       <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 z-50">
-        <div className="bg-blue-600 text-white text-xs font-medium px-3 py-2 pr-8 rounded-lg shadow-lg whitespace-nowrap animate-bounce relative">
-          <PartyPopper className="w-4 h-4 inline mr-1" /> NEW! Report bugs &amp;
-          issues
+        <div className="bg-blue-600 text-white text-xs font-medium pl-3 pr-1.5 py-2 rounded-lg shadow-lg whitespace-nowrap animate-bounce relative flex items-center gap-2">
+          <span>
+            <PartyPopper className="w-4 h-4 inline mr-1" /> NEW! Report bugs &amp;
+            issues
+          </span>
           <button
             onPointerDown={(e) => {
               e.stopPropagation();
               e.preventDefault();
             }}
             onClick={dismissPermanent}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 hover:bg-blue-700 rounded p-0.5 transition-colors"
+            className="shrink-0 hover:bg-blue-700 rounded p-0.5 transition-colors"
             aria-label="Dismiss"
           >
             <X className="w-3 h-3" />

@@ -23,7 +23,7 @@
 
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useMemo } from "react";
-import { AlertCircle, Loader2, PauseCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, Loader2, PauseCircle, PlayCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   disableTaskAdmin,
+  enableTaskAdmin,
   fetchTasksAdminPage,
   type AdminTaskRow,
 } from "@/lib/services/scheduling-admin-service";
@@ -114,7 +115,7 @@ export default function AdminTasksPage() {
           const ok = await confirm({
             title: `Disable "${r.title}"?`,
             description:
-              "It stops firing now. There is no re-enable control on this console yet; edit the schedule to turn it back on.",
+              "It stops firing now. Enable it again from this list.",
             confirmLabel: "Disable",
             variant: "destructive",
           });
@@ -133,12 +134,45 @@ export default function AdminTasksPage() {
           skipReason: (r) => (r.enabled ? null : "Already paused"),
           confirm: (t) => ({
             title: `Disable ${t.ids.length} ${t.ids.length === 1 ? "schedule" : "schedules"}?`,
-            description: "Each schedule stops firing now. There is no re-enable control on this console yet; edit a schedule to turn it back on.",
+            description: "Each schedule stops firing now. Enable them again from this list.",
             confirmLabel: "Disable",
             variant: "destructive",
           }),
           runOne: async (id) => {
             await disableTaskAdmin(id);
+          },
+        },
+      },
+      {
+        id: "enable", icon: PlayCircle, label: "Enable schedule",
+        appliesTo: (r) => !r.enabled,
+        unavailableTooltip: "Already enabled",
+        onClick: async (r) => {
+          const ok = await confirm({
+            title: `Enable "${r.title}"?`,
+            description: "It fires on its trigger again, from the next due time.",
+            confirmLabel: "Enable",
+          });
+          if (!ok) return;
+          try {
+            await enableTaskAdmin(r.id);
+            toast.success(`${r.title} enabled`);
+            reload();
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : String(err));
+          }
+        },
+        bulk: {
+          label: "Enable",
+          done: "Enabled",
+          skipReason: (r) => (r.enabled ? "Already enabled" : null),
+          confirm: (t) => ({
+            title: `Enable ${t.ids.length} ${t.ids.length === 1 ? "schedule" : "schedules"}?`,
+            description: "Each schedule fires on its trigger again.",
+            confirmLabel: "Enable",
+          }),
+          runOne: async (id) => {
+            await enableTaskAdmin(id);
           },
         },
       },

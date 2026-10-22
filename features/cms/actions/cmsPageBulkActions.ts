@@ -14,6 +14,7 @@ import {
   Map,
   Pencil,
   Rocket,
+  EyeOff,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
@@ -32,6 +33,7 @@ const CMS_PAGE_VERBS = [
   { id: "plan", label: "Open content plan", icon: Map },
   { id: "measure", label: "Open measurement", icon: Gauge },
   { id: "publish-draft", label: "Publish pending draft", icon: Rocket },
+  { id: "unpublish", label: "Unpublish", icon: EyeOff },
   { id: "delete", label: "Move to Trash", icon: Trash2, danger: true },
 ] as const;
 
@@ -64,6 +66,19 @@ export const CMS_PAGE_BULK_ACTIONS = bulkActionsFromRowVerbs<
         await CmsPageService.publishDraft(id);
       },
     },
+    unpublish: {
+      label: "Unpublish",
+      done: "Unpublished",
+      confirm: (targets) => ({
+        title: `Unpublish ${targets.ids.length} ${targets.ids.length === 1 ? "page" : "pages"}?`,
+        description:
+          "Each page goes offline now. Its content and any draft stay; publish again to bring it back.",
+        confirmLabel: "Unpublish",
+      }),
+      runOne: async (id) => {
+        await CmsPageService.unpublishPage(id);
+      },
+    },
     delete: {
       label: "Move to Trash",
       done: "Moved to Trash",
@@ -81,9 +96,10 @@ export const CMS_PAGE_BULK_ACTIONS = bulkActionsFromRowVerbs<
     noun: "page",
     getRowId: (page) => page.id,
     getRowName: (page) => page.title,
-    blocked: (verb, page) =>
-      verb.id === "publish-draft" && !page.has_draft
-        ? "No saved draft to publish"
-        : null,
+    blocked: (verb, page) => {
+      if (verb.id === "publish-draft" && !page.has_draft) return "No saved draft to publish";
+      if (verb.id === "unpublish" && !page.is_published) return "Not published";
+      return null;
+    },
   },
 );

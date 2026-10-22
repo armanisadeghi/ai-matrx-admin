@@ -356,6 +356,22 @@ import { hrNewEmployeeManifest } from "./hr-new-employee.manifest";
 import { hrRelationsCaseManifest } from "./hr-relations-case.manifest";
 import { hrVerificationsManifest } from "./hr-verifications.manifest";
 // W2 area: hr-b
+import { hrReview360Manifest } from "./hr-review-360.manifest";
+import { hrReview360MeetingManifest } from "./hr-review-360-meeting.manifest";
+import { hrReviewCycleManifest } from "./hr-review-cycle.manifest";
+import { hrGoalsManifest } from "./hr-goals.manifest";
+import { hrReviewWorkspaceManifest } from "./hr-review-workspace.manifest";
+import { hrLeavePolicyManifest } from "./hr-leave-policy.manifest";
+import { hrLeavePolicyEnrollmentManifest } from "./hr-leave-policy-enrollment.manifest";
+import { hrTaskInboxManifest } from "./hr-task-inbox.manifest";
+import { hrTaskDecisionManifest } from "./hr-task-decision.manifest";
+import { hrDeskClockManifest } from "./hr-desk-clock.manifest";
+import { hrTimeExceptionsManifest } from "./hr-time-exceptions.manifest";
+import { hrOvertimeRequestManifest } from "./hr-overtime-request.manifest";
+import { hrPayPeriodManifest } from "./hr-pay-period.manifest";
+import { hrPunchRegisterManifest } from "./hr-punch-register.manifest";
+import { hrTimesheetApprovalsManifest } from "./hr-timesheet-approvals.manifest";
+import { hrEmployeeTimesheetManifest } from "./hr-employee-timesheet.manifest";
 // W2 area: workflows-commerce
 import { workflowRunViewDesignManifest } from "./workflow-run-view-design.manifest";
 import { workflowReviewManifest } from "./workflow-review.manifest";
@@ -723,6 +739,22 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   hrRelationsCaseManifest,
   hrVerificationsManifest,
   // W2 area: hr-b
+  hrReview360Manifest,
+  hrReview360MeetingManifest,
+  hrReviewCycleManifest,
+  hrGoalsManifest,
+  hrReviewWorkspaceManifest,
+  hrLeavePolicyManifest,
+  hrLeavePolicyEnrollmentManifest,
+  hrTaskInboxManifest,
+  hrTaskDecisionManifest,
+  hrDeskClockManifest,
+  hrTimeExceptionsManifest,
+  hrOvertimeRequestManifest,
+  hrPayPeriodManifest,
+  hrPunchRegisterManifest,
+  hrTimesheetApprovalsManifest,
+  hrEmployeeTimesheetManifest,
   // W2 area: workflows-commerce
   workflowRunViewDesignManifest,
   workflowReviewManifest,

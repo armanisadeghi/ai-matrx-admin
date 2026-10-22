@@ -1,5 +1,5 @@
 import type { BadgeTone } from "@ai-matrx/design-system/controls";
-import type { CheckOutcome, TestCaseView, TestRunStatus, TestVerdict } from "./types";
+import type { CheckOutcome, OutcomeJudgeView, TestCaseView, TestRunStatus, TestVerdict } from "./types";
 
 /** How each verdict reads and whether it counts toward the pass rate (PLAN §2.5). */
 export const VERDICT_META: Record<
@@ -119,4 +119,28 @@ export function judgeMeta(
   if (outcome?.advisory) parts.push("Advisory");
   const text = parts.filter(Boolean).join(" · ");
   return text || undefined;
+}
+
+/** Shown beside the judge when the code checks decided the result and the judge only explains. */
+export const CODE_DECIDED_NOTE = "The code checks decided this result; the judge only explains it.";
+
+/**
+ * The judge as the page shows it. Advisory whenever the judge's word decides nothing: its agreement
+ * with people is below the bar (stored on the outcome), or the code checks already failed the
+ * result (older rows never stored that, so it is derived from the verdict here too).
+ */
+export function judgeAsShown(
+  stored: OutcomeJudgeView | null,
+  verdict: string | null,
+): OutcomeJudgeView | null {
+  const codeDecided = verdict === "fail" || verdict === "fail_format";
+  if (!codeDecided || stored?.advisory) return stored;
+  return {
+    verdict: stored?.verdict ?? null,
+    advisory: true,
+    advisoryReason: stored?.advisoryReason ?? CODE_DECIDED_NOTE,
+    fedOk: stored?.fedOk ?? null,
+    model: stored?.model ?? null,
+    missingFacts: stored?.missingFacts ?? [],
+  };
 }

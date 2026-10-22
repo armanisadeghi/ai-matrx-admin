@@ -18,7 +18,8 @@ import type { Review } from "@/features/employee-performance-reviews/schema";
 
 import { Review360MeetingFiles } from "./Review360MeetingFiles";
 import { Review360MeetingNotes } from "./Review360MeetingNotes";
-import { parseReview } from "./Review360Pages";
+import { parseReview, review360HalfScope, review360Scope } from "./Review360Pages";
+import { useSurfaceScopeContribution } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { readReview360, type TrackView } from "./service";
 
 export const REVIEW_360_SECTIONS = [
@@ -70,6 +71,7 @@ export function Review360SideBySide({
   onSection,
   movedBy,
   canMove = true,
+  surfaceName = null,
 }: {
   reviewId: string;
   /** The review's organization — the notes box writes there. */
@@ -78,6 +80,8 @@ export function Review360SideBySide({
   onSection: (section: Review360Section) => void;
   movedBy?: string | null;
   canMove?: boolean;
+  /** The page surface this sits in (the in-person meeting page); the Meet panel passes none. */
+  surfaceName?: string | null;
 }) {
   const client = useRecordsClient();
   const [data, setData] = useState<Awaited<ReturnType<typeof readReview360>> | null>(null);
@@ -88,6 +92,21 @@ export function Review360SideBySide({
       live = false;
     };
   }, [client, reviewId]);
+
+  // The review and both halves, for the page surface (values inherited from hr-review-360).
+  useSurfaceScopeContribution(surfaceName, "review-360-side-by-side", () => {
+    if (!data?.ok) return { review_360_load_status: data ? "failed" : "loading" };
+    const { doc, self, manager } = data.data;
+    const all = REVIEW_360_SECTIONS.map((s) => s.key);
+    const items = (t: TrackView | null) => review360HalfScope(t, [section]).sections?.[section] ?? null;
+    return {
+      review_360_load_status: "loaded",
+      review_360: review360Scope(reviewId, doc, Boolean(self?.submittedAt && manager?.submittedAt)),
+      self_half: review360HalfScope(self, all),
+      manager_half: review360HalfScope(manager, all),
+      section_items: { employee: items(self), manager: items(manager) },
+    };
+  });
 
   if (!data) return <div className="h-24 animate-pulse rounded-md bg-card/40" aria-label="Loading the review" />;
   // read-gate-exempt: this is the read's own refusal, drawn with the refusal's message

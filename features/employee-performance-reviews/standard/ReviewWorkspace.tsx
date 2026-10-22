@@ -31,6 +31,9 @@ import { peerLabel, submittedPeerResponses } from "./peers";
 import { EmploymentPicker } from "@/features/hr/people/relations/components/EmploymentPicker";
 import { formatDay, nextStep, periodLabel, ratingLabel, statusLabel, statusTone } from "./status";
 import { isPeerOnly, type ResponseView, type ReviewDetail } from "./types";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { HR_REVIEW_WORKSPACE_SURFACE, createHrReviewWorkspaceScope } from "@/features/surfaces/manifests/hr-review-workspace.manifest";
 
 const NONE = "__none";
 type Dialog = "share" | "acknowledge" | "reopen" | "cancel" | "replace" | null;
@@ -88,10 +91,89 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
   const myPeer = detail?.responses.find((r) => r.role === "peer" && r.isMine);
   const peers = detail ? submittedPeerResponses(detail.responses).filter((r) => !r.isMine) : [];
 
+  const getScope = () =>
+    createHrReviewWorkspaceScope({
+      review_load_status: refusal === "not_reachable" ? "not_reachable" : detail ? "loaded" : error ? "failed" : "loading",
+      ...(detail && review && template
+        ? {
+            review: {
+              id: reviewId,
+              employee_name: review.employeeName,
+              manager_name: review.managerName,
+              cycle_name: review.cycleName,
+              cycle_status: review.cycleStatus,
+              period_start: review.periodStart,
+              period_end: review.periodEnd,
+              self_due_on: review.selfDueOn,
+              manager_due_on: review.managerDueOn,
+              share_due_on: review.shareDueOn,
+              status: statusLabel(review.status),
+              next_step: nextStep(review),
+              overall_rating: review.overallRating ? ratingLabel(template.ratingPoints, review.overallRating) : null,
+              self_submitted_at: review.selfSubmittedAt,
+              manager_submitted_at: review.managerSubmittedAt,
+              shared_at: review.sharedAt,
+              acknowledged_at: review.acknowledgedAt,
+              acknowledgment_comment: review.acknowledgmentComment,
+              cancelled_at: review.cancelledAt,
+              reopen_history: review.reopenHistory,
+              can: review.can,
+            },
+            review_questions: {
+              name: template.name,
+              rating_points: template.ratingPoints,
+              sections: template.sections.map((sec) => ({
+                key: sec.key,
+                title: sec.title,
+                questions: sec.questions.map((q) => ({
+                  key: q.key,
+                  type: q.type,
+                  label: q.label,
+                  required: q.required,
+                  min_items: q.minItems,
+                  max_items: q.maxItems,
+                  items: q.items.map((i) => ({ key: i.key, label: i.label })),
+                })),
+              })),
+            },
+            readable_answers: detail.responses
+              .filter((r) => r.answers && r.status === "submitted")
+              .map((r) => ({
+                role: r.role,
+                by: r.isMine ? "me" : r.role === "self" ? review.employeeName : r.role === "manager" ? review.managerName : (r.respondentName ?? "a peer"),
+                answers: { lists: r.answers!.lists, ratings: r.answers!.ratings, texts: r.answers!.texts },
+              })),
+          }
+        : {}),
+    });
+  const getWriteHandlers = () => ({
+    overall_rating: {
+      validate: (value: unknown) => {
+        overallRatingKey(value);
+      },
+      apply: async (value: unknown) => {
+        const key = overallRatingKey(value);
+        const r = await setOverallRating(reviewId, key);
+        if (!r.ok) throw new Error(r.message);
+        reload();
+        return { summary: `Overall rating saved: ${ratingLabel(template!.ratingPoints, key)}.` };
+      },
+    },
+  });
+  /** The `overall_rating` value as a scale key; throws the sentence the agent reads. */
+  function overallRatingKey(value: unknown): string {
+    if (!review || !template) refuseSurfaceWrite("The review has not loaded yet.");
+    if (!review!.can.set_overall) refuseSurfaceWrite("This viewer may not set the overall rating on this review.");
+    const want = String(value ?? "").trim().toLowerCase();
+    const point = template!.ratingPoints.find((p) => p.key.toLowerCase() === want || p.label.toLowerCase() === want);
+    if (!point) refuseSurfaceWrite(`Use one of: ${template!.ratingPoints.map((p) => p.key).join(", ")}.`);
+    return point!.key;
+  }
+
   // A person with no seat on this review gets the platform's denial (with the ask), never "did not finish".
   if (refusal === "not_reachable") {
     return (
-      <>
+      <SurfaceRuntimeProvider surfaceName={HR_REVIEW_WORKSPACE_SURFACE} getScope={getScope}>
         <RecordPageHeader
           backHref={hrPerformanceHref(org)}
           parents={[
@@ -103,12 +185,12 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
         <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
           <AccessGate token="hr_review" id={reviewId} fallbackHref={hrPerformanceHref(org)} fallbackLabel="Performance" />
         </div>
-      </>
+      </SurfaceRuntimeProvider>
     );
   }
 
   return (
-    <>
+    <SurfaceRuntimeProvider surfaceName={HR_REVIEW_WORKSPACE_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers}>
     <RecordPageHeader
       backHref={hrPerformanceHref(org)}
       parents={[
@@ -335,7 +417,7 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
         </div>
       ) : null}
     </HrPageState>
-    </>
+    </SurfaceRuntimeProvider>
   );
 }
 

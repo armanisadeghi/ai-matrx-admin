@@ -8,6 +8,7 @@
  */
 
 import { BACKEND_URLS } from "@/lib/api/endpoints";
+import { DESCRIPTORS as FILES_DESCRIPTORS } from "@ai-matrx/api/files";
 
 export const API_SERVICES = ["aidream", "scraper", "files", "seo"] as const;
 
@@ -143,55 +144,38 @@ interface ServiceRouteRule {
   methods: ReadonlySet<string>;
 }
 
-const methods = (...values: string[]): ReadonlySet<string> => new Set(values);
+/** A contract path template as a matcher: `{…_id}` is a uuid segment, any other `{…}` one segment. */
+function templatePattern(template: string): RegExp {
+  const body = template
+    .split("/")
+    .map((segment) => {
+      const param = /^\{([a-z_]+)\}$/.exec(segment);
+      if (!param) return segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return param[1].endsWith("_id") ? UUID_SEGMENT : "[^/]+";
+    })
+    .join("/");
+  return new RegExp(`^${body}/?$`, "i");
+}
 
-const STANDALONE_FILE_ROUTE_RULES: readonly ServiceRouteRule[] = [
-  { pattern: /^\/files\/upload\/?$/i, methods: methods("POST") },
-  { pattern: /^\/files\/bulk\/?$/i, methods: methods("POST") },
-  {
-    pattern: /^\/files\/sync\/(?:changes|folders)\/?$/i,
-    methods: methods("GET"),
-  },
-  {
-    pattern: new RegExp(`^/files/${UUID_SEGMENT}/?$`, "i"),
-    methods: methods("GET", "PATCH", "DELETE"),
-  },
-  {
-    pattern: new RegExp(`^/files/${UUID_SEGMENT}/download/?$`, "i"),
-    methods: methods("GET"),
-  },
-  {
-    pattern: new RegExp(`^/files/${UUID_SEGMENT}/pdf-pages/?$`, "i"),
-    methods: methods("POST"),
-  },
-  {
-    pattern: new RegExp(`^/files/${UUID_SEGMENT}/restore/?$`, "i"),
-    methods: methods("POST"),
-  },
-  {
-    pattern: new RegExp(`^/files/${UUID_SEGMENT}/asset/?$`, "i"),
-    methods: methods("GET"),
-  },
-  {
-    pattern: new RegExp(`^/files/${UUID_SEGMENT}/share-links/?$`, "i"),
-    methods: methods("GET", "POST"),
-  },
-  { pattern: /^\/assets\/?$/i, methods: methods("POST") },
-  { pattern: /^\/assets\/presets\/?$/i, methods: methods("GET") },
-  {
-    pattern:
-      /^\/assets\/(?:preview|preview\/multipart|pdf-compress|pdf-compress\/multipart)\/?$/i,
-    methods: methods("POST"),
-  },
-  {
-    pattern: new RegExp(`^/assets/${UUID_SEGMENT}/?$`, "i"),
-    methods: methods("GET"),
-  },
-  {
-    pattern: /^\/share\/[^/]+(?:\/download)?\/?$/i,
-    methods: methods("GET"),
-  },
-];
+/**
+ * The routes the standalone `matrx-files` deployment answers — READ from the generated API
+ * contract (`@ai-matrx/api/files` DESCRIPTORS: each operation with the deployment the contract
+ * routes it to), never kept by hand here. A ` @files` key is the files service's SECOND copy of a
+ * route the contract sends elsewhere, so only primary keys count.
+ */
+const STANDALONE_FILE_ROUTE_RULES: readonly ServiceRouteRule[] = (() => {
+  const byPath = new Map<string, Set<string>>();
+  for (const [key, op] of Object.entries(FILES_DESCRIPTORS)) {
+    if (op.d !== "files" || key.includes(" @")) continue;
+    const methodsForPath = byPath.get(op.p) ?? new Set<string>();
+    methodsForPath.add(op.m.toUpperCase());
+    byPath.set(op.p, methodsForPath);
+  }
+  return [...byPath].map(([template, methodsForPath]) => ({
+    pattern: templatePattern(template),
+    methods: methodsForPath,
+  }));
+})();
 
 /** True only when the deployed standalone service owns this exact route. */
 export function isStandaloneFileServiceRoute(

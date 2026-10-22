@@ -2807,7 +2807,7 @@ export default function CleanupPad({
               ? (agentNames[slot.agentId] ?? `Slot ${idx + 1}`)
               : `Slot ${idx + 1}`);
           return (
-            <span key={slot.id} className="group/tab relative inline-flex">
+            <span key={slot.id} className="group/tab inline-flex items-center gap-0.5">
               <button
                 type="button"
                 onClick={() => setActiveSlotIdx(idx)}
@@ -2816,7 +2816,6 @@ export default function CleanupPad({
                   active
                     ? "text-primary border border-primary/70"
                     : "border-border text-muted-foreground hover:bg-accent/60 hover:text-foreground",
-                  slots.length > 1 && "pr-5",
                 )}
               >
                 {/* Live, not blocked: this slot's run streams in its own
@@ -2831,7 +2830,7 @@ export default function CleanupPad({
                   type="button"
                   onClick={() => removeSlot(slot.id)}
                   aria-label={`Remove ${label}`}
-                  className="absolute right-0.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground/50 opacity-0 transition-opacity hover:text-destructive group-hover/tab:opacity-100"
+                  className="shrink-0 rounded p-0.5 text-muted-foreground/50 opacity-0 transition-opacity hover:text-destructive group-hover/tab:opacity-100"
                 >
                   <X className="h-3 w-3" />
                 </button>

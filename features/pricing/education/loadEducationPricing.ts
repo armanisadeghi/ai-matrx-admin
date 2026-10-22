@@ -39,6 +39,7 @@ export interface FreePacing {
 
 /** The free plan's own name and tagline (billing.plan, audience = free). */
 export interface FreePlan {
+  planKey: string;
   name: string;
   tagline: string | null;
 }
@@ -151,7 +152,7 @@ export async function loadEducationPricing(): Promise<EducationPricing> {
     );
   const plans = parsePlanCatalog(catalog);
   const freeRow = plans.find((p) => p.audience === "free");
-  const free: FreePlan | null = freeRow ? { name: freeRow.name, tagline: freeRow.tagline } : null;
+  const free: FreePlan | null = freeRow ? { planKey: freeRow.planKey, name: freeRow.name, tagline: freeRow.tagline } : null;
   const entry = plans
     .filter(
       (p) =>

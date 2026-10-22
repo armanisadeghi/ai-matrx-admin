@@ -17,6 +17,9 @@ const ROOT = "5f1d2c3b-4a59-4e6f-8a7b-9c0d1e2f3a4b";
 const SUB = "0a1b2c3d-4e5f-4a6b-8c7d-8e9f0a1b2c3d";
 const HEX = (id: string) => id.replace(/-/g, "");
 
+// A 1x1 PNG, so the picture travels inside the .docx.
+const PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
 const span = (text: string, extra: Record<string, unknown> = {}) => ({ text, ...extra });
 const ROOT_BLOCKS: SpaceBlock[] = [
   { id: "b1", type: "heading", props: { level: 2 }, text: [span("Overview")] },
@@ -47,7 +50,7 @@ const ctx: MarkdownContext = { titleOf: (id) => DOCS[id]?.title ?? "", hrefOf: (
 /** A File as the browser hands it over (jsdom's has no text()/arrayBuffer()). */
 const fileOf = (name: string, body: string | Uint8Array, type = "text/plain") => {
   const bytes = typeof body === "string" ? new TextEncoder().encode(body) : body;
-  return Object.assign(new File([bytes], name, { type }), {
+  return Object.assign(new File([new Uint8Array(bytes)], name, { type }), {
     text: async () => new TextDecoder().decode(bytes),
     arrayBuffer: async () => bytes.slice().buffer,
   });
@@ -85,7 +88,10 @@ describe("a Space round-trips through its files", () => {
   it("Word: a .docx becomes a page with its heading, list and table, and its pictures are stored", async () => {
     const { exportDocument } = await import("@ai-matrx/print/document");
     const exp = await exportDocument(
-      ["# Launch plan", "", "## Overview", "", "- Alpha", "- Beta", "", "| Name | Qty |", "| --- | --- |", "| Rent | 1200 |", ""].join("\n"),
+      [
+        "# Launch plan", "", "## Overview", "", "Read the [guide](https://example.com/guide) first.", "",
+        "- Alpha", "- Beta", "", "| Name | Qty |", "| --- | --- |", "| Rent | 1200 |", "", `![Team photo](${PNG})`, "",
+      ].join("\n"),
       "docx",
       { fileName: "plan" },
     );
@@ -103,6 +109,9 @@ describe("a Space round-trips through its files", () => {
       r.cells.map((c) => c.map((s) => s.text).join("").replace(/\*/g, "").trim()),
     );
     expect(words).toEqual([["Name", "Qty"], ["Rent", "1200"]]);
+    expect(md).toContain("[guide](https://example.com/guide)");
+    expect(stored).toHaveLength(1);
+    expect(page.blocks.find((b) => b.type === "image")?.props).toMatchObject({ fileId: "file-1" });
   });
 
   it("Word: a file that is not a .docx is refused with its name", async () => {

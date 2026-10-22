@@ -63,18 +63,19 @@ export function ReversibleNotice({ tier, title, foundAt, shortcut, onUndo, onDis
         teach ? "gap-3 border-primary/40 p-4" : "gap-2 border-border p-3",
       )}
     >
-      <button
-        type="button"
-        aria-label="Close"
-        onClick={onDismiss}
-        className="absolute right-2 top-2 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-      >
-        <X className="h-3.5 w-3.5" aria-hidden />
-      </button>
-
-      <p id={titleId} className={cn("pr-6 font-medium", teach ? "text-base" : "text-sm")}>
-        {title}
-      </p>
+      <div className="flex items-start gap-2">
+        <p id={titleId} className={cn("min-w-0 flex-1 font-medium", teach ? "text-base" : "text-sm")}>
+          {title}
+        </p>
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onDismiss}
+          className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" aria-hidden />
+        </button>
+      </div>
 
       {teach ? (
         <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">

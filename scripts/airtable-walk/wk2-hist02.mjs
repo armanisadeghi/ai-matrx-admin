@@ -1,0 +1,56 @@
+import { declareTable } from "@ai-matrx/records/core";
+import { admin, must, live, gotoTable, say } from "./ba-lib.mjs";
+const A = await admin();
+let tid = process.env.TID, rid = process.env.RID;
+if (!tid) {
+  tid = must(await declareTable(A.client, { name: "WK2- Dated", labelSingular: "Person", labelPlural: "People", fields: [
+    { key: "name", label: "Name", type: "text", sort: 10 }, { key: "address", label: "Address", type: "text", sort: 20 }] }), "declare");
+  const r = must(await A.client.recordWrite({ table_id: tid, data: { name: "Ann", address: "X Street" } }), "row");
+  say("rec", JSON.stringify(r).slice(0,300));
+}
+say("table", tid);
+const { browser, page, who, shot } = await live(false);
+await gotoTable(page, tid);
+// turn dated on through the field editor
+await page.getByRole("button", { name: "Table menu" }).first().click();
+await page.locator("[role^=menuitem]").filter({ hasText: /^Settings/ }).first().click();
+await page.waitForTimeout(5000);
+const d = page.locator("body");
+const eb = d.getByRole("button", { name: "Edit", exact: true }); say("edit btns", await eb.count());
+const addr = d.locator("div,li").filter({ hasText: /^.{0,20}Address.{0,40}Edit/ }).last();
+say("addr rows", await addr.count());
+await eb.last().click();
+await page.waitForTimeout(1500);
+say("EDITOR", (await d.innerText()).replace(/\n+/g," | ").match(/.{0,100}own date.{0,100}/)?.[0]);
+await d.getByLabel("Each value has its own date").check();
+await d.getByRole("button", { name: "Save column" }).click();
+await page.waitForTimeout(3000);
+await page.keyboard.press("Escape"); await page.waitForTimeout(500);
+await gotoTable(page, tid);
+await page.getByText("Ann", { exact: true }).first().click();
+await page.waitForTimeout(3000);
+await shot("wk2-h02-2");
+await page.getByRole("button", { name: "When it was true" }).click();
+await page.waitForTimeout(1500);
+await shot("wk2-h02-3");
+await page.getByRole("button", { name: "Add a period" }).click();
+await page.waitForTimeout(800);
+await page.getByRole("button", { name: "Add a period" }).click();
+await page.waitForTimeout(800);
+await shot("wk2-h02-4");
+await shot("wk2-h02-4b");
+await page.locator("input[aria-label=Until]").first().click({timeout:8000});
+await page.waitForTimeout(1000);
+await page.keyboard.type("2024-06-01"); await page.keyboard.press("Enter");
+await page.waitForTimeout(800);
+const gi=(l,n)=>page.locator(`input[aria-label=${l}]`).nth(n);
+say("U0", await gi("Until",0).inputValue());
+await gi("Value",0).fill("X Street");
+await gi("From",1).click(); await page.keyboard.type("2024-06-01"); await page.keyboard.press("Enter");
+await gi("Value",1).fill("Y Avenue");
+await shot("wk2-h02-5");
+say("VALS", await page.locator("input[aria-label=From],input[aria-label=Until],input[aria-label=Value]").evaluateAll(e=>e.map(x=>x.getAttribute("aria-label")+"="+x.value)));
+await page.getByRole("button", { name: "Save", exact: true }).first().click();
+await page.waitForTimeout(3000);
+await shot("wk2-h02-6");
+process.exit(0);

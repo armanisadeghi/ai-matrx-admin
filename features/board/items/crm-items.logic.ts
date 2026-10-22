@@ -6,6 +6,7 @@
 
 import type { NodeSource } from "../board/document";
 import type { FoundRecord } from "./types";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 
 export const PARTY_ITEM_KEY = "party";
 export const NEW_PARTY_TITLE = "New person or company";
@@ -18,7 +19,8 @@ export function partyIdOf(source: NodeSource): string | null {
   return source.kind === "entity" && source.entity === PARTY_ITEM_KEY ? source.id : null;
 }
 
-export const partyHref = (id: string) => `/crm/${id}`;
+/** The party's address comes from the entity registry's door (never a hand-built `/crm/…` URL). */
+export const partyHref = (id: string): string | null => resolveEntityDoors("party", id).href ?? null;
 
 /** A found party as the agent's door returns it: the person's or company's name, and which it is. */
 export function partyFound(row: { id: string; display_name: string; party_kind: string | null }): FoundRecord {

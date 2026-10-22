@@ -152,6 +152,8 @@ try {
     const every = o.expect.every((t) => body.includes(t));
     const stranger = o.notExpect && body.includes(o.notExpect);
     check(`the items table opened on one output shows its ${o.expect.length} rows and says where they came from`, every && !stranger && body.includes(o.from), body.split("\n").filter((l) => l.includes(o.from)).slice(0, 2).join(" | "));
+    const came = body.split("\n").filter((l) => l.includes(o.from) && /came here/i.test(l)).join(" ");
+    check("the came-from line says it in words (no raw ids, not 'that number')", !!came && !/[0-9a-f]{8}-[0-9a-f]{4}-/i.test(came) && !/number counted/i.test(came), came);
   }
 } catch (e) {
   check(`phase ${phase} ran to the end`, false, e.message.split("\n")[0]);

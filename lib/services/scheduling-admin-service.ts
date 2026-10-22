@@ -426,6 +426,22 @@ export async function disableTaskAdmin(
   assertDoorAnswer(data, "task_id", taskId, "scheduled task");
 }
 
+/** The way back from `disableTaskAdmin`: same gate, same audit trail. */
+export async function enableTaskAdmin(
+  taskId: string,
+  reason?: string,
+): Promise<void> {
+  const { data, error } = await withAdminFeature(
+    "scheduler.system-jobs",
+    schedulerDb(supabase).rpc("admin_enable_task", {
+      p_task_id: taskId,
+      ...(reason ? { p_reason: reason } : {}),
+    }),
+  );
+  if (error) throw pgErrorToError(error);
+  assertDoorAnswer(data, "task_id", taskId, "scheduled task");
+}
+
 export async function markRunFailedAdmin(
   runId: string,
   reason: string,

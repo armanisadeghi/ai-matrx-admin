@@ -288,6 +288,16 @@ export function buildVoiceTransferBriefTwiml(
   work: TransferWorkSummary | null = null,
 ): string {
   const response = new twilio.twiml.VoiceResponse();
+  const tools = work?.toolOutcomes;
+  let toolIntroduction = "";
+  if (tools) {
+    toolIntroduction = `Tool records: ${tools.returnedWithoutError} returned without a reported error, ${tools.reportedErrors} reported an error, and ${tools.unconfirmed} remain unconfirmed. `;
+    if (tools.failedToolNames.length)
+      toolIntroduction += `Reported errors include ${tools.failedToolNames.join(", ")}. `;
+    toolIntroduction +=
+      "Review the saved results before repeating any action. ";
+  } else if (tools === null)
+    toolIntroduction = "Tool-result details are unavailable. ";
   response.say(
     { voice: VOICE },
     "A caller has requested to speak to a person through A.I. Matrix. " +
@@ -297,6 +307,7 @@ export function buildVoiceTransferBriefTwiml(
       (work
         ? `Saved work for this call: ${work.completed} completed agent requests, ${work.failed} failed, and ${work.unfinished} not confirmed complete. ${work.toolCalls} tool call attempts recorded. These records do not confirm that external actions succeeded. `
         : "") +
+      toolIntroduction +
       "Connecting you now.",
   );
   return response.toString();

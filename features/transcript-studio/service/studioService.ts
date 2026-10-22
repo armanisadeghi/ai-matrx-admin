@@ -546,7 +546,7 @@ export interface RecordingSegmentRow {
   ended_at: string | null;
   archived_at: string | null;
   detached_at: string | null;
-  user_id: string | null;
+  created_by: string | null;
   safety_id: string | null;
 }
 
@@ -569,7 +569,7 @@ export function rowToRecordingSegment(
     endedAt: row.ended_at,
     archivedAt: row.archived_at ?? null,
     detachedAt: row.detached_at ?? null,
-    userId: row.user_id ?? null,
+    userId: row.created_by ?? null,
     safetyId: row.safety_id ?? null,
   };
 }
@@ -613,7 +613,7 @@ export async function listUnsortedRecordingSegments(
     .schema("transcripts")
     .from("studio_recording_segments")
     .select("*")
-    .eq("user_id", userId)
+    .eq("created_by", userId)
     .is("deleted_at", null)
     .not("detached_at", "is", null)
     .order("detached_at", { ascending: false });

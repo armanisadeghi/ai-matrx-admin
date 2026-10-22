@@ -109,7 +109,7 @@ export function useTableBulkSelection<TRow>(args: UseTableBulkSelectionArgs<TRow
       actions: () => (
         <EntityBulkActions
           actions={actions}
-          selection={{ build, clear, count: ids.length }}
+          selection={{ build, clear, count: ids.length, setIds }}
           noun={args.noun}
           onRemoveRows={args.onRemoveRows ?? (() => args.onRefresh())}
           onRefresh={args.onRefresh}

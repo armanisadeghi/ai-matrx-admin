@@ -119,3 +119,16 @@ export async function refreshSurfaceRunSupply(): Promise<string | null> {
   if (error) throw new Error(`ui.refresh_surface_run_supply: ${error.message}`);
   return data;
 }
+
+/**
+ * Whether the static check found a handler for one write target: true / false for a code
+ * surface, null (unknown, never a made-up "no") for a database/applet surface.
+ */
+export function isWriteTargetHandled(
+  surfaceName: string,
+  declaredBy: string | null,
+  targetName: string,
+): boolean | null {
+  if (declaredBy !== "code") return null;
+  return (HANDLED[surfaceName] ?? []).includes(targetName);
+}

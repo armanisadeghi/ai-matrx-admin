@@ -25,14 +25,6 @@ const DIR = path.resolve(__dirname, "..");
 const REPO = path.resolve(DIR, "../../..");
 
 const HAND_OPENERS: Readonly<Record<string, string>> = {
-  // action creators: callers dispatch the returned action (thunks, menus); createOpener has no open-action creator
-  aiWatchWindow: "action creator",
-  applyToSourceReview: "action creator",
-  customAgentWindow: "action creator",
-  listenSummaryWindow: "action creator",
-  sendToAgentWindow: "action creator",
-  shortcutEditorWindow: "action creator",
-  workflowRunWindow: "action creator",
   // Controllers that are not open-on-mount/re-open-on-change
   copySubsetWindow: "Controller opens once with its first props",
   gmailComposeWindow: "unmount effect disposes the hook's callback handles",

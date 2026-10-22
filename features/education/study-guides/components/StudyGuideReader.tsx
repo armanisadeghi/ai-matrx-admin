@@ -68,6 +68,10 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import {
+  FrameSidebarContent,
+  useFrameSidebarSlot,
+} from "@/features/shell/frame-host/frameSidebarSlot";
+import {
   loadStudyGuide,
   loadStudyGuideIndex,
   loadStudyTerms,
@@ -96,10 +100,10 @@ interface StudyGuideReaderProps {
   defaultLayout?: Layout;
 }
 
-function ReaderPanelControls() {
+function ReaderPanelControls({ guidesToggle = true }: { guidesToggle?: boolean }) {
   const controls = usePanelControls();
   return <>
-    <Button icon={<LayoutPanelLeft aria-hidden />} variant="quiet" className="absolute left-1 top-1 z-20" aria-label="Toggle study guide sidebar" aria-expanded={!controls.isCollapsed("guides")} onClick={() => controls.toggle("guides")} />
+    {guidesToggle && <Button icon={<LayoutPanelLeft aria-hidden />} variant="quiet" className="absolute left-1 top-1 z-20" aria-label="Toggle study guide sidebar" aria-expanded={!controls.isCollapsed("guides")} onClick={() => controls.toggle("guides")} />}
     <Button icon={<PanelRight aria-hidden />} variant="quiet" className="absolute right-1 top-1 z-20" aria-label="Toggle notes and terms sidebar" aria-expanded={!controls.isCollapsed("inspector")} onClick={() => controls.toggle("inspector")} />
   </>;
 }
@@ -304,6 +308,9 @@ function StudyGuideReaderInner({ initialGuideId, startInEdit = false, defaultLay
   const dispatch = useAppDispatch();
   const router = useRouter();
   const isMobile = useIsMobile();
+  // The new app frame: the guides rail (Study tools, the guide picker, the outline) is the frame's
+  // ONE sidebar column (kind B); the notes/terms inspector stays beside the reader (a tool panel).
+  const inFrame = useFrameSidebarSlot();
   const userId = useAppSelector(selectUserId);
   const [guides, setGuides] = useState<NoteListItem[]>([]);
   const [guidesLoading, setGuidesLoading] = useState(Boolean(userId));
@@ -614,14 +621,16 @@ function StudyGuideReaderInner({ initialGuideId, startInEdit = false, defaultLay
 
   if (isMobile) return withSidecar(<SurfaceRuntimeProvider surfaceName={surfaceName} getScope={getScope} getWriteHandlers={getWriteHandlers}>{agentBridge}{withMenu(<PanelControlProvider initialLayouts={[defaultLayout]}><div className="matrx-touch-targets flex h-full min-h-0 flex-col"><div className="flex items-center justify-between border-b border-border bg-background px-3 py-2"><Button variant="quiet" onClick={() => setMobilePanel("guides")}>Study guides</Button><Button variant="quiet" onClick={() => setMobilePanel("details")}>Study details</Button></div><div className="min-h-0 flex-1">{reader}</div><Drawer open={mobilePanel === "guides"} onOpenChange={(open) => !open && setMobilePanel(null)}><DrawerContent className="h-[92dvh]"><DrawerHeader><DrawerTitle>Study guides</DrawerTitle></DrawerHeader><DrawerBody><GuideList guides={guides} hasGuide={Boolean(guide)} activeLabel={guide?.label} activeId={guide?.id ?? initialGuideId} content={guide?.content ?? ""} onJump={(index) => { setOutlineJump((current) => ({ index, nonce: (current?.nonce ?? 0) + 1 })); setMobilePanel(null); }} loading={guidesLoading} error={guidesError} onRetry={retryIndex} onCreate={() => { void createManualGuide(); }} creating={creatingGuide} /></DrawerBody></DrawerContent></Drawer><Drawer open={mobilePanel === "details"} onOpenChange={(open) => !open && setMobilePanel(null)}><DrawerContent className="h-[92dvh]"><DrawerHeader><DrawerTitle>Study details</DrawerTitle></DrawerHeader><DrawerBody><Inspector guide={guide} mobile tab={tab} onTabChange={setTab} terms={terms} loading={tab === "terms" ? detailsLoading.terms : false} error={tab === "terms" ? detailsError.terms : null} onRetry={retryDetails} /></DrawerBody></DrawerContent></Drawer>{deleteDialog}</div></PanelControlProvider>)}</SurfaceRuntimeProvider>);
 
+  const guideList = <GuideList guides={guides} hasGuide={Boolean(guide)} activeLabel={guide?.label} activeId={guide?.id ?? initialGuideId} content={guide?.content ?? ""} onJump={(index) => setOutlineJump((current) => ({ index, nonce: (current?.nonce ?? 0) + 1 }))} loading={guidesLoading} error={guidesError} onRetry={retryIndex} onCreate={() => { void createManualGuide(); }} creating={creatingGuide} />
   return withSidecar(<SurfaceRuntimeProvider surfaceName={surfaceName} getScope={getScope} getWriteHandlers={getWriteHandlers}>{agentBridge}{withMenu(<PanelControlProvider initialLayouts={[defaultLayout]}>
     <div className="relative h-full min-h-0 overflow-hidden">
-      <ReaderPanelControls />
+      <ReaderPanelControls guidesToggle={!inFrame} />
+      {inFrame && <FrameSidebarContent>{guideList}</FrameSidebarContent>}
       <ClientGroup id="study-guide-reader" groupKey="study-guide-reader" cookieName="panels:study-guide-reader" defaultLayout={defaultLayout} orientation="horizontal" className="h-full w-full" resizeTargetMinimumSize={{ coarse: 20, fine: 10 }}>
-        <RegisteredPanel registerAs="guides" groupKey="study-guide-reader" id="guides" collapsible collapsedSize="0%" defaultSize="250px" minSize="190px">
-          <GuideList guides={guides} hasGuide={Boolean(guide)} activeLabel={guide?.label} activeId={guide?.id ?? initialGuideId} content={guide?.content ?? ""} onJump={(index) => setOutlineJump((current) => ({ index, nonce: (current?.nonce ?? 0) + 1 }))} loading={guidesLoading} error={guidesError} onRetry={retryIndex} onCreate={() => { void createManualGuide(); }} creating={creatingGuide} />
-        </RegisteredPanel>
-        <Handle hideWhenCollapsed={["guides"]} />
+        {!inFrame && <RegisteredPanel registerAs="guides" groupKey="study-guide-reader" id="guides" collapsible collapsedSize="0%" defaultSize="250px" minSize="190px">
+          {guideList}
+        </RegisteredPanel>}
+        {!inFrame && <Handle hideWhenCollapsed={["guides"]} />}
         <Panel id="reader" minSize="35%">
           <ReaderPanelBody>{reader}</ReaderPanelBody>
         </Panel>

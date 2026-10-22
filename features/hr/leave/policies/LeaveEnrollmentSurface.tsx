@@ -27,6 +27,12 @@
 
 import { InfoHint, DateField } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  HR_LEAVE_POLICY_ENROLLMENT_SURFACE,
+  createHrLeavePolicyEnrollmentScope,
+} from "@/features/surfaces/manifests/hr-leave-policy-enrollment.manifest";
 import Link from "next/link";
 import { ArrowLeft, Loader2, UserPlus, Users } from "lucide-react";
 
@@ -320,7 +326,58 @@ export function LeaveEnrollmentSurface({ policyId }: { policyId: string }) {
     },
   ];
 
+  const candidateRows = candidates.map((row) => ({ employment_id: row.employment_id as string, name: row.display_name, job_title: row.job_title ?? null }));
+  const getScope = () =>
+    createHrLeavePolicyEnrollmentScope({
+      enrollment_load_status: error ? "failed" : loading ? "loading" : "loaded",
+      ...(policy ? { enrollment_policy: { id: policy.id, name: policy.name, leave_kind: policy.leaveKind, active: policy.isActive } } : {}),
+      enrolled_count: roster.length,
+      enrolled_people: roster.slice(0, 100).map((row) => ({ employment_id: row.employmentId, name: row.employeeName, balance: row.sentence })),
+      candidate_count: candidates.length,
+      enrollment_candidates: candidateRows.slice(0, 100),
+      can_enroll: canWrite,
+    });
+  /** The `enroll_people` value as employment ids + date; throws the sentence the agent reads. */
+  const planEnrollment = (value: unknown) => {
+    if (!policy) refuseSurfaceWrite("The policy has not loaded yet.");
+    if (!canWrite) refuseSurfaceWrite("This viewer may not enroll people in this policy.");
+    const v = (value && typeof value === "object" && !Array.isArray(value) ? value : { people: value }) as Record<string, unknown>;
+    const people = v.people;
+    if (!Array.isArray(people) || people.length === 0 || people.length > 100) refuseSurfaceWrite('Send { "people": [employment_id or name, …] } with 1-100 people.');
+    const ids = (people as unknown[]).map((p) => {
+      const want = String(p).trim();
+      const byId = candidateRows.find((c) => c.employment_id === want);
+      if (byId) return byId.employment_id;
+      const byName = candidateRows.filter((c) => c.name.trim().toLowerCase() === want.toLowerCase());
+      if (byName.length === 1) return byName[0].employment_id;
+      refuseSurfaceWrite(byName.length > 1 ? `"${want}" matches ${byName.length} people — use their employment_id.` : `"${want}" is not in enrollment_candidates.`);
+    });
+    const from = v.effective_from;
+    if (from !== undefined && from !== null && (typeof from !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(from))) refuseSurfaceWrite("effective_from must be YYYY-MM-DD.");
+    return { ids: [...new Set(ids)], effectiveFrom: (from as string | undefined) ?? null };
+  };
+  const getWriteHandlers = () => ({
+    enroll_people: {
+      validate: (value: unknown) => {
+        planEnrollment(value);
+      },
+      apply: async (value: unknown) => {
+        const plan = planEnrollment(value);
+        const result = await enrollInLeavePolicy({ leavePolicyId: policy!.id, employmentIds: plan.ids, effectiveFrom: plan.effectiveFrom });
+        if (!result.ok) throw new Error(isHrDenied(result) ? (result.detail ?? "Nobody was enrolled.") : result.message);
+        setSkips(result.data.skipped);
+        setReloadToken((n) => n + 1);
+        return {
+          summary: `${result.data.enrolled ?? 0} enrolled${result.data.skipped.length ? `, ${result.data.skipped.length} not added` : ""}.`,
+          data: { skipped: result.data.skipped.map((k) => ({ employment_id: k.employmentId, reason: k.detail ?? k.reason })) },
+        };
+      },
+    },
+  });
+
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_LEAVE_POLICY_ENROLLMENT_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers}>
     <HrSettingsShell
       section="leave-policies"
       loading={loading}
@@ -519,5 +576,6 @@ export function LeaveEnrollmentSurface({ policyId }: { policyId: string }) {
         ) : null}
       </div>
     </HrSettingsShell>
+    </SurfaceRuntimeProvider>
   );
 }

@@ -27,7 +27,7 @@ import { foundStateMetadata, startFoundSearchWith, type FoundSearchStartResult }
 import { IDENTIFY_WORKFLOW_KEY } from "./welcomeRound";
 
 /** The sign-in door that handed over the session (recorded on a failure). */
-export type FoundSearchDoor = "email_confirm" | "oauth_callback" | "password_login";
+export type FoundSearchDoor = "email_confirm" | "oauth_callback" | "password_login" | "phone_otp";
 
 /** A person who belongs to several organizations at sign-in: only the browser knows which one is active. */
 class NoSingleOrganization extends Error {}

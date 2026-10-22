@@ -52,3 +52,27 @@ export function deriveFleetReadiness(m: ReadinessInputs | undefined): FleetReadi
   const probePassed = m.probe_result === "pass";
   return allSupplied && allHandled && ownSituation && probePassed ? "ready" : "partial";
 }
+
+/**
+ * What still stands between a surface and Ready, one short line each, in the order the
+ * rule names them. Empty exactly when deriveFleetReadiness says "ready".
+ */
+export function readinessGaps(m: ReadinessInputs | undefined): string[] {
+  if (!m) return ["No fleet metric for this surface"];
+  const gaps: string[] = [];
+  if (m.probe_result !== "pass") {
+    gaps.push(m.probe_result ? "Last probe failed" : "Never probed");
+  }
+  if (m.values_declared_on === 0) gaps.push("No values declared on");
+  else if (m.values_supplied < m.values_declared_on) {
+    gaps.push(`${m.values_declared_on - m.values_supplied} of ${m.values_declared_on} on values not supplied`);
+  }
+  if (m.write_targets > 0 && m.handled_targets === null) gaps.push("Write handlers not measurable");
+  else if (m.write_targets > 0 && m.handled_targets !== m.write_targets) {
+    gaps.push(`${m.write_targets - (m.handled_targets ?? 0)} of ${m.write_targets} write targets without a handler`);
+  }
+  if (m.situation_source !== "own") {
+    gaps.push(m.situation_source === "inherited" ? "Situation is inherited, not its own" : "No situation");
+  }
+  return gaps;
+}

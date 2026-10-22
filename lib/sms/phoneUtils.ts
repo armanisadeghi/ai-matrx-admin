@@ -89,3 +89,17 @@ export function extractDigits(phoneNumber: string): string {
   if (!phoneNumber) return '';
   return phoneNumber.replace(/\D/g, '');
 }
+
+/**
+ * A typed phone number as E.164, or null when it cannot be a real number.
+ * The strict door for sign-in and anything that texts: a bare 10-digit number is
+ * taken as US (+1); a number with a country code must start with "+" or "1".
+ */
+export function toE164Phone(phoneNumber: string): string | null {
+  if (!phoneNumber || !phoneNumber.trim()) return null;
+  const digits = extractDigits(phoneNumber);
+  const hasPlus = phoneNumber.trim().startsWith('+');
+  if (!hasPlus && digits.length !== 10 && !(digits.length === 11 && digits.startsWith('1'))) return null;
+  const e164 = normalizePhoneNumber(phoneNumber);
+  return isValidE164(e164) && digits.length >= 8 ? e164 : null;
+}

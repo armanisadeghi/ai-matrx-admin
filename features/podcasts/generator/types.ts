@@ -8,6 +8,7 @@
 import type { DictEntryDraft } from "@/features/dictionary/types";
 import type { components } from "@ai-matrx/api/types";
 import type { FeatureImageStyleValue } from "./featureImageStyles";
+import type { EditedFromSource } from "@/features/resource-manager/source-input/editedSourceText";
 import type { SourceSet } from "@ai-matrx/agents/sources";
 
 // ── Request ────────────────────────────────────────────────────────────────
@@ -115,10 +116,10 @@ export interface PodcastGenerateRequest {
    *  clean text (aidream `resolve_source_set`), joins it after `input_data`, and
    *  links each Source to the finished episode. */
   source_set?: SourceSet;
-  /** True when `input_data` already carries the picked Sources' text as the person
-   *  edited it: the server still links each Source to the episode but does not read
-   *  them again. */
-  source_text_supplied?: boolean;
+  /** When the person edited the Sources' text, `source_set` points at that edit
+   *  (landed as its own Source); these are the Sources it was made from — linked
+   *  to the episode, never read (aidream `edited_from`). */
+  edited_from?: EditedFromSource[];
 
   // Style — the single discriminator the backend honors.
   podcast_type: PodcastType;

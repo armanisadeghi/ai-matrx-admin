@@ -99,8 +99,6 @@ export interface MatrixCell {
   columnId: string;
   repeat: number;
   status: MatrixCellStatus;
-  /** A running cell whose heartbeat is older than the lease. */
-  stalled: boolean;
   attempt: number;
   startedAt: string | null;
   finishedAt: string | null;

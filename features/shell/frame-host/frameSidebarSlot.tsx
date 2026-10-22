@@ -15,16 +15,28 @@
 // Kind-A menus (a Large Route's registered menu, route-menu-registry) need no door: the frame
 // host renders them itself.
 import { createContext, useContext, useEffect, useState } from "react";
-import type { ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useIsMobile } from "@ai-matrx/kit/media-query";
 
 /**
  * THE ROUTES WHOSE PAGE HANDS THE FRAME ITS SIDEBAR (kind B) — the ONE declared list. The frame
  * reserves its sidebar body (a quiet skeleton, never the route rows) on these routes until the page
  * claims it, so the rows never flash first. `owner` is the file that renders <FrameSidebarContent>
- * (a test holds the two in step). A page that adopts the door adds its route here.
+ * or <FrameSidebarColumn> (a test holds the two in step). A page that adopts the door adds its
+ * route here.
  */
-export const FRAME_PAGE_SIDEBAR_ROUTES: readonly { pattern: RegExp; owner: string }[] = [
+export const FRAME_PAGE_SIDEBAR_ROUTES: readonly {
+  pattern: RegExp;
+  owner: string;
+  /**
+   * The page's sidebar IS the product's whole menu (HR: every module, the current one's sub-pages
+   * under it), so the frame draws no product-rows strip above it — a second, shorter copy of the
+   * same menu. Omitted: the strip stays (Notes' list sits under the product's other pages).
+   */
+  wholeMenu?: true;
+}[] = [
+  { pattern: /^\/hr(\/|$)/, owner: "features/hr/shared/HrFrameMenu.tsx", wholeMenu: true },
   { pattern: /^\/notes(\/|$)/, owner: "features/notes/components/NotesView.tsx" },
   { pattern: /^\/files(\/|$)/, owner: "features/files/components/surfaces/PageShell.tsx" },
   { pattern: /^\/messages(\/|$)/, owner: "app/(core)/messages/MessagesLayoutClient.tsx" },
@@ -33,6 +45,29 @@ export const FRAME_PAGE_SIDEBAR_ROUTES: readonly { pattern: RegExp; owner: strin
     owner: "features/agent-connections/components/AgentConnectionsRouteShell.tsx",
   },
   { pattern: /^\/spaces(\/|$)/, owner: "features/spaces/workspace/SpacesWorkspace.tsx" },
+  { pattern: /^\/knowledge\/hub(\/|$)/, owner: "features/knowledge/hub/components/KnowledgeHubPage.tsx" },
+  {
+    pattern: /^\/(knowledge|rag|compare\/old)\/data-stores(\/|$)/,
+    owner: "features/rag/components/data-stores/DataStoresPage.tsx",
+  },
+  {
+    pattern: /^\/(knowledge|rag|compare\/old)\/library-catalog(\/|$)/,
+    owner: "features/rag/components/library-catalog/LibraryCatalogPage.tsx",
+  },
+  {
+    pattern: /^\/knowledge\/library-curate(\/|$)/,
+    owner: "features/rag/components/library-curate/LibraryCuratePage.tsx",
+  },
+  { pattern: /^\/notifications(\/|$)/, owner: "features/notifications/components/InboxWorkspace.tsx" },
+  {
+    pattern: /^\/education\/study-guides(\/|$)/,
+    owner: "features/education/study-guides/components/StudyGuideReader.tsx",
+  },
+  {
+    pattern: /^\/resources\/term-lists(\/|$)/,
+    owner: "features/agents/term-lists/components/TermListsWorkspace.tsx",
+  },
+  { pattern: /^\/work\/live(\/|$)/, owner: "features/ai-work/live/components/LiveHub.tsx" },
   {
     pattern: /^\/organizations\/[^/]+\/projects\/[^/]+\/settings(\/|$)/,
     owner: "app/(core)/organizations/[orgId]/projects/[projectId]/settings/OrgProjectSettingsLayoutClient.tsx",
@@ -42,6 +77,11 @@ export const FRAME_PAGE_SIDEBAR_ROUTES: readonly { pattern: RegExp; owner: strin
 /** The declared kind-B entry this route falls under (its owner file), or null. */
 export function pageSidebarOwner(pathname: string): string | null {
   return FRAME_PAGE_SIDEBAR_ROUTES.find((r) => r.pattern.test(pathname))?.owner ?? null;
+}
+
+/** True when this route's page sidebar is the product's whole menu (no product-rows strip). */
+export function pageSidebarIsWholeMenu(pathname: string): boolean {
+  return FRAME_PAGE_SIDEBAR_ROUTES.find((r) => r.pattern.test(pathname))?.wholeMenu === true;
 }
 
 /** True when this route's page supplies the frame's sidebar body (kind B). */
@@ -73,6 +113,40 @@ export function FrameSidebarContent({ children }: { children: ReactNode }) {
   useEffect(() => (claim ? claim() : undefined), [claim]);
   if (!host) return <>{children}</>;
   return host.target ? createPortal(children, host.target) : null;
+}
+
+/**
+ * A page's own left column as ONE element (a list-beside-detail page: data stores, term lists, …).
+ * Outside the frame it renders exactly as given — the same `<aside>`/`<nav>` with its width, border
+ * and responsive classes. Inside the frame on a desktop its children go into the frame's sidebar
+ * column, wrapped in the same element (semantics and `aria-label` kept) minus the column chrome. On
+ * a phone the page keeps its own one-pane-at-a-time switch, so nothing moves.
+ */
+export function FrameSidebarColumn({
+  as: Tag = "aside",
+  className,
+  children,
+  ...rest
+}: { as?: "aside" | "nav"; className?: string; children: ReactNode } & Omit<
+  ComponentPropsWithoutRef<"aside">,
+  "className" | "children"
+>) {
+  const inFrame = useFrameSidebarSlot();
+  const isMobile = useIsMobile();
+  if (!inFrame || isMobile) {
+    return (
+      <Tag className={className} {...rest}>
+        {children}
+      </Tag>
+    );
+  }
+  return (
+    <FrameSidebarContent>
+      <Tag className="flex min-h-0 flex-1 flex-col overflow-y-auto" {...rest}>
+        {children}
+      </Tag>
+    </FrameSidebarContent>
+  );
 }
 
 /**

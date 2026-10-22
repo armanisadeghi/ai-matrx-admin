@@ -22,6 +22,9 @@ import type { AnswerProblem, ResponseRole, ReviewAnswers, ReviewGoal, TemplateQu
 import { emptyAnswers } from "./types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useSurfaceScopeContribution, useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { HR_REVIEW_WORKSPACE_SURFACE } from "@/features/surfaces/manifests/hr-review-workspace.manifest";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 const AUTOSAVE_MS = 1200;
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -126,6 +129,23 @@ export function AnswerForm({
     toast.success(role === "self" ? "Self review submitted" : role === "peer" ? "Feedback sent" : "Your review is submitted");
     onSubmitted();
   };
+
+  // The form on screen, for the review page's surface (`hr-review-workspace`).
+  useSurfaceScopeContribution(HR_REVIEW_WORKSPACE_SURFACE, "review-answer-form", () => ({
+    answers_in_progress: { role, answers: { lists: answers.lists, ratings: answers.ratings, texts: answers.texts }, save_state: saveState, can_submit: canSubmit },
+  }));
+  useSurfaceWriteHandlers(HR_REVIEW_WORKSPACE_SURFACE, {
+    review_answers: {
+      validate: (value: unknown) => {
+        mergeAgentAnswers(answers, value, template, goals);
+      },
+      apply: (value: unknown) => {
+        const next = mergeAgentAnswers(answers, value, template, goals);
+        change(next);
+        return { summary: "The form is filled in and autosaving. It is not submitted.", data: { role } };
+      },
+    },
+  });
 
   const scope = useCallback(() => ({ context: { surface: "hr-standard-performance-review", part: role, employee: subjectName } }), [role, subjectName]);
   const problemsFor = (key: string) => problems.filter((p) => p.question === key);
@@ -289,4 +309,47 @@ export function AnswerForm({
       ) : null}
     </div>
   );
+}
+
+/** The `review_answers` value merged onto the form; throws the sentence the agent reads. */
+function mergeAgentAnswers(current: ReviewAnswers, value: unknown, template: TemplateSnapshot, goals: ReviewGoal[]): ReviewAnswers {
+  if (!value || typeof value !== "object" || Array.isArray(value)) refuseSurfaceWrite('Send { "lists"?, "ratings"?, "texts"? }.');
+  const v = value as Record<string, unknown>;
+  const extra = Object.keys(v).filter((k) => k !== "lists" && k !== "ratings" && k !== "texts");
+  if (extra.length) refuseSurfaceWrite(`Unknown key ${extra.join(", ")}: send lists, ratings or texts.`);
+  const questions = template.sections.flatMap((sec) => sec.questions);
+  const listQ = new Map(questions.filter((q) => q.type === "narrative_list" || q.type === "responsibilities").map((q) => [q.key, q]));
+  const ratingKeys = new Set([
+    ...questions.filter((q) => q.type === "rating").flatMap((q) => q.items.map((i) => `${q.key}.${i.key}`)),
+    ...goals.map((g) => g.answerKey),
+  ]);
+  const textKeys = new Set([...questions.filter((q) => q.type !== "rating" && !listQ.has(q.key)).map((q) => q.key), ...goals.map((g) => g.answerKey)]);
+  const obj = (k: string) => {
+    const x = v[k];
+    if (x === undefined) return {};
+    if (!x || typeof x !== "object" || Array.isArray(x)) refuseSurfaceWrite(`${k} must be an object keyed by question.`);
+    return x as Record<string, unknown>;
+  };
+  const lists = { ...current.lists };
+  for (const [k, items] of Object.entries(obj("lists"))) {
+    const q = listQ.get(k);
+    if (!q) refuseSurfaceWrite(`lists.${k} is not a list question in review_questions.`);
+    if (!Array.isArray(items) || !items.every((x) => typeof x === "string")) refuseSurfaceWrite(`lists.${k} must be a list of texts.`);
+    const clean = (items as string[]).map((x) => x.trim()).filter(Boolean);
+    if (clean.length > (q!.maxItems ?? 5)) refuseSurfaceWrite(`lists.${k} takes at most ${q!.maxItems ?? 5} items.`);
+    lists[k] = clean;
+  }
+  const ratings = { ...current.ratings };
+  for (const [k, r] of Object.entries(obj("ratings"))) {
+    if (!ratingKeys.has(k)) refuseSurfaceWrite(`ratings.${k} is not a rating in review_questions ("<question>.<item>").`);
+    if (!isRatingValue(r)) refuseSurfaceWrite(`ratings.${k} must be a rating_points value (1-5).`);
+    ratings[k] = r as number;
+  }
+  const texts = { ...current.texts };
+  for (const [k, t] of Object.entries(obj("texts"))) {
+    if (!textKeys.has(k)) refuseSurfaceWrite(`texts.${k} is not a text question in review_questions.`);
+    if (typeof t !== "string") refuseSurfaceWrite(`texts.${k} must be text.`);
+    texts[k] = t as string;
+  }
+  return { ...current, lists, ratings, texts };
 }

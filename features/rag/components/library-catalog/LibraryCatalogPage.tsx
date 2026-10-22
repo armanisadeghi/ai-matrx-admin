@@ -23,6 +23,7 @@
  * is still honored — it is a published URL shape people have bookmarked.
  */
 
+import { FrameSidebarColumn } from "@/features/shell/frame-host/frameSidebarSlot";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
@@ -385,7 +386,7 @@ export function LibraryCatalogPage() {
       <div className="flex h-full overflow-hidden bg-background">
         {/* Mobile: one pane at a time — list without a selection, detail with
             one (back arrow in the detail header returns to the list). */}
-        <aside
+        <FrameSidebarColumn
           className={cn(
             "matrx-touch-targets w-full shrink-0 flex-col overflow-y-auto md:overflow-hidden border-r pt-[var(--shell-header-h)] md:flex md:w-96",
             selected ? "hidden" : "flex",
@@ -449,7 +450,7 @@ export function LibraryCatalogPage() {
               />
             ))}
           </div>
-        </aside>
+        </FrameSidebarColumn>
 
         <section
           className={cn(

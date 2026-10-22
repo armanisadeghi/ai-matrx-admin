@@ -24,6 +24,9 @@ import { isScope } from "@/features/hr/tasks/envelope";
 import { useHrInbox } from "@/features/hr/tasks/hooks/useHrInbox";
 import { bulkDecide } from "@/features/hr/tasks/service";
 import { groupByUrgency, relativeDue, URGENCY_LABEL } from "@/features/hr/tasks/urgency";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { HR_TASK_INBOX_SURFACE, createHrTaskInboxScope } from "@/features/surfaces/manifests/hr-task-inbox.manifest";
 // The ONE place this platform words a failure class — shared with the pay-period health panel
 // rather than forked here (SPEC-UI-IA: a token is never a sentence).
 import { failureWords } from "@/features/hr/time/periods/workflowHealth";
@@ -155,7 +158,8 @@ export function HrTaskInbox({ initialScope }: { initialScope: HrInboxScope }) {
         );
     }
 
-    async function runBulk(intent: "approve" | "reject", reason?: string) {
+    /** `ids` defaults to the ticked rows; the agent's `decide_tasks` passes its own. Returns the outcomes, or null. */
+    async function runBulk(intent: "approve" | "reject", reason?: string, ids: string[] = selectedIds): Promise<HrBulkOutcome[] | null> {
         // The SAME map the panel uses. A second translation here is how the two
         // surfaces would come to send different verbs for the same button.
         const decision = HR_DECISION_VERB[intent];
@@ -174,7 +178,7 @@ export function HrTaskInbox({ initialScope }: { initialScope: HrInboxScope }) {
             no door change. Entitlement already rode in with the rows (`hr._wf_display`
             withheld what this viewer may not see), and `inboxRowLine` carries that through.
         */
-        const picked = new Set(selectedIds);
+        const picked = new Set(ids);
         const lines: Record<string, string> = {};
         for (const row of inbox?.needs_my_decision ?? []) {
             if (picked.has(row.step_id)) lines[row.step_id] = inboxRowLine(row);
@@ -182,12 +186,12 @@ export function HrTaskInbox({ initialScope }: { initialScope: HrInboxScope }) {
         setBulkLines(lines);
         setBulkVerb(intent === "approve" ? "Approved" : "Rejected");
         try {
-            const envelope = await bulkDecide(selectedIds, decision, reason ?? null);
+            const envelope = await bulkDecide(ids, decision, reason ?? null);
             if (isRefusal(envelope)) {
                 // WF_BULK_LIMIT / WF_BULK_FORBIDDEN — the whole batch, with the
                 // engine's own sentence. Never a generic failure toast.
                 setBulkRefusal(envelope);
-                return;
+                return null;
             }
             // §5.2: the result names EACH step's outcome. A skip is shown with
             // its reason, not folded into a success count.
@@ -197,8 +201,10 @@ export function HrTaskInbox({ initialScope }: { initialScope: HrInboxScope }) {
                 `${envelope.data.succeeded} decided${envelope.data.skipped ? `, ${envelope.data.skipped} skipped` : ""}`,
             );
             resetPages();
+            return envelope.data.results;
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "The bulk decision could not be sent");
+            return null;
         } finally {
             setBusy(false);
         }
@@ -228,7 +234,75 @@ export function HrTaskInbox({ initialScope }: { initialScope: HrInboxScope }) {
     const mine = inbox?.needs_my_decision ?? [];
     const bulkable = mine.filter((row) => row.allow_bulk_decide);
 
+    const itemScope = (row: (typeof mine)[number]) => ({
+        step_id: row.step_id,
+        instance_id: row.instance_id,
+        item: inboxRowLine(row),
+        due_at: row.due_at,
+        urgent: row.urgent,
+    });
+    const getScope = () =>
+        createHrTaskInboxScope({
+            inbox_load_status: error ? "failed" : loading && !inbox ? "loading" : "loaded",
+            inbox_scope: scope,
+            ...(inbox
+                ? {
+                      decision_count: inbox.pagination.needs_my_decision?.total ?? mine.length,
+                      needs_my_decision: mine.map((row) => ({ ...itemScope(row), bulk_ok: Boolean(row.allow_bulk_decide) })),
+                      queue_count: inbox.pagination.scope_rows?.total ?? scopeRows.length,
+                      scope_items: scopeRows.map(itemScope),
+                      inbox_counts: {
+                          auto_applying_soon: inbox.pagination.auto_applying_soon?.total ?? inbox.auto_applying_soon.length,
+                          waiting_on_others: inbox.pagination.waiting_on_others?.total ?? inbox.waiting_on_others.length,
+                          failures_assigned_to_me: inbox.pagination.failures_assigned_to_me?.total ?? inbox.failures_assigned_to_me.length,
+                          recently_decided: inbox.pagination.recently_decided?.total ?? inbox.recently_decided.length,
+                      },
+                  }
+                : {}),
+        });
+    /** The `decide_tasks` value checked against the rows on screen; throws the sentence the agent reads. */
+    const planBulk = (value: unknown) => {
+        const v = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+        if (v.decision !== "approve" && v.decision !== "reject") refuseSurfaceWrite('decision must be "approve" or "reject".');
+        const ids = v.step_ids;
+        if (!Array.isArray(ids) || ids.length === 0) refuseSurfaceWrite("step_ids must list at least one step_id from needs_my_decision.");
+        const max = inbox?.bulk_max ?? 50;
+        if ((ids as unknown[]).length > max) refuseSurfaceWrite(`At most ${max} items at once.`);
+        for (const id of ids as unknown[]) {
+            const row = mine.find((r) => r.step_id === id);
+            if (!row) refuseSurfaceWrite(`${String(id)} is not in needs_my_decision.`);
+            if (!row!.allow_bulk_decide) refuseSurfaceWrite(`"${inboxRowLine(row!)}" must be opened and decided on its own.`);
+        }
+        const reason = typeof v.reason === "string" ? v.reason.trim() : "";
+        if (v.decision === "reject" && reason.length < 3) refuseSurfaceWrite("A rejection needs a reason of at least 3 characters.");
+        return { intent: v.decision as "approve" | "reject", ids: [...new Set(ids as string[])], reason: reason || undefined };
+    };
+    const getWriteHandlers = () => ({
+        decide_tasks: {
+            validate: (value: unknown) => {
+                planBulk(value);
+            },
+            apply: async (value: unknown) => {
+                const plan = planBulk(value);
+                const outcomes = await runBulk(plan.intent, plan.reason, plan.ids);
+                if (!outcomes) throw new Error("The bulk decision was refused or could not be sent; the page shows why.");
+                return { summary: `${plan.intent === "approve" ? "Approved" : "Rejected"}: ${outcomes.length} item(s) sent.`, data: { outcomes } };
+            },
+        },
+        inbox_scope: {
+            validate: (value: unknown) => {
+                if (value !== "mine" && value !== "team" && value !== "queue") refuseSurfaceWrite('Use "mine", "team" or "queue".');
+                if (value === "queue" && inbox && !inbox.can_view_queue) refuseSurfaceWrite("This person has no HR queue.");
+            },
+            apply: (value: unknown) => {
+                setScope(value as HrInboxScope);
+                return { summary: `The inbox shows ${String(value)}.` };
+            },
+        },
+    });
+
     return (
+        <SurfaceRuntimeProvider surfaceName={HR_TASK_INBOX_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers}>
         <div className="flex h-full flex-col overflow-hidden">
             {/*
               🚨 THIS ROUTE HAS NO `HrShell`, SO IT OWES THE DISCLOSURE ITSELF.
@@ -625,5 +699,6 @@ export function HrTaskInbox({ initialScope }: { initialScope: HrInboxScope }) {
                 }}
             />
         </div>
+        </SurfaceRuntimeProvider>
     );
 }

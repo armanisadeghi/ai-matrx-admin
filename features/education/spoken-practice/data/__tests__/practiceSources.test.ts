@@ -30,9 +30,24 @@ describe("practiceSourceFromResolved", () => {
       {},
     );
     expect(cut).toBe(false);
-    expect(source).toMatchObject({ kind: "set", setId: "d1", title: "Cells deck" });
+    // One Source keeps its own name (the kit namer's floor), as the live screen titles it.
+    expect(source).toMatchObject({ kind: "set", setId: "d1", title: "Cells" });
     expect(source?.material).toContain("Q: a");
     expect(source?.sourceSet).toBe(chosen);
+  });
+
+  it("takes the kit namer's title for several Sources (no second namer)", () => {
+    const { source } = practiceSourceFromResolved(
+      resolved([
+        { type: "note", id: "a", label: "A", text: "t" },
+        { type: "note", id: "b", label: "B", text: "t" },
+        { type: "note", id: "c", label: "C", text: "t" },
+      ]),
+      chosen,
+      {},
+      "Cell biology",
+    );
+    expect(source?.title).toBe("Cell biology");
   });
 
   it("a page or pasted text is a topic source", () => {
@@ -67,19 +82,24 @@ describe("practiceSourceFromResolved", () => {
 });
 
 describe("practiceLineageSources", () => {
-  it("one anchor per distinct readable Source, none for a kind with no registered pair", () => {
+  it("one anchor per distinct readable Source, every kind offered to the registry (no local kind list)", () => {
     const anchors = practiceLineageSources(
       resolved([
         { type: "fc_set", id: "d1", label: "Cells", text: "Q: a" },
         { type: "note", id: "n1", label: "N", text: "t" },
         { type: "note", id: "n1", label: "N again", text: "t" },
-        { type: "pasted_text", id: "x", label: "Pasted", text: "t" },
+        // Pasted text, a web page and a YouTube transcript land as processed documents.
+        { type: "processed_document", id: "p1", label: "Pasted", text: "t" },
+        // A kind registered after this file was written is still offered, not dropped.
+        { type: "brand_new_kind", id: "z1", label: "New", text: "t" },
         { type: "note", id: "empty", label: "E", text: " " },
       ]),
     );
     expect(anchors.map((a) => [a.ref?.entityType, a.ref?.entityId])).toEqual([
       ["fc_set", "d1"],
       ["note", "n1"],
+      ["processed_document", "p1"],
+      ["brand_new_kind", "z1"],
     ]);
   });
 

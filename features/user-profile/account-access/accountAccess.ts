@@ -4,13 +4,17 @@ import { assertNotInSupportSession } from "@/features/admin/users/support-sessio
 type AuthClient = Pick<ReturnType<typeof createClient>, "auth">;
 
 export interface AccountAccessState {
-  email: string;
+  /** Null for an account created with a phone number and no email yet. */
+  email: string | null;
+  phone: string | null;
   pendingEmail: string | null;
 }
 
-function accountFromUser(user: { email?: string | null; new_email?: string | null } | null): AccountAccessState {
-  if (!user?.email) throw new Error("Sign in to manage your account.");
-  return { email: user.email, pendingEmail: user.new_email ?? null };
+function accountFromUser(
+  user: { email?: string | null; phone?: string | null; new_email?: string | null } | null,
+): AccountAccessState {
+  if (!user) throw new Error("Sign in to manage your account.");
+  return { email: user.email || null, phone: user.phone ? `+${user.phone.replace(/^\+/, "")}` : null, pendingEmail: user.new_email ?? null };
 }
 
 /** Reads Auth directly; profile Redux state must never stand in for credentials. */
@@ -33,7 +37,7 @@ export async function requestEmailChange(
   await guard();
   const current = await readAccountAccess(client);
   const next = email.trim().toLowerCase();
-  if (!next || next === current.email.toLowerCase()) {
+  if (!next || next === current.email?.toLowerCase()) {
     throw new Error("Enter a different email address.");
   }
   if (next === current.pendingEmail?.toLowerCase()) {

@@ -176,7 +176,17 @@ export type EntityBulkAsk =
       options: readonly { value: string; label: string }[];
       /** Defaults to the first option. */
       defaultValue?: string;
+      /** A sentence when the picked value cannot be used (blocks Confirm), else null. */
+      validate?: (value: string) => string | null;
     };
+
+/** One selected row a bulk verb did not do, and why — always NAMED, never dropped. */
+export interface BulkSkip {
+  /** The row's id, when known — what stays selected so the person can retry. */
+  id?: string;
+  name: string;
+  reason: string;
+}
 
 /** What the person supplied in the action's confirm (see `EntityBulkActionConfirm.reason` / `.ask`). */
 export interface EntityBulkActionInput {
@@ -196,6 +206,12 @@ export interface EntityBulkActionResult {
   refresh?: boolean;
   /** Keep the selection. Default is to clear it — the work is done. */
   keepSelection?: boolean;
+  /**
+   * A PARTIAL result: keep exactly these ids selected (the rows that were skipped or failed) and
+   * untick the rest — the done rows are done, the others stay ticked for a retry. A host without
+   * `setIds` keeps the whole selection instead (never drops a failed row's tick).
+   */
+  keepIds?: string[];
   /** Offer Undo on the success toast; runs the action's own reversal. */
   undo?: () => void | Promise<void>;
 }

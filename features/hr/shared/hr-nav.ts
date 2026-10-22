@@ -471,3 +471,29 @@ export function resolveHrNav(args: {
 
   return { items, flat: isEmployee && selfServiceCount < 4, selfServiceCount };
 }
+
+/**
+ * The item this pathname is in: the one whose route path is the LONGEST prefix of it (an `exact`
+ * item matches only itself). Longest-wins is load-bearing: `/hr/me` is a prefix of `/hr/me/clock`
+ * and `/hr/people` of `/hr/people/org-chart`, so a first-match scan lights the wrong one. Shared
+ * by HrShell's module menu and HrSubShell's tabs.
+ */
+export function resolveActiveHrKey(
+  items: readonly { key: string; href: string; exact?: boolean }[],
+  pathname: string,
+): string | null {
+  let bestKey: string | null = null;
+  let bestLength = -1;
+  for (const item of items) {
+    const queryAt = item.href.indexOf("?");
+    const path = queryAt === -1 ? item.href : item.href.slice(0, queryAt);
+    const matches = item.exact
+      ? pathname === path
+      : pathname === path || pathname.startsWith(`${path}/`);
+    if (matches && path.length > bestLength) {
+      bestKey = item.key;
+      bestLength = path.length;
+    }
+  }
+  return bestKey;
+}

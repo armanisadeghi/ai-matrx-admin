@@ -335,12 +335,14 @@ function OutlineBody({ mapId, siteId, readOnly, knobs }: OutlineBodyProps) {
       <OutlineToolbar mapId={mapId} visibleTopics={topicCount} />
 
       {edits.failure ? (
-        <div className="relative shrink-0">
-          <TopicalMapFailed what={edits.failure.what} error={edits.failure.error} />
+        <div className="flex shrink-0 items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <TopicalMapFailed what={edits.failure.what} error={edits.failure.error} />
+          </div>
           <button
             type="button"
             onClick={edits.dismissFailure}
-            className="absolute right-2 top-2 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="mt-2 shrink-0 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             Dismiss
           </button>

@@ -31,6 +31,8 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-22-095547-old-path-refused/features/surfaces/utils/probe-record.ts.held — recreated moved path features/surfaces/utils/probe-record.ts; belongs at ../aidream/apps/shared/chat/src/surfaces/utils/probe-record.ts
+- _conflicts/2026-10-22-095547-old-path-refused/features/surfaces/utils/situation-render.ts.held — recreated moved path features/surfaces/utils/situation-render.ts; belongs at ../aidream/apps/shared/chat/src/surfaces/utils/situation-render.ts
 
 ## Resolution log
 - 2026-10-22 08:2x PDT — Claude ship-all round-2 lane resolved `_conflicts/2026-10-22-064429/pnpm-lock.yaml.held` by keeping the live lockfile: every difference is a version bump where live is newer (LOCAL 852a064d04 had chat 0.8.331, coding-sessions 0.3.492, design-system 0.86.284, kit 0.45.28, media 0.15.137, office 0.8.41, records-ui 0.116.82, records 0.99.129, summon 0.1.42, vault 0.1.27, on-finished 2.4.1; live is past each). `check-matrx-packages --duplicates` 33 once each. `scripts/sync-main.py.orig` was already removed on main (4d1475f411). Owner: none needed (lockfile).

@@ -74,6 +74,9 @@ import { EXCEPTION_KIND_LABELS, RESOLUTION_LABELS, SEVERITY_LABELS } from "../sh
 import { listAttendanceExceptions } from "./api";
 import { readExceptionFilters } from "./readExceptionFilters";
 import { readOf } from "@ai-matrx/design-system";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { HR_TIME_EXCEPTIONS_SURFACE, createHrTimeExceptionsScope } from "@/features/surfaces/manifests/hr-time-exceptions.manifest";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -166,7 +169,64 @@ export function ExceptionsQueue({
     (row) => selectedIds.includes(row.id) && row.allowedResolutions.includes("acknowledged"),
   );
 
+  const getScope = () =>
+    createHrTimeExceptionsScope({
+      exceptions_load_status: queue.error ? "failed" : queue.data ? "loaded" : "loading",
+      exception_filter: { kind: kind ?? null, employment_id: employmentId ?? null, day: day ?? null, search: query.search || null, read_only: readOnly },
+      ...(queue.data
+        ? {
+            exception_total: queue.data.totalRows,
+            exceptions: rows.map((row) => ({
+              id: row.id,
+              employee: row.employeeDisplayName,
+              kind: row.exceptionKind,
+              severity: row.severity,
+              state: row.resolutionState,
+              work_date: row.localWorkDate,
+              variance_minutes: row.varianceMinutes,
+              detected_at: row.detectedAt,
+              allowed: row.allowedResolutions,
+            })),
+          }
+        : {}),
+    });
+  /** The `acknowledge_exceptions` value as rows on this page; throws the sentence the agent reads. */
+  const planAcknowledge = (value: unknown) => {
+    if (readOnly) refuseSurfaceWrite("This view is read-only.");
+    if (!Array.isArray(value) || value.length === 0 || value.length > 50) refuseSurfaceWrite("Send a JSON array of 1-50 exception ids.");
+    return [...new Set(value as unknown[])].map((id) => {
+      const row = rows.find((r) => r.id === id);
+      if (!row) refuseSurfaceWrite(`${String(id)} is not on this page of exceptions.`);
+      if (!row!.allowedResolutions.includes("acknowledged")) refuseSurfaceWrite(`${String(id)} cannot be acknowledged; open it to resolve it.`);
+      return row!;
+    });
+  };
+  const getWriteHandlers = () => ({
+    acknowledge_exceptions: {
+      validate: (value: unknown) => {
+        planAcknowledge(value);
+      },
+      apply: async (value: unknown) => {
+        const plan = planAcknowledge(value);
+        const done: string[] = [];
+        for (const row of plan) {
+          try {
+            await resolveAttendanceException(row.id, "acknowledged", null, null, { mockCase });
+            done.push(row.id);
+          } catch (caught) {
+            queue.refetch();
+            const why = caught instanceof HrRpcError ? caught.userMessage : caught instanceof Error ? caught.message : String(caught);
+            throw new Error(`${done.length} acknowledged, then ${row.id} was refused: ${why}. The rest were not attempted.`);
+          }
+        }
+        queue.refetch();
+        return { summary: `${done.length} exception(s) acknowledged.`, data: { acknowledged: done } };
+      },
+    },
+  });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_TIME_EXCEPTIONS_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers}>
     <div className="flex h-full min-h-0 flex-col gap-3 px-3 py-3 sm:px-4">
       <header className="space-y-1">
         <p className="text-xs text-muted-foreground">
@@ -305,6 +365,7 @@ export function ExceptionsQueue({
         }}
       />
     </div>
+    </SurfaceRuntimeProvider>
   );
 }
 

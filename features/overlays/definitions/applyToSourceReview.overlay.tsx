@@ -11,10 +11,11 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { createOpener } from "@ai-matrx/summon/opener";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "applyToSourceReview" as const;
+const opener = createOpener<OpenApplyToSourceReviewOptions>(OVERLAY_ID);
 
 export interface OpenApplyToSourceReviewOptions {
   /** The target registered in rich-document/review/applyTargets. */
@@ -24,10 +25,7 @@ export interface OpenApplyToSourceReviewOptions {
 }
 
 export function applyToSourceReviewAction(opts: OpenApplyToSourceReviewOptions) {
-  return openOverlay({
-    overlayId: OVERLAY_ID,
-    data: { applyTargetId: opts.applyTargetId, proposal: opts.proposal },
-  });
+  return opener.openAction({ applyTargetId: opts.applyTargetId, proposal: opts.proposal });
 }
 
 export function useOpenApplyToSourceReview() {

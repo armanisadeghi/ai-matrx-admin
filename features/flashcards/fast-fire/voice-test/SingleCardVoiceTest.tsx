@@ -359,14 +359,16 @@ export function SingleCardVoiceTest({
   return (
     <div className="relative flex max-h-[min(90dvh,40rem)] w-full flex-col overflow-hidden rounded-2xl border border-border bg-card">
       {showClose && (
-        <button
-          type="button"
-          onClick={done}
-          aria-label="Close"
-          className="absolute right-3 top-3 z-10 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <div className="flex shrink-0 items-center justify-end px-3 pt-3">
+          <button
+            type="button"
+            onClick={done}
+            aria-label="Close"
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       )}
 
       {phase === "asking" && activeSpokenFrontFileId && (

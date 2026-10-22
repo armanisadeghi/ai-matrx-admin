@@ -10,10 +10,14 @@ jest.mock("@/lib/toast", () => ({ toast: { warning: (...a: unknown[]) => warning
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 const archiveRecord = jest.fn(async () => undefined);
 const restoreFromTrash = jest.fn(async () => undefined);
+const carryOnTableRestore = jest.fn(async () => undefined);
 jest.mock("@/features/trash/service", () => ({
   archiveRecord: (...a: unknown[]) => archiveRecord(...(a as [])),
   restoreFromTrash: (...a: unknown[]) => restoreFromTrash(...(a as [])),
+  carryOnTableRestore: (...a: unknown[]) => carryOnTableRestore(...(a as [])),
 }));
+const copyText = jest.fn(async () => true);
+jest.mock("@ai-matrx/kit/clipboard", () => ({ copyText: (...a: unknown[]) => copyText(...(a as [])) }));
 const fileUnderTag = jest.fn(async () => "tag-1");
 jest.mock("@/features/knowledge/hub/tags/tagApi", () => ({ fileUnderTag: (...a: unknown[]) => fileUnderTag(...(a as [])) }));
 const pickTag = jest.fn();
@@ -23,7 +27,8 @@ jest.mock("@/features/scopes/homes/setHome", () => ({ setHome: jest.fn(), resolv
 jest.mock("@/features/sharing/bulk/shareWithPeopleOpener", () => ({ shareWithPeople: jest.fn() }));
 
 import { Check, History, Trash2, X } from "lucide-react";
-import { bulkActionsFromRowVerbs, defineRowVerbs } from "../rowVerbs";
+import { bulkActionsFromRowVerbs, defineRowVerbs, NOT_LOADED_REASON } from "../rowVerbs";
+import { BulkNoneDoneError } from "../bulkSkipped";
 import { standardBulkActionsFor } from "../standardBulkActions";
 import type { EntityBulkSelection } from "../selection";
 
@@ -32,6 +37,7 @@ interface Row {
   name: string;
   status: "waiting" | "approved";
   deleted_at?: string | null;
+  organization_id?: string;
 }
 const rows: Row[] = [
   { id: "r1", name: "Nightly digest", status: "waiting" },
@@ -170,13 +176,48 @@ describe("built-in archive pair follows the view", () => {
 
   it("Restore brings back archived rows through the one restore door and names the ones not in Trash", async () => {
     const restore = standardBulkActionsFor<Row>({ ...args, archivedView: "all" }).find((a) => a.id === "restore")!;
-    const mixed = [{ ...rows[0], deleted_at: "2026-10-01T00:00:00Z" }, rows[1]];
+    const live = { ...rows[1], deleted_at: null };
+    const mixed = [{ ...rows[0], deleted_at: "2026-10-01T00:00:00Z" }, live];
     const result = await restore.run(sel(mixed), {});
     expect(restoreFromTrash).toHaveBeenCalledTimes(1);
     expect(restoreFromTrash).toHaveBeenCalledWith("agx_agent", "r1");
-    expect(result).toMatchObject({ message: "Restored: 1 agent." });
+    expect(result).toMatchObject({ message: "Restored: 1 agent.", keepIds: ["r2"] });
     expect(warning).toHaveBeenCalledWith("1 agent skipped", { description: "Lead scorer: Not in Trash" });
-    expect(restore.disabledReason?.(1, sel([rows[1]]))).toBe("None of these are in Trash");
+    expect(restore.disabledReason?.(1, sel([live]))).toBe("None of these are in Trash");
+  });
+
+  it("Restore runs the Trash page's carry-on, so a custom Table comes back whole (not half)", async () => {
+    const restore = standardBulkActionsFor<Row>({ ...args, token: "record", archivedView: "archived" }).find((a) => a.id === "restore")!;
+    await restore.run(sel([{ ...rows[0], deleted_at: "2026-10-01T00:00:00Z", organization_id: "org-1" }]), {});
+    expect(restoreFromTrash).toHaveBeenCalledWith("record", "r1");
+    expect(carryOnTableRestore).toHaveBeenCalledWith("record", "org-1", "r1");
+  });
+
+  it("a Table with no organization in reach is skipped and named BEFORE anything runs", async () => {
+    const restore = standardBulkActionsFor<Row>({ ...args, token: "record", archivedView: "archived" }).find((a) => a.id === "restore")!;
+    await expect(restore.run(sel([rows[0]]), {})).rejects.toThrow("Nightly digest: Not loaded — restore it from Trash");
+    expect(restoreFromTrash).not.toHaveBeenCalled();
+  });
+
+  it("an archived-only view trusts the view: a row whose projection has no (or a stale) deleted_at still restores", async () => {
+    const restore = standardBulkActionsFor<Row>({ ...args, archivedView: "archived" }).find((a) => a.id === "restore")!;
+    const stale = [{ ...rows[0], deleted_at: null }, rows[1]];
+    expect(restore.disabledReason?.(2, sel(stale))).toBeNull();
+    await restore.run(sel(stale), {});
+    expect(restoreFromTrash).toHaveBeenCalledTimes(2);
+  });
+
+  it("an 'all' view never guesses from other lifecycle fields: no deleted_at column → the door answers", async () => {
+    const restore = standardBulkActionsFor<Row>({ ...args, archivedView: "all" }).find((a) => a.id === "restore")!;
+    expect(restore.disabledReason?.(1, sel([rows[1]]))).toBeNull();
+    await restore.run(sel([rows[1]]), {});
+    expect(restoreFromTrash).toHaveBeenCalledWith("agx_agent", "r2");
+  });
+
+  it("site content (a CMS token) is refused by name: it restores from Trash, not this door", async () => {
+    const restore = standardBulkActionsFor<Row>({ ...args, token: "cms_page", archivedView: "archived" }).find((a) => a.id === "restore")!;
+    expect(() => restore.run(sel(rows), {})).toThrow("Restore site content from Trash");
+    expect(restoreFromTrash).not.toHaveBeenCalled();
   });
 
   it("Move to Trash skips and names a row already in Trash", async () => {
@@ -204,5 +245,79 @@ describe("built-in Add tag is THE tag picker", () => {
     pickTag.mockResolvedValueOnce(null);
     await expect(tag().run(sel(rows), {})).resolves.toBeUndefined();
     expect(fileUnderTag).not.toHaveBeenCalled();
+  });
+});
+
+describe("unloaded rows are never counted as done", () => {
+  it("a batch twin that loops targets.rows: an id with no loaded row is skipped and NAMED, and stays selected", async () => {
+    const touched: string[] = [];
+    const { bulkActions } = defineRowVerbs<Row>(
+      [{ id: "archive", icon: Trash2, label: "Archive", onClick: jest.fn(), bulk: { done: "Archived", run: async (t) => { t.rows.forEach((r) => touched.push(r.id)); return {}; } } }],
+      opts,
+    );
+    const result = await bulkActions[0].run(sel([rows[0]], ["off-page"]), {});
+    expect(touched).toEqual(["r1"]);
+    expect(result).toMatchObject({ message: "Archived: 1 approval.", keepIds: ["off-page"] });
+    expect(warning).toHaveBeenCalledWith("1 approval skipped", { description: `off-page: ${NOT_LOADED_REASON}` });
+  });
+
+  it("a batch door that acts on ids says what it did (`done`), and only those are counted", async () => {
+    const { bulkActions } = defineRowVerbs<Row>(
+      [{ id: "reset", icon: X, label: "Reset", onClick: jest.fn(), bulk: { done: "Reset", run: async (t) => ({ done: t.ids }) } }],
+      opts,
+    );
+    const result = await bulkActions[0].run(sel([rows[0]], ["off-page"]), {});
+    expect(result).toMatchObject({ message: "Reset: 2 approvals." });
+    expect(result).not.toHaveProperty("keepIds");
+    expect(warning).not.toHaveBeenCalled();
+  });
+});
+
+describe("a partial result keeps the skipped rows selected and names every one", () => {
+  const many: Row[] = Array.from({ length: 9 }, (_, i) => ({ id: `m${i}`, name: `Row ${i}`, status: i < 7 ? "approved" : "waiting" }));
+  const make = (runOne = jest.fn(async () => undefined)) =>
+    defineRowVerbs<Row>(
+      [{ id: "approve", icon: Check, label: "Approve", appliesTo: (r) => r.status !== "approved", unavailableTooltip: "Already approved", onClick: jest.fn(), bulk: { done: "Approved", runOne } }],
+      opts,
+    ).bulkActions[0];
+
+  it("keepIds = the skipped ids; five named inline, then +N more with Copy list of ALL of them", async () => {
+    const result = await make().run(sel(many), {});
+    expect(result).toMatchObject({ message: "Approved: 2 approvals.", keepIds: ["m0", "m1", "m2", "m3", "m4", "m5", "m6"] });
+    const [title, options] = warning.mock.calls[0] as [string, { description: string; action: { label: string; onClick: () => void } }];
+    expect(title).toBe("7 approvals skipped");
+    expect(options.description).toBe(
+      "Row 0: Already approved · Row 1: Already approved · Row 2: Already approved · Row 3: Already approved · Row 4: Already approved · +2 more",
+    );
+    expect(options.action.label).toBe("Copy list");
+    options.action.onClick();
+    expect(copyText).toHaveBeenCalledWith(many.slice(0, 7).map((r) => `${r.name}: Already approved`).join("\n"), expect.any(Object));
+  });
+
+  it("nothing done → BulkNoneDoneError carrying every skipped row (the shell keeps the whole selection)", async () => {
+    const failing = make(jest.fn(async () => { throw new Error("Refused"); }));
+    const error = await failing.run(sel(many), {}).then(() => null, (e: unknown) => e);
+    expect(error).toBeInstanceOf(BulkNoneDoneError);
+    expect((error as BulkNoneDoneError).skipped).toHaveLength(9);
+    expect((error as BulkNoneDoneError).message).toContain("· +4 more");
+  });
+});
+
+describe("the confirm and the skip sentence", () => {
+  it("no confirm dialog when every selected row is skipped (no 'Reject 0 approvals?')", () => {
+    const { bulkActions } = defineRowVerbs<Row>(
+      [{ id: "reject", icon: X, label: "Reject", tone: "destructive", appliesTo: () => false, onClick: jest.fn(), bulk: { runOne: jest.fn(async () => undefined) } }],
+      opts,
+    );
+    expect(bulkActions[0].confirm?.(sel(rows))).toBeNull();
+  });
+
+  it("a verb disabled for a stated reason names that reason, not 'Busy'", async () => {
+    const { bulkActions } = defineRowVerbs<Row>(
+      [{ id: "approve", icon: Check, label: "Approve", disabled: (r) => r.id === "r2", unavailableTooltip: "Only the owner decides", onClick: jest.fn(), bulk: { runOne: jest.fn(async () => undefined) } }],
+      opts,
+    );
+    await bulkActions[0].run(sel(rows), {});
+    expect(warning).toHaveBeenCalledWith("1 approval skipped", { description: "Lead scorer: Only the owner decides" });
   });
 });

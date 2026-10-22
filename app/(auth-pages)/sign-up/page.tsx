@@ -37,6 +37,7 @@ import {
 import { lookupCouponPreview } from "@/features/entitlements/coupons/couponPreview";
 import { CouponOfferBanner } from "@/features/entitlements/coupons/CouponOfferBanner";
 import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";
+import { AuthMethodSwitch } from "@/features/auth/phone/AuthMethodSwitch";
 
 interface SignUpProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -58,6 +59,10 @@ export default async function SignUp({ searchParams }: SignUpProps) {
   );
   const couponEmail = couponPreview?.valid
     ? couponPreview.recipientEmail
+    : null;
+  // A coupon texted to a phone opens on the Phone choice with that number filled in (editable).
+  const couponPhone = couponPreview?.valid && !couponEmail
+    ? couponPreview.recipientPhone
     : null;
   // An invitation link sent them here (DD-091). The link carries the invitation
   // TOKEN, never the address — an address in a query string is stable PII in
@@ -114,104 +119,112 @@ export default async function SignUp({ searchParams }: SignUpProps) {
       note={guestNote}
     >
       <CouponOfferBanner preview={couponPreview} />
-      <HardRedirectForm
-        action={signUpAction}
-        className="space-y-6"
-        suppressHydrationWarning={true}
-      >
-        <GuestFingerprintField />
-        <div>
-          <Label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+      <AuthMethodSwitch
+        redirectTo={redirectTo ?? null}
+        defaultPhone={couponPhone}
+        initialMethod={couponPhone ? "phone" : "email"}
+        phoneSubmitLabel="Create account"
+        emailForm={
+          <HardRedirectForm
+            action={signUpAction}
+            className="space-y-6"
+            suppressHydrationWarning={true}
           >
-            Email address
-          </Label>
-          <div className="mt-1" suppressHydrationWarning={true}>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              defaultValue={invitedEmail ?? couponEmail ?? signerEmail ?? undefined}
-              className="block w-full"
-              placeholder="you@example.com"
-              data-lpignore="true"
-            />
-            {invitedEmail && (
-              <p
-                className="mt-1 text-xs text-gray-600 dark:text-gray-400"
-                data-testid="invited-email-note"
+            <GuestFingerprintField />
+            <div>
+              <Label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Your invitation was sent to <strong>{invitedEmail}</strong> —
-                create your account with this address so the invitation opens
-                for you.
-              </p>
-            )}
-          </div>
-        </div>
+                Email address
+              </Label>
+              <div className="mt-1" suppressHydrationWarning={true}>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  defaultValue={invitedEmail ?? couponEmail ?? signerEmail ?? undefined}
+                  className="block w-full"
+                  placeholder="you@example.com"
+                  data-lpignore="true"
+                />
+                {invitedEmail && (
+                  <p
+                    className="mt-1 text-xs text-gray-600 dark:text-gray-400"
+                    data-testid="invited-email-note"
+                  >
+                    Your invitation was sent to <strong>{invitedEmail}</strong> —
+                    create your account with this address so the invitation opens
+                    for you.
+                  </p>
+                )}
+              </div>
+            </div>
 
-        <div>
-          <Label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
-            Password
-          </Label>
-          <div className="mt-1" suppressHydrationWarning={true}>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={6}
-              className="block w-full"
-              placeholder="••••••••"
-              data-lpignore="true"
-            />
-          </div>
-        </div>
+            <div>
+              <Label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Password
+              </Label>
+              <div className="mt-1" suppressHydrationWarning={true}>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                  className="block w-full"
+                  placeholder="••••••••"
+                  data-lpignore="true"
+                />
+              </div>
+            </div>
 
-        <div>
-          <Label
-            htmlFor="confirmPassword"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
-            Confirm Password
-          </Label>
-          <div className="mt-1" suppressHydrationWarning={true}>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={6}
-              className="block w-full"
-              placeholder="••••••••"
-              data-lpignore="true"
-            />
-          </div>
-        </div>
+            <div>
+              <Label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Confirm Password
+              </Label>
+              <div className="mt-1" suppressHydrationWarning={true}>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                  className="block w-full"
+                  placeholder="••••••••"
+                  data-lpignore="true"
+                />
+              </div>
+            </div>
 
-        <div>
-          <input
-            id="redirectTo"
-            type="hidden"
-            name="redirectTo"
-            value={redirectTo ?? ""}
-          />
-          <SubmitButton
-            needsScript
-            pendingText="Creating Account..."
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-          >
-            Sign up
-          </SubmitButton>
-        </div>
-      </HardRedirectForm>
+            <div>
+              <input
+                id="redirectTo"
+                type="hidden"
+                name="redirectTo"
+                value={redirectTo ?? ""}
+              />
+              <SubmitButton
+                needsScript
+                pendingText="Creating Account..."
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              >
+                Sign up
+              </SubmitButton>
+            </div>
+          </HardRedirectForm>
+        }
+      />
 
       <div className="mt-6">
         <div className="relative">

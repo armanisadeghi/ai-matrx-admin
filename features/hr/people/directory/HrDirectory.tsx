@@ -24,7 +24,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Download,
   GraduationCap,
   LayoutGrid,
   Rows3,
@@ -49,6 +48,7 @@ import { fetchHrOrgChart, fetchHrStructure } from "../../service";
 import { hrPeopleNewHref } from "../../routes";
 import type { HrDirectoryPage, HrResult } from "../../types";
 import { useHrRequest } from "../shared/useHrRequest";
+import { hrDirectoryExportAction } from "./directoryExportAction";
 import { HrDirectoryCardGrid } from "./HrDirectoryCards";
 import {
   buildHrDirectoryColumns,
@@ -245,9 +245,9 @@ export function HrDirectory() {
   const page = directory.page;
   const rows: HrScopedDirectoryRow[] = page?.rows ?? [];
   // The shared bulk bar (lib/entity-list). EXPORT IS AUDITED (SPEC-EMPLOYEES
-  // §2.2) and there is no `hr_directory_export` door, so these three verbs
-  // announce their registered promise instead of shipping an unaudited
-  // download. No built-ins: an employee leaves through offboarding, never
+  // §2.2): Export records itself through `hr.directory_export_log` before the
+  // file is built; Assign training and Send acknowledgment still announce their
+  // registered promise (their subsystems are not built). No built-ins: an employee leaves through offboarding, never
   // Trash; the directory shows no favorites; tags on people are not offered.
   // Absent entirely without the capability (law 4 above).
   const bulk = useTableBulkSelection<HrScopedDirectoryRow>({
@@ -628,15 +628,7 @@ const HR_BULK_ACTIONS: EntityBulkAction<HrScopedDirectoryRow>[] = [
       void announceComingSoon("hr.people.send-acknowledgment");
     },
   },
-  {
-    id: "directory-export",
-    label: "Export",
-    icon: Download,
-    variant: "outline",
-    run: () => {
-      void announceComingSoon("hr.people.directory-export");
-    },
-  },
+  hrDirectoryExportAction,
 ];
 
 /**

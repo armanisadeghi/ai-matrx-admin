@@ -588,6 +588,8 @@ export default function NavFlyoutGroup({
   };
 
   /** A sub-area row: its name navigates, hovering / its chevron opens its menu. */
+  // The chevron toggles its sub-menu; it is not a close ×.
+  const collapseSub = () => closeSub();
   const renderSubAreaRow = (child: ShellNavChild) => {
     const key = childKey(child);
     const isOpen = subKey === key;
@@ -637,7 +639,7 @@ export default function NavFlyoutGroup({
           className="absolute right-1 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
           onClick={() => {
             if (isOpen && subPinned) {
-              closeSub();
+              collapseSub();
               return;
             }
             openSub(key);

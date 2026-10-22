@@ -38,6 +38,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
+import {
+  SurfaceRuntimeProvider,
+  useSurfaceScopeContribution,
+  useSurfaceWriteHandlers,
+} from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  HR_EMPLOYEE_TIMESHEET_SURFACE,
+  createHrEmployeeTimesheetScope,
+} from "@/features/surfaces/manifests/hr-employee-timesheet.manifest";
 import { toast } from "@/lib/toast";
 import {
   hrPunchesHref,
@@ -122,7 +132,41 @@ export function EmploymentPeriodDetail({
     );
   }
 
+  const getScope = () => {
+    const t = query.data;
+    return createHrEmployeeTimesheetScope({
+      timesheet_load_status: !ready ? "no_period" : query.error ? "failed" : t ? "loaded" : "loading",
+      ...(t
+        ? {
+            timesheet: {
+              employment_id: t.employmentId,
+              employee: t.employeeDisplayName,
+              period_id: t.payPeriod.id,
+              period_start: t.payPeriod.periodStartOn,
+              period_end: t.payPeriod.periodEndOn,
+              state: t.rowState,
+              total_hours: t.periodTotals.totalHours,
+              overtime_hours: t.periodTotals.hoursOvertime,
+              doubletime_hours: t.periodTotals.hoursDoubletime,
+              hours_by_category: t.periodTotals.hoursByCategory,
+              attested_at: t.attestation.attestedAt,
+              can_attest: t.attestation.canAttest,
+              dispute: t.dispute ? { disputed_at: t.dispute.disputedAt, note: t.dispute.disputeNote, resolution: t.dispute.disputeResolution } : null,
+              edits: t.editHistory.length,
+              no_timesheet_reason: t.noTimesheetReason,
+            },
+            days: t.weeks
+              .flatMap((w) => w.days)
+              .filter((d) => d.totalHours > 0 || d.punches.length > 0)
+              .map((d) => ({ date: d.localWorkDate, total_hours: d.totalHours, hours_by_category: d.hoursByCategory, punches: d.punches.length })),
+            open_exceptions: t.openExceptions.map((e) => ({ id: e.id, kind: e.exceptionKind, severity: e.severity, work_date: e.localWorkDate })),
+          }
+        : {}),
+    });
+  };
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_EMPLOYEE_TIMESHEET_SURFACE} getScope={getScope}>
     <RuleSnapshotProvider>
       <div className="mx-auto w-full max-w-6xl space-y-4 px-3 py-4 sm:px-4">
         <HrTimeReadState
@@ -142,6 +186,7 @@ export function EmploymentPeriodDetail({
         </HrTimeReadState>
       </div>
     </RuleSnapshotProvider>
+    </SurfaceRuntimeProvider>
   );
 }
 
@@ -297,6 +342,32 @@ function DecisionBar({
   const stepId = state.stepId ?? timesheet.attestation.stepId;
   // Only a LIVE instance offers a decision. A stuck flow gets named, not a button that will refuse.
   const decidable = state.health === "awaiting";
+
+  useSurfaceScopeContribution(HR_EMPLOYEE_TIMESHEET_SURFACE, "timecard-decision-bar", () => ({
+    timecard_decision: { health: state.health, decidable, row_state: state.rowState },
+  }));
+  /** The `decide_timecard` value checked against this timecard; throws the sentence the agent reads. */
+  const planDecision = (value: unknown) => {
+    if (!decidable || !stepId) refuseSurfaceWrite("No decision is awaiting on this timecard.");
+    const v = (value && typeof value === "object" ? value : { decision: value }) as Record<string, unknown>;
+    if (v.decision !== "approve" && v.decision !== "reject") refuseSurfaceWrite('decision must be "approve" or "reject".');
+    const why = typeof v.reason === "string" ? v.reason.trim() : "";
+    if (v.decision === "reject" && why.length < 3) refuseSurfaceWrite("Sending a timecard back needs a reason of at least 3 characters.");
+    return { decision: v.decision as "approve" | "reject", why: why || null };
+  };
+  useSurfaceWriteHandlers(HR_EMPLOYEE_TIMESHEET_SURFACE, {
+    decide_timecard: {
+      validate: (value: unknown) => {
+        planDecision(value);
+      },
+      apply: async (value: unknown) => {
+        const plan = planDecision(value);
+        await decideWorkflowStep(stepId as string, plan.decision, plan.why, {}, { mockCase });
+        onDecided();
+        return { summary: plan.decision === "approve" ? "Timecard approved." : "Timecard sent back." };
+      },
+    },
+  });
 
   async function decide(decision: "approve" | "reject", why: string | null) {
     if (!stepId) return;

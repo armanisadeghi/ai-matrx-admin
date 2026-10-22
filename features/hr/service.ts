@@ -504,6 +504,35 @@ export function fetchHrDirectory(args: {
 }
 
 /**
+ * Record an EXPORT of the people list in `hr.access_audit` (SPEC-EMPLOYEES §2.2: an export is an
+ * audited act) BEFORE any file is built. The door counts the ids against the named employer and
+ * refuses a caller without HR standing there; the file is made only from rows already read
+ * through `hr_directory_list`. The door lives in the `hr` schema (nothing new goes in `public`).
+ */
+export async function logHrDirectoryExport(args: {
+  organizationId: string;
+  employeeIds: readonly string[];
+  columns: readonly string[];
+}): Promise<HrResult<{ auditId: string | null; rowCount: number }>> {
+  const whatFailed = "Recording the export";
+  try {
+    const { data, error } = await supabase.schema("hr").rpc("directory_export_log", {
+      p_organization_id: args.organizationId,
+      p_employee_ids: [...args.employeeIds],
+      p_columns: [...args.columns],
+    });
+    if (error) {
+      if (error.code === PG_INSUFFICIENT_PRIVILEGE) return denied("no_standing", error.message);
+      return failed(`${whatFailed} did not go through.`, error.code ?? null, error.message);
+    }
+    const body = data as { audit_id?: string | null; row_count?: number } | null;
+    return { ok: true, data: { auditId: body?.audit_id ?? null, rowCount: body?.row_count ?? args.employeeIds.length } };
+  } catch (thrown) {
+    return failed(`${whatFailed} did not reach the server.`, null, thrown instanceof Error ? thrown.message : String(thrown));
+  }
+}
+
+/**
  * Route 11. `on` is the as-of date — effective dating is what makes history real.
  * `history_available: false` means the as-of control is ABSENT, not disabled.
  */

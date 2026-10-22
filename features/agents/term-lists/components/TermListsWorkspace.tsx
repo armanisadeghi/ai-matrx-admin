@@ -1,8 +1,9 @@
 "use client";
 
+import { FrameSidebarColumn } from "@/features/shell/frame-host/frameSidebarSlot";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Archive, BookA, ChevronLeft, Loader2, Plus, Save } from "lucide-react";
+import { Archive, ArchiveRestore, BookA, ChevronLeft, Loader2, Plus, Save } from "lucide-react";
 import { Skeleton, Textarea, ToggleGroup, ToggleGroupItem, cn } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,9 @@ import {
   archiveTermList,
   createTermList,
   getTermList,
+  listArchivedTermLists,
   listTermLists,
+  restoreTermList,
   saveTermList,
   type TermListDraft,
 } from "../service";
@@ -35,7 +38,7 @@ import { termListBulkActions } from "./termListBulkActions";
 import { TermEntriesTable } from "./TermEntriesTable";
 import { replaceAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { ReadFailure } from "@ai-matrx/design-system";
+import { ArchivedDisclosure, ReadFailure } from "@ai-matrx/design-system";
 
 const EMPTY_ORGS: { id: string; name: string }[] = [];
 
@@ -75,11 +78,17 @@ export function TermListsWorkspace() {
     [memberOrgs],
   );
 
+  const [archivedLists, setArchivedLists] = useState<TermList[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
+
   const ticked = useRowSelection(lists ?? [], (l) => l.id);
+  const archivedTicked = useRowSelection(archivedLists, (l) => l.id);
 
   const reload = async () => {
     try {
-      setLists(await listTermLists());
+      const [live, archived] = await Promise.all([listTermLists(), listArchivedTermLists()]);
+      setLists(live);
+      setArchivedLists(archived);
       setListsError(null);
     } catch (e) {
       setListsError(e);
@@ -90,6 +99,16 @@ export function TermListsWorkspace() {
   useEffect(() => {
     void reload();
   }, []);
+
+  const restoreOne = async (list: TermList) => {
+    try {
+      await restoreTermList(list.id);
+      toast.success(`${list.name} restored`);
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't restore the term list");
+    }
+  };
 
   const select = (id: string) => replaceAddressOrNavigate(router, `/resources/term-lists?id=${id}`);
 
@@ -140,7 +159,7 @@ export function TermListsWorkspace() {
           />
         }
       />
-      <aside
+      <FrameSidebarColumn
         className={cn(
           "w-full shrink-0 flex-col border-border md:flex md:w-64 md:border-r",
           selectedId ? "hidden" : "flex",
@@ -201,8 +220,42 @@ export function TermListsWorkspace() {
             ))}
             </>
           )}
+          <ArchivedDisclosure
+            count={archivedLists.length}
+            open={showArchived}
+            onOpenChange={setShowArchived}
+            className="mt-2"
+          >
+            <RowSelectionBar
+              selection={archivedTicked}
+              idOf={(l) => l.id}
+              actions={termListBulkActions("archived")}
+              noun="term list"
+              plural="term lists"
+              compact
+              onRefresh={() => void reload()}
+            />
+            {archivedLists.map((list) => (
+              <div key={list.id} className="flex items-center gap-1">
+                <Checkbox
+                  checked={archivedTicked.has(list.id)}
+                  onCheckedChange={() => archivedTicked.toggle(list.id)}
+                  aria-label={`Select ${list.name}`}
+                />
+                <span className="min-w-0 flex-1 truncate px-2 py-1.5 text-sm text-muted-foreground">
+                  {list.name}
+                </span>
+                <Button
+                  icon={<ArchiveRestore />}
+                  variant="quiet"
+                  aria-label={`Restore ${list.name}`}
+                  onClick={() => void restoreOne(list)}
+                />
+              </div>
+            ))}
+          </ArchivedDisclosure>
         </div>
-      </aside>
+      </FrameSidebarColumn>
       <main
         className={cn(
           "min-w-0 flex-1 overflow-y-auto md:block",

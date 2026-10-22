@@ -15,7 +15,8 @@ export function signInHref(pathname: string | null): string {
   return `/login?next=${encodeURIComponent(pathname || "/spaces")}`;
 }
 
-export function LoadAccessState({ access, onRetry }: { access: LoadAccess | "fault"; onRetry?: () => void }) {
+/** `title`: the fault's own sentence (one page that did not open); default: the page tree's. */
+export function LoadAccessState({ access, onRetry, title }: { access: LoadAccess | "fault"; onRetry?: () => void; title?: string }) {
   const pathname = usePathname();
   return (
     <div className="flex h-full items-center justify-center p-6">
@@ -32,7 +33,7 @@ export function LoadAccessState({ access, onRetry }: { access: LoadAccess | "fau
       ) : access === "no-access" ? (
         <EmptyState icon={<Lock />} title="You don't have access to Spaces" action={onRetry ? <Button variant="outline" onClick={onRetry}>Try again</Button> : undefined} />
       ) : (
-        <ErrorNotice title="We couldn't load your pages" actions={onRetry ? <Button variant="outline" onClick={onRetry}>Try again</Button> : undefined} />
+        <ErrorNotice title={title ?? "We couldn't load your pages"} actions={onRetry ? <Button variant="outline" onClick={onRetry}>Try again</Button> : undefined} />
       )}
     </div>
   );

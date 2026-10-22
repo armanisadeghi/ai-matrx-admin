@@ -8,6 +8,10 @@
  * personal notification surface at all. The employee's own channels carry their alert.
  */
 
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { HR_OVERTIME_REQUEST_SURFACE, createHrOvertimeRequestScope } from "@/features/surfaces/manifests/hr-overtime-request.manifest";
+import { decideOvertimePreapproval } from "../api/overtimeReads";
 import { useState } from "react";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { readOf } from "@ai-matrx/design-system";
@@ -101,6 +105,69 @@ export function OvertimeRequestPage({ requestId }: { requestId: string }) {
    */
   const viewer = hr.capabilities.includes("time.overtime_approve") ? "manager" : "employee";
 
+  const getScope = () =>
+    createHrOvertimeRequestScope({
+      overtime_load_status: request ? "loaded" : failure ? "failed" : "loading",
+      overtime_viewer: viewer,
+      ...(request
+        ? {
+            overtime_request: {
+              id: request.id,
+              employee: request.employeeDisplayName,
+              requested_by: request.requestedByName,
+              kind: request.requestKind,
+              covers_from: request.coversFrom,
+              covers_to: request.coversTo,
+              requested_hours: request.requestedHours,
+              approved_hours: request.approvedHours,
+              reason: request.reasonNote,
+              state: request.state,
+              decided_at: request.decidedAt,
+              decided_by: request.decidedByName,
+              actual_hours: request.actualOtHours,
+              variance_hours: request.varianceHours,
+              unapproved_overtime_flagged: request.unapprovedOtFlagged,
+              thresholds: request.thresholdAxes,
+            },
+          }
+        : {}),
+    });
+  /** The `decide_overtime` value checked against this request; throws the sentence the agent reads. */
+  const planDecision = (value: unknown) => {
+    if (!request) refuseSurfaceWrite("The request has not loaded yet.");
+    if (viewer !== "manager" || !request!.workflowInstanceId) refuseSurfaceWrite("This viewer may not decide this request.");
+    if (request!.state !== "requested") refuseSurfaceWrite(`This request is ${request!.state}, not waiting for a decision.`);
+    const v = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+    if (v.decision !== "approve" && v.decision !== "reject") refuseSurfaceWrite('decision must be "approve" or "reject".');
+    const reason = typeof v.reason === "string" ? v.reason.trim() : "";
+    if (v.approved_hours !== undefined && v.approved_hours !== null && (typeof v.approved_hours !== "number" || !(v.approved_hours > 0)))
+      refuseSurfaceWrite("approved_hours must be a positive number.");
+    if (v.decision === "reject" && v.approved_hours != null) refuseSurfaceWrite("approved_hours is only for approve.");
+    return {
+      stepId: request!.workflowInstanceId as string,
+      decision: v.decision as "approve" | "reject",
+      approvedHours: v.decision === "approve" ? ((v.approved_hours as number | null | undefined) ?? null) : null,
+      reason,
+    };
+  };
+  const getWriteHandlers = () => ({
+    decide_overtime: {
+      validate: (value: unknown) => {
+        planDecision(value);
+      },
+      apply: async (value: unknown) => {
+        const plan = planDecision(value);
+        const result = await decideOvertimePreapproval(plan, { mockCase });
+        if (result.conflict) {
+          reload();
+          return { summary: "Nothing was recorded: the request changed since it was read. Here is what is different.", data: { conflict: result.conflict } };
+        }
+        reload();
+        return { summary: plan.decision === "approve" ? "Overtime approved." : "Overtime denied (pay for hours worked is never withheld)." };
+      },
+    },
+  });
+
   // A failed read of the overtime request itself is the platform's refusal frame, never a red line
   // above an empty page. A typed refusal keeps the engine's own sentence; a transport or
   // SQL fault goes in as an error so the gate offers retry. ABSOLUTE: an HR record refusal
@@ -127,6 +194,7 @@ export function OvertimeRequestPage({ requestId }: { requestId: string }) {
   }
 
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_OVERTIME_REQUEST_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers}>
     <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
       <div className="mx-auto max-w-[900px] space-y-4 px-4 py-6 sm:px-6 lg:px-8">
         {failure ? (
@@ -156,5 +224,6 @@ export function OvertimeRequestPage({ requestId }: { requestId: string }) {
         ) : null}
       </div>
     </div>
+    </SurfaceRuntimeProvider>
   );
 }

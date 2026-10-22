@@ -3605,7 +3605,7 @@
     "bound_agent_unfenced_kind_first": [
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -3645,7 +3645,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -3686,7 +3686,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -3727,7 +3727,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -3768,7 +3768,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -3809,7 +3809,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -3850,7 +3850,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -3892,7 +3892,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -3936,7 +3936,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -3982,7 +3982,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4028,7 +4028,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4074,7 +4074,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4120,7 +4120,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4166,7 +4166,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4212,7 +4212,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4258,7 +4258,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4304,7 +4304,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4350,7 +4350,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4396,7 +4396,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4442,7 +4442,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4488,7 +4488,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4535,7 +4535,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4582,7 +4582,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4629,7 +4629,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4677,7 +4677,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4727,7 +4727,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4777,7 +4777,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4827,7 +4827,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4877,7 +4877,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4927,7 +4927,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -4977,7 +4977,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5027,7 +5027,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5077,7 +5077,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5127,7 +5127,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5177,7 +5177,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5228,7 +5228,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5279,7 +5279,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5330,7 +5330,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5381,7 +5381,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5432,7 +5432,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,
@@ -5483,7 +5483,7 @@
       },
       {
         "blockId": "blk_0",
-        "blockType": "text",
+        "blockType": "code",
         "blockStatus": "streaming",
         "event": {
           "v": 1,

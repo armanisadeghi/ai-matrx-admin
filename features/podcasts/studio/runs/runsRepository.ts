@@ -18,6 +18,7 @@ import { readListRpc, type ListRpcClient } from "@/lib/entity-list/readListRpc";
 import type { LaneRow } from "@/lib/entity-list/laneRows";
 import { operationFailed } from "@/utils/errors";
 import { fileIdFromUserFilesUrl } from "@/lib/media/durability";
+import { requestHasSources } from "@/features/podcasts/generator/sourceReadiness";
 import {
   MODEL_COUNTS,
   type RunAsset,
@@ -425,7 +426,7 @@ export async function fetchPodcastRunDetail(
   const official = stageOutput(byKey.get(OFFICIAL_VIDEO_STAGE));
   const hasCompleted = stages.some((s) => s.status === "completed");
   const canRerun = !!(
-    request.input_data || (request.file_urls as unknown[])?.length
+    request.input_data || (request.file_urls as unknown[])?.length || requestHasSources(request)
   );
 
   const summary = toSummary(run, now);

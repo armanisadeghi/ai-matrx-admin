@@ -3,18 +3,13 @@
  * grammatical plural ("Code Repositories" for "Code Repository") but never a different
  * word: on 2026-09-29 the overlay renamed Audio Session → "Recordings", Processed document →
  * "Saved sources" and Canonical Page → "Site pages" while the registry, agents and every
- * other screen kept the old names (law: common-docs/policies/canonicalize-without-destroying.md).
+ * other screen kept the old names (law: common-docs/policies/no-dead-ends.md rule 12).
  * Rename a kind in the registry, with a vocabulary ruling, never here.
  */
 import { ENTITY_TYPE_METADATA } from "@ai-matrx/associations";
+import { pluralizeLabel } from "@ai-matrx/associations/core";
 import { getAssociationsEntityOverlay } from "../entityRegistry";
 
-function pluralize(label: string): string {
-  if (/(media|data)$/i.test(label)) return label;
-  if (/[^aeiou]y$/i.test(label)) return `${label.slice(0, -1)}ies`;
-  if (/(s|x|z|ch|sh)$/i.test(label)) return `${label}es`;
-  return `${label}s`;
-}
 
 /**
  * Overlay plurals that rename a kind today, waiting for a naming ruling (vocabulary row +
@@ -30,7 +25,7 @@ it("every overlay plural is the grammatical plural of the registry label", () =>
     const plural = entry?.labelPlural;
     const label = meta[token]?.label;
     if (!plural || !label) continue;
-    if (plural.toLowerCase() !== pluralize(label).toLowerCase()) {
+    if (plural.toLowerCase() !== pluralizeLabel(label).toLowerCase()) {
       renames.push(`${token}: ${label} → ${plural}`);
     }
   }
@@ -38,10 +33,3 @@ it("every overlay plural is the grammatical plural of the registry label", () =>
   expect([...AWAITING_A_NAMING_RULING].filter((r) => !renames.includes(r))).toEqual([]);
 });
 
-it("the pluralizer covers the legitimate grammar plurals", () => {
-  expect(pluralize("Code Repository")).toBe("Code Repositories");
-  expect(pluralize("Source Library")).toBe("Source Libraries");
-  expect(pluralize("Study Media")).toBe("Study Media");
-  expect(pluralize("Site page")).toBe("Site pages");
-  expect(pluralize("Source")).toBe("Sources");
-});

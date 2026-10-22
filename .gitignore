@@ -220,3 +220,6 @@ tmp/fixer-logs/
 
 # check-shell-eager-graph self-test leftovers (now writes under .cache/)
 /tmp-eager-selftest-*/
+
+# scripts/type-check-files.mjs writes a per-run tsconfig here and deletes it; never commit one
+tsconfig.focused.*.tmp.json

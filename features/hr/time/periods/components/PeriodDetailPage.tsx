@@ -22,6 +22,8 @@
  * Read `features/hr/exports/FEATURE.md` before changing anything about the export half of this page.
  */
 
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { HR_PAY_PERIOD_SURFACE, createHrPayPeriodScope } from "@/features/surfaces/manifests/hr-pay-period.manifest";
 import { useState } from "react";
 
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -60,6 +62,48 @@ export function PeriodDetailPage({ payPeriodId }: { payPeriodId: string }) {
   const organizationId = hr.active?.organization_id ?? null;
   const todayLocalDate = new Date().toISOString().slice(0, 10);
 
+  const getScope = () =>
+    createHrPayPeriodScope({
+      period_load_status: period ? "loaded" : failure ? "failed" : "loading",
+      period_role: role,
+      ...(period
+        ? {
+            pay_period: {
+              id: period.id,
+              pay_group: period.payGroupName,
+              start_on: period.periodStartOn,
+              end_on: period.periodEndOn,
+              pay_date: period.payDate,
+              sequence: period.sequenceNumber,
+              state: period.state,
+              submitted_at: period.submittedAt,
+              approved_at: period.approvedAt,
+              exported_at: period.exportedAt,
+              locked_at: period.lockedAt,
+              closed_at: period.closedAt,
+              reopened_at: period.reopenedAt,
+              reopen_reason: period.reopenReason,
+              reopen_allowed: period.reopenAllowed,
+              reopen_notice: period.reopenNotice,
+              counts: period.counts,
+              recomputed_since_approval: period.recomputedSinceApproval,
+              hours_at_approval: period.hoursAtApproval,
+              hours_now: period.hoursNow,
+              adjustments_tagged_here: period.adjustmentsTaggedHere,
+              boundary_note: period.boundaryNote,
+            },
+            approval_flows: {
+              awaiting: period.workflow.awaiting,
+              stuck: period.workflow.stuck,
+              no_flow: period.workflow.noFlow,
+              unreachable: period.workflow.unreachable,
+              done: period.workflow.done,
+              rows: period.workflow.rows.slice(0, 100).map((r) => ({ employment_id: r.employmentId, employee: r.subjectName, state: r.health })),
+            },
+          }
+        : {}),
+    });
+
   // A failed read of the pay period itself is the platform's refusal frame, never a red line
   // above an empty page. A typed refusal keeps the engine's own sentence; a transport or
   // SQL fault goes in as an error so the gate offers retry. ABSOLUTE: an HR record refusal
@@ -86,6 +130,7 @@ export function PeriodDetailPage({ payPeriodId }: { payPeriodId: string }) {
   }
 
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_PAY_PERIOD_SURFACE} getScope={getScope}>
     <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
       <div className="mx-auto max-w-[1200px] space-y-4 px-4 py-6 sm:px-6 lg:px-8">
         {failure ? (
@@ -183,5 +228,6 @@ export function PeriodDetailPage({ payPeriodId }: { payPeriodId: string }) {
         ) : null}
       </div>
     </div>
+    </SurfaceRuntimeProvider>
   );
 }

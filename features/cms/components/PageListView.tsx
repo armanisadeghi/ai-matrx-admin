@@ -22,6 +22,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import { itemMenuConfigToExtraSections } from "@ai-matrx/context-menu/engine";
 import { buildDefaultTableRowMenuDescriptor, createTableRowMenuDescriptor } from "@ai-matrx/context-menu/engine";
+import { CmsPageService } from "@/features/cms/services/cmsService";
+import { toast } from "@/lib/toast";
 import { buildCmsPageMenu } from "@/features/cms/actions/buildCmsPageMenu";
 import { CMS_PAGE_BULK_ACTIONS } from "@/features/cms/actions/cmsPageBulkActions";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
@@ -124,6 +126,8 @@ export default function PageListView({
     null,
   );
   const [isPublishing, setIsPublishing] = useState(false);
+  const [unpublishTarget, setUnpublishTarget] = useState<ClientPageSummary | null>(null);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
 
   // ── Derive categories from data ──────────────────────────────────────
   const categories = useMemo(() => {
@@ -354,6 +358,7 @@ export default function PageListView({
     onAi: () => setAiTarget({ page, intent: "build-edit" }),
     onReview: () => setAiTarget({ page, intent: "review" }),
     onPublish: () => setPublishTarget(page),
+    onUnpublish: () => setUnpublishTarget(page),
     onDelete: () => setDeleteTarget(page),
   });
 
@@ -482,6 +487,35 @@ export default function PageListView({
             setPublishTarget(null);
           } finally {
             setIsPublishing(false);
+          }
+        }}
+      />
+      <ConfirmDialog
+        open={!!unpublishTarget}
+        onOpenChange={(open) => {
+          if (!open && !isUnpublishing) setUnpublishTarget(null);
+        }}
+        title="Unpublish page"
+        description={
+          <>
+            Take <b>{unpublishTarget?.title}</b> offline now? Its content
+            stays; publish again to bring it back.
+          </>
+        }
+        confirmLabel="Unpublish"
+        busy={isUnpublishing}
+        onConfirm={async () => {
+          if (!unpublishTarget) return;
+          setIsUnpublishing(true);
+          try {
+            await CmsPageService.unpublishPage(unpublishTarget.id);
+            toast.success(`${unpublishTarget.title} unpublished`);
+            setUnpublishTarget(null);
+            onRefresh();
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : String(err));
+          } finally {
+            setIsUnpublishing(false);
           }
         }}
       />

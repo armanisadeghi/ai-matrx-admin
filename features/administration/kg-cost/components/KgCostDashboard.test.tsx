@@ -117,8 +117,11 @@ describe("KgCostDashboard canonical tables", () => {
     const batch = table("administration/kg-cost/pending-batches");
     expect(organization.onRowOpen).toEqual(expect.any(Function));
     expect(batch.onRowOpen).toEqual(expect.any(Function));
-    expect(organization.rowActions).toEqual(expect.any(Function));
-    expect(batch.rowActions).toEqual(expect.any(Function));
+    // The open chevron is the table's own "custom-actions" column (the table API dropped `rowActions`).
+    for (const t of [organization, batch]) {
+      const actions = t.columns.find((c) => c.id === "custom-actions");
+      expect(actions?.customActions).toEqual(expect.any(Function));
+    }
   });
 
   it("uses compact canonical tables for every populated organization cost breakdown", async () => {

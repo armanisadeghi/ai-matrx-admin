@@ -26,6 +26,7 @@ import { newViewId } from "../data/sources";
 import { AskAiMenu, type AskAiTarget } from "../ai/AskAiMenu";
 import { AskPageButton } from "../ai/AskPageButton";
 import { LoadAccessState } from "../workspace/LoadAccessState";
+import { readPageWithDeadline } from "./page-read";
 import { WRITING_ASSIST_KEY, useSpacesAiDisclosure } from "../ai/spaces-ai";
 import { useSpaceBuilder } from "../ai/SpaceBuilder";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -197,6 +198,9 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
   const spaces = useSpaces();
   const { store, pathTo, favorites, toggleFavorite, markVisited, openQuickFind, sidebarCollapsed, setSidebarCollapsed, setMobileSidebarOpen, patchSummary } = spaces;
   const [doc, setDoc] = useState<SpaceDoc | null | undefined>(initialDoc);
+  // The page's own read failed or ran past its deadline (page-read.ts): said, with Try again.
+  const [readFault, setReadFault] = useState<string | null>(null);
+  const [readTry, setReadTry] = useState(0);
   // "Edited 27m ago" is drawn on the server: the first render uses the server's clock, or the hydration
   // a minute later (slow 4G) reads "28m ago", the text does not match, and React throws the whole served
   // page away and draws it again in the browser — every database block empty (DB-BLOCK-CHROME-2).
@@ -333,6 +337,7 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
   if (shownId !== spaceId) {
     setShownId(spaceId);
     setDoc(undefined);
+    setReadFault(null);
     setSaveState("saved");
     setDraft(undefined);
     setAddingPageComment(false);
@@ -348,22 +353,24 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
     const made = spaces.takeFresh(spaceId);
     // The server's read of this page (round 34) is the stored page: adopted as if just read.
     const read = made ?? (initialDoc?.id === spaceId ? initialDoc : null);
-    void (read ? Promise.resolve(read) : store.get(spaceId)).then(
-      (d) => {
+    void readPageWithDeadline<SpaceDoc>(() => (read ? Promise.resolve(read) : store.get(spaceId))).then(
+      (answer) => {
         if (!live) return;
+        if (answer.kind === "fault") return setReadFault(answer.sentence);
+        setReadFault(null);
+        const d = answer.doc;
         setMadeHere(Boolean(made));
         if (d) adopt(d);
         else setDoc(null);
         setFocusTitle(Boolean(d) && spaces.takeFocusTitle(spaceId));
         if (d && !d.isArchived) markVisited(spaceId);
       },
-      () => live && setDoc(null),
     );
     return () => {
       live = false;
     };
-    // markVisited / takeFocusTitle are fresh functions each render; loading is keyed on the id alone.
-  }, [store, spaceId]);
+    // markVisited / takeFocusTitle are fresh functions each render; loading is keyed on the id (and Try again).
+  }, [store, spaceId, readTry]);
 
   useEffect(() => {
     setNow(Date.now());
@@ -769,7 +776,10 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
     return () => setSuggestPage(null);
   }, [userId, fullName, spaceId]);
 
-  if (doc === undefined) return <div className="spaces-page" aria-busy="true" />;
+  if (doc === undefined) {
+    if (readFault) return <LoadAccessState access="fault" title={readFault} onRetry={() => (setReadFault(null), setReadTry((n) => n + 1))} />;
+    return <div className="spaces-page" aria-busy="true" />;
+  }
   if (doc === null) {
     // The tree read was refused or failed: say that (sign in / no access / try again), not "No Space here".
     if (spaces.access || spaces.loadError) return <LoadAccessState access={spaces.access ?? "fault"} onRetry={spaces.retryLoad} />;

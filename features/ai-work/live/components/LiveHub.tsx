@@ -10,6 +10,7 @@
  * Selection lives in the URL (?session=<address> | ?room=<id>) so every view
  * is a link.
  */
+import { FrameSidebarColumn } from "@/features/shell/frame-host/frameSidebarSlot";
 import { useLayoutEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
@@ -134,7 +135,7 @@ export function LiveHub() {
     <div ref={rootRef} className="@container/live flex h-full min-h-0 overflow-hidden bg-background pt-[var(--shell-header-h)]">
       {/* A selected session or room renders the header with its own title. */}
       {!session && !room && <AiWorkHeader />}
-      <aside
+      <FrameSidebarColumn
         aria-label="Sessions and rooms"
         className={cn(
           "min-h-0 w-full flex-col border-border @2xl/live:flex @2xl/live:w-80 @2xl/live:shrink-0 @2xl/live:border-r",
@@ -155,7 +156,7 @@ export function LiveHub() {
           onSelect={select}
           onNewRoom={() => setNewRoomOpen(true)}
         />
-      </aside>
+      </FrameSidebarColumn>
 
       <main
         className={cn(

@@ -38,6 +38,7 @@ import {
   type EntityBulkAsk,
 } from "../selection";
 import type { EntityListSelection } from "../useEntityListSelection";
+import { BulkNoneDoneError, copySkippedAction } from "../bulkSkipped";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export function EntityBulkActions<TRow>({
@@ -49,8 +50,13 @@ export function EntityBulkActions<TRow>({
   compact = false,
 }: {
   actions: EntityBulkAction<TRow>[];
-  /** Only what running an action needs — so a plain table can host the same buttons. */
-  selection: Pick<EntityListSelection<TRow>, "build" | "clear" | "count">;
+  /**
+   * Only what running an action needs — so a plain table can host the same buttons. `setIds`
+   * lets a PARTIAL result keep exactly the skipped rows ticked (`keepIds`); without it the whole
+   * selection stays, so a failed row's tick is never dropped.
+   */
+  selection: Pick<EntityListSelection<TRow>, "build" | "clear" | "count"> &
+    Partial<Pick<EntityListSelection<TRow>, "setIds">>;
   noun: string;
   onRemoveRows: (ids: string[]) => void;
   onRefresh: () => void;
@@ -150,7 +156,10 @@ export function EntityBulkActions<TRow>({
       if (result == null) return;
       if (result.removedIds?.length) onRemoveRows(result.removedIds);
       if (result.refresh) onRefresh();
-      if (!result.keepSelection) selection.clear();
+      // A partial result keeps the skipped rows ticked for a retry and unticks the done ones.
+      if (result.keepIds?.length) {
+        if (selection.setIds) selection.setIds(result.keepIds);
+      } else if (!result.keepSelection) selection.clear();
       const undo = result.undo;
       toast.success(
         result.message ??
@@ -174,11 +183,14 @@ export function EntityBulkActions<TRow>({
       );
     } catch (error) {
       // NOTHING FAILS SILENTLY: the selection is kept on failure, so the person
-      // can read the reason and try again without re-ticking 40 rows.
+      // can read the reason and try again without re-ticking 40 rows. Past five
+      // skipped rows the sentence says "+N more" and the toast hands over all of them.
+      const copy = error instanceof BulkNoneDoneError ? copySkippedAction(error.skipped) : null;
       toast.error(
         error instanceof Error
           ? error.message
           : `${action.label} did not finish. Nothing was changed.`,
+        copy ? { action: copy } : undefined,
       );
     } finally {
       setPending(null);
@@ -278,7 +290,7 @@ function BulkAskDialog({
           ? "Pick a later date"
           : (ask.validate?.(asking.value) ?? null)
       : asking.value
-        ? null
+        ? (ask.validate?.(asking.value) ?? null)
         : "Pick one";
   return (
     <ConfirmDialog
@@ -298,11 +310,8 @@ function BulkAskDialog({
           {ask.kind === "date" ? (
             <DateField
               value={asking.value}
-              onValueChange={(v) => {
-                const next = v ?? "";
-                if (ask.min && next && next < ask.min) return;
-                onChange(next);
-              }}
+              // A date below `min` is KEPT and named ("Pick a later date"), never silently ignored.
+              onValueChange={(v) => onChange(v ?? "")}
               aria-label={ask.label}
             />
           ) : (

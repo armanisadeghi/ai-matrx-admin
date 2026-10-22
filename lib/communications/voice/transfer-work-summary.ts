@@ -4,12 +4,18 @@ import { isJsonObject } from "@/types/json";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { boundTransferConversationId } from "./transfer-conversation-binding";
 
+import {
+  projectTransferToolOutcomes,
+  type TransferToolOutcomes,
+} from "./transfer-tool-outcomes";
+
 export interface TransferWorkSummary {
   requests: number;
   completed: number;
   failed: number;
   unfinished: number;
   toolCalls: number;
+  toolOutcomes?: TransferToolOutcomes | null;
 }
 /** Read persisted work for this exact call, never a person's other calls in the same conversation. */
 export async function readTransferWorkSummary(
@@ -132,5 +138,54 @@ export async function readTransferWorkSummary(
     else return null;
     summary.toolCalls += request.total_tool_calls;
   }
-  return Number.isSafeInteger(summary.toolCalls) ? summary : null;
+  if (!Number.isSafeInteger(summary.toolCalls)) return null;
+  // The tool ledger is a separate observation: unavailable evidence must not erase known request facts.
+  summary.toolOutcomes = null;
+  try {
+    const requestIds = requests.map((request) => request.id);
+    const allTools: Parameters<typeof projectTransferToolOutcomes>[0] = [];
+    let total = 0;
+    // Keep PostgREST URLs bounded even for a full 500-request snapshot.
+    for (let offset = 0; offset < requestIds.length; offset += 25) {
+      const ids = requestIds.slice(offset, offset + 25);
+      const {
+        data: tools,
+        error: toolError,
+        count: toolCount,
+      } = await client
+        .schema("chat")
+        .from("tool_call")
+        .select("id,user_request_id,status,success,is_error,tool_name", {
+          count: "exact",
+        })
+        .in("user_request_id", ids)
+        .eq("conversation_id", conversation.id)
+        .eq("organization_id", call.organization_id)
+        .eq("created_by", call.recording_owner_id)
+        .is("deleted_at", null)
+        .order("id")
+        .limit(501)
+        .abortSignal(signal);
+      if (
+        toolError ||
+        !tools ||
+        toolCount === null ||
+        toolCount !== tools.length ||
+        total + toolCount > 500 ||
+        tools.some(
+          (tool) =>
+            !tool.user_request_id || !ids.includes(tool.user_request_id),
+        )
+      )
+        return summary;
+      total += toolCount;
+      allTools.push(...tools);
+    }
+    // Pending tool rows can lead request totals, but fewer rows than reported attempts are incomplete.
+    if (total >= summary.toolCalls)
+      summary.toolOutcomes = projectTransferToolOutcomes(allTools);
+  } catch {
+    // The caller is already transferring; keep the existing introduction and bridge usable.
+  }
+  return summary;
 }

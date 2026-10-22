@@ -46,15 +46,16 @@ import {
 } from "@/features/shell/components/header/RouteModeNav";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import { useFrameSidebarSlot } from "@/features/shell/frame-host/frameSidebarSlot";
 import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
 import { InfoHint } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 
 import { hrHref, hrSectionHref, hrSwitchEmployerHref } from "../routes";
 import { HrDisclosureClaimed, HrEmployerChoices, HrEmployerSubstitutionNotice } from "./HrStates";
-import { resolveHrNav } from "./hr-nav";
 import { useHrContext } from "./useHrContext";
-import { isOrgSteward, useHrPersona } from "./useHrPersona";
+import { useHrNav } from "./useHrNav";
+import { isOrgSteward } from "./useHrPersona";
 
 export type HrShellProps = {
   children: ReactNode;
@@ -83,26 +84,13 @@ export function HrShell({
   subNav,
 }: HrShellProps) {
   const { active, employers, orgRef, isLoading, scope } = useHrContext();
-  const { persona, employmentId, all } = useHrPersona();
   // No pathname exists only before an employer context can be resolved.
   const pathname = usePathname() ?? hrHref(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useClippedContentGuard(scrollRef, { label: "HR page body" });
 
-  const nav = resolveHrNav({
-    persona,
-    capabilities: all,
-    employmentId,
-    org: orgRef,
-    /*
-      The whole payload, once. Every per-person rule — the worker class, and the
-      §2.8 override enrolment that is leave's designed per-person exception
-      (hr_l5_30) — is derived from this INSIDE the resolver, so the two callers
-      cannot disagree about which rules they applied.
-    */
-    active,
-  });
+  const { nav, showNav } = useHrNav();
 
   const navItems: RouteNavItem[] = nav.items.map((item) => ({
     name: item.label,
@@ -133,6 +121,9 @@ export function HrShell({
   const inFrame = useDeclareFrameCrumbs(
     crumbs.length > 0 ? crumbs.map((c) => ({ label: c.label, href: c.href ?? undefined })) : null,
   );
+  // THE NEW APP FRAME: ONE HR menu, in the frame's sidebar (HrFrameSidebar, mounted once by the
+  // /hr layout so every HR page has it) — so no header switcher here. Classic: unchanged.
+  const inFrameSidebar = useFrameSidebarSlot();
 
   return (
     <>
@@ -149,9 +140,7 @@ export function HrShell({
           />
         }
         center={
-          // With no employer open there is nothing to navigate within, and a
-          // persona-less nav would differ from the same route once one is chosen.
-          (active || scope.actives.length > 0) && navItems.length > 0 ? (
+          !inFrameSidebar && showNav ? (
             // A page with its own labeled tab bar (`subNav`) keeps the HR section
             // switch as ONE labeled dropdown — never a second row of icons.
             <RouteModeNav items={navItems} maxVariant={subNav ? "menu" : "full"} />

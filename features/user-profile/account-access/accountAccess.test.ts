@@ -4,7 +4,7 @@ jest.mock("@/features/admin/users/support-sessions/service", () => ({
 
 import { emailChangeCallback, readAccountAccess, requestEmailChange, signOutOtherSessions } from "./accountAccess";
 
-function client(user: { email?: string; new_email?: string } | null, error: Error | null = null) {
+function client(user: { email?: string; phone?: string; new_email?: string } | null, error: Error | null = null) {
   const auth = {
     getUser: jest.fn(async () => ({ data: { user }, error })),
     updateUser: jest.fn(async () => ({ error: null })),
@@ -14,6 +14,16 @@ function client(user: { email?: string; new_email?: string } | null, error: Erro
 }
 
 describe("account access controls", () => {
+  it("reads a phone-only account (no email yet) and lets it add one", async () => {
+    const subject = client({ email: "", phone: "19498072145" });
+    await expect(readAccountAccess(subject as never)).resolves.toEqual({ email: null, phone: "+19498072145", pendingEmail: null });
+    await requestEmailChange("new@harbor.test", "https://www.aimatrx.com", subject as never);
+    expect(subject.auth.updateUser).toHaveBeenCalledWith(
+      { email: "new@harbor.test" },
+      { emailRedirectTo: "https://www.aimatrx.com/auth/confirm?redirectTo=%2Fuser-settings%2Faccount" },
+    );
+  });
+
   it("uses the verified email-change callback and refreshes auth after the request", async () => {
     const subject = client({ email: "owner@harbor.test" });
     await requestEmailChange("new@harbor.test", "https://www.aimatrx.com", subject as never);

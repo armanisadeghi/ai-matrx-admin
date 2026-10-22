@@ -11,6 +11,7 @@ import { isAssociationsRpcErr } from "@ai-matrx/associations";
 import { guardedUpdate, readAllRows } from "@ai-matrx/data/db";
 import { supabase } from "@/utils/supabase/client";
 import type { Database, Json } from "@/types/database.types";
+import { restoreFromTrash } from "@/features/trash/service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { associationsService } from "@/features/scopes/service/associationsService";
 import {
@@ -89,6 +90,26 @@ export async function listTermLists(organizationId?: string | null): Promise<Ter
         .range(from, to);
     },
     { label: "agent.term_list" },
+  );
+  return rows.map(toTermList);
+}
+
+/**
+ * Archived (soft-deleted) term lists the person can access, newest archive first
+ * — the "Archived" disclosure's list. Complete read, like `listTermLists`.
+ */
+export async function listArchivedTermLists(organizationId?: string | null): Promise<TermList[]> {
+  const rows = await readAllRows<TermListRow>(
+    ({ from, to }) => {
+      let q = db().select(COLUMNS, { count: "exact" });
+      if (organizationId) q = q.eq("organization_id", organizationId);
+      return q
+        .not("deleted_at", "is", null)
+        .order("name", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to);
+    },
+    { label: "agent.term_list (archived)" },
   );
   return rows.map(toTermList);
 }
@@ -195,6 +216,15 @@ export async function archiveTermList(id: string): Promise<void> {
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", id);
   if (error) throw new Error(`Couldn't archive the term list: ${error.message}`);
+}
+
+/**
+ * Restore an archived term list: the platform's own undelete door (the same one
+ * Trash uses). It refuses without edit access and names a taken name; the list's
+ * agent edges come back with it.
+ */
+export async function restoreTermList(id: string): Promise<void> {
+  await restoreFromTrash(TERM_LIST_TOKEN, id);
 }
 
 // ── attachment to agents ───────────────────────────────────────────────────

@@ -18,7 +18,7 @@ import { studioRunsService } from "@/features/podcasts/studio/runs/service";
 import { stashPendingStart } from "@/features/podcasts/studio/runs/pendingStart";
 import { studyMediaService } from "../service";
 import { singleArtifactRunKey } from "@/features/education/convert/runKey";
-import { buildAudioRequest } from "./audioBrief";
+import { audioSourceSetOf, buildAudioRequest } from "./audioBrief";
 import { buildSourceTrust } from "@/features/education/convert/sourceTrust";
 import { recordSourceLineage } from "@/features/education/convert/recordSourceLineage";
 import type {
@@ -40,12 +40,13 @@ async function run(
   const title = `Audio overview · ${source.title ?? "Study material"}`;
   const trust = buildSourceTrust(source, title);
 
-  // Same request shaping + run/artifact creation as useAudioStudyCreate — the
-  // source is already-extracted content, so it rides as `note` (full_content).
+  // Same request shaping + run/artifact creation as useAudioStudyCreate: the
+  // Sources behind the material go as a SourceSet the podcast server reads and
+  // links to the episode. Text with no Source behind it goes as the words given.
+  const sourceSet = audioSourceSetOf(source);
   const podcastRequest = buildAudioRequest({
     format: "overview",
-    sourceKind: "note",
-    content: source.text,
+    material: sourceSet ? { kind: "sources", sourceSet } : { kind: "words", words: source.text },
   });
 
   // A kit run that already made its audio (the tab died after the create,

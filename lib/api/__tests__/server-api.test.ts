@@ -44,6 +44,12 @@ jest.mock("@/lib/python-client", () => ({
 jest.mock("@/lib/services/fingerprint-service", () => ({
   getCachedFingerprint: () => cachedFingerprint,
 }));
+const ensureGuestIdentity = jest.fn(async (_o?: { fresh?: boolean }) => true);
+jest.mock("@/lib/guest/turnstile", () => ({
+  ensureGuestIdentity: (o?: { fresh?: boolean }) => ensureGuestIdentity(o),
+  isGuestChallengeRefusalBody: (body: unknown) =>
+    !!body && typeof body === "object" && (body as { error?: string }).error === "guest_challenge_failed",
+}));
 jest.mock("@/lib/diagnostics/capturePythonClientError", () => ({
   capturePythonClientError: jest.fn(),
   relationPathFromUrl: (path: string) => path.split("?")[0],
@@ -205,6 +211,35 @@ describe("server-api session handling", () => {
     await expect(serverApi.call(READ, { path: { id: "1" } })).resolves.toEqual({ ok: true });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(sent(1).headers.authorization).toBe("Bearer jwt-2");
+  });
+});
+
+describe("server-api signed-out visitors (parity with python-client)", () => {
+  const GUEST_WRITE: OperationDescriptor = { ...WRITE, o: "optional", n: "test.guest-write" };
+  beforeEach(() => {
+    accessToken = null;
+    fingerprintId = "fp-9";
+    cachedFingerprint = "fp-9";
+    selectedOrganizationId = null;
+  });
+
+  it("a signed-out write makes sure the visitor exists before the wire", async () => {
+    await serverApi.call(GUEST_WRITE, { path: { id: "1" } });
+    expect(ensureGuestIdentity).toHaveBeenCalledTimes(1);
+  });
+
+  it("a signed-out read never runs the human check", async () => {
+    await serverApi.call(READ, { path: { id: "1" } });
+    expect(ensureGuestIdentity).not.toHaveBeenCalled();
+  });
+
+  it("a 403 guest_challenge_failed runs the check fresh and retries once", async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({ error: "guest_challenge_failed" }, 403))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }));
+    await expect(serverApi.call(GUEST_WRITE, { path: { id: "1" } })).resolves.toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(ensureGuestIdentity).toHaveBeenCalledWith({ fresh: true });
   });
 });
 

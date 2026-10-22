@@ -153,15 +153,26 @@ in `frame-host/frameProductSidebar.tsx`, most specific first:
    shows its `.shell-nav-label`s.
 3. Otherwise the route table's rows.
 
-When 1 or 2 fills the body, the product's route-table rows stay as a compact strip ABOVE it
-(`data-mf-region="product-rows"`, the frame's own one-line rows, the current one selected), only
-when the product has a row beyond the current one; more than four fold to the first three plus the
-current one behind a "N more" toggle. A declared row marked `wholeMenu` (HR) IS the product's whole menu: no strip
-(`sidebarProductRows={false}`), so the same menu never shows twice. So Chat's Voice / Talk, Agent Messenger and Imported AI chats
-stay one click away on /chat.
+**The top of every product sidebar** (Arman, 2026-10-22: "This is a very important missing thing
+that we have to establish or our system will fail."): under the top row, above the body, the frame
+draws `ProductSidebarTop` (`@ai-matrx/design-system/item`, the conversation sidebar's top extracted —
+one shape, one component): Search, the chosen **related places** (`›`; a place that is another product
+opens a flyout of that product's pages, the product first), then **More** (every other place, the
+product's own pages under its name when the body is a module menu or a page sidebar, "Edit sidebar…").
+The places are DATA: `relatedPlaces.ts` declares one ordered list per product (another product's id, or
+a shared page `page:agents|workflows|scheduled|research|tasks|notes|files`); the first
+`DEFAULT_PLACES_ABOVE_MORE` (3) sit above More by default. Which ones is the layered knob
+`shell.sidebar.places` (one json map, product id → place ids; system `{}` → organization → person);
+"Edit sidebar…" writes the person's own entry for that product only (`setUserKnobMapEntry`). Search
+finds the places and the product's own pages; Enter opens the first. Host half:
+`frame-host/FrameProductTop.tsx`. A registered menu marked `ownsSidebarTop` (the /chat menu, and the
+conversation sidebar that replaces it) draws its own top: the frame draws none (one top per sidebar).
+This replaced the "product rows" strip (2026-10-22 round 2): nothing it reached is lost — those pages
+are now in More, or are the body itself on route-row products. HR's whole-menu page sidebar keeps its
+pages out of More (`productRows` false).
 
-Inventory and open list: `common-docs/projects/app-frame/SIDEBARS.md`. Test:
-`frame-host/__tests__/product-sidebar-in-frame.test.tsx`.
+Inventory and open list: `common-docs/projects/app-frame/SIDEBARS.md`. Tests:
+`frame-host/__tests__/product-sidebar-in-frame.test.tsx`, `frame-host/__tests__/product-sidebar-top-in-frame.test.tsx`.
 
 ## Ours and the page's (owner, 2026-10-20)
 
@@ -360,6 +371,9 @@ removes it on the first `requestAnimationFrame`; it is not a second mount.
   is the sidebar through the kind-B door, the current module's section tabs under it; no header
   switcher, no body tab strip, no product-rows strip (`wholeMenu`). Classic unchanged. Tests
   `features/hr/shared/__tests__/hr-menu-in-frame.test.tsx` + product-sidebar-in-frame.
+- 2026-10-22: Product sidebar top. Every product sidebar opens with `ProductSidebarTop` (Search,
+  chosen related places, More, Edit sidebar…) from `relatedPlaces.ts` + knob `shell.sidebar.places`;
+  replaces the product-rows strip (its pages moved into More); /chat's menu owns its top.
 - 2026-10-22: Product sidebars round 2. The product's other rows stay as a strip above a module
   menu or page sidebar; declared kind-B routes reserve the body with a skeleton (no row flash);
   Spaces and org project settings migrated; the Notes filter row is the `@container/list` its org

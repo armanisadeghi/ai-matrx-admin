@@ -80,6 +80,14 @@ Rule in full: the header of `shared/useHrContext.ts`.
   plus `HrRouteTab` and `resolveActiveHrTab`. The `administration/users` route-tab
   pattern: flat array, real routes, `usePathname()` + `useTransition()`, `Loader2`
   while pending.
+- `HrFrameMenu.tsx` — the new app frame's ONE HR menu. `HrFrameSidebar` (mounted once
+  by `app/(core)/hr/layout.tsx`, so every `/hr` page has it) hands the frame's sidebar
+  `useHrNav()`'s module list through `<FrameSidebarContent>`, the current module
+  selected and its section tabs (published by `HrSubShell`) under it. In the frame
+  `HrShell` draws no header switcher and `HrSubShell` no tab strip; classic unchanged.
+- `useHrNav.ts` — `resolveHrNav` over the one HR context; read by `HrShell` and the
+  frame menu so they can never list different modules. `resolveActiveHrKey`
+  (`hr-nav.ts`) is the one longest-prefix "which item am I in" rule.
 - `HrStates.tsx` — `HrLoading` · `HrError` · `HrNoAccess` · `HrEmployerPicker` ·
   `HrModuleOff` · `HrEmptyOrg` · `HrPageState` (+ `hrErrorSentence`,
   `HrLoadingVariant`).
@@ -181,6 +189,8 @@ wrapper added in another lane's file.
 ---
 
 ## Change log
+
+- **2026-10-22 (one HR menu in the new app frame)** — in the frame the sidebar is HR's whole module list (`HrFrameMenu`, kind-B door, declared `wholeMenu` so the frame's shorter route rows do not show above it), the current section's tabs under the current module; HrShell's header module switcher and HrSubShell's tab strip draw only in classic. Schedule, Onboarding, Training, Assets, Engagement, Tasks and Reports were reachable only from the header dropdown before. Test `shared/__tests__/hr-menu-in-frame.test.tsx`.
 
 - **2026-09-30 (HR lists span employers; aggregates take one — (owner's words, 2026-09-30, in `common-docs/systems/human-resources/VISION.md`)** rule is replaced: lists a person browses (directory, relations cases, verifications, leave balances) open on All organizations with an Organization column and a visible filter (`?org_filter=`, `HrOrgFilter`); `useHrContext().scope` names the employers a list reads and `fanOutHr` (`shared/hrScope.tsx`) calls each employer's door and merges (total = sum of each door's count). Totals, pay, periods, timesheet batches and employer settings still need one employer: under All they show "Open one employer below to continue." with the picker. HR no longer reads the active organization for its employer, and `HR_ORG_PARAM` is `org_filter` (was `org`, which switched the active org); a new record saves into the filter's employer, else the active organization (`useHrWriteEmployer`). The leave-decision and task inboxes span employers too: `hr_wf_inbox` rows carry `organization_id` (and the door narrows by `p_filters.organization_id`, server-side, totals included), so both show an Organization column and the visible `HrOrgFilter`. The directory's department / location / job-title / manager filters are ids inside one employer: under All their controls are absent and a link carrying one is parked (shown, never sent or counted) until one organization is chosen.
 - `2026-09-27` — page-pass shared defects: `/hr/settings/employer`'s no-employer list is the platform `OrganizationPicker` (design-system with `detail` / `folded` / `hideStatus`): search above eight rows, "Open / Finish setup / Turn on HR" per row, set-up first, HR-off organizations folded under "Organizations without HR (N)"; choosing still navigates to `?org=<slug>`.

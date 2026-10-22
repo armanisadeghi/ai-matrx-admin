@@ -183,7 +183,7 @@ export function laneOf(query: EntityListQuery): DataHomeScope {
 export function createDataHomeService(opts: DataHomeServiceOptions): EntityListService<DataHomeRow> {
   let corpus: Promise<DataHomeRow[]> | null = null;
   let held: DataHomeRow[] | undefined;
-  const all = () => {
+  const base = () => {
     if (!corpus) {
       corpus = opts.load().then(
         (rows) => {
@@ -198,8 +198,14 @@ export function createDataHomeService(opts: DataHomeServiceOptions): EntityListS
     }
     return corpus;
   };
+  // THE ROWS NOW IN HAND WIN over the ones the first read resolved to: the corpus reads the home in two
+  // steps (the newest rows first, the whole home after first paint) and swaps its rows when the rest lands.
+  const all = async () => {
+    const first = await base();
+    return opts.loaded?.() ?? first;
+  };
   /** The rows in hand right now, or undefined (still loading) — the `peek` answers only then. */
-  const inHand = () => held ?? opts.loaded?.();
+  const inHand = () => opts.loaded?.() ?? held;
   const now = () => (opts.now ? opts.now() : Date.now());
 
   type MatchOpts = { lane?: DataHomeScope | null; skip?: string; org?: boolean };

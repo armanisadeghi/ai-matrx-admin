@@ -29,8 +29,8 @@ await act(A, async () => {
   await A.keyboard.type("Harbor Hall, Pier 9", { delay: 10 });
 });
 await A.waitForTimeout(2500);
-await A.locator(".spaces-breadcrumb-item").first().click();
-await A.waitForURL((u) => u.href.includes(parent), { timeout: 30_000 });
+// Back to the parent by its address (the crumbs' first item may be the workspace, not the parent page).
+await A.goto(`${new URL(A.url()).origin}/spaces/${parent}`, { waitUntil: "domcontentloaded", timeout: 240_000 });
 await A.locator(".bn-editor").first().waitFor();
 await A.waitForTimeout(2500);
 
@@ -79,8 +79,9 @@ const sub = A.locator('.bn-editor [data-content-type="page"]').first();
 r.copyHasSubpage = await sub.isVisible().catch(() => false);
 await shot(A, `${OUT}/06-duplicate${member ? "-member" : ""}.png`);
 if (r.copyHasSubpage) {
-  await sub.click();
-  await A.waitForURL((u) => !u.href.includes(r.copy), { timeout: 30_000 });
+  // The link's own words open it (a click on the block's middle can land on empty space beside them).
+  await sub.getByText("Venues", { exact: true }).first().click();
+  await A.waitForURL((u) => !u.href.includes(r.copy), { timeout: 90_000 });
   r.copyChild = A.url().match(/\/spaces\/([0-9a-f-]{36})/)?.[1];
   await A.locator(".bn-editor").first().waitFor({ timeout: 60_000 });
   await A.waitForTimeout(2500);

@@ -876,6 +876,31 @@ export const aiModelService = {
     return this.parseSyncPolicy(data.sync_policy);
   },
 
+  /**
+   * Add (or remove) MANY model ids on a provider's exclusion list in ONE write. Reads the live
+   * policy first and applies the whole set to it, so a batch never races a per-row list built from
+   * a stale copy and never writes the policy once per model.
+   */
+  async setModelsExcluded(
+    providerId: string,
+    modelIds: readonly string[],
+    exclude: boolean,
+  ): Promise<ProviderSyncPolicy> {
+    const { data, error } = await supabase
+      .schema("ai")
+      .from("provider")
+      .select("sync_policy")
+      .eq("id", providerId)
+      .single();
+    if (error) throw error;
+    const current = this.parseSyncPolicy(data.sync_policy);
+    const change = new Set(modelIds);
+    const excluded = exclude
+      ? [...new Set([...current.excluded_model_ids, ...modelIds])]
+      : current.excluded_model_ids.filter((id) => !change.has(id));
+    return this.updateProviderSyncPolicy(providerId, { ...current, excluded_model_ids: excluded });
+  },
+
   // ── Provider CRUD (identity fields — separate from the cache-only helpers above) ──
 
   /** Full-column provider fetch for the Provider CRUD screen (all fields,

@@ -124,7 +124,7 @@ export default function SaveHeatmapModal({
       const { data: savedHeatmap, error: insertError } = await supabase
         .schema('workbench').from('heatmap_saves')
         .insert({
-          user_id: user.id,
+          created_by: user.id,
           organization_id: organizationId,
           title: title.trim(),
           description: description.trim() || null,

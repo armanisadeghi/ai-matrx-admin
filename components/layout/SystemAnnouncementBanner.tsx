@@ -113,7 +113,8 @@ export default function SystemAnnouncementBanner({
     >
       <div className="relative overflow-hidden rounded-3xl border border-glass-edge bg-glass shadow-glass-lg backdrop-blur-glass backdrop-saturate-glass">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
-        <div className="relative flex flex-col gap-4 p-4 pr-12 sm:flex-row sm:items-center sm:gap-5 sm:p-5 sm:pr-14">
+        <div className="relative flex items-start gap-2 p-4 sm:p-5">
+          <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
           <div
             className={cn(
               "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-background/80 shadow-sm sm:h-14 sm:w-14",
@@ -144,11 +145,12 @@ export default function SystemAnnouncementBanner({
             {presentation.actionLabel}
           </Button>
 
+          </div>
           <button
             type="button"
             onClick={dismiss}
             aria-label="Dismiss announcement"
-            className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground sm:right-4 sm:top-4"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground"
           >
             <X className="h-5 w-5" aria-hidden />
           </button>

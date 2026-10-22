@@ -138,6 +138,7 @@
    "conv_ledger_share",
    "conv_mexico_city",
    "binding_count_desk_notes",
+   "binding_note_appender_notes",
    "binding_title_desk_notes",
    "binding_files_desk",
    "shortcut_note_digest",
@@ -1544,6 +1545,26 @@
     "organization_id"
    ],
    "sha256": "eae8e6e20418a85e93d5878a1c819bd733ffc9d96ea87bdb99307e008c0f27cb",
+   "has_version": false,
+   "version": null
+  },
+  "binding_note_appender_notes": {
+   "kind": "row",
+   "schema": "platform",
+   "table": "associations",
+   "id": "060fbb23-172d-4411-b8b2-517745d24b96",
+   "name": "Notes binding of Compass Note Appender",
+   "fields": [
+    "source_type",
+    "source_id",
+    "target_type",
+    "target_id",
+    "payload_kind",
+    "payload",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "f9e800b3ef9b74b157d9dfc4a056f358e4a7639a15c9deaa2b9f74f3f090533c",
    "has_version": false,
    "version": null
   },

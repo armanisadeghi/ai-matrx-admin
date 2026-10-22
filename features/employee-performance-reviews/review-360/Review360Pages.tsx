@@ -38,6 +38,9 @@ import {
 } from "./service";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { HR_REVIEW_360_SURFACE, createHrReview360Scope } from "@/features/surfaces/manifests/hr-review-360.manifest";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 function useOrg(): string | null {
   const params = useSearchParams();
@@ -194,6 +197,31 @@ export function parseReview(doc: string | null): Review | null {
   }
 }
 
+/** One half as the surface values carry it: the sections this screen shows, or null while it is not in. */
+export function review360HalfScope(track: TrackView | null, sections: readonly string[]) {
+  const r = track?.submittedAt ? parseReview(track.document) : null;
+  if (!r) return { submitted_at: track?.submittedAt ?? null, sections: null };
+  const out: Record<string, string[]> = {};
+  for (const k of sections) {
+    const v = (r as unknown as Record<string, unknown>)[k];
+    out[k] = Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.trim() !== "") : typeof v === "string" && v ? [v] : [];
+  }
+  return { submitted_at: track?.submittedAt ?? null, sections: out };
+}
+
+/** The review record as the surface values carry it. */
+export function review360Scope(reviewId: string, doc: Record<string, unknown>, both: boolean) {
+  return {
+    id: reviewId,
+    employee_name: String(doc.employee_name ?? "360 review"),
+    state: doc.status === "shared" ? "shared" : both ? "ready" : "collecting",
+    due_on: typeof doc.due_on === "string" ? doc.due_on : null,
+    shared_at: typeof doc.shared_at === "string" ? doc.shared_at : null,
+  };
+}
+
+const DETAIL_SECTIONS = ["accomplishments", "strengths", "opportunities"] as const;
+
 function Half({ label, track }: { label: string; track: TrackView | null }) {
   const r = parseReview(track?.document ?? null);
   return (
@@ -234,6 +262,58 @@ function ReviewDetail({ reviewId, org }: { reviewId: string; org: string }) {
       live = false;
     };
   }, [client, reviewId, tick]);
+  const loaded = data?.ok ? data.data : null;
+  const getScope = () =>
+    createHrReview360Scope({
+      review_360_load_status: !data ? "loading" : data.ok ? "loaded" : "failed",
+      ...(loaded
+        ? {
+            review_360: review360Scope(reviewId, loaded.doc, Boolean(loaded.self?.submittedAt && loaded.manager?.submittedAt)),
+            self_half: review360HalfScope(loaded.self, DETAIL_SECTIONS),
+            manager_half: review360HalfScope(loaded.manager, DETAIL_SECTIONS),
+          }
+        : {}),
+    });
+  const getWriteHandlers = () => ({
+    share_review_360: {
+      validate: () => {
+        if (!loaded) refuseSurfaceWrite("The review has not loaded yet.");
+        const { doc, self, manager } = loaded!;
+        if (!isReviewHrManager(doc, userId)) refuseSurfaceWrite("Only this review's HR manager can share it.");
+        if (doc.status === "shared") refuseSurfaceWrite("This review is already shared.");
+        if (!(self?.submittedAt && manager?.submittedAt)) refuseSurfaceWrite("Both halves must be in before the review is shared.");
+      },
+      apply: async () => {
+        const { self, manager } = loaded!;
+        const ids = [self?.id, manager?.id].filter((x): x is string => Boolean(x));
+        const r = await shareReview360(client, reviewId, ids);
+        if (!r.ok) throw new Error(r.message);
+        setTick((n) => n + 1);
+        return { summary: "Both halves are shared with the employee and the manager." };
+      },
+    },
+  });
+  return (
+    <SurfaceRuntimeProvider surfaceName={HR_REVIEW_360_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers}>
+      <ReviewDetailBody data={data} reviewId={reviewId} org={org} userId={userId} onShared={() => setTick((n) => n + 1)} />
+    </SurfaceRuntimeProvider>
+  );
+}
+
+function ReviewDetailBody({
+  data,
+  reviewId,
+  org,
+  userId,
+  onShared,
+}: {
+  data: Awaited<ReturnType<typeof readReview360>> | null;
+  reviewId: string;
+  org: string;
+  userId: string | null;
+  onShared: () => void;
+}) {
+  const client = useRecordsClient();
   if (!data) return <div className="m-4 h-24 animate-pulse rounded-md bg-card/40" aria-label="Loading the review" />;
   if (!data.ok) return <ErrorNotice title="This review could not be opened"  message={data.message} />;
   const { doc, self, manager } = data.data;
@@ -242,7 +322,7 @@ function ReviewDetail({ reviewId, org }: { reviewId: string; org: string }) {
   const share = async () => {
     const ids = [self?.id, manager?.id].filter((x): x is string => Boolean(x));
     const r = await shareReview360(client, reviewId, ids);
-    if (r.ok) setTick((n) => n + 1);
+    if (r.ok) onShared();
     else toast.error(r.message);
   };
   return (

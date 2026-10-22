@@ -30,6 +30,8 @@ import type {
 export interface UsageGateState {
   /** `unknown` until the first answer (guests stay `unknown`). */
   state: UsageGateLevel | "unknown";
+  /** `billing.user_usage_state.plan_key` — the effective plan, the one source. */
+  planKey: string | null;
   planName: string | null;
   bindingPeriod: string | null;
   resetsAt: string | null;
@@ -50,6 +52,7 @@ export interface UsageGateState {
 
 export const initialUsageGateState: UsageGateState = {
   state: "unknown",
+  planKey: null,
   planName: null,
   bindingPeriod: null,
   resetsAt: null,
@@ -111,6 +114,7 @@ function usageGateFromSnapshot(
 ): UsageGateState {
   return {
     state: snapshot.state,
+    planKey: snapshot.planKey,
     planName: snapshot.planName,
     bindingPeriod: snapshot.bindingPeriod,
     resetsAt: snapshot.resetsAt,

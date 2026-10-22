@@ -8,7 +8,7 @@
  *   pnpm check:surface-chrome-labels --self-test  # prove it goes red AND green
  *   tsx scripts/check-surface-chrome-labels.ts --files a.tsx b.tsx
  *
- * Scans the Surface Context window (this repo) and the Agents popover
+ * Scans the Surface Context window and the admin declaration sections (this repo) and the Agents popover
  * (`@ai-matrx/chat` source in the sibling aidream checkout, `AIDREAM_DIR` overrides). A FINDING is
  * a key-shaped reference — `x.name`, `x.key`, `x.surfaceName`, or the identifiers `surfaceName`,
  * `primaryName`, `activeName`, `activeSurface` — in an OUTPUT position: a JSX child, or a visible
@@ -28,6 +28,8 @@ const AIDREAM = process.env.AIDREAM_DIR ?? resolve(ROOT, "..", "aidream");
 
 export const DEFAULT_FILES = [
   resolve(ROOT, "features/window-panels/windows/surfaces/SurfaceContextWindow.tsx"),
+  // The per-surface admin page's declaration sections (surface declarations W5).
+  resolve(ROOT, "features/surfaces/admin-detail/SurfaceDeclarationSections.tsx"),
   resolve(AIDREAM, "apps/shared/chat/src/surfaces/components/chrome/SurfaceAgentsPanelImpl.tsx"),
 ];
 

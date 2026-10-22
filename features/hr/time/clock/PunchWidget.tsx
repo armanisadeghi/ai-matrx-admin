@@ -18,6 +18,8 @@
 
 "use client";
 
+import { clockPhasePresentation } from "./punchVocabulary";
+import { useSurfaceScopeContribution } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { Loader2 } from "lucide-react";
 
 import type { HrFixtureCase } from "@/features/hr/mock/transport";
@@ -67,6 +69,8 @@ export interface PunchWidgetProps {
    * how two surfaces come to disagree about one person.
    */
   clockUsableFooter?: React.ReactNode;
+  /** The page surface this widget's clock state belongs to (the desk clock); none elsewhere. */
+  surfaceName?: string | null;
   /**
    * Told whenever the clock's view or confirmation changes — how a host page reports the ONE
    * `hr_clock_state` read this widget owns to its agent surface without a second read.
@@ -84,6 +88,7 @@ export function PunchWidget({
   allowBackdating = false,
   clockUsableFooter = null,
   onClockChange,
+  surfaceName = null,
 }: PunchWidgetProps) {
   const clock = usePunchClock({
     employmentId,
@@ -93,6 +98,19 @@ export function PunchWidget({
     punchMockCase,
   });
   const { view } = clock;
+  useSurfaceScopeContribution(surfaceName, "punch-widget", () => {
+    const state = "state" in view ? view.state : null;
+    return {
+      clock_status: {
+        state: view.kind,
+        phase: state?.phase ?? null,
+        headline: state ? clockPhasePresentation(state.phase).headline : null,
+        local_work_date: state?.localWorkDate ?? null,
+        minutes_worked_today: state?.elapsedWorkedMinutes ?? null,
+        blocked_reason: view.kind === "blocked" ? view.blocked.message : (state?.blocked?.message ?? null),
+      },
+    };
+  });
   useEffect(() => {
     onClockChange?.(view, clock.confirmation);
   }, [onClockChange, view, clock.confirmation]);

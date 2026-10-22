@@ -7,6 +7,7 @@
 // assertOwnPage() refuses every click / type while the page is one of the two read-only
 // pages people already keep (admin's and test@test.com's; never walked, never trashed). Call act() for every input.
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
 
 export const REPO = new URL("../../../../", import.meta.url).pathname;
@@ -26,7 +27,36 @@ export function loginUrl(next = "/spaces", member = false) {
   return m[1];
 }
 
+/** WALK_ORIGIN=https://www.aimatrx.com walks the released site: the test seats sign in with their .env passwords. */
+const WALK_ORIGIN = process.env.WALK_ORIGIN?.replace(/\/$/, "") || null;
+
+function seatEnv() {
+  const env = {};
+  for (const file of [".env", ".env.local"]) {
+    let text = "";
+    try {
+      text = readFileSync(`${REPO}${file}`, "utf8");
+    } catch {
+      continue;
+    }
+    for (const line of text.split("\n")) {
+      const m = line.match(/^([A-Z_]+)=(.*)$/);
+      if (m && !env[m[1]]) env[m[1]] = m[2].replace(/^"|"$/g, "");
+    }
+  }
+  return env;
+}
+
 export async function login(page, next = "/spaces", member = false) {
+  if (WALK_ORIGIN) {
+    const env = seatEnv();
+    const [user, pass] = member ? [env.AI_MEMBER_USERNAME, env.AI_MEMBER_PASSWORD] : [env.AI_ADMIN_USERNAME, env.AI_ADMIN_PASSWORD];
+    if (!user || !pass) throw new Error(`WALK_ORIGIN needs ${member ? "AI_MEMBER" : "AI_ADMIN"}_USERNAME/_PASSWORD in .env.local`);
+    const { signIn } = await import("../../../../scripts/lib/seat-browser.mjs");
+    await signIn(page, WALK_ORIGIN, user, pass, member ? "member" : "admin");
+    await page.goto(`${WALK_ORIGIN}${next}`, { waitUntil: "domcontentloaded", timeout: 240_000 });
+    return;
+  }
   // A shared dev server under load can take minutes to sign in and compile the first route: retries with a fresh nonce.
   for (let attempt = 0; ; attempt++) {
     try {
@@ -96,7 +126,8 @@ export async function newPage(page) {
     return !!id && id !== before && !SAMPLE_PAGES.includes(id);
   };
   for (let attempt = 0; attempt < 3; attempt++) {
-    await page.locator(".spaces-sidebar-head").getByRole("button", { name: /^New page$/ }).first().click();
+    // The sidebar's own head, or the frame's one column when the frame hosts the Spaces sidebar: the same button.
+    await page.getByRole("button", { name: /^New page$/ }).first().click();
     await chooseOrgIfAsked(page);
     const ok = await page.waitForURL(isNew, { timeout: 30_000, waitUntil: "commit" }).then(() => true, () => false);
     if (ok) break;

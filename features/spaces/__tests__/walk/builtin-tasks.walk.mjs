@@ -2,7 +2,7 @@
 // over one of the person's own tables; the Tasks rows draw beside the custom table; a filter on Tasks narrows
 // the rows; a row opens in the peek. The page is made by the walk and moved to the trash after.
 //   S=<shots dir> node features/spaces/__tests__/walk/builtin-tasks.walk.mjs
-import { open, newPage, act, slash } from "./lib.mjs";
+import { open, newPage, act, slash, trashPage } from "./lib.mjs";
 
 const shots = process.env.S ?? "/tmp";
 let failures = 0;
@@ -44,6 +44,7 @@ await page.waitForTimeout(5000);
 await page.screenshot({ path: `${shots}/cd-page-16-0-tasks.png`, fullPage: true });
 console.log("TASKS BLOCK:", (await tasks.innerText()).replace(/\n+/g, " | ").slice(0, 300));
 const before = await tasks.locator("tbody tr").count();
+const countBefore = await tasks.locator(".spaces-entity-count").innerText().catch(() => "");
 check("Built-in > Tasks draws task rows", before > 0, `${before} rows; ${await tasks.locator(".spaces-entity-count").innerText().catch(() => "")}`);
 await page.keyboard.press("Escape");
 if (!(await page.locator(".spaces-db-frame:not([data-source=entity])").count())) await insert(null);
@@ -60,20 +61,30 @@ const pop = page.locator("[data-radix-popper-content-wrapper]").last();
 await pop.waitFor({ timeout: 10_000 });
 console.log("FILTER MENU:", (await pop.innerText()).replace(/\n+/g, " | ").slice(0, 400));
 await page.screenshot({ path: `${shots}/cd-page-16-2-filter-menu.png` });
-const firstProp = pop.locator("button, [role=menuitem], [role=option]").filter({ hasText: /Status|Priority/ }).first();
+// The menu rows are role=button divs (a row may end in a Switch, so never a <button>).
+const firstProp = pop.locator("[role=button]").filter({ hasText: /^(Status|Priority)$/ }).first();
+let chosen = null;
 if (await firstProp.count()) {
   await firstProp.click();
   await page.waitForTimeout(1200);
   const pop2 = page.locator("[data-radix-popper-content-wrapper]").last();
   console.log("FILTER RULE:", (await pop2.innerText()).replace(/\n+/g, " | ").slice(0, 400));
-  const opt = pop2.locator("[role=option], [role=menuitemcheckbox], label, button").filter({ hasText: /^(Done|Completed|Not started|To do|In progress|Todo|High|Low)/i }).first();
-  if (await opt.count()) await opt.click();
+  const opt = pop2.locator("[role=button]").filter({ hasText: /^(Done|Completed|Not started|To do|In progress|Todo|High|Low|Cancelled)$/i }).first();
+  if (await opt.count()) {
+    chosen = (await opt.innerText()).trim();
+    await opt.click();
+  }
   await page.waitForTimeout(5000);
   await page.keyboard.press("Escape");
 }
 await page.waitForTimeout(2000);
+// A page holds 50 rows, so a filter that still matches more than 50 keeps 50 drawn: the proof is that every drawn
+// row carries the chosen value and the total moved.
 const after = await tasks.locator("tbody tr").count();
-check("a filter on Tasks narrows the rows", after < before, `${before} -> ${after}`);
+const countAfter = await tasks.locator(".spaces-entity-count").innerText().catch(() => "");
+const cells = await tasks.locator("tbody tr").evaluateAll((trs) => trs.map((tr) => tr.innerText.replace(/\s+/g, " ")));
+const allChosen = !!chosen && after > 0 && cells.every((t) => t.toLowerCase().includes(chosen.toLowerCase()));
+check("a filter on Tasks narrows the rows", allChosen && (after < before || countAfter !== countBefore), `${chosen}: ${before} -> ${after} rows; total ${countBefore.replace(/\s+/g, " ")} -> ${countAfter.replace(/\s+/g, " ")}`);
 await page.screenshot({ path: `${shots}/cd-page-16-3-filtered.png`, fullPage: true });
 
 // Open a row.
@@ -84,6 +95,9 @@ if (await openBtn.count()) await openBtn.click(); else await row.locator("td").f
 const peek = await page.locator(".spaces-entity-peek").first().waitFor({ timeout: 30_000 }).then(() => true, () => false);
 check("a task row opens in the peek", peek, peek ? (await page.locator(".spaces-entity-peektitle").first().innerText().catch(() => "")) : "");
 await page.screenshot({ path: `${shots}/cd-page-16-4-peek.png`, fullPage: true });
+await page.keyboard.press("Escape");
+// The page is this walk's own: it goes to the trash (never a shared record).
+if (!reuse) console.log("cleanup page:", await trashPage(page).then(() => "trashed", (e) => `not trashed: ${e.message}`));
 await browser.close();
 console.log(failures === 0 ? "ALL PASS" : `${failures} FAILED`);
 process.exit(failures === 0 ? 0 : 1);

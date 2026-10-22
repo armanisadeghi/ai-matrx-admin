@@ -9,7 +9,8 @@
  * This file hands in only the app's own pieces: the profile, the deep link
  * (`?agent=&thread=`, mirrored with replaceState — never a navigation), and
  * the Chief of Staff seat's ONE staff thread, which opens through the SAME
- * door /staff uses (`StaffRoom`), never a second staff thread.
+ * door /staff uses (`StaffRoom`), never a second staff thread. The details
+ * panel's Computer tab is the person's Cloud Computer (`ComputerThumbnail`).
  */
 
 import { useCallback, useMemo } from "react";
@@ -20,6 +21,7 @@ import { MANDATE_KEYS, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectDisplayName, selectUserAvatarUrl } from "@/lib/redux/selectors/userSelectors";
 import { StaffRoom } from "@/features/personal-staff/components/StaffRoom";
+import { ComputerThumbnail } from "@/features/cloud-computer/ComputerThumbnail";
 import { MESSENGER_AGENTS_HREF } from "./messenger-route";
 
 export interface MessengerAgentsRouteProps {
@@ -67,6 +69,15 @@ export function MessengerAgentsRoute({ initialLocation }: MessengerAgentsRoutePr
     [],
   );
 
+  // The details panel's Computer tab: the SAME Computer view, as a live
+  // thumbnail; a press opens the one Computer tab.
+  const renderComputer = useCallback(
+    ({ conversationId }: { agentId: string; conversationId: string | null }) => (
+      <ComputerThumbnail conversationId={conversationId} />
+    ),
+    [],
+  );
+
   return (
     <AgentsMessenger
       profile={profile}
@@ -74,6 +85,7 @@ export function MessengerAgentsRoute({ initialLocation }: MessengerAgentsRoutePr
       onLocationChange={onLocationChange}
       linkTo={linkTo}
       renderSeatRoom={renderSeatRoom}
+      renderComputer={renderComputer}
     />
   );
 }

@@ -26,6 +26,7 @@ import type { RichSpan, SpaceMedia } from "../contract";
 import { useSpaceMediaUrl } from "../page/media";
 import { SpaceIcon } from "../page/SpaceIcon";
 import { useSpaces } from "../state/SpacesProvider";
+import { useCrumbPathPending } from "../nav/crumb-path";
 import { LateSeedRecords } from "../page/space-seed-context";
 import { useSpacesKnob } from "../state/knobs";
 import { embedTarget } from "./embed-providers";
@@ -448,8 +449,11 @@ function Breadcrumb() {
   const params = useParams<{ spaceId?: string }>();
   const { pathTo, open } = useSpaces();
   const path = params?.spaceId ? pathTo(params.spaceId) : [];
+  // CD-PERF-02: the same wait as the top bar's breadcrumb (nav/crumb-path.ts) — its slot stays invisible until the
+  // ancestors are in, so they never push it sideways after paint.
+  const pending = useCrumbPathPending(path);
   return (
-    <nav className="spaces-breadcrumb-block" contentEditable={false}>
+    <nav className={pending ? "spaces-breadcrumb-block spaces-crumbs-pending" : "spaces-breadcrumb-block"} contentEditable={false}>
       {path.map((s, i) => (
         <span key={s.id} className="spaces-breadcrumb-part">
           {i > 0 ? <span className="spaces-breadcrumb-sep">/</span> : null}

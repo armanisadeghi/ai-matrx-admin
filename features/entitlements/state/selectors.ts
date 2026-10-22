@@ -181,6 +181,12 @@ export const selectUsageGateResetsAt = createSelector(
   (u) => u.resetsAt,
 );
 
+/** The effective plan key (`billing.user_usage_state.plan_key`), or null. */
+export const selectUsageGatePlanKey = createSelector(
+  selectUsageGate,
+  (u) => u.planKey,
+);
+
 export const selectUsageGatePlanName = createSelector(
   selectUsageGate,
   (u) => u.planName,

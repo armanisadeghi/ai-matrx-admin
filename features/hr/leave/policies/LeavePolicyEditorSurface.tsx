@@ -130,6 +130,9 @@ import {
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { HR_LEAVE_POLICY_SURFACE, createHrLeavePolicyScope } from "@/features/surfaces/manifests/hr-leave-policy.manifest";
 
 /** The schedule classes `hr.leave_policy.schedule_class_scope` is filtered against. */
 const SCHEDULE_CLASSES = ["full_time", "part_time", "variable", "per_diem"] as const;
@@ -534,7 +537,60 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
   const earningCodes = structure.structure?.earning_codes ?? [];
   const statutory = (form?.statutoryBasisRuleClass ?? "") !== "";
 
+  const savedForm = saved ? leavePolicyToForm(saved) : null;
+  const getScope = () =>
+    createHrLeavePolicyScope({
+      policy_load_status: loadError ? "failed" : notFound ? "not_found" : loading || form === null ? "loading" : "loaded",
+      ...(saved
+        ? {
+            leave_policy: {
+              id: saved.id,
+              name: saved.name,
+              leave_kind: saved.leaveKind,
+              status: saved.isActive ? "active" : "draft",
+              version: saved.version,
+              enrolled_count: saved.enrolledCount,
+            },
+          }
+        : {}),
+      ...(form
+        ? {
+            policy_form: form,
+            visible_fields: [...fields],
+            has_unsaved_changes: JSON.stringify(form) !== JSON.stringify(savedForm ?? emptyLeavePolicyForm()),
+            form_problems: problems.map((p) => ({ field: p.field, message: p.message })),
+          }
+        : {}),
+      can_edit_policy: canWrite,
+      ...(validation
+        ? {
+            policy_checks: {
+              ok: validation.ok,
+              detail: validation.detail,
+              jurisdictions_checked: validation.jurisdictionsChecked,
+              violations: validation.violations.map((v) => ({ field: v.field, message: v.message, jurisdiction: v.jurisdictionName })),
+              warnings: validation.warnings.map((v) => ({ field: v.field, message: v.message, jurisdiction: v.jurisdictionName })),
+            },
+          }
+        : {}),
+    });
+  const getWriteHandlers = () => ({
+    policy_form: {
+      validate: (value: unknown) => {
+        if (!form) refuseSurfaceWrite("The policy has not loaded yet.");
+        if (!canWrite) refuseSurfaceWrite("This viewer may not edit leave policies.");
+        mergeLeavePolicyFormDraft(form!, value);
+      },
+      apply: (value: unknown) => {
+        const next = mergeLeavePolicyFormDraft(form!, value);
+        setForm(next);
+        return { summary: "The policy form is filled in. Nothing is saved until the person presses Save.", data: next };
+      },
+    },
+  });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_LEAVE_POLICY_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers}>
     <HrSettingsShell
       section="leave-policies"
       loading={loading || form === null}
@@ -1291,5 +1347,23 @@ export function LeavePolicyEditorSurface({ policyId }: { policyId: string }) {
         busy={busy}
       />
     </HrSettingsShell>
+    </SurfaceRuntimeProvider>
   );
+}
+
+/** The `policy_form` value merged onto the form; throws the sentence the agent reads. */
+function mergeLeavePolicyFormDraft(form: LeavePolicyForm, value: unknown): LeavePolicyForm {
+  if (!value || typeof value !== "object" || Array.isArray(value)) refuseSurfaceWrite("Send a JSON object of policy_form fields.");
+  const next: Record<string, unknown> = { ...form };
+  for (const [key, v] of Object.entries(value as Record<string, unknown>)) {
+    if (key === "id") refuseSurfaceWrite("The policy id cannot be set.");
+    if (!(key in form)) refuseSurfaceWrite(`Unknown field "${key}" — use the policy_form field names.`);
+    const current = (form as unknown as Record<string, unknown>)[key];
+    if (typeof current === "boolean" && typeof v !== "boolean") refuseSurfaceWrite(`${key} takes true or false.`);
+    if (typeof current === "string" && typeof v !== "string" && typeof v !== "number") refuseSurfaceWrite(`${key} takes text.`);
+    if (Array.isArray(current) && !Array.isArray(v)) refuseSurfaceWrite(`${key} takes a list.`);
+    if (key !== "blackoutRules" && Array.isArray(v) && !v.every((x) => typeof x === "string")) refuseSurfaceWrite(`${key} takes a list of texts.`);
+    next[key] = typeof current === "string" && typeof v === "number" ? String(v) : v;
+  }
+  return next as unknown as LeavePolicyForm;
 }

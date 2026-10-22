@@ -6,13 +6,13 @@
   "entry": "/crm",
   "sections": [
    {
-    "name": "People & companies",
+    "name": "Contacts",
     "route": "/crm",
     "why": "Everyone you know, with import and duplicate clean-up beside them",
     "pages": [
      {
       "route": "/crm",
-      "title": "People & companies",
+      "title": "Contacts",
       "role": "list",
       "reachedFrom": [
        "menu"

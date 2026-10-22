@@ -1,3 +1,4 @@
+import { DESCRIPTORS as FILES_DESCRIPTORS } from "@ai-matrx/api/files";
 import {
   isStandaloneFileServiceRoute,
   shouldRouteBrowserRequestToStandaloneFiles,
@@ -8,7 +9,6 @@ const FILE_ID = "3e031c3f-b1e3-425c-ac49-217ad074b1d5";
 describe("isStandaloneFileServiceRoute", () => {
   it.each([
     `/files/${FILE_ID}`,
-    `/files/${FILE_ID}/asset`,
     `/files/${FILE_ID}/download?inline=1`,
     `/files/${FILE_ID}/share-links`,
     "/files/upload",
@@ -24,6 +24,10 @@ describe("isStandaloneFileServiceRoute", () => {
     // The signed-URL mint endpoint is DELETED — nothing may route it anywhere.
     `/files/${FILE_ID}/url`,
     `/files/${FILE_ID}/ingest`,
+    // The contract routes these to aidream (api-deployments.json), whose TUS finalize runs analysis.
+    `/files/${FILE_ID}/asset`,
+    "/files/upload/tus",
+    "/files/search",
     `/files/${FILE_ID}/knowledge-status`,
     `/files/${FILE_ID}/search`,
     `/files/${FILE_ID}/versions`,
@@ -40,6 +44,17 @@ describe("isStandaloneFileServiceRoute", () => {
     ["GET", "/files/upload"],
   ])("keeps unsupported %s %s on aidream", (method, path) => {
     expect(isStandaloneFileServiceRoute(path, method)).toBe(false);
+  });
+});
+
+describe("the route list is the generated contract", () => {
+  it("routes every operation the contract sends to the files deployment there, and nothing else", () => {
+    const sample = (template: string) =>
+      template.replace(/\{([a-z_]+)\}/g, (_, name: string) => (name.endsWith("_id") ? FILE_ID : "public-token"));
+    for (const [key, op] of Object.entries(FILES_DESCRIPTORS)) {
+      if (key.includes(" @")) continue;
+      expect([key, isStandaloneFileServiceRoute(sample(op.p), op.m)]).toEqual([key, op.d === "files"]);
+    }
   });
 });
 

@@ -84,7 +84,6 @@ begin
 end;
 $function$;
 
-grant execute on function custom.data_home_first(uuid, boolean, integer) to authenticated;
 
 insert into platform.client_callable_door
   (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by, non_client_lane, signed_in_callers, anonymous_callers)
@@ -92,3 +91,4 @@ values ('custom', 'data_home_first', 'p_organization_id uuid, p_include_platform
         array['uuid'::regtype::oid, 'boolean'::regtype::oid, 'integer'::regtype::oid],
         'p_organization_id, when named, is checked first by custom.assert_client_may_reach (refused, naming this door, when the caller cannot reach it); NULL means every organization she reaches. Every row comes from custom.data_home_tables, the same walls as custom.data_home. p_limit is clamped to 1..500 and is not an id.',
         '20261022210500_data_home_first_read_is_bounded.sql', null, true, false);
+grant execute on function custom.data_home_first(uuid, boolean, integer) to authenticated;

@@ -311,27 +311,52 @@ const bulkActions = bulkActionsFromRowVerbs(allUserActions(), {
 
 - **Every verb decides.** `bulk` is required: a twin, or `false` with a one-word
   `noBulk` reason (`single` · `open` · `edit` · `view` · `copy`) — Open, Edit,
-  History, Rename. There is no third state, so a verb cannot be forgotten.
+  History, Rename. There is no third state, so a verb cannot be forgotten. A verb
+  that CHANGES or REMOVES records (the guard's `MUTATING_VERBS`) never takes a
+  one-word `noBulk`: it gets a twin, or a reasoned `// bulk-parity-exception:` line.
+- **The row half is real.** Every verb carries its real `onClick` and the surface
+  consumes `rowActionDefs`; a verb with a no-op `onClick`, or a call whose row half
+  is thrown away (`defineRowVerbs(…).bulkActions`), is a hand-written bulk list.
 - **Skip and name, never pre-filter.** A selected row the verb does not apply to
   (its `appliesTo`, `disabled`, or the twin's `skipReason`) is skipped and NAMED
   in the one warning toast (`reportPerRow`); the bar grays the button with the
   first reason only when it can see every selected row and none applies.
+  Five skipped rows are named inline, then "+N more" with **Copy list** (every one,
+  through `@ai-matrx/kit/clipboard`; `bulkSkipped.ts`). A PARTIAL result keeps
+  exactly the skipped rows ticked (`keepIds` → the host's `setIds`) and unticks the
+  done ones; nothing done keeps the whole selection. A verb disabled for a stated
+  reason names its `unavailableTooltip`, never "Busy".
+- **An unloaded row is never counted as done.** A batch twin (`run`) gets
+  `targets.ids` and only the LOADED `targets.rows`; unless it answers `done: […]`
+  (a batch door that acts on ids), an id with no loaded row is skipped as "Not
+  loaded" and stays selected.
   `isRowSelectable` is for rows NO verb can ever touch (spend approvals'
   platform-decided rows) — never a way to pre-filter one verb.
 - **A verb that needs one value asks it once.** `confirm → { …, ask: { kind:
   "date", label, defaultValue, min?, validate? } }` or `{ kind: "choice", label,
-  options, defaultValue? }` puts one field under the confirm; the value reaches
-  `runOne` / `run` as `input.value`. One reason is `confirm.reason` →
-  `input.reason`. Never a browser dialog.
+  options, defaultValue?, validate? }` puts one field under the confirm; the value
+  reaches `runOne` / `run` as `input.value`. One reason is `confirm.reason` →
+  `input.reason`; `ask` + `reason` together are ONE dialog with both fields. A date
+  below `min` is named, never silently ignored. Never a browser dialog.
 - **Built-ins follow the view.** `standardBulkActionsFor({ archivedView })`:
-  active → Move to Trash; archived → Restore (`entity_undelete`); all → both,
-  each skipping and naming the rows it does not fit. ARCHIVE IS TRASH on this
+  active → Move to Trash; archived → Restore; all → both, each skipping and naming
+  the rows it does not fit. Restore runs the Trash page's own main-database door —
+  `restoreFromTrash` (`entity_undelete`) then `carryOnTableRestore`, so a custom
+  Table comes back whole — and refuses CMS tokens by name (they restore from Trash).
+  "In Trash" is the view's word in an archived view; in "all" it is `deleted_at`
+  (what the Trash door writes) when the row carries it, else the door answers. ARCHIVE IS TRASH on this
   platform (one door, `archiveRecord`), so Archive/Unarchive are Move to Trash /
   Restore — never a second pair. Opt out per verb (`restore: false`). Add tag
   opens THE tag picker (`pickTag` → `TagDialog`: your tags, or a new name).
-- **Guard:** `pnpm check:bulk-parity` (+ `:self-test`) — a hand-written bulk list
-  beside `defineRowVerbs` fails at once; list surfaces with mutating row verbs
-  and no selection are the shrink-only census (`scripts/bulk-parity/baseline.json`).
+- **Guard:** `pnpm check:bulk-parity` (+ `:self-test`, a planted break per rule).
+  Never baselined (fail at once): a hand-written bulk list beside `defineRowVerbs`
+  (`parallel-bulk-list`), `defineRowVerbs` used bulk-only (`bulk-only-row-verbs`),
+  a mutating verb with a one-word `noBulk` (`mutating-no-bulk`). Shrink-only
+  (`scripts/bulk-parity/baseline.json`): a hand-written `EntityBulkAction` list in a
+  file with row verbs and no `defineRowVerbs` (`hand-written-bulk-list`), and list
+  surfaces with mutating row verbs and no selection IN THE FILE ITSELF (comments
+  stripped; a folder sibling's bar never covers it). The verb vocabulary is one
+  exported constant, `MUTATING_VERBS`.
   Model of 1b on the server side: `features/source-library/hooks/useActionRunner.tsx`.
 
 **Left behind, deliberately:** `EntityAltViewProps` carries no selection, so a
@@ -393,6 +418,7 @@ names on one page.
 | `useLaneParam.ts` | The lane as `?scope=` URL state for a list outside the shell: a named lane wins, else the `lists.landing_tab/<token>` knob, else All; a picked lane is always written. Pair with `useOrgFilterParam` |
 | `components/EntityListToolbar.tsx` / `EntityFilterPanel.tsx` / `EntityColumnPicker.tsx` / `EntityListTable.tsx` | The lifted surface pieces                                                                                                                                                                                                                                                          |
 | `selection.ts`                                                                                                  | Bulk-selection vocabulary — `EntityBulkAction`, `EntityBulkSelection`, `EntityBulkFilter`, and the pure `bulkSelectionMode` that decides which meaning of "all" is currently true                                                                                                   |
+| `bulkSkipped.ts` | Skipped rows named: five inline, "+N more", Copy list; `BulkNoneDoneError` |
 | `rowVerbs.ts` | THE BULK TWIN RULE — `defineRowVerbs` (row action + bulk twin from one declaration) and `bulkActionsFromRowVerbs` (verb registries); skip-and-name, confirm, one-value ask |
 | `useEntityListSelection.ts`                                                                                     | The selection state — local beside the query, never Redux; resolves "everything matching" by paging the surface's own service, cancellably                                                                                                                                          |
 | `components/EntityBulkBar.tsx`                                                                                  | The declared buttons (rendered inside the table's own bulk bar) and the one banner that says which meaning of "all" is true                                                                                                                                                         |
@@ -553,6 +579,8 @@ demoting the detail page — cheap, high value, not a redesign. This shell is
 how that savior page gets built.
 
 ## Change log
+
+- 2026-10-22 (bulk twin review fixes) — Batch twins never count an unloaded id as done (`BulkBatchOutcome.done`, else "Not loaded"). Partial results keep the skipped rows ticked (`EntityBulkActionResult.keepIds` → host `setIds`; table hook and `RowSelectionBar` wired, EntityListPage via its selection). Skipped rows: five inline, "+N more", **Copy list** (`bulkSkipped.ts`, `BulkNoneDoneError`). Built-in Restore = the Trash page's main door (+ `carryOnTableRestore`), CMS refused by name, "in Trash" from the view / `deleted_at`. No confirm when every row is skipped; disabled verbs name `unavailableTooltip`; a below-min date is named; choice asks take `validate`. Guard: comments stripped, siblings no longer cover, `mutating-no-bulk` / `bulk-only-row-verbs` (blocking) and `hand-written-bulk-list` (shrink-only) rules, `MUTATING_VERBS` vocabulary widened (cancel, send, disable, publish, suspend, close, mute, assign, …) with a self-test. Tests: `row-verbs-bulk-twin.test.ts`, `bulk-partial-keeps-skipped.test.tsx`, guard self-test.
 
 - 2026-10-21 (bulk parity primitive) — **THE BULK TWIN RULE.** `rowVerbs.ts`: `defineRowVerbs` (row action + bulk twin from one declaration) and `bulkActionsFromRowVerbs` (verb registries, every id decided); skipped rows named through the shared `reportPerRow`. `EntityBulkActionConfirm.ask` asks one date or choice for the whole selection (`input.value`). Built-ins gain **Restore** and follow `archivedView` (EntityListPage passes `query.archived`; `useTableBulkSelection({ archivedView })`); Move to Trash skips rows already in Trash. **Add tag** is THE tag picker (`pickTag`, host in `RecordBulkDialogsHostBody`). First surface: spend approvals (all five decisions in bulk; Temporary asks the expiry). Guard `pnpm check:bulk-parity` (baseline 51 files / 89 verbs). Tests: `__tests__/row-verbs-bulk-twin.test.ts`, `bulk-ask-one-value.test.tsx`, `bulk-parity-guard.test.ts`.
 - 2026-10-18 (users one roof, lane L) — **A bulk confirm can ask ONE reason for the whole selection.** `EntityBulkActionConfirm.reason = { placeholder, optional? }` turns the confirm into the design-system `TextInputDialog` (title + consequence + reason box); the trimmed words reach `run(selection, input)` as `input.reason`. `run` now takes an optional second `input` argument (the shell always passes it, `{}` without a reason). First user: Accounts bulk Close / Reopen, which recorded canned reasons until now.

@@ -32,6 +32,7 @@ import { guestRecordsNote, readGuestRecordCount } from "@/lib/guest/guest-record
 import { lookupInvitedEmail } from "@/utils/auth/invited-email-lookup";
 import { RememberedSignInHeading } from "@/features/auth/components/RememberedSignInHeading";
 import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";
+import { AuthMethodSwitch } from "@/features/auth/phone/AuthMethodSwitch";
 
 interface SignInProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -115,75 +116,81 @@ export default async function SignIn({ searchParams }: SignInProps) {
       message={message}
       note={guestNote}
     >
-      <HardRedirectForm
-        action={loginWithRedirect}
-        className="space-y-4 sm:space-y-6"
-      >
-        {/* Hidden input to pass redirectTo in case the binding fails */}
-        <input type="hidden" name="redirectTo" value={redirectTo ?? ""} />
-
-        <div>
-          <Label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+      <AuthMethodSwitch
+        redirectTo={redirectTo ?? null}
+        phoneSubmitLabel="Sign in"
+        emailForm={
+          <HardRedirectForm
+            action={loginWithRedirect}
+            className="space-y-4 sm:space-y-6"
           >
-            Email address
-          </Label>
-          <div className="mt-1">
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              defaultValue={invitedEmail ?? undefined}
-              className="block w-full"
-              placeholder="you@example.com"
-            />
-          </div>
-        </div>
+            {/* Hidden input to pass redirectTo in case the binding fails */}
+            <input type="hidden" name="redirectTo" value={redirectTo ?? ""} />
 
-        <div>
-          <div className="flex items-center justify-between">
-            <Label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Password
-            </Label>
-            <div className="text-sm">
-              <Link
-                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500"
-                href={forgotHrefWithDest}
-                tabIndex={-1}
+            <div>
+              <Label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Forgot your password?
-              </Link>
+                Email address
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  defaultValue={invitedEmail ?? undefined}
+                  className="block w-full"
+                  placeholder="you@example.com"
+                />
+              </div>
             </div>
-          </div>
-          <div className="mt-1">
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="block w-full"
-              placeholder="••••••••"
-            />
-          </div>
-        </div>
 
-        <div>
-          <SubmitButton
-            needsScript
-            pendingText="Signing In..."
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-          >
-            Sign in
-          </SubmitButton>
-        </div>
-      </HardRedirectForm>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Password
+                </Label>
+                <div className="text-sm">
+                  <Link
+                    className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500"
+                    href={forgotHrefWithDest}
+                    tabIndex={-1}
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
+              </div>
+              <div className="mt-1">
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  className="block w-full"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <div>
+              <SubmitButton
+                needsScript
+                pendingText="Signing In..."
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              >
+                Sign in
+              </SubmitButton>
+            </div>
+          </HardRedirectForm>
+        }
+      />
 
       <div className="mt-4 sm:mt-6">
         <div className="relative">

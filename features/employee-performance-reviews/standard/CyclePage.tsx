@@ -22,6 +22,13 @@ import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { hrPerformanceHref } from "@/features/hr/routes";
 
 import { CalibrationTab } from "./CalibrationTab";
+import {
+  SurfaceRuntimeProvider,
+  useSurfaceScopeContribution,
+  useSurfaceWriteHandlers,
+} from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { HR_REVIEW_CYCLE_SURFACE, createHrReviewCycleScope } from "@/features/surfaces/manifests/hr-review-cycle.manifest";
 import { launchRefusalMessage } from "./messages";
 import { closeCycle, getCycle, launchCycle, type LaunchPopulation } from "./service";
 import { OUTSTANDING_LABEL, formatDay, periodLabel, statusLabel, statusTone } from "./status";
@@ -119,7 +126,54 @@ export function CyclePage({ cycleId }: { cycleId: string }) {
     );
   }
 
+  const getScope = () =>
+    createHrReviewCycleScope({
+      cycle_load_status: cycle ? "loaded" : error ? "failed" : "loading",
+      cycle_view: view,
+      ...(c && cycle
+        ? {
+            cycle: {
+              id: c.cycleId,
+              name: c.name,
+              status: c.status,
+              period_start: c.periodStart,
+              period_end: c.periodEnd,
+              self_due_on: c.selfDueOn,
+              manager_due_on: c.managerDueOn,
+              share_due_on: c.shareDueOn,
+              acknowledged_count: c.acknowledgedCount,
+              read_only: readOnly,
+            },
+            cycle_review_count: cycle.total,
+            cycle_reviews: cycle.reviews.slice(0, 100).map((r) => ({
+              review_id: r.reviewId,
+              employee: r.employeeName,
+              manager: r.managerName,
+              status: statusLabel(r.status),
+              overall_rating: r.overallRating,
+              waiting_on: r.outstanding.map((o) => OUTSTANDING_LABEL[o]),
+            })),
+          }
+        : {}),
+    });
+  const getWriteHandlers = () => ({
+    close_cycle: {
+      validate: () => {
+        if (!c) refuseSurfaceWrite("The cycle has not loaded yet.");
+        if (closed) refuseSurfaceWrite("This cycle is already closed.");
+        if (readOnly) refuseSurfaceWrite("Only HR can close this cycle.");
+      },
+      apply: async () => {
+        const r = await closeCycle(cycleId);
+        if (!r.ok) throw new Error(r.message);
+        reload();
+        return { summary: "The cycle is closed; every review in it is locked." };
+      },
+    },
+  });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_REVIEW_CYCLE_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers}>
     <HrPageState loading={cycle === null && error === null} error={error ? new Error(error) : null} onRetry={reload} operation="This review cycle" variant="panel">
       {c && cycle ? (
         <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
@@ -219,6 +273,7 @@ export function CyclePage({ cycleId }: { cycleId: string }) {
         </div>
       ) : null}
     </HrPageState>
+    </SurfaceRuntimeProvider>
   );
 }
 
@@ -238,8 +293,33 @@ function LaunchPanel({ cycleId, organizationId, onLaunched }: { cycleId: string;
     return people.length > 0 ? { kind: "people", employmentIds: people.map((p) => p.employmentId) } : null;
   };
   const chosen = population();
-
   const afterCreateOpenAccessSetup = useAfterCreateOpenAccessSetup();
+
+  useSurfaceScopeContribution(HR_REVIEW_CYCLE_SURFACE, "cycle-launch-panel", () => ({
+    departments: departments.map((d) => ({ id: d.id, name: d.name })),
+  }));
+  useSurfaceWriteHandlers(HR_REVIEW_CYCLE_SURFACE, {
+    start_reviews: {
+      validate: (value: unknown) => {
+        startReviewsPopulation(value, departments);
+      },
+      apply: async (value: unknown) => {
+        const target = startReviewsPopulation(value, departments);
+        const r = await launchCycle(cycleId, target);
+        if (!r.ok) throw new Error(r.message);
+        afterCreateOpenAccessSetup(r.data.accessSetup);
+        onLaunched(r.data.refused);
+        return {
+          summary: `${r.data.created.length} review(s) started${r.data.refused.length ? `, ${r.data.refused.length} not added` : ""}.`,
+          data: {
+            started: r.data.created.map((x) => x.employeeName),
+            not_added: r.data.refused.map((x) => launchRefusalMessage(x.employeeName, x.reason)),
+          },
+        };
+      },
+    },
+  });
+
   const launch = async () => {
     if (!chosen || busy) return;
     setBusy(true);
@@ -317,4 +397,27 @@ function LaunchPanel({ cycleId, organizationId, onLaunched }: { cycleId: string;
       </Button>
     </div>
   );
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The `start_reviews` value as the launch door's population; throws the sentence the agent reads. */
+function startReviewsPopulation(value: unknown, departments: Array<{ id: string; name: string }>): LaunchPopulation {
+  const v = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+  const keys = ["department", "manager_employment_id", "employment_ids"].filter((k) => v[k] !== undefined);
+  if (keys.length !== 1) refuseSurfaceWrite('Send exactly one of "department", "manager_employment_id" or "employment_ids".');
+  if (v.department !== undefined) {
+    const want = String(v.department).trim().toLowerCase();
+    const d = departments.find((x) => x.id === v.department || x.name.trim().toLowerCase() === want);
+    if (!d) refuseSurfaceWrite(`No department "${String(v.department)}" — use an id or name from departments.`);
+    return { kind: "department", departmentId: d!.id };
+  }
+  if (v.manager_employment_id !== undefined) {
+    if (typeof v.manager_employment_id !== "string" || !UUID_RE.test(v.manager_employment_id)) refuseSurfaceWrite("manager_employment_id must be an employment id (uuid).");
+    return { kind: "manager", managerEmploymentId: v.manager_employment_id as string };
+  }
+  const ids = v.employment_ids;
+  if (!Array.isArray(ids) || ids.length === 0 || !ids.every((x) => typeof x === "string" && UUID_RE.test(x)))
+    refuseSurfaceWrite("employment_ids must be a non-empty list of employment ids (uuids).");
+  return { kind: "people", employmentIds: [...new Set(ids as string[])] };
 }

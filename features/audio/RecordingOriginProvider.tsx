@@ -6,7 +6,7 @@
 //
 // WHY A CONTEXT AND NOT A PROP. The mic lives at the bottom of a deep, SHARED
 // chain — ProTextarea → smart input → InputActionButtons → AgentMicrophoneButton
-// → MicrophoneIconButton → MicrophoneIconButtonCore → useVoiceCapture — and that
+// → MicrophoneIconButton (@ai-matrx/media/voice) → useVoiceCapture — and that
 // chain is used by every text surface in the platform. Threading an `origin`
 // prop through all of it would touch a dozen shared components for the benefit
 // of one surface and give every future surface the same tax. A surface instead

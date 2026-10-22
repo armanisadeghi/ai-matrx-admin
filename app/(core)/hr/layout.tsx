@@ -18,6 +18,7 @@
 
 import { Suspense, type ReactNode } from "react";
 
+import { HrFrameSidebar } from "@/features/hr/shared/HrFrameMenu";
 import { HrProvider } from "@/features/hr/shared/HrProvider";
 import { HrLoading } from "@/features/hr/shared/HrStates";
 import { createRouteMetadata } from "@/utils/route-metadata";
@@ -30,7 +31,10 @@ export const metadata = createRouteMetadata("/hr", {
 export default function HrLayout({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={<HrLoading variant="cards" rows={4} />}>
-      <HrProvider>{children}</HrProvider>
+      <HrProvider>
+        {/* The new app frame's ONE HR menu (its sidebar); renders nothing in classic. */}
+        <HrFrameSidebar>{children}</HrFrameSidebar>
+      </HrProvider>
     </Suspense>
   );
 }

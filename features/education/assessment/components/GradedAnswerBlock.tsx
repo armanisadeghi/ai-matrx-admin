@@ -72,10 +72,10 @@ function PlainGrade({ graded }: { graded: GradedAnswer }) {
         {RESULT_LABEL[graded.result]}
       </span>
       {graded.misconception && (
-        <p className="text-amber-700 dark:text-amber-300">
+        <div className="text-amber-700 dark:text-amber-300">
           <span className="font-medium">Watch out:</span>{" "}
           <RichContent source={graded.misconception} level="inline" />
-        </p>
+        </div>
       )}
       {graded.explanation && (
         <div className="text-muted-foreground">

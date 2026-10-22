@@ -143,6 +143,8 @@ function PreviewStage({ bundle, mode, stream, theme }: { bundle: PreviewBundle; 
         verdict,
         checks,
         drawState,
+        // A failed draw names its cause (compile or render error), never only "failed".
+        ...(drawState === "failed" && errorsRef.current[0] ? { error: errorsRef.current[0] } : {}),
         overflowPx: overflowPx(host),
         theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
       };

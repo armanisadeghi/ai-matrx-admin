@@ -57,7 +57,9 @@ export function EntityLaneHeader({
   return (
     <div
       data-entity-lane-header=""
-      className={cn("flex min-w-0 items-center justify-between gap-2", className)}
+      // The `list` size container its org filter's `@max-3xl/list:` folds against (EntityListPage's
+      // header declares the same name for the full page shell).
+      className={cn("@container/list flex min-w-0 items-center justify-between gap-2", className)}
     >
       <div className="flex min-w-0 items-center gap-1">
         <EntityScopeTabs

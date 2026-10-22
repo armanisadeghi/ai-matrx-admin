@@ -454,6 +454,15 @@ export const CmsPageService = {
     return res.page;
   },
 
+  /**
+   * Take a published page offline. The `update` action already writes
+   * `is_published`, so this is the same door as every page-field edit
+   * (access check, activity log) with the one field a person means.
+   */
+  async unpublishPage(pageId: string): Promise<ClientPage> {
+    return CmsPageService.updatePage(pageId, { isPublished: false });
+  },
+
   async discardDraft(pageId: string): Promise<void> {
     await callApi("pages", "discard-draft", { pageId });
   },

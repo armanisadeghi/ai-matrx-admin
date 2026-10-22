@@ -157,7 +157,7 @@ export function ConnectorPromptCard({
           {connector ? <ConnectorTile connector={connector} size="sm" className="mt-0.5" /> : null}
 
         <div className="min-w-0 flex-1">
-          <h3 className="pr-7 text-sm font-semibold text-foreground">
+          <h3 className="text-sm font-semibold text-foreground">
             {provider.prompt.title}
           </h3>
           <p className="mt-0.5 text-sm leading-snug text-muted-foreground">
@@ -173,17 +173,16 @@ export function ConnectorPromptCard({
             </Button>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label={`Dismiss the ${provider.name} suggestion`}
+          title={`Dismiss — ${provider.name} stays available in Settings → Connectors`}
+          className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-7 sm:w-7"
+        >
+          <X className="h-4 w-4" aria-hidden />
+        </button>
       </div>
-
-      <button
-        type="button"
-        onClick={dismiss}
-        aria-label={`Dismiss the ${provider.name} suggestion`}
-        title={`Dismiss — ${provider.name} stays available in Settings → Connectors`}
-        className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-7 sm:w-7"
-      >
-        <X className="h-4 w-4" aria-hidden />
-      </button>
     </section>
   );
 }

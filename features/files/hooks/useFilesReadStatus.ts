@@ -7,7 +7,7 @@
  */
 import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectTreeError, selectTreeStatus } from "@/features/files/redux/selectors";
+import { selectTreeError, selectTreeHydrating, selectTreeStatus } from "@/features/files/redux/selectors";
 import { loadUserFileTree } from "@/features/files/redux/thunks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 
@@ -36,11 +36,14 @@ export function useTreeReadStatus(): FilesReadStatus {
   const dispatch = useAppDispatch();
   const treeStatus = useAppSelector(selectTreeStatus);
   const error = useAppSelector(selectTreeError);
+  // A first load paints from page one and keeps appending: until it is whole the
+  // read is not an answer for "empty" (rows already in show either way).
+  const hydrating = useAppSelector(selectTreeHydrating);
   const userId = useAppSelector(selectUserId);
   const retry = useCallback(() => {
     if (userId) void dispatch(loadUserFileTree({ userId }));
   }, [dispatch, userId]);
   useDemandFileTree();
-  const status = treeStatus === "loaded" ? "ready" : treeStatus === "error" ? "error" : "loading";
+  const status = treeStatus === "loaded" && !hydrating ? "ready" : treeStatus === "error" ? "error" : "loading";
   return { status, error: error ?? null, retry };
 }

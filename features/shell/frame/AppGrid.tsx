@@ -33,8 +33,6 @@ export interface AppGridProps {
   currentProductId?: string;
   /** The host's own menu entries, searched with every page (the same index as "Go to"). */
   goToEntries?: readonly GoToEntry[];
-  /** Same-tab navigation for a page hit (the host's router). Without it the grid assigns the location. */
-  onGo?: (href: string) => void;
 }
 
 /** Page hits listed under the matching tiles. */
@@ -101,7 +99,6 @@ export function AppGrid({
   onFavoritesChange,
   currentProductId,
   goToEntries,
-  onGo,
 }: AppGridProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -114,6 +111,7 @@ export function AppGrid({
   // THE SAME FULL INDEX AS "GO TO" (every page with a home, the menus), loaded on the first keystroke.
   const [pageIndex, setPageIndex] = useState<GoToEntry[] | null>(null);
   const indexRequested = useRef(false);
+  const [indexFailed, setIndexFailed] = useState(false);
 
   const favoriteProducts = favorites
     .map((id) => products.find((p) => p.id === id))
@@ -137,15 +135,22 @@ export function AppGrid({
     setQuery(next);
     if (next.trim() && !indexRequested.current) {
       indexRequested.current = true;
-      void import("./goToSearchIndex").then((m) => setPageIndex(m.fullGoToIndex(products, families, goToEntries)));
+      setIndexFailed(false);
+      void import("./goToSearchIndex")
+        .then((m) => setPageIndex(m.fullGoToIndex(products, families, goToEntries)))
+        .catch((error: unknown) => {
+          // The chunk failed: say so, and let the next keystroke try again.
+          indexRequested.current = false;
+          console.error("[app-grid] the page search index failed to load", error);
+          setIndexFailed(true);
+        });
     }
   }
 
-  function goToPage(href: string, newTab: boolean) {
+  // Everything opened from the grid opens in a NEW TAB, the tiles and the page hits alike.
+  function goToPage(href: string) {
     setOpen(false);
-    if (newTab) openOutbound(href, "_blank", "noopener,noreferrer");
-    else if (onGo) onGo(href);
-    else window.location.assign(href);
+    openOutbound(href, "_blank", "noopener,noreferrer");
   }
   const layout = gridLayout(viewportHeight, favoriteProducts.length, rest.length);
   const cols = layout.columns === 6 ? "grid-cols-6" : "grid-cols-5";
@@ -175,7 +180,7 @@ export function AppGrid({
       if (first) {
         openOutbound(first.homeHref, "_blank", "noopener,noreferrer");
         setOpen(false);
-      } else goToPage(page.href, e.metaKey || e.ctrlKey);
+      } else goToPage(page.href);
     } else if (e.key === "ArrowDown") {
       const first = bodyRef.current?.querySelector<HTMLElement>(TILE_SELECTOR);
       if (first) {
@@ -338,6 +343,11 @@ export function AppGrid({
                     {matches.map((p) => renderTile(p, "hit"))}
                   </section>
                 ) : null}
+                {searching && indexFailed ? (
+                  <p role="status" className="type-secondary px-2 py-2 text-muted-foreground">
+                    Page search did not load. Keep typing to retry.
+                  </p>
+                ) : null}
                 {pageHits.length > 0 ? (
                   <section aria-label="Matching pages" className="flex flex-col pt-1">
                     {pageHits.map((hit) => (
@@ -349,7 +359,7 @@ export function AppGrid({
                         className="flex min-w-0 items-baseline gap-2 rounded-md px-2 py-1.5 outline-none hover:bg-accent focus-visible:bg-accent"
                         onClick={(e) => {
                           e.preventDefault();
-                          goToPage(hit.href, e.metaKey || e.ctrlKey);
+                          goToPage(hit.href);
                         }}
                       >
                         <span className="shrink-0 truncate text-sm text-foreground">{hit.label}</span>

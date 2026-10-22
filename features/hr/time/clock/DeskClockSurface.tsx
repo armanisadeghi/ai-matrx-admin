@@ -29,6 +29,8 @@ import { webPunchSessionSegment } from "@/features/hr/time/api/idempotencyKey";
 
 import { EmployeeSearchSelect, type PunchSubject } from "./EmployeeSearchSelect";
 import { PunchWidget } from "./PunchWidget";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { HR_DESK_CLOCK_SURFACE, createHrDeskClockScope } from "@/features/surfaces/manifests/hr-desk-clock.manifest";
 
 export function DeskClockSurface({
   mockCase,
@@ -39,14 +41,21 @@ export function DeskClockSurface({
 }) {
   const hr = useHrContext();
   const [subject, setSubject] = useState<PunchSubject | null>(null);
+  const getScope = () =>
+    createHrDeskClockScope(
+      subject
+        ? { clock_subject: { employment_id: subject.employmentId, name: subject.displayName, employee_number: subject.employeeNumber } }
+        : {},
+    );
 
   return (
-    /*
+    <SurfaceRuntimeProvider surfaceName={HR_DESK_CLOCK_SURFACE} getScope={getScope}>
+    {/*
       No in-body `<h1>` (`core-route-headers`, failure class 3): the route's identity is the
       `<PageHeader>` injection, and a second title collides with the glass header on a phone.
       `pt-[var(--shell-header-h)]` so the disclosure below clears the glass instead of scrolling
       under it — never a hardcoded offset.
-    */
+    */}
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 pb-safe pt-[var(--shell-header-h)]">
       {/*
         NOT a title block: this is the operator's disclosure and it stays. An operator who does not
@@ -112,6 +121,7 @@ export function DeskClockSurface({
                 */
                 allowBackdating
                 deviceOrSession={webPunchSessionSegment()}
+                surfaceName={HR_DESK_CLOCK_SURFACE}
                 mockCase={hrMockEnabled() ? mockCase : undefined}
                 punchMockCase={hrMockEnabled() ? punchMockCase : undefined}
               />
@@ -121,5 +131,6 @@ export function DeskClockSurface({
         )}
       </HrPageState>
     </div>
+    </SurfaceRuntimeProvider>
   );
 }

@@ -31,6 +31,10 @@ import { Loader2, type LucideIcon } from "lucide-react";
 import { allowNativeNewTab } from "@/utils/navigation/should-open-in-new-tab";
 import { cn } from "@/lib/utils";
 
+import { useFrameSidebarSlot } from "@/features/shell/frame-host/frameSidebarSlot";
+
+import { usePublishHrSectionTabs } from "./HrFrameMenu";
+import { resolveActiveHrKey } from "./hr-nav";
 import { HrShell } from "./HrShell";
 
 export type HrRouteTab = {
@@ -42,32 +46,16 @@ export type HrRouteTab = {
   visible?: boolean;
 };
 
-function routePath(href: string): string {
-  const index = href.indexOf("?");
-  return index === -1 ? href : href.slice(0, index);
-}
-
 /**
- * The active tab is the one whose route path is the LONGEST prefix of the current
- * pathname. Longest-wins is load-bearing: `/hr/people` is a prefix of
- * `/hr/people/org-chart`, so a first-match scan would light up Directory while the
- * user is on the org chart.
+ * The active tab: the LONGEST route-path prefix of the current pathname (`resolveActiveHrKey`,
+ * shared with HrShell's module menu). `/hr/people` is a prefix of `/hr/people/org-chart`, so a
+ * first-match scan would light up Directory while the user is on the org chart.
  */
 export function resolveActiveHrTab(
   tabs: HrRouteTab[],
   pathname: string,
 ): string | null {
-  let bestKey: string | null = null;
-  let bestLength = -1;
-  for (const tab of tabs) {
-    const path = routePath(tab.href);
-    const matches = pathname === path || pathname.startsWith(`${path}/`);
-    if (matches && path.length > bestLength) {
-      bestKey = tab.key;
-      bestLength = path.length;
-    }
-  }
-  return bestKey;
+  return resolveActiveHrKey(tabs, pathname);
 }
 
 export function HrSubShell({
@@ -85,11 +73,16 @@ export function HrSubShell({
 }) {
   const pathname = usePathname() ?? "";
   const router = useRouter();
+  // THE NEW APP FRAME: the section's pages sit under their module in the frame's sidebar (the
+  // /hr layout's HrFrameSidebar, the one HR menu), so the body draws no tab strip. Classic: the
+  // strip, unchanged.
+  const inFrame = useFrameSidebarSlot();
   const [isPending, startTransition] = useTransition();
   const [pendingKey, setPendingKey] = useState<string | null>(null);
 
   // ABSENT, not disabled.
   const visible = tabs.filter((tab) => tab.visible !== false);
+  usePublishHrSectionTabs(inFrame ? visible : null);
   const activeKey = resolveActiveHrTab(visible, pathname);
 
   const navigate = (tab: HrRouteTab) => {
@@ -141,7 +134,7 @@ export function HrSubShell({
       description={description}
       actions={actions}
       subNav={
-        visible.length > 0 ? (
+        !inFrame && visible.length > 0 ? (
           <nav
             ref={navRef}
             aria-label="Section"

@@ -20,6 +20,8 @@
  * surface renders what it is given and asks for nothing extra.
  */
 
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { HR_PUNCH_REGISTER_SURFACE, createHrPunchRegisterScope } from "@/features/surfaces/manifests/hr-punch-register.manifest";
 import { useState } from "react";
 import Link from "next/link";
 import { Download, Eraser, PencilLine } from "lucide-react";
@@ -129,7 +131,30 @@ export function PunchRegister({
     toast.success(`${pluralize(rows.length, "punch", "punches")} exported.`);
   }
 
+  const getScope = () =>
+    createHrPunchRegisterScope({
+      punches_load_status: register.error ? "failed" : register.data ? "loaded" : "loading",
+      punch_scope: { who: employmentId ? "one person" : "the employer", employment_id: employmentId ?? null, can_edit: canEdit },
+      ...(register.data
+        ? {
+            punch_total: register.data.totalRows,
+            punches: rows.map((row) => ({
+              id: row.id,
+              employee: row.subjectName,
+              kind: row.punchKind,
+              occurred_at: row.occurredAt,
+              work_date: row.localWorkDate,
+              source: row.source,
+              recorded_by: row.actorType,
+              voided_at: row.voidedAt,
+              has_geo: row.hasGeo,
+            })),
+          }
+        : {}),
+    });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_PUNCH_REGISTER_SURFACE} getScope={getScope}>
     <div className="flex h-full min-h-0 flex-col gap-3 px-3 py-3 sm:px-4">
       {/*
         🚨 ABOVE `HrTimeReadState`, DELIBERATELY. That wrapper renders the refusal INSTEAD of its
@@ -258,6 +283,7 @@ export function PunchRegister({
         }}
       />
     </div>
+    </SurfaceRuntimeProvider>
   );
 }
 

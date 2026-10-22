@@ -25,6 +25,7 @@
  * Selection lives in `?pack=<id>` so a pack is linkable and survives a refresh.
  */
 
+import { FrameSidebarColumn } from "@/features/shell/frame-host/frameSidebarSlot";
 import { useCallback, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -193,7 +194,7 @@ export function LibraryCuratePage() {
       />
       <div className="flex h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         {/* Rail — industries and their packs */}
-        <aside
+        <FrameSidebarColumn
           className={cn(
             "flex w-full min-w-0 flex-col border-r border-border bg-card/40 lg:w-[22rem] lg:shrink-0",
             packId && "hidden lg:flex",
@@ -303,7 +304,7 @@ export function LibraryCuratePage() {
               })
             )}
           </div>
-        </aside>
+        </FrameSidebarColumn>
 
         {/* Detail — the ONE pack editor, no admin directory */}
         <main className={cn("min-w-0 flex-1 overflow-hidden", !packId && "hidden lg:block")}>

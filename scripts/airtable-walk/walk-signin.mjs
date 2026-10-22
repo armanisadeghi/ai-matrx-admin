@@ -33,6 +33,14 @@ export async function resumeIfParked(page, label = "walk") {
 
 /** Mint a dev-login nonce for this host and sign `page` in (admin, or test@test.com with member). Returns the signed-in email. */
 export async function walkSignIn(page, origin, { member = false, who = member ? "member" : "admin" } = {}) {
+  // The released site (https://www.aimatrx.com) has no dev-login: the test seat signs in with its .env.local password.
+  if (!/^http:\/\/([a-z0-9-]+\.)?localhost(:\d+)?$/i.test(origin.replace(/\/$/, ""))) {
+    const { readFileSync } = await import("node:fs");
+    const { signIn } = await import("../lib/seat-browser.mjs");
+    const env = Object.fromEntries(readFileSync(`${REPO}/.env.local`, "utf8").split("\n").map((l) => l.match(/^([A-Z_]+)=(.*)$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^"|"$/g, "")]));
+    const [user, pass] = member ? [env.AI_MEMBER_USERNAME, env.AI_MEMBER_PASSWORD] : [env.AI_ADMIN_USERNAME, env.AI_ADMIN_PASSWORD];
+    return signIn(page, origin.replace(/\/$/, ""), user, pass, who);
+  }
   await markBrowserAgentTraffic(page.context(), "airtable-walk", origin);
   const deadline = Date.now() + MAX_WAIT_MS;
   for (let attempt = 1; Date.now() < deadline; attempt += 1) {

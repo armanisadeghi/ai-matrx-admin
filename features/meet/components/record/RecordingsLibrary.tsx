@@ -351,17 +351,17 @@ export function RecordingsLibrary({ query }: { query: string }) {
                   </DropdownMenu>
                 </div>
                 {playing === r.id && fileId !== null ? (
-                  <div className="relative border-t border-border bg-muted/20 p-3">
+                  <div className="flex items-start gap-2 border-t border-border bg-muted/20 p-3">
+                    <div className="mx-auto min-w-0 max-w-3xl flex-1">
+                      <RecordingSeekPlayer fileId={fileId} seek={FIRST_PLAY} />
+                    </div>
                     <Button
                       icon={<X />}
                       variant="quiet"
-                      className="absolute right-4 top-4 z-10"
+                      className="shrink-0"
                       onClick={() => setPlaying(null)}
                       aria-label="Close the player"
                     />
-                    <div className="mx-auto max-w-3xl">
-                      <RecordingSeekPlayer fileId={fileId} seek={FIRST_PLAY} />
-                    </div>
                   </div>
                 ) : null}
               </li>

@@ -39,7 +39,11 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectHasAccount } from "@/lib/redux/selectors/userSelectors";
-import { selectEntitlementTier } from "@/features/entitlements/state/selectors";
+import {
+  selectEntitlementTier,
+  selectUsageGatePlanKey,
+} from "@/features/entitlements/state/selectors";
+import { yourPlanCard } from "./yourPlan";
 import { useEnsureEntitlementSnapshot } from "@/features/entitlements/hooks";
 import type { EducationPricing as EducationPricingData } from "./loadEducationPricing";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
@@ -152,8 +156,17 @@ export function EducationPricing({
   const isAuthenticated = useAppSelector(selectHasAccount);
   const tier = useAppSelector(selectEntitlementTier);
   useEnsureEntitlementSnapshot();
-  const isPremium = isAuthenticated && tier === "premium";
-  const isFreeMember = isAuthenticated && !isPremium;
+  const planKey = useAppSelector(selectUsageGatePlanKey);
+  const yourCard = yourPlanCard({
+    isAuthenticated,
+    planKey,
+    tier,
+    freePlanKey: pricing.free?.planKey ?? null,
+    paidPlanKey: pricing.premium?.planKey ?? null,
+  });
+  // On the paid card's plan or any plan above it: Free is included.
+  const isPremium = yourCard === "paid" || yourCard === "above";
+  const isFreeMember = yourCard === "free";
   const [checkingOut, setCheckingOut] = useState(false);
 
   const upgrade = async () => {
@@ -313,7 +326,13 @@ export function EducationPricing({
             <PlanLabel
               name={paidName}
               emphasis
-              badge={isPremium ? "Your plan" : undefined}
+              badge={
+                yourCard === "paid"
+                  ? "Your plan"
+                  : yourCard === "above"
+                    ? "Included in your plan"
+                    : undefined
+              }
             />
             {premium ? (
               <div className="flex items-baseline gap-1.5">

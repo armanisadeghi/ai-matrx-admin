@@ -39,6 +39,7 @@ import type { ComponentType } from "react";
 import type { MatrxTableRowActionDef } from "@ai-matrx/design-system/data-table/types";
 import {
   bulkCountLabel,
+  type BulkSkip,
   type EntityBulkAction,
   type EntityBulkActionConfirm,
   type EntityBulkActionInput,
@@ -64,10 +65,24 @@ export interface BulkTargets<T> {
   rows: T[];
 }
 
-/** What a batch twin (`run`) answers: every id it could not do, with the reason. */
+/**
+ * What a batch twin (`run`) answers: every id it could not do, with the reason, and — when it ran
+ * on ids it did not hold a row for — the ids it actually did (`done`).
+ *
+ * 🚨 AN UNLOADED ROW IS NEVER COUNTED AS DONE. A selection can outlive a page, so `targets.ids`
+ * may hold ids with no row in `targets.rows`. A twin that loops `targets.rows` never touches them.
+ * So unless the twin names them in `done`, an unloaded id that is not in `failed` is skipped and
+ * NAMED ("Not loaded"), never reported as done. A batch door that acts on ids (one RPC over every
+ * id) returns `done: targets.ids` minus its failures.
+ */
 export interface BulkBatchOutcome {
   failed?: { id: string; reason: string }[];
+  /** Ids the twin actually did. Absent → every LOADED target not in `failed`. */
+  done?: string[];
 }
+
+/** The skip sentence for a selected id whose row the list does not hold. */
+export const NOT_LOADED_REASON = "Not loaded — show it in the list and try again";
 
 interface BulkTwinBase<T> {
   /** The bar's label. Default: the verb's label. */
@@ -136,11 +151,11 @@ function twinToBulkAction<T>(face: VerbFace<T>, twin: BulkTwin<T>, options: RowV
   const label = twin.label ?? face.label;
   const done = twin.done ?? label;
   const skipOf = (row: T) => twin.skipReason?.(row) ?? face.skipOf(row);
-  const targetsOf = (selection: EntityBulkSelection<T>): BulkTargets<T> & { skipped: { id: string; name: string; reason: string }[] } => {
+  const targetsOf = (selection: EntityBulkSelection<T>): BulkTargets<T> & { skipped: BulkSkip[] } => {
     const rowsById = new Map(selection.rows.map((row) => [options.getRowId(row), row]));
     const ids: string[] = [];
     const rows: T[] = [];
-    const skipped: { id: string; name: string; reason: string }[] = [];
+    const skipped: BulkSkip[] = [];
     for (const id of selection.ids) {
       const row = rowsById.get(id);
       const reason = row === undefined ? null : skipOf(row);
@@ -168,6 +183,8 @@ function twinToBulkAction<T>(face: VerbFace<T>, twin: BulkTwin<T>, options: RowV
     },
     confirm: (selection) => {
       const targets = targetsOf(selection);
+      // Every selected row is skipped: no "Approve 0 approvals?" dialog — the run names each skip.
+      if (targets.ids.length === 0) return null;
       if (twin.confirm) return twin.confirm(targets, selection);
       if (!face.destructive) return null;
       return {
@@ -195,22 +212,24 @@ function twinToBulkAction<T>(face: VerbFace<T>, twin: BulkTwin<T>, options: RowV
         );
       }
       const targets = targetsOf(selection);
-      const skipped = targets.skipped.map(({ name, reason }) => ({ name, reason }));
+      const skipped: BulkSkip[] = [...targets.skipped];
       if (targets.ids.length === 0) return reportPerRow([], skipped, reportOptions);
       const outcome = await twin.run({ ids: targets.ids, rows: targets.rows }, input, selection);
       // The batch door's own dialog was canceled: nothing ran, the selection stays.
       if (outcome === undefined) return;
       const rowsById = new Map(targets.rows.map((row) => [options.getRowId(row), row]));
       const failed = new Map((outcome.failed ?? []).map((f) => [f.id, f.reason]));
-      for (const [id, reason] of failed) {
+      const saidDone = outcome.done ? new Set(outcome.done) : null;
+      const succeeded: string[] = [];
+      for (const id of targets.ids) {
         const row = rowsById.get(id);
-        skipped.push({ name: row && options.getRowName ? options.getRowName(row) : id, reason });
+        const name = row && options.getRowName ? options.getRowName(row) : id;
+        const failure = failed.get(id);
+        if (failure !== undefined) skipped.push({ id, name, reason: failure });
+        else if (saidDone ? saidDone.has(id) : row !== undefined) succeeded.push(id);
+        else skipped.push({ id, name, reason: saidDone ? "Did not run" : NOT_LOADED_REASON });
       }
-      return reportPerRow(
-        targets.ids.filter((id) => !failed.has(id)),
-        skipped,
-        reportOptions,
-      );
+      return reportPerRow(succeeded, skipped, reportOptions);
     },
   };
 }
@@ -220,7 +239,8 @@ function rowVerbSkip<T>(verb: MatrxTableRowActionDef<T>): (row: T) => string | n
   return (row) => {
     if (verb.appliesTo && !verb.appliesTo(row)) return verb.unavailableTooltip ?? `${verb.label} doesn't apply`;
     const disabled = typeof verb.disabled === "function" ? verb.disabled(row) : verb.disabled;
-    if (disabled) return "Busy — try again";
+    // A verb disabled for a stated reason says it; only a reasonless disable reads as busy.
+    if (disabled) return verb.unavailableTooltip ?? "Busy — try again";
     return null;
   };
 }

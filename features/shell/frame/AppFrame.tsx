@@ -173,6 +173,12 @@ export interface AppFrameProps {
    * row, Pinned, the big items and the footer stay. The frame's width governs it.
    */
   sidebarContent?: ReactNode;
+  /**
+   * THE TOP OF THE PRODUCT'S SIDEBAR (owner, 2026-10-22): Search, a few chosen related places, More
+   * (the host's `ProductSidebarTop`), under the top row and above the body. Absent when the body
+   * carries its own top (the conversation sidebar).
+   */
+  sidebarTop?: ReactNode;
   // ── the header ──
   crumbs: readonly FrameCrumb[];
   /** Only when the item can be favorited. */
@@ -452,6 +458,7 @@ export function AppFrame(props: AppFrameProps) {
     onSelectPin: props.onSelectPin,
     bigItems: props.bigItems ?? "bottom",
     content: props.sidebarContent,
+    top: props.sidebarTop,
     bigProducts: bigItemProducts(products, favorites),
   };
   const goTo: GoToSearchProps = { products, families, onGo: props.onGoTo, extraEntries: props.goToEntries };

@@ -25,6 +25,11 @@
  * manager whether the person was short or long.
  */
 
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_TIMESHEET_APPROVALS_SURFACE,
+  createHrTimesheetApprovalsScope,
+} from "@/features/surfaces/manifests/hr-timesheet-approvals.manifest";
 import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import Link from "next/link";
@@ -178,7 +183,38 @@ export function PeriodApprovalGrid({ payPeriodId }: { payPeriodId: string | null
   );
 
 
-  if (!payPeriodId) return <NoPeriodChosen org={orgRef} />;
+  const getScope = () => {
+    const g = grid.data;
+    return createHrTimesheetApprovalsScope({
+      grid_load_status: !payPeriodId ? "no_period" : grid.error ? "failed" : g ? "loaded" : "loading",
+      ...(g
+        ? {
+            grid_period: { id: g.periodId, start_on: g.periodStartOn, end_on: g.periodEndOn, state: g.periodState, approved: g.progress.approved, total: g.progress.total },
+            timecard_total: g.totalRows,
+            timecards: g.rows.map((row) => ({
+              employment_id: row.employmentId,
+              employee: row.employeeDisplayName,
+              department: row.departmentName,
+              manager: row.managerName,
+              state: row.state,
+              total_hours: row.totalHours,
+              overtime_hours: row.hoursOvertime,
+              doubletime_hours: row.hoursDoubletime,
+              open_exceptions: row.openExceptionCount,
+              disputed: row.hasDispute,
+              approvable: row.openExceptionCount === 0 && row.openStepId !== null,
+            })),
+          }
+        : {}),
+    });
+  };
+
+  if (!payPeriodId)
+    return (
+      <SurfaceRuntimeProvider surfaceName={HR_TIMESHEET_APPROVALS_SURFACE} getScope={getScope}>
+        <NoPeriodChosen org={orgRef} />
+      </SurfaceRuntimeProvider>
+    );
 
   const rows = grid.data?.rows ?? [];
   // The table can copy every row; the review action counts only approvable timecards.
@@ -232,6 +268,7 @@ export function PeriodApprovalGrid({ payPeriodId }: { payPeriodId: string | null
   };
 
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_TIMESHEET_APPROVALS_SURFACE} getScope={getScope}>
     <RuleSnapshotProvider>
       <div className="flex h-full min-h-0 flex-col gap-3 px-3 py-3 sm:px-4">
         {grid.data ? <PeriodGridHeader grid={grid.data} org={orgRef} /> : null}
@@ -342,6 +379,7 @@ export function PeriodApprovalGrid({ payPeriodId }: { payPeriodId: string | null
         }
       />
     </RuleSnapshotProvider>
+    </SurfaceRuntimeProvider>
   );
 }
 

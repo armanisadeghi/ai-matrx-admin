@@ -8,6 +8,7 @@ import {
   Pencil,
   Rocket,
   ShieldCheck,
+  EyeOff,
   Trash2,
 } from "lucide-react";
 
@@ -26,6 +27,7 @@ export interface CmsPageMenuContext {
   onAi: () => void;
   onReview: () => void;
   onPublish: () => void | Promise<void>;
+  onUnpublish: () => void | Promise<void>;
   onDelete: () => void;
 }
 
@@ -121,6 +123,16 @@ export function buildCmsPageMenu(ctx: CmsPageMenuContext): ItemMenuConfig {
             disabledReason: ctx.page.has_draft
               ? undefined
               : "This page has no saved draft to publish",
+          },
+          {
+            id: "unpublish",
+            label: "Unpublish",
+            icon: EyeOff,
+            onSelect: ctx.onUnpublish,
+            disabled: !ctx.page.is_published,
+            disabledReason: ctx.page.is_published
+              ? undefined
+              : "This page is not published",
           },
         ],
       },

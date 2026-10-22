@@ -71,13 +71,98 @@ export function startsScreen(machine: CloudComputer): boolean {
 }
 
 /**
+ * `"full"` — the Computer tab (wakes the machine, Take control, enlarge).
+ * `"thumbnail"` — the same view, compact, for a surface that shows the machine
+ * beside something else (the agents messenger's Computer tab): it never wakes
+ * the machine, never starts a run on a machine that is not up, never takes the
+ * viewer seat from the Computer tab, and a press anywhere calls `onOpen`.
+ */
+export type ComputerViewVariant = "full" | "thumbnail";
+
+export interface ComputerViewProps {
+  conversationId?: string;
+  variant?: ComputerViewVariant;
+  /** Thumbnail only: the press on it (opens the Computer tab). */
+  onOpen?: () => void;
+}
+
+/** The thumbnail's whole box: 16:9, one press target, status centered. */
+function ThumbBox({
+  onOpen,
+  label,
+  children,
+}: {
+  onOpen?: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="relative w-full overflow-hidden rounded-md border border-border bg-muted"
+      style={{ aspectRatio: "16 / 9" }}
+      data-cloud-computer-thumbnail
+    >
+      {children}
+      <button
+        type="button"
+        aria-label={label}
+        title={label}
+        onClick={onOpen}
+        className="absolute inset-0"
+      />
+    </div>
+  );
+}
+
+function ThumbStatus({ text, waiting, alert }: { text: string; waiting?: boolean; alert?: boolean }) {
+  return (
+    <div
+      role={alert ? "alert" : "status"}
+      className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 text-center text-muted-foreground"
+    >
+      {alert ? (
+        <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden />
+      ) : (
+        <Monitor className="h-5 w-5" aria-hidden />
+      )}
+      <p className={cn("text-xs font-medium", waiting ? WAITING : "")}>{text}</p>
+    </div>
+  );
+}
+
+export const OPEN_COMPUTER_LABEL = "Open Computer";
+
+/**
  * Self-contained: needs nothing from the chat canvas, so the agent dashboard
  * can mount it as-is. `conversationId` only binds Take control to that chat's
  * running agent (steer instead of yank).
  */
-export function ComputerView({ conversationId }: { conversationId?: string }) {
-  // Opening the Computer IS asking for it: an off machine wakes itself.
-  const { machine, error, waking, wake, retry } = useCloudComputer({ autoWake: true });
+export function ComputerView({ conversationId, variant = "full", onOpen }: ComputerViewProps) {
+  const thumbnail = variant === "thumbnail";
+  // Opening the Computer IS asking for it: an off machine wakes itself. A
+  // thumbnail is only a glance, never that ask.
+  const { machine, error, waking, wake, retry } = useCloudComputer({ autoWake: !thumbnail });
+
+  if (thumbnail) {
+    if (machine?.ready) return <ComputerScreen conversationId={conversationId} thumbnail onOpen={onOpen} />;
+    const failed = !!error || machine?.status === "failed" || machine?.status === "expired";
+    const status = !machine
+      ? error
+        ? { text: "Could not check", alert: true }
+        : { text: "Checking…", waiting: true }
+      : failed
+        ? { text: "Could not start", alert: true }
+        : waking || machine.status === "creating" || machine.status === "starting"
+          ? { text: "Waking up…", waiting: true }
+          : machine.status === "shutting_down"
+            ? { text: "Saving…", waiting: true }
+            : { text: "Asleep" };
+    return (
+      <ThumbBox onOpen={onOpen} label={OPEN_COMPUTER_LABEL}>
+        <ThumbStatus {...status} />
+      </ThumbBox>
+    );
+  }
 
   if (!machine) {
     return error ? (
@@ -149,7 +234,15 @@ export function ComputerView({ conversationId }: { conversationId?: string }) {
 }
 
 /** The machine is up: its screen as the agent's browser stream. */
-function ComputerScreen({ conversationId }: { conversationId?: string }) {
+function ComputerScreen({
+  conversationId,
+  thumbnail = false,
+  onOpen,
+}: {
+  conversationId?: string;
+  thumbnail?: boolean;
+  onOpen?: () => void;
+}) {
   // Only a run ON the machine: never adopt or start a cold fleet browser here.
   // The tab shows the screen, never the written step list: no progress poll.
   const cb = useCloudBrowser(undefined, null, "sandbox", { followProgress: false });
@@ -229,14 +322,19 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   // to be superseded server-side anyway).
   // Set while rendering (React's "adjust state on a change" pattern), not in an
   // effect: one render, no cascade.
-  const seatTaken = !!stream && seat.elsewhere;
+  const seatTaken = !thumbnail && !!stream && seat.elsewhere;
   if (seatTaken && !lost) setLost(true);
+  // A thumbnail yields the seat to the Computer tab (or any other viewer) and
+  // drops its stream; it opens a fresh one once the seat is free again.
+  const yielded = thumbnail && seat.elsewhere;
+  if (yielded && held) setHeld(null);
 
   const open = useCallback(
     async (mode: "view" | "control", takeover: boolean) => {
       if (!run) return;
-      // This is the visible view of the run, so it takes the seat.
-      seat.hold(true);
+      // This is the visible view of the run, so it takes the seat. A
+      // thumbnail only takes a free seat: it never kicks the Computer tab.
+      if (!seat.hold(!thumbnail)) return;
       setOpening(true);
       setOpenError(null);
       setLost(false);
@@ -261,20 +359,28 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
         setOpening(false);
       }
     },
-    [run, revision, seat],
+    [run, revision, seat, thumbnail],
   );
 
   // Open ONE stream as soon as the run is live: a watch stream, or a control
   // stream when this person already drives (a reload mid-control). Once per
   // key, so a refusal never loops.
   const attempted = useRef<string | null>(null);
-  const wantMode: "view" | "control" | null = !runReady || stream || lost || opening
+  const wantMode: "view" | "control" | null = !runReady || stream || lost || opening || yielded
     ? null
-    : inControl
+    : thumbnail
+      ? viewSupport === "no"
+        ? null
+        : "view"
+      : inControl
       ? "control"
       : viewSupport === "no"
         ? null
         : "view";
+  // A thumbnail that yielded its seat may open again once it is free.
+  useEffect(() => {
+    if (yielded) attempted.current = null;
+  }, [yielded]);
   useEffect(() => {
     if (!wantMode || !run) return;
     const key = `${run.id}:${wantMode === "control" ? `control:${revision}` : "view"}`;
@@ -287,7 +393,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   // the loop (a superseded claim answers on every tick); a gone stream offers
   // to open again, a watch stream simply keeps watching.
   useEffect(() => {
-    if (!stream || !inControl) return;
+    if (thumbnail || !stream || !inControl) return;
     const every = (stream.ticket.control?.renewIntervalSeconds ?? 20) * 1000;
     const timer = window.setInterval(() => {
       void renewStreamTicket(stream.ticket).catch((e: unknown) => {
@@ -301,7 +407,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
       });
     }, every);
     return () => window.clearInterval(timer);
-  }, [stream, inControl]);
+  }, [stream, inControl, thumbnail]);
 
   const claim = useCallback(
     async (opts?: { immediate?: boolean }) => {
@@ -346,6 +452,47 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
       setPending(null);
     }
   }, [cb, viewSupport]);
+
+  if (thumbnail) {
+    const viewport = stream?.ticket.viewport ?? { width: 1280, height: 720 };
+    const status = runFailed || (cb.error && !run)
+      ? { text: "Not running", alert: true }
+      : yielded
+        ? { text: "On the Computer tab" }
+        : runStarting
+          ? { text: "Waking up…", waiting: true }
+          : someoneElseInControl && viewSupport === "no"
+            ? { text: controller?.displayName ? `${controller.displayName} is in control` : "Someone is in control" }
+            : openError
+              ? { text: openError, alert: true }
+              : { text: "Connecting…", waiting: true };
+    const showing = !runFailed && !yielded && (stream || frame);
+    return (
+      <div className="flex flex-col gap-1">
+        <ThumbBox onOpen={onOpen} label={`${OPEN_COMPUTER_LABEL}: ${label}`}>
+          {!runFailed && !yielded && stream ? (
+            <ScaledFrame
+              key={stream.ticket.streamSessionId}
+              src={streamFrameAddress(stream.ticket)}
+              width={viewport.width}
+              height={viewport.height}
+              title={label}
+              interactive={false}
+              connectWithinMs={connectWithinMs}
+            />
+          ) : !runFailed && !yielded && frame ? (
+            <img src={frame.previewUrl} alt={label} className="absolute inset-0 h-full w-full object-contain" />
+          ) : (
+            <ThumbStatus {...status} />
+          )}
+        </ThumbBox>
+        <div className="flex items-center justify-between gap-2 px-0.5 text-xs">
+          <span className="min-w-0 truncate text-muted-foreground">{label}</span>
+          {showing ? <span className="shrink-0 font-medium text-foreground">Watching</span> : null}
+        </div>
+      </div>
+    );
+  }
 
   if (runFailed && run?.errorCode === "browser_not_running") {
     // The browser died and its one automatic relaunch failed: the server ended

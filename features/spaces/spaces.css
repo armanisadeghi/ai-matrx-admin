@@ -548,6 +548,10 @@
   padding: 0 6px;
   border-radius: 4px;
 }
+/* CD-PERF-02: a breadcrumb whose ancestors are still being read keeps its slot and paints nothing (nav/crumb-path.ts). */
+.spaces-crumbs-pending {
+  visibility: hidden;
+}
 .spaces-breadcrumb-sep {
   margin: 0 2px;
   color: hsl(var(--muted-foreground) / 0.6);

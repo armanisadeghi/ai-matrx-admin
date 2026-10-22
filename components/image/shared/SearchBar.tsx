@@ -81,7 +81,7 @@ export const SearchBar: React.FC<SearchBarProps> = (
 
     return (
         <form onSubmit={handleSubmit} className={cn("flex items-center space-x-2", className)}>
-            <div className="relative flex-grow">
+            <div className="flex flex-grow items-center gap-1">
                 <Input
                     ref={inputRef}
                     type="text"
@@ -90,13 +90,14 @@ export const SearchBar: React.FC<SearchBarProps> = (
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     placeholder={placeholder}
-                    className={inputClassName} adornment="end"
+                    className={inputClassName}
                 />
                 {showClearButton && query && (
                     <button
                         type="button"
                         onClick={handleClear}
-                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                        aria-label="Clear search"
+                        className="shrink-0"
                     >
                         <X className="h-4 w-4 text-muted-foreground"/>
                     </button>

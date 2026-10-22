@@ -1088,6 +1088,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       {/* Fullscreen overlay */}
       {isFullScreen && (
         <FullScreenPortal active>
+          {/* close-ok: full-viewport click-away scrim, not a close control; the in-flow Close button is in the panel's top row */}
           <div
             className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm cursor-pointer"
             onClick={() => setIsFullScreen(false)}
@@ -1099,6 +1100,14 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               className="bg-textured rounded-xl shadow-2xl h-full max-h-[98dvh] w-full max-w-4xl mx-3 flex flex-col overflow-hidden relative"
               onClick={(e) => e.stopPropagation()}
             >
+              <div className="flex shrink-0 items-center justify-end gap-2 border-b border-border px-3 py-1">
+                <Button
+                  icon={<X />}
+                  aria-label="Close fullscreen mode"
+                  variant="quiet"
+                  onClick={() => setIsFullScreen(false)}
+                />
+              </div>
               <div className="flex-1 overflow-y-auto p-3">
                 {showResults && results ? renderResults() : renderQuizBody()}
               </div>

@@ -1,5 +1,8 @@
 "use client";
 
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { HR_TASK_DECISION_SURFACE, createHrTaskDecisionScope } from "@/features/surfaces/manifests/hr-task-decision.manifest";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, EyeOff } from "lucide-react";
@@ -281,18 +284,20 @@ export function HrDecisionPanel({
     const visibleOpenFailures = openFailures.slice(0, failureVisibleLimit);
     const hiddenOpenFailureCount = openFailures.length - visibleOpenFailures.length;
 
-    async function act(intent: HrDecisionIntent) {
-        if (!activeStep) return;
+    /** `why` defaults to the reason box; the agent's `record_decision` may send its own. Returns true when recorded. */
+    async function act(intent: HrDecisionIntent, why: string = reason): Promise<boolean> {
+        if (!activeStep) return false;
         // ONE translation, from the ONE map. Nothing below this line knows the intent word.
         const decision = HR_DECISION_VERB[intent];
+        const reason = why;
         if (HR_DECISION_REQUIRES_REASON.includes(decision) && reason.trim().length < 3) {
             toast.error("A rejection or return needs a reason — it is kept in the ledger.");
-            return;
+            return false;
         }
         // The step-level requirement, in the door's own words rather than a paraphrase.
         if (decision === "approved" && reasonRequiredToApprove && reason.trim().length < 3) {
             toast.error("This step requires a reason on approval — it is kept in the ledger.");
-            return;
+            return false;
         }
         setBusy(true);
         setActionRefusal(null);
@@ -304,15 +309,17 @@ export function HrDecisionPanel({
             );
             if (isRefusal(envelope)) {
                 setActionRefusal(envelope);
-                return;
+                return false;
             }
             toast.success(`Recorded: ${decision}`);
             setReason("");
             await load();
             // A decided row must not sit in the queue behind the window that decided it.
             onDecided?.();
+            return true;
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "The decision could not be recorded");
+            return false;
         } finally {
             setBusy(false);
         }
@@ -340,7 +347,64 @@ export function HrDecisionPanel({
         );
     }
 
-    return (
+    const canDecide = Boolean(activeStep) && !viewerIsSubject && !isCorrectiveAck;
+    const getScope = () =>
+        createHrTaskDecisionScope({
+            request_load_status: error ? "failed" : refusal && !detail ? "refused" : detail ? "loaded" : "loading",
+            ...(detail
+                ? {
+                      hr_request: {
+                          instance_id: instanceId,
+                          kind: flowLabel,
+                          subject: detail.subject_label ?? null,
+                          state: str(instance, "state"),
+                          state_reason: str(instance, "state_reason") || null,
+                          step: str(shownStep, "step_label") || str(shownStep, "step_key") || null,
+                          step_state: str(shownStep, "state") || null,
+                          due_at: str(shownStep, "due_at") || null,
+                          restricted,
+                      },
+                      request_change: stepChange,
+                      ...(stepDigest ? { request_summary: stepDigest } : {}),
+                  }
+                : {}),
+            can_decide: canDecide,
+            reason_required_to_approve: reasonRequiredToApprove,
+            decision_reason: reason,
+        });
+    const getWriteHandlers = () => ({
+        decision_reason: (value: unknown) => {
+            if (typeof value !== "string") refuseSurfaceWrite("Send the reason as text.");
+            setReason(value as string);
+            return { summary: "The reason box is filled in. Nothing is recorded until a decision is made." };
+        },
+        record_decision: {
+            validate: (value: unknown) => {
+                planDecision(value);
+            },
+            apply: async (value: unknown) => {
+                const plan = planDecision(value);
+                const ok = await act(plan.intent, plan.why);
+                if (!ok) throw new Error("The decision was not recorded; the page shows why.");
+                return { summary: `Recorded: ${HR_DECISION_VERB[plan.intent]}.` };
+            },
+        },
+    });
+    /** The `record_decision` value checked against this step; throws the sentence the agent reads. */
+    function planDecision(value: unknown): { intent: HrDecisionIntent; why: string } {
+        if (!detail) refuseSurfaceWrite("The request has not loaded yet.");
+        if (!canDecide) refuseSurfaceWrite(viewerIsSubject ? "Nobody decides a request about themselves." : "No step here is waiting on this person.");
+        const v = (value && typeof value === "object" ? value : { decision: value }) as Record<string, unknown>;
+        if (v.decision !== "approve" && v.decision !== "reject" && v.decision !== "return") refuseSurfaceWrite('decision must be "approve", "reject" or "return".');
+        const intent = v.decision as HrDecisionIntent;
+        const why = typeof v.reason === "string" ? v.reason : reason;
+        const verb = HR_DECISION_VERB[intent];
+        if (HR_DECISION_REQUIRES_REASON.includes(verb) && why.trim().length < 3) refuseSurfaceWrite("A rejection or return needs a reason of at least 3 characters.");
+        if (verb === "approved" && reasonRequiredToApprove && why.trim().length < 3) refuseSurfaceWrite("This step needs a reason to approve.");
+        return { intent, why };
+    }
+
+    const body = (
         <div className="flex h-full flex-col overflow-hidden">
             {/*
               🚨 THE DEEP-LINK LANDING OWES THE DISCLOSURE, AND NOTHING ABOVE IT PROVIDES ONE.
@@ -923,5 +987,12 @@ export function HrDecisionPanel({
                 onResolved={load}
             />
         </div>
+    );
+    // Embedded in the inbox's window it stays under the inbox's surface; on its own page it is its own.
+    if (embedded) return body;
+    return (
+        <SurfaceRuntimeProvider surfaceName={HR_TASK_DECISION_SURFACE} getScope={getScope} getWriteHandlers={getWriteHandlers}>
+            {body}
+        </SurfaceRuntimeProvider>
     );
 }

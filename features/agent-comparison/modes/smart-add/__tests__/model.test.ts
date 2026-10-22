@@ -68,7 +68,7 @@ test("answers are read from each system's own output", () => {
 });
 
 function cell(rowId: string, columnId: string, answer: string, ms: number, cost: number): MatrixCell {
-  return { entryId: rowId + columnId, conversationId: `conv-${rowId}`, rowId, columnId, repeat: 0, status: "completed", stalled: false,
+  return { entryId: rowId + columnId, conversationId: `conv-${rowId}`, rowId, columnId, repeat: 0, status: "completed",
     attempt: 1, startedAt: null, finishedAt: null, error: null, request: null, history: [],
     result: { answer, duration_ms: ms, cost } };
 }

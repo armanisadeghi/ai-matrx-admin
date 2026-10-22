@@ -123,6 +123,7 @@ import {
   AgentIntroSection,
   type SurfaceIntroFields,
 } from "@/features/surfaces/admin-detail/AgentIntroSection";
+import { SurfaceDeclarationSections } from "@/features/surfaces/admin-detail/SurfaceDeclarationSections";
 import { replaceAppHref } from "@/lib/deployment/navigate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
@@ -184,6 +185,8 @@ export function SurfaceAdminDetailPage({
   const [agentNames, setAgentNames] = useState<Record<string, string>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loadingData, setLoadingData] = useState(true);
+  // Bumped by every load so the declaration sections re-read with the page.
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Rename
   const [renaming, setRenaming] = useState(false);
@@ -200,6 +203,7 @@ export function SurfaceAdminDetailPage({
 
   const load = async (surfaceName: string) => {
     setLoadingData(true);
+    setReloadKey((k) => k + 1);
     setLoadError(null);
     try {
       const [row, u, d, cb, v, opts, cl, execs, bnds] = await Promise.all([
@@ -560,20 +564,28 @@ export function SurfaceAdminDetailPage({
             </div>
           )}
 
-          <AgentIntroSection
-            surfaceName={surface.name}
-            fields={surface as UiSurfaceRow & SurfaceIntroFields}
-            onSaved={(saved) =>
-              setSurface((prev) => ({ ...prev, ...saved }) as UiSurfaceRow)
-            }
-          />
+          <SurfaceDeclarationSections
+            surface={surface as UiSurfaceRow & SurfaceIntroFields & Record<string, unknown>}
+            reloadKey={reloadKey}
+            editors={
+              <>
+              <AgentIntroSection
+                surfaceName={surface.name}
+                fields={surface as UiSurfaceRow & SurfaceIntroFields}
+                onSaved={(saved) =>
+                  setSurface((prev) => ({ ...prev, ...saved }) as UiSurfaceRow)
+                }
+              />
 
-          <AgentIntroSection
-            field="situation"
-            surfaceName={surface.name}
-            fields={surface as UiSurfaceRow & SurfaceIntroFields}
-            onSaved={(saved) =>
-              setSurface((prev) => ({ ...prev, ...saved }) as UiSurfaceRow)
+              <AgentIntroSection
+                field="situation"
+                surfaceName={surface.name}
+                fields={surface as UiSurfaceRow & SurfaceIntroFields}
+                onSaved={(saved) =>
+                  setSurface((prev) => ({ ...prev, ...saved }) as UiSurfaceRow)
+                }
+              />
+              </>
             }
           />
 

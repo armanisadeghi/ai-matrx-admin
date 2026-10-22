@@ -20,6 +20,10 @@
  * or a new tab; the page host owns the address (`org_filter`) and nothing else.
  */
 
+import {
+  FrameSidebarContent,
+  useFrameSidebarSlot,
+} from "@/features/shell/frame-host/frameSidebarSlot";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
@@ -129,6 +133,9 @@ export function InboxWorkspace({ mode, initialTab = "inbox", orgFilter, onOrgFil
   const rootRef = useRef<HTMLDivElement>(null);
   const isAdmin = useAppSelector(selectIsAdminPerson);
   const placeStates = usePlaceStates();
+  // Only the /notifications page hands its rail to the frame; the Inbox window keeps it.
+  const inFrame = useFrameSidebarSlot();
+  const railInFrame = mode === "page" && inFrame;
 
   const counts = useInboxCounts();
   const feed = useInboxFeed({ state: TAB_STATE[tab], orgId: orgFilter, unreadOnly });
@@ -444,6 +451,19 @@ export function InboxWorkspace({ mode, initialTab = "inbox", orgFilter, onOrgFil
   }
 
   const allChecked = groups.length > 0 && checkedGroups.length === groups.length;
+  const railBody = (
+    <>
+      <div role="tablist" aria-orientation="vertical" className="flex flex-col gap-0.5">
+        {tabs.map((t) => tabButton(t, "rail"))}
+      </div>
+      <div className="mt-3 flex h-6 items-center px-2.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        Places
+      </div>
+      {visibleSources(Boolean(isAdmin)).map((source) => (
+        <SourceItem key={source.key} source={source} state={placeStates[source.key] ?? NO_STATE} layout="rail" />
+      ))}
+    </>
+  );
 
   return (
     <div
@@ -453,18 +473,18 @@ export function InboxWorkspace({ mode, initialTab = "inbox", orgFilter, onOrgFil
       className="@container flex h-full min-h-0 w-full outline-none"
       data-inbox-workspace={mode}
     >
-      {/* RAIL */}
-      <nav aria-label="Inbox views" className="hidden w-52 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-border p-2 @4xl:flex">
-        <div role="tablist" aria-orientation="vertical" className="flex flex-col gap-0.5">
-          {tabs.map((t) => tabButton(t, "rail"))}
-        </div>
-        <div className="mt-3 flex h-6 items-center px-2.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Places
-        </div>
-        {visibleSources(Boolean(isAdmin)).map((source) => (
-          <SourceItem key={source.key} source={source} state={placeStates[source.key] ?? NO_STATE} layout="rail" />
-        ))}
-      </nav>
+      {/* RAIL — on the page inside the new app frame it is the frame's ONE sidebar column (kind B). */}
+      {railInFrame ? (
+        <FrameSidebarContent>
+          <nav aria-label="Inbox views" className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-2">
+            {railBody}
+          </nav>
+        </FrameSidebarContent>
+      ) : (
+        <nav aria-label="Inbox views" className="hidden w-52 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-border p-2 @4xl:flex">
+          {railBody}
+        </nav>
+      )}
 
       {/* LIST */}
       <section

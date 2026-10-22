@@ -411,7 +411,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
     color: "orange",
     homeHref: "/crm",
     menu: oneSection([
-      { id: "people", label: "People & companies", icon: Users, count: 1284 },
+      { id: "people", label: "Contacts", icon: Users, count: 1284 },
       { id: "deals", label: "Deals", icon: Target, count: 27 },
       { id: "outreach", label: "Outreach", icon: Send },
       { id: "chasebox", label: "Chasebox", icon: Inbox, count: 3 },

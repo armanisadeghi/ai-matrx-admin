@@ -86,4 +86,12 @@ describe("Entity List responsive contract", () => {
     }
     expect(componentSource("EntityFilterPanel.tsx")).toContain('<span className="@max-3xl/list:sr-only">Filters</span>');
   });
+
+  // A `/list` variant matches only inside a declared `list` container. The page shell declares it
+  // on its header; the lane header (the shared host for the org filter on every non-page list)
+  // declares it on its root — without one the filter's label never folds.
+  it("every shared host of a `/list` variant declares the `list` container", () => {
+    expect(componentSource("EntityListPage.tsx")).toMatch(/containerName: `list \$\{CONTROLS_CONTAINER_NAME\}`/);
+    expect(componentSource("EntityLaneHeader.tsx")).toContain("@container/list");
+  });
 });

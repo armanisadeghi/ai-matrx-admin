@@ -1,0 +1,30 @@
+import { admin, live, gotoTable, say } from "./ba-lib.mjs";
+const A = await admin();
+const tid="c2ff9f63-48ba-478a-8992-5b8980115ac0", rid="80ad2c51-b27a-4632-a462-282fc0db18fc";
+for (const w of ["2024-03-01","2025-03-01"]) {
+  const r = await A.client.recordAsOf({ record_id: rid, world_on: w, recorded_at: new Date().toISOString() });
+  say("API world", w, JSON.stringify({address:r.data?.address, keys:Object.keys(r.data||{})}));
+}
+const { browser, page, shot } = await live(false);
+await gotoTable(page, tid);
+await page.getByText("Ann", { exact: true }).first().click();
+await page.waitForTimeout(4000); await shot("wk2-h02-6b");
+await page.getByText(/^As of/).first().click();
+await page.waitForTimeout(1500);
+const ai = page.locator("input[placeholder='As of']").first();
+await ai.focus(); await page.keyboard.type("2024-03-01"); await page.keyboard.press("Enter"); await page.waitForTimeout(1500);
+await page.getByRole("button",{name:"True then"}).click();
+await page.waitForTimeout(2500);
+await shot("wk2-h02-7");
+say("TRUE 2024-03", (await page.locator("body").innerText()).replace(/\n+/g," | ").match(/Address.{0,200}/g));
+ await ai.focus(); await page.keyboard.type("2025-03-01"); await page.keyboard.press("Enter");
+await page.waitForTimeout(2500);
+await shot("wk2-h02-8");
+say("TRUE 2025-03", (await page.locator("body").innerText()).replace(/\n+/g," | ").match(/Address.{0,200}/g));
+await page.getByRole("button",{name:"Said then"}).click();
+ await ai.focus(); await page.keyboard.type("2026-10-22"); await page.keyboard.press("Enter");
+await page.waitForTimeout(2500);
+await shot("wk2-h02-9");
+say("SAID", (await page.locator("body").innerText()).replace(/\n+/g," | ").match(/Address.{0,200}/g));
+say("INP", await page.locator("input").evaluateAll(e=>e.filter(x=>x.offsetParent).map(x=>(x.getAttribute("aria-label")||x.placeholder||x.type)+"="+x.value).slice(-8)));
+process.exit(0);

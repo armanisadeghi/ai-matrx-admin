@@ -26,6 +26,7 @@ import {
 } from "@/features/shell/constants/route-menu-registry";
 import { ModuleSlot } from "@/features/shell/frame/FrameModules";
 import {
+  pageSidebarIsWholeMenu,
   pageSidebarOwner,
   useFrameSidebarSlotHost,
   type FrameSidebarSlotHost,
@@ -53,13 +54,21 @@ export function FrameRouteMenu({ entry, icon }: { entry: RouteMenuEntry; icon: R
 }
 
 /**
- * The host half: the slot to provide around the page body, and what the frame's sidebar body shows
- * (undefined = the route table's rows).
+ * The host half: the slot to provide around the page body, what the frame's sidebar body shows
+ * (undefined = the route table's rows), and whether the product-rows strip draws above it (false
+ * while a declared whole-menu page sidebar — HR's — holds or reserves the body).
  */
 export function useFrameProductSidebar(
   pathname: string,
   icon: ReactNode,
-): { slotHost: FrameSidebarSlotHost; sidebarContent: ReactNode } {
+): {
+  slotHost: FrameSidebarSlotHost;
+  sidebarContent: ReactNode;
+  /** False while a declared whole-menu page sidebar (HR's) holds the body: no own-pages group in More. */
+  productRows: boolean;
+  /** The body draws the sidebar's top itself (the chat menu): the frame draws none above it. */
+  ownsTop: boolean;
+} {
   const slot = useFrameSidebarSlotHost();
   const routeMenu = frameRouteMenu(pathname);
   // A route declared to supply a page sidebar reserves the body until the page claims it (no flash
@@ -86,5 +95,7 @@ export function useFrameProductSidebar(
   ) : routeMenu ? (
     <FrameRouteMenu entry={routeMenu} icon={icon} />
   ) : undefined;
-  return { slotHost: slot.host, sidebarContent };
+  const productRows = !((slot.claimed || reserving) && pageSidebarIsWholeMenu(pathname));
+  const ownsTop = !slot.claimed && !reserving && routeMenu?.ownsSidebarTop === true;
+  return { slotHost: slot.host, sidebarContent, productRows, ownsTop };
 }

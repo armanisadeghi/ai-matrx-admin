@@ -62,6 +62,7 @@ export function buildRunInputs(input: {
     unproven_requested: input.unproven === true,
     examples,
     spec,
+    cost_parent_request_id: null,
   };
 }
 

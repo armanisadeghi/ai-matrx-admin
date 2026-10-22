@@ -633,7 +633,11 @@ describe("the app grid is Google-tight (owner, 2026-10-20 fourth round)", () => 
     const grid = await openGrid();
     type(searchBox(), "zzzzqqq");
     expect(names(grid)).toEqual([]);
-    expect(grid.textContent).toContain("No product matches");
+    // The page index loads on the first keystroke; until it lands the grid says it is still searching.
+    await act(async () => {
+      await new Promise<void>((r) => setTimeout(r, 300));
+    });
+    expect(grid.textContent).toContain("Nothing matches");
   });
 
   it("Enter opens the first match in a new tab", async () => {

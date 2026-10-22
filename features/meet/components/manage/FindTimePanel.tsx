@@ -89,53 +89,55 @@ export function FindTimePanel({
     );
 
   return (
-    <div className="relative rounded-md border border-border bg-muted/30 p-2 pr-9 sm:ml-6">
+    <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 p-2 sm:ml-6">
+      <div className="min-w-0 flex-1">
+        {loading ? (
+          <div
+            className="flex flex-wrap gap-1.5"
+            aria-busy="true"
+            aria-label="Finding open times"
+          >
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-7 w-32" />
+            ))}
+          </div>
+        ) : failure ? (
+          <p role="alert" className="text-xs text-destructive">
+            Availability could not be read: {failure}
+          <ErrorAlchemyMenu error={failure} /></p>
+        ) : result && result.slots.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            No open {durationLabel(durationMinutes)} slot in the next{" "}
+            {horizonDays} days of working hours.
+          </p>
+        ) : result ? (
+          <div className="flex flex-wrap gap-1.5">
+            {result.slots.map((slot) => (
+              <Button
+                key={slot.start}
+                type="button"
+                variant="outline"
+                onClick={() => onPick(slot)}
+              >
+                {slotLabel(slot)}
+              </Button>
+            ))}
+          </div>
+        ) : null}
+        {result && notes.length > 0 ? (
+          <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
+            {notes.join(" ")}
+          </p>
+        ) : null}
+      </div>
       <Button
         icon={<X aria-hidden="true" />}
         type="button"
         variant="quiet"
-        className="absolute right-1 top-1"
+        className="shrink-0"
         aria-label="Close suggestions"
         onClick={onClose}
       />
-      {loading ? (
-        <div
-          className="flex flex-wrap gap-1.5"
-          aria-busy="true"
-          aria-label="Finding open times"
-        >
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-7 w-32" />
-          ))}
-        </div>
-      ) : failure ? (
-        <p role="alert" className="text-xs text-destructive">
-          Availability could not be read: {failure}
-        <ErrorAlchemyMenu error={failure} /></p>
-      ) : result && result.slots.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
-          No open {durationLabel(durationMinutes)} slot in the next{" "}
-          {horizonDays} days of working hours.
-        </p>
-      ) : result ? (
-        <div className="flex flex-wrap gap-1.5">
-          {result.slots.map((slot) => (
-            <Button
-              key={slot.start}
-              type="button"
-              variant="outline"
-              onClick={() => onPick(slot)}
-            >
-              {slotLabel(slot)}
-            </Button>
-          ))}
-        </div>
-      ) : null}
-      {result && notes.length > 0 ? (
-        <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
-          {notes.join(" ")}
-        </p>
-      ) : null}
     </div>
   );
 }

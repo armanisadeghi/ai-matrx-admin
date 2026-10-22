@@ -67,7 +67,7 @@ export function AccountAccessSection() {
     }
   };
 
-  const emailUnchanged = !account || email.trim().toLowerCase() === account.email.toLowerCase() || email.trim().toLowerCase() === account.pendingEmail?.toLowerCase();
+  const emailUnchanged = !account || email.trim().toLowerCase() === (account.email ?? "").toLowerCase() || email.trim().toLowerCase() === account.pendingEmail?.toLowerCase();
 
   return (
     <SettingsSection title="Account access">
@@ -77,12 +77,13 @@ export function AccountAccessSection() {
         {!account && !error ? <div className="flex items-center gap-2 type-body text-muted-foreground"><Spinner size="xs" className="text-current" />Loading account…</div> : null}
         {account ? (
           <>
-            <SettingsReadOnlyValue label="Primary email" value={account.email} />
+            <SettingsReadOnlyValue label="Primary email" value={account.email ?? "Not added"} />
+            {account.phone ? <SettingsReadOnlyValue label="Phone" value={account.phone} /> : null}
             {account.pendingEmail ? <SettingsReadOnlyValue label="Pending email" value={account.pendingEmail} /> : null}
             <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
               <label className="sr-only" htmlFor="account-email">New email address</label>
               <Input id="account-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} disabled={operation !== null} />
-              <Button icon={operation === "email" ? <Spinner size="xs" className="text-current" /> : <Mail aria-hidden />} variant="primary" type="button" onClick={() => void submitEmail()} disabled={operation !== null || emailUnchanged}> Change email
+              <Button icon={operation === "email" ? <Spinner size="xs" className="text-current" /> : <Mail aria-hidden />} variant="primary" type="button" onClick={() => void submitEmail()} disabled={operation !== null || emailUnchanged}> {account.email ? "Change email" : "Add email"}
               </Button>
             </div>
             <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">

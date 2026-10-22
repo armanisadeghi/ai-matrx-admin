@@ -24,6 +24,10 @@ import { ActiveContextLensChip } from "@/features/scopes/components/active-conte
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { RagHubHeader } from "@/features/rag/components/shell/RagHubHeader";
 import {
+  FrameSidebarContent,
+  useFrameSidebarSlot,
+} from "@/features/shell/frame-host/frameSidebarSlot";
+import {
   AlertCircle,
   CloudUpload,
   Database,
@@ -222,6 +226,7 @@ export function DataStoresPage() {
   // `?new=1` — the Knowledge hub's "New data store" (the store list is the hub's
   // Data stores group now, KNOWLEDGE-HUB §6 H6b): the create form owns the page.
   const creating = !storeId && search?.get("new") === "1";
+  const inFrame = useFrameSidebarSlot();
 
   const list = useDataStores();
   const detail = useDataStoreDetail(storeId);
@@ -415,7 +420,18 @@ export function DataStoresPage() {
     />
   );
 
-  const desktopLayout = (
+  // The new app frame: the stores list is the frame's ONE sidebar column (kind B); classic keeps
+  // its own column.
+  const desktopLayout = inFrame ? (
+    <div className="flex h-full overflow-hidden bg-background">
+      <FrameSidebarContent>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{storesList}</div>
+      </FrameSidebarContent>
+      <section className="flex-1 overflow-hidden pt-[var(--shell-header-h)]">
+        {detailContent}
+      </section>
+    </div>
+  ) : (
     <div className="flex h-full overflow-hidden bg-background">
       <aside className="w-80 border-r flex flex-col overflow-hidden shrink-0 pt-[var(--shell-header-h)]">
         {storesList}

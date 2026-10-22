@@ -30,7 +30,7 @@ else {
 // 01: Clients declares no reverse field, yet shows its bookings
 const cf = must(await a.client.fields({ table_id: T.clients }), "fields");
 const rc = must(await a.client.reverseColumns({ table_id: T.clients }), "reverse");
-const rl = await a.client.reverseLinksMany({ table_id: T.clients, field_id: CLIENT_FIELD, record_ids: [HARBOR] });
+const rl = await a.client.reverseLinksMany({ table_id: T.clients, source_field_id: CLIENT_FIELD, record_ids: [HARBOR] });
 check("CD-LINK-01", !cf.some((f) => f.type === "relation") && rc.some((r) => r.source_field_id === CLIENT_FIELD), `Clients declares ${cf.map((f) => f.key)} and shows reverse column "${rc.find((r) => r.source_field_id === CLIENT_FIELD)?.label}"`);
 say("01 reverse links of Harbor:", rl.ok ? JSON.stringify(rl.data).slice(0, 400) : err(rl));
 

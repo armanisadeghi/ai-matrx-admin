@@ -58,6 +58,12 @@ export interface RouteMenuEntry {
    * Phones keep the drawer's flip until the drawer is rebuilt the same way.
    */
   layout?: "panel";
+  /**
+   * The menu draws the product sidebar's top itself (its own Search and New — the chat menus, and
+   * the conversation sidebar that replaces them). In the new frame no second top is drawn above it
+   * (owner, 2026-10-22: one top per sidebar).
+   */
+  ownsSidebarTop?: true;
 }
 
 /** Whether this pathname shows its domain menu as a panel beside the strip. */
@@ -108,6 +114,7 @@ export const routeMenuRegistry: RouteMenuEntry[] = [
     iconName: "MessageCircle",
     label: "Chats",
     layout: "panel",
+    ownsSidebarTop: true,
     importFn: loadChatSidebarMenu,
   },
   {

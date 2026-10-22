@@ -64,6 +64,15 @@ function EgressLine({
       </p>
     );
   }
+  if (egress?.kind === "paid_proxy") {
+    return (
+      <p className="flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-[11px] text-foreground">
+        <HouseWifi className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+        Browsing through {egress.deviceName ?? "our backup network"} — a site
+        turned away our servers.
+      </p>
+    );
+  }
   if (unavailable) {
     return (
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-400">

@@ -26,7 +26,7 @@ export function useCanvasScore(canvasId: string) {
         .select("*")
         .is("deleted_at", null)
         .eq("canvas_id", canvasId)
-        .eq("user_id", userId)
+        .eq("created_by", userId)
         .order("score", { ascending: false })
         .limit(1)
         .single();

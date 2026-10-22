@@ -76,6 +76,7 @@ export function PresetCatalog({
                         <button
                             type="button"
                             onClick={() => setQuery("")}
+                            aria-label="Clear search"
                             className="absolute right-1.5 top-1/2 -translate-y-1/2 h-5 w-5 rounded hover:bg-accent text-muted-foreground flex items-center justify-center"
                         >
                             <X className="h-3 w-3" />
