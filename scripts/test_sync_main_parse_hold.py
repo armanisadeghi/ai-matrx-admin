@@ -59,10 +59,30 @@ class SweepParseHold(unittest.TestCase):
         sh(self.repo, "git", "add", "features")
         self.assertEqual(sm.staged_parse_failures(), [])
 
+    def test_lock_import_hold_red_then_green(self):
+        """A name the INSTALLED package has but the LOCKED one lacks is held (2026-10-22)."""
+        os.symlink(os.path.join(HERE, "check-matrx-imports.mjs"), os.path.join(self.repo, "scripts", "check-matrx-imports.mjs"))
+        os.symlink(os.path.join(os.path.dirname(HERE), "node_modules"), os.path.join(self.repo, "node_modules"))
+        write(self.repo, ".gitignore", "node_modules\n")
+        old_lock = sh(os.path.dirname(HERE), "git", "show", "6fda135a26:pnpm-lock.yaml")   # locks agents 0.59.194
+        write(self.repo, "pnpm-lock.yaml", old_lock)
+        sh(self.repo, "git", "add", ".gitignore", "pnpm-lock.yaml")
+        sh(self.repo, "git", "commit", "-qm", "old lock")
+        write(self.repo, "features/settings.ts",
+              'import { extraSettingKeys } from "@ai-matrx/agents/settings";\nexport const k = extraSettingKeys;\n')
+        sh(self.repo, "git", "add", "features/settings.ts")
+        held = dict(sm.staged_lock_import_failures())
+        self.assertIn("features/settings.ts", held)
+        self.assertIn("0.59.194", held["features/settings.ts"])
+        write(self.repo, "pnpm-lock.yaml", sh(os.path.dirname(HERE), "git", "show", "HEAD:pnpm-lock.yaml"))
+        sh(self.repo, "git", "add", "pnpm-lock.yaml")
+        self.assertEqual(sm.staged_lock_import_failures(), [])
+
     def test_commit_all_unstages_what_does_not_parse(self):
         src = open(SRC).read()
         body = src[src.index("def commit_all():"):src.index("# ── blob helpers")]
         self.assertIn("staged_parse_failures()", body, "commit_all no longer consults the parse check")
+        self.assertIn("staged_lock_import_failures()", body, "commit_all no longer consults the lockfile import check")
         self.assertLess(body.index("staged_parse_failures()"), body.index('git("commit"'),
                         "the parse hold must run before the sweep commit")
 
