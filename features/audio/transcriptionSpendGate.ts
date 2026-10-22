@@ -16,8 +16,11 @@
  * labeled an ESTIMATE everywhere it appears, never a charge.
  */
 
+import { createElement, type ReactNode } from "react";
+
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 
+import { CostDoor } from "@/components/cost/CostDoor";
 import {
   estimateTranscription,
   transcriptionNeedsConfirmation,
@@ -72,7 +75,7 @@ export interface SpendGateOutcome {
 function describe(
   estimate: TranscriptionEstimate | null,
   filename: string | undefined,
-): string {
+): ReactNode {
   const what = filename ? `"${filename}"` : "This audio";
   if (!estimate) {
     return (
@@ -84,13 +87,21 @@ function describe(
   }
   const lines = [
     `Length: ${estimate.durationLabel}`,
-    `Estimated cost: ${estimate.costLabel}`,
     `Estimated time: ${estimate.processingLabel}`,
   ];
   const tail = estimate.rated
     ? "These are estimates based on your organization's configured transcription rates, not a final charge."
     : "Part of this could not be estimated because a transcription rate setting could not be read — an administrator sets these under Users & Access → Limits & Knobs.";
-  return `${what} will be transcribed now.\n\n${lines.join("\n")}\n\n${tail}`;
+  // The price sits behind the Cost door; the confirm itself is unchanged.
+  return createElement(
+    "div",
+    { className: "whitespace-pre-line" },
+    `${what} will be transcribed now.\n\n${lines.join("\n")}\n`,
+    estimate.priced
+      ? createElement(CostDoor, { usd: estimate.costUsd, prefix: "~" })
+      : "Cost could not be priced — the transcription rate could not be read.",
+    `\n\n${tail}`,
+  );
 }
 
 /**

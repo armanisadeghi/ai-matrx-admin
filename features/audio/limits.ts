@@ -33,10 +33,7 @@
  */
 
 import { resolveSessionKnob } from "@/lib/scoped-config/sessionKnob";
-import { formatFileSize, type CostUnit } from "@ai-matrx/kit/format";
-import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";
-import { currentPointsRate } from "@/components/cost/pointsRate";
-import { currentCostUnit } from "@/components/cost/costUnit";
+import { formatFileSize } from "@ai-matrx/kit/format";
 
 /** The one feature namespace these rows live under. */
 export const AUDIO_LIMITS_FEATURE = "media.transcription";
@@ -214,7 +211,8 @@ export interface TranscriptionEstimate {
   durationLabel: string;
   /** USD, an ESTIMATE — never presented as a charge. */
   costUsd: number;
-  costLabel: string;
+  /** False when the rate could not be read; the confirm then says so and shows no price. */
+  priced: boolean;
   /** Wall-clock seconds this is expected to take. */
   processingSeconds: number;
   processingLabel: string;
@@ -239,7 +237,6 @@ function humanDuration(totalSeconds: number): string {
  */
 export async function estimateTranscription(
   durationSeconds: number,
-  unit: CostUnit = currentCostUnit(),
 ): Promise<TranscriptionEstimate> {
   const [rate, speed] = await Promise.all([
     resolveNumber(AUDIO_LIMIT_KNOBS.ESTIMATED_COST_PER_AUDIO_HOUR_USD),
@@ -253,9 +250,7 @@ export async function estimateTranscription(
     durationSeconds,
     durationLabel: formatClock(durationSeconds),
     costUsd,
-    costLabel: rate.resolved
-      ? `about ${formatCost(costUsd, { rate: currentPointsRate(), unit })}`
-      : "could not be priced — the transcription rate could not be read",
+    priced: rate.resolved,
     processingSeconds,
     processingLabel: speed.resolved
       ? humanDuration(processingSeconds)

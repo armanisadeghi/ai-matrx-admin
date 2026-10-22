@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2, Play, RefreshCw, Scale } from "lucide-react";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -320,7 +320,6 @@ function DecisionResultCard({
   readError: string | null;
   onRetry: () => void;
 }) {
-  const { format: formatCostDisplay } = useCostDisplay();
   if (loading)
     return (
       <section className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
@@ -369,7 +368,7 @@ function DecisionResultCard({
         <PropertyRow label="Output tokens" value={String(result.outputTokens)} />
         <PropertyRow
           label="Cost"
-          value={formatCostDisplay(result.costUsd, { unknown: "Unavailable" })}
+          value={<CostDoor usd={result.costUsd} iconOnly />}
         />
         <PropertyRow label="Route" value={result.route ?? "Unavailable"} />
         <PropertyRow label="Execution ID" value={result.executionId} />

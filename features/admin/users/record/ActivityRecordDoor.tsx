@@ -8,7 +8,8 @@
 // peek opens an app_log row by id. So the row opens THE Peek (click), reading the one row on open;
 // a podcast job also links its Studio run page.
 
-import { formatUsd } from "@ai-matrx/kit/format";
+import { formatAdminCost } from "@/components/cost/formatAdminCost";
+import { currentPointsRate } from "@/components/cost/pointsRate";
 import { useEffect, useState, type ReactElement } from "react";
 import { CircleAlert, Workflow } from "lucide-react";
 import { Peek, PeekPopover, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
@@ -65,7 +66,7 @@ export function agentRunPeekRecord(r: AgentRunRow): PeekRecord {
     { section: "Status", rows: [{ text: r.status, tone: STATUS_TONE[r.status] ?? "neutral" }] },
     ...(err ? [{ section: "Error", tone: "danger" as const, text: err, clamp: 6 as const }] : []),
     { property: "Kind", value: r.kind.replace(/[_.]/g, " ") },
-    { property: "Cost", value: formatUsd(Number(r.total_cost ?? 0), { digits: "adaptive" }) },
+    { property: "Cost", value: formatAdminCost(Number(r.total_cost ?? 0), { rate: currentPointsRate() }) },
     { property: "Started", value: when(r.created_at) },
     { property: "Updated", value: when(r.updated_at) },
     ...(r.last_heartbeat_at ? [{ property: "Last heartbeat", value: when(r.last_heartbeat_at) }] : []),

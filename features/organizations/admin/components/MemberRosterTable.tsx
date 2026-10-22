@@ -4,6 +4,7 @@
  * The org-admin member roster — every user in the org with org-scoped metrics.
  * Search + sort + engagement signal; each row links to the member detail surface.
  */
+import type { CostUnit } from "@ai-matrx/kit/format";
 import { ROSTER_DRILL } from "./rosterDrill";
 import React, { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -25,7 +26,7 @@ import type { OrgAdminMember } from "../types";
 // package's documented, once-made display decision.
 import { getInitials } from "@ai-matrx/kit/format";
 import { activityBucket, formatMcents, formatRelativeTime } from "../utils";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
@@ -81,7 +82,9 @@ interface Props {
 }
 
 export function MemberRosterTable({ orgId, orgSlug, members, onRefresh }: Props) {
-  const { unit, rate: costRate } = useCostDisplay();
+  const { unit: rawUnit, rate: costRate } = useCostDisplay();
+  // Bare dollars only on the admin site, only for a system admin.
+  const unit: CostUnit = useSeesDollars() ? rawUnit : "points";
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [query, setQuery] = useState("");

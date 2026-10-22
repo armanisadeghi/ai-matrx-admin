@@ -8,9 +8,9 @@ import Link from "@/components/navigation/AppLink";
 import { ArrowUpRight } from "lucide-react";
 import { StatusToken, PropertyRow } from "@ai-matrx/design-system/controls";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { conversationHref } from "@/features/hindsight/subject-doors";
-import { absoluteWhen, costWords, durationWords } from "@/features/mandates/run-history/format";
+import { absoluteWhen, durationWords } from "@/features/mandates/run-history/format";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import { selectModelNameById } from "@ai-matrx/agents/models";
 import { readModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
@@ -50,7 +50,6 @@ function modelName(id: string | null): string {
 }
 
 export function RunFacts({ run, audience }: { run: StoredRun; audience: "admin" | "product" }) {
-  const { unit: costDisplay, rate: costRate } = useCostDisplay();
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
       <PropertyRow label="Result">
@@ -70,7 +69,7 @@ export function RunFacts({ run, audience }: { run: StoredRun; audience: "admin" 
         <RanBy userId={run.ranBy} />
       </PropertyRow>
       <PropertyRow label="When">{run.createdAt ? absoluteWhen(run.createdAt) : "—"}</PropertyRow>
-      <PropertyRow label="Cost">{costWords(run.cost, costRate, costDisplay)}</PropertyRow>
+      <PropertyRow label="Usage"><CostDoor usd={run.cost} label="Usage" /></PropertyRow>
       <PropertyRow label="Time">{durationWords(run.durationMs)}</PropertyRow>
       {run.runRow?.door ? <PropertyRow label="Door">{doorWords(run.runRow.door)}</PropertyRow> : null}
       {run.runRow?.watching ? <PropertyRow label="AI Watch">On for this run</PropertyRow> : null}
@@ -112,7 +111,6 @@ export function StreamedRunBlock({
   original: StoredRun | null;
   audience: "admin" | "product";
 }) {
-  const { unit: costDisplay, rate: costRate } = useCostDisplay();
   // NEVER SILENT: the block sits under its button inside the run pane's own scroller, so a refusal
   // (the server's words) or a starting run can land below the pane's fold — bring it into view the
   // moment it appears (live defect 2026-10-20: a 409 drew under the fold and read as "nothing happened").
@@ -141,9 +139,9 @@ export function StreamedRunBlock({
           <span />
           <span className="text-muted-foreground">This run</span>
           <span className="text-muted-foreground">Original</span>
-          <span className="text-muted-foreground">Cost</span>
-          <span className="tabular-nums">{stored ? costWords(stored.cost, costRate, costDisplay) : "Reading"}</span>
-          <span className="tabular-nums">{original ? costWords(original.cost, costRate, costDisplay) : "—"}</span>
+          <span className="text-muted-foreground">Usage</span>
+          <span>{stored ? <CostDoor usd={stored.cost} iconOnly /> : "Reading"}</span>
+          <span>{original ? <CostDoor usd={original.cost} iconOnly /> : "—"}</span>
           <span className="text-muted-foreground">Time</span>
           <span className="tabular-nums">{durationWords(stored?.durationMs ?? state.result.durationMs)}</span>
           <span className="tabular-nums">{original ? durationWords(original.durationMs) : "—"}</span>

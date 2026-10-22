@@ -52,11 +52,11 @@ import {
   type CostUnit,
 } from "@ai-matrx/kit/format";
 import type { RootState } from "@/lib/redux/store";
-import { selectCanToggleCostUnit, selectCostUnit } from "./costUnit";
+import { isAdminSurfacePath, selectCanToggleCostUnit, selectCostUnit } from "./costUnit";
 import { formatAdminCost, formatSpendUsd } from "./formatAdminCost";
 import { usePointsRate } from "./pointsRate.client";
 
-export { currentCostUnit, selectCostUnit, selectShowCostInUsdPreference } from "./costUnit";
+export { currentCostUnit, isAdminSurfacePath, selectCostUnit, selectShowCostInUsdPreference } from "./costUnit";
 export { currentPointsRate, POINTS_RATE_KNOB } from "./pointsRate";
 export { usePointsRate } from "./pointsRate.client";
 
@@ -104,14 +104,32 @@ function useCostState(): { unit: CostUnit; canToggle: boolean } {
 }
 
 /**
- * Does this viewer's SEAT see dollars (and the points-per-dollar rate) at all? Only a system admin.
- * Arman, 2026-10-08: "20,000 is correct and should be that for admins to see everywhere and nothing
- * else. Users should never see that number or any conversion." Organization admins are users. Every
- * dollar figure beside points (`AdminUsd`, `CostFigures`, `useAdminCost`) asks THIS, so a shared
- * component rendered on an organization page can never leak a rate; no page decides for itself.
+ * Is this viewer a system admin (the seat that may see dollars at all)? Arman, 2026-10-08: "20,000 is
+ * correct and should be that for admins to see everywhere and nothing else. Users should never see that
+ * number or any conversion." Organization admins are users. Use it to decide whether a LABELLED admin
+ * block renders (`<CostDoor>`'s admin rows, `<AdminOnly>`); never to print a bare dollar figure.
+ */
+export function useIsCostAdmin(): boolean {
+  return useCostState().canToggle;
+}
+
+/** True on the admin site (`/administration/**`), where the site itself is the "Admin only" label. */
+export function useOnAdminSurface(): boolean {
+  return isAdminSurfacePath(usePathname());
+}
+
+/**
+ * May this viewer read a BARE dollar figure (and the rate) HERE? A system admin, on the admin site
+ * only (owner ruling 2026-10-22: "Dollar costs for services should never ever ever be shown to a
+ * user… unless this is some sort of an admin feature and in that case, it should make it clear to me
+ * that it's admin only data"). Everywhere else every string helper (`useAdminCost`, `AdminUsd`,
+ * `CostFigures`, a feature's price text) answers points alone, and dollars live only inside a
+ * labelled element (`<CostDoor>`, `<AdminOnly>`, `<Cost>`'s tagged dollar mode).
  */
 export function useSeesDollars(): boolean {
-  return useCostState().canToggle;
+  const admin = useCostState().canToggle;
+  const onAdminSite = useOnAdminSurface();
+  return admin && onAdminSite;
 }
 
 export function useCostDisplay(): CostDisplay {
@@ -119,8 +137,11 @@ export function useCostDisplay(): CostDisplay {
   // Subscribes: the moment the knob snapshot lands (or an organization's rate
   // changes), every cost on screen re-renders at the real rate.
   const rate = usePointsRate();
-  const pathname = usePathname();
-  const showBoth = canToggle && pathname?.startsWith("/administration") === true;
+  const onAdminSite = isAdminSurfacePath(usePathname());
+  const showBoth = canToggle && onAdminSite;
+  // A plain string cannot carry the "Admin only" tag, so off the admin site it is points
+  // (ruling 2026-10-22); `<Cost>` carries the tag and honours the dollars switch there itself.
+  const textUnit: CostUnit = onAdminSite ? unit : "points";
   return {
     unit,
     canToggle,
@@ -128,9 +149,9 @@ export function useCostDisplay(): CostDisplay {
     format: (usd, { price, ...options } = {}) =>
       showBoth
         ? formatAdminCost(usd, { ...options, rate, usdDigits: price ? "price" : undefined })
-        : unit === "usd" && !price
+        : textUnit === "usd" && !price
           ? formatSpendUsd(usd, options.unknown)
-          : formatCost(usd, { ...options, unit, rate }),
+          : formatCost(usd, { ...options, unit: textUnit, rate }),
     toPoints: (usd) => usdToPoints(usd, { rate }),
   };
 }

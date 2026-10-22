@@ -14,13 +14,12 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { OrgAdminBoundary } from "@/features/organizations/admin/components/OrgAdminBoundary";
 import { fetchAutomationRuns, type AutomationRunCost } from "@/features/scheduling/service/automationCosts";
 import { triggerManagerHref } from "@/features/scheduling/service/workflowTriggers";
 
 function RunDetail({ orgSlug, triggerId, runId }: { orgSlug: string; triggerId: string; runId: string }) {
-  const { format } = useCostDisplay();
   const [run, setRun] = useState<AutomationRunCost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +38,7 @@ function RunDetail({ orgSlug, triggerId, runId }: { orgSlug: string; triggerId: 
     ? [
         ["When", run.run_at ? new Date(run.run_at).toLocaleString() : "—"],
         ["Status", run.status ?? "unknown"],
-        ["Cost", format(run.cost)],
+        ["Cost", <CostDoor key="cost" usd={run.cost} label="Details" />],
         ["Turns", String(run.turns)],
         ["Models", run.models.join(", ") || "No AI calls"],
         ["Mandates", run.mandates.join(", ") || "—"],

@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Cost } from "@/components/cost/Cost";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { useCostDisplay, useIsCostAdmin } from "@/components/cost/useCostDisplay";
 import { AdminUsd } from "@/components/cost/AdminCost";
 import { formatCount } from "@ai-matrx/kit/format";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -72,11 +72,11 @@ export function ConversationCostMenuRow({ children }: { children: (props: { labe
   useEffect(() => {
     setConversationId(new URLSearchParams(window.location.search).get("conversationId"));
   }, []);
-  const { calls, error } = useConversationCalls(conversationId, "menu");
-  const { format } = useCostDisplay();
-  if (!conversationId) return null;
-  const total = calls?.reduce((s, c) => s + c.cost, 0) ?? null;
-  const label = error ? "Conversation cost unavailable" : total == null ? "Conversation cost…" : `Conversation cost ${format(total, { short: true })}`;
+  const { error } = useConversationCalls(conversationId, "menu");
+  const isCostAdmin = useIsCostAdmin();
+  if (!conversationId || !isCostAdmin) return null;
+  // The figure lives inside the dialog under its "Admin only" tag; the menu names the row only.
+  const label = error ? "Conversation cost unavailable" : "Conversation cost";
   return <>{children({ label, open: () => setDialogOpen(true) })}</>;
 }
 

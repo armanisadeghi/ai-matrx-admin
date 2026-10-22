@@ -270,7 +270,7 @@ export function ResultDetail({
           />
           <PropertyRow
             label="Cost"
-            value={<TestCost cents={totalCents} seat={seat} />}
+            value={<TestCost cents={totalCents} seat={seat} inline />}
           />
           {seat === "admin" ? (
             <>

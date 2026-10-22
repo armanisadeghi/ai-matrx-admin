@@ -39,8 +39,7 @@ import { SpineStatusChip, formatDuration } from "./factory-shared";
 import { BuildRunsSection } from "./BuildRunsSection";
 import { FactoryDoorsTable } from "./FactoryDoorsTable";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
-import { Cost } from "@/components/cost/Cost";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { DOORS, buildPlaceLabel, doorLabel, loadBuildCosts } from "../overview";
 
 export const FACTORY_BASE_PATH = "/administration/agents/factory";
@@ -69,7 +68,6 @@ const INITIAL_STATE = serverTableInitialState({ id: "started", direction: "desc"
 
 export function FactoryBuildsPage() {
   const router = useRouter();
-  const { format: formatCost } = useCostDisplay();
   const [startOpen, setStartOpen] = useState(false);
   const [costs, setCosts] = useState<Map<string, number> | null>(null);
   const [costError, setCostError] = useState(false);
@@ -174,11 +172,7 @@ export function FactoryBuildsPage() {
         accessorFn: (r) => r.cost ?? 0,
         header: costError ? "Cost (not loaded)" : "Cost",
         width: 100,
-        cell: (r) => (
-          <span className="type-secondary tabular-nums">
-            <Cost usd={r.cost} short />
-          </span>
-        ),
+        cell: (r) => <CostDoor usd={r.cost} iconOnly />,
       },
       {
         id: "agent",
@@ -353,7 +347,7 @@ export function FactoryBuildsPage() {
               [
                 `Build ${r.id} — ${r.mandateKey ?? "new agent"}`,
                 `Status: ${r.spineStatus}; step: ${r.currentStep ?? "—"}; outcome: ${r.outcome ? `${outcomeLabel(r.outcome)} (${r.outcome})` : "—"}`,
-                `Door: ${buildPlaceLabel(r)}; engine: ${r.engine}; cost: ${formatCost(r.cost, { short: true })}`,
+                `Door: ${buildPlaceLabel(r)}; engine: ${r.engine}`,
                 `Send-backs: ${r.sendBacks}; judge: ${r.verdict ?? "—"}; agent: ${r.agentId ?? "—"}`,
                 r.error ? `Error: ${r.error}` : "",
               ]

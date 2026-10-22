@@ -24,7 +24,7 @@
  * Backend contract: features/rag/api/derivations.ts. State: useKnowledgeAssetRunner.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { motion } from "motion/react";
 import {
   Table,
@@ -68,7 +68,7 @@ import {
   useKnowledgeAssetRunner,
   type OpState,
 } from "@/features/rag/hooks/useKnowledgeAssetRunner";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import {
   usePageVerificationSummary,
   VERIFICATION_REASON_SHORT,
@@ -170,7 +170,6 @@ export interface KnowledgeAssetDoc {
 }
 
 export function KnowledgeAssetPanel({ doc }: { doc: KnowledgeAssetDoc }) {
-  const { format: costText } = useCostDisplay();
   const runner = useKnowledgeAssetRunner(doc.id);
   const {
     derivations,
@@ -285,19 +284,29 @@ export function KnowledgeAssetPanel({ doc }: { doc: KnowledgeAssetDoc }) {
   }, [estimate.data]);
 
   const handleRunAll = async () => {
-    const costNote =
-      totalBuildUnits && totalBuildUnits > 0
-        ? hasPriorProgress
-          ? ` Full-build upper bound: ${costText(totalBuildUnits)}; resume skips persisted paid work.`
-          : ` Estimated cost: about ${costText(totalBuildUnits)}.`
-        : "";
+    const hasCost = !!totalBuildUnits && totalBuildUnits > 0;
+    const costNote = hasCost ? (
+      <>
+        {" "}
+        {hasPriorProgress ? "Resume skips persisted paid work." : null}{" "}
+        <CostDoor usd={totalBuildUnits} prefix={hasPriorProgress ? "up to " : "~"} />
+      </>
+    ) : null;
     const ok = await confirm({
       title: hasPriorProgress
         ? "Resume unfinished knowledge assets?"
         : "Build all knowledge assets?",
-      description: hasPriorProgress
-        ? `Runs only unfinished representations. Persisted work is retained, and paid sections/pages already completed are skipped.${costNote}`
-        : `Runs page verification, tables, multi-granularity, figure captions, section summaries, and synthetic Q&A in sequence.${costNote}`,
+      description: hasPriorProgress ? (
+        <>
+          Runs only unfinished representations. Persisted work is retained, and paid sections/pages already completed are skipped.
+          {costNote}
+        </>
+      ) : (
+        <>
+          Runs page verification, tables, multi-granularity, figure captions, section summaries, and synthetic Q&A in sequence.
+          {costNote}
+        </>
+      ),
       confirmLabel: hasPriorProgress ? "Resume unfinished" : "Build all",
     });
     if (ok) void runAll(incompleteKinds);
@@ -334,10 +343,12 @@ export function KnowledgeAssetPanel({ doc }: { doc: KnowledgeAssetDoc }) {
               </p>
             )}
             {fullUnits > 0 && (
-              <p>
-                Estimated rebuild: {costText(fullUnits)}. Estimated resume:{" "}
-                {costText(resumeUnits)}.
-              </p>
+              <CostDoor
+                rows={[
+                  { label: "Rebuild", usd: fullUnits, prefix: "~" },
+                  { label: "Resume", usd: resumeUnits, prefix: "~" },
+                ]}
+              />
             )}
           </div>
         ),
@@ -528,7 +539,6 @@ function RepresentationCard({
   onRebuild: () => void;
   onCancel: () => void;
 }) {
-  const { format: costText } = useCostDisplay();
   const meta = KIND_META[kind];
   const Icon = meta.icon;
   const chunkCount = rollup?.chunk_count ?? 0;
@@ -569,19 +579,25 @@ function RepresentationCard({
         : items
           ? `over ${items.toLocaleString()} ${estimate?.unit ?? meta.unit} `
           : "";
-      const costPhrase =
-        estUnits > 0
-          ? resume
-            ? "only on the missing parts (already-done work is skipped)"
-            : `about ${costText(estUnits)}`
-          : "points — we couldn't compute an exact estimate right now";
+      const costPhrase: ReactNode =
+        estUnits > 0 ? (
+          resume ? (
+            "only on the missing parts (already-done work is skipped)"
+          ) : (
+            <CostDoor usd={estUnits} prefix="~" />
+          )
+        ) : (
+          "we couldn't compute an exact estimate right now"
+        );
       const ok = await confirm({
         title: resume
           ? `Resume ${meta.label.toLowerCase()}?`
           : `Build ${meta.label.toLowerCase()}?`,
-        description: resume
-          ? `This resumes where the last run stopped — ${costPhrase}. Persisted output is retained.`
-          : `This runs AI ${scope}and will cost ${costPhrase}.`,
+        description: resume ? (
+          <>This resumes where the last run stopped — {costPhrase}. Persisted output is retained.</>
+        ) : (
+          <>This runs AI {scope}and has a cost: {costPhrase}.</>
+        ),
         confirmLabel: resume
           ? "Resume"
           : estUnits > 0

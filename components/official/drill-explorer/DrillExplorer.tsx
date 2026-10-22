@@ -90,6 +90,7 @@ import { clockWords, measureFactWords, momentWords } from "./explorerWords";
 import { useDrillChart } from "./useDrillChart";
 import { drillReconcileChip, useDrillReconcile } from "./useDrillReconcile";
 import { DrillExplorerHeadline } from "./DrillExplorerHeadline";
+import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { usePointsRate } from "@/components/cost/pointsRate.client";
 import { carriedWords, splitExplorerQuestion, viewQuestionFromAddress, type DrillCarried, type ExplorerQuestion } from "./questionParts";
 import { autoTimeRef, drillExplorerAutoGrain, withAutoGrain } from "./grain";
@@ -113,7 +114,10 @@ type Unit = "points" | "usd";
  */
 function useUnit(): { unit: Unit; canToggle: boolean; setUnit: (u: Unit) => void } {
   const dispatch = useAppDispatch();
-  const unit = useAppSelector(selectCostUnit);
+  // Bare dollars only on the admin site (ruling 2026-10-22); elsewhere the explorer reads points.
+  const sees = useSeesDollars();
+  const chosen = useAppSelector(selectCostUnit);
+  const unit: Unit = sees ? chosen : "points";
   const canToggle = useAppSelector(selectCanToggleCostUnit);
   return {
     unit,

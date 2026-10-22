@@ -21,8 +21,9 @@
  */
 
 import { cn } from "@/lib/utils";
+import { AdminOnlyTag } from "./AdminOnlyTag";
 import { formatAdminPoints, formatSpendUsd } from "./formatAdminCost";
-import { useCostDisplay } from "./useCostDisplay";
+import { useCostDisplay, useOnAdminSurface } from "./useCostDisplay";
 
 export interface CostProps {
   /** The cost in USD, exactly as the server reported it. */
@@ -47,12 +48,23 @@ export function Cost({
   unknown,
 }: CostProps) {
   const { unit, canToggle, format, rate } = useCostDisplay();
-  const text = format(usd, { short, unknown });
+  const onAdminSite = useOnAdminSurface();
   const known = typeof usd === "number" && Number.isFinite(usd);
-  // The title remains useful outside administration, where the admin can
-  // still choose a single display unit from the header switch.
+  // A system admin who switched to dollars sees them off the admin site too — under the visible
+  // "Admin only" tag (owner ruling 2026-10-22), never as a bare figure.
+  if (canToggle && unit === "usd" && !onAdminSite && known) {
+    return (
+      <span className={cn("inline-flex items-center gap-1 tabular-nums", muted && "opacity-50", className)}>
+        <AdminOnlyTag />
+        {prefix}
+        {formatSpendUsd(usd)}
+      </span>
+    );
+  }
+  const text = format(usd, { short, unknown });
+  // The other unit as a hover title, on the admin site only (a tooltip carries no "Admin only" tag).
   const title =
-    canToggle && known
+    canToggle && known && onAdminSite
       ? unit === "usd"
         ? formatAdminPoints(usd, rate)
         : formatSpendUsd(usd)

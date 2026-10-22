@@ -155,9 +155,10 @@ describe("a Recent-runs row says what the run produced", () => {
     // row's status map moved here from Encore's own copy of this row).
     expect(text).toContain("Finished");
     expect(text).not.toContain("completed");
-    // In the viewer's unit — points for everyone, never dollars (Arman,
-    // 2026-09-27). 0.2109 × 20,000 points per dollar.
-    expect(text.replace(/\s+/g, "")).toContain("4,218points");
+    // The run's cost sits behind the click-to-see door (owner ruling 2026-10-22):
+    // no points and no dollars print on the row itself.
+    expect(text.replace(/\s+/g, "")).not.toContain("4,218");
+    expect(text).not.toContain("points");
     expect(text).not.toContain("$");
   });
 

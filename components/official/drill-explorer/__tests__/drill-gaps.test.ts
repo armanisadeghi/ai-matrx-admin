@@ -3,7 +3,8 @@
 
 import type { DrillDefinition } from "@ai-matrx/records";
 
-import { formatAdminPoints, formatAdminUsd } from "@/components/cost/formatAdminCost";
+import { formatCost } from "@ai-matrx/kit/format";
+import { formatAdminPoints } from "@/components/cost/formatAdminCost";
 
 import { drillDimensionLabelFor, drillDoorLabels, plainWords } from "../dimensionWords";
 import { drillUnitAdds, drillUnitFormatter } from "../measureFormat";
@@ -13,7 +14,7 @@ type Dim = DrillDefinition["dimensions"][number] & { empty_label?: string };
 describe("every unit the contract carries is formatted by the screen", () => {
   it("money goes through the one points / $ switch", () => {
     expect(drillUnitFormatter("usd", "points", 20_000)(3.57849)).toBe(formatAdminPoints(3.57849, 20_000));
-    expect(drillUnitFormatter("usd", "usd", 20_000)(3.57849)).toBe(formatAdminUsd(3.57849));
+    expect(drillUnitFormatter("usd", "usd", 20_000)(3.57849)).toBe(formatCost(3.57849, { unit: "usd", rate: 20_000 }));
   });
   it("a duration in ms reads as a human duration, never a bare number of milliseconds", () => {
     const ms = drillUnitFormatter("ms", "points", 20_000);
