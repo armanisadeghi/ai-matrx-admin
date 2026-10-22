@@ -186,11 +186,13 @@ export function Lineup({
         ))}
         {canAdd ? (
           <li>
-            <Button variant="quiet" icon={<Plus className="h-5 w-5" />}
+            <div className="flex h-full min-h-40 items-center justify-center rounded-2xl border border-dashed border-border">
+            <Button variant="quiet" icon={<Plus className="h-4 w-4" />}
               onClick={() => onRows((rs) => [...rs, newRow(places && near.trim() ? { city: near.trim(), cityFromNear: true, focus: true } : { focus: true })])}
-              className="h-full min-h-40 w-full flex-col gap-2 rounded-2xl border border-dashed border-border">
+              >
               Add another
             </Button>
+            </div>
           </li>
         ) : null}
       </ol>
@@ -327,21 +329,11 @@ function SlotAnswer({ row, photo, places, kind, onPick }: { row: CompareRow; pho
         <ul className="space-y-1">
           {row.candidates.slice(0, 5).map((c, n) => (
             <li key={`${c.match.item.url ?? c.match.url ?? c.match.name}-${n}`}>
-              <button type="button" data-clickable="" onClick={() => onPick(c)}
-                className="flex w-full min-w-0 items-center gap-2.5 rounded-xl border border-border bg-background p-2 text-left transition-colors hover:border-primary">
-                <ItemLogo name={c.match.name} logoUrl={c.match.logo_url} website={c.match.website} size={36} fill={photo} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate type-secondary font-medium text-foreground">{c.match.name}</span>
-                  <span className="block truncate type-meta text-muted-foreground">
-                    {[c.category, c.match.detail].filter(Boolean).join(" · ")}
-                  </span>
-                </span>
-                {c.match.rating !== null ? (
-                  <span className="type-meta inline-flex shrink-0 items-center gap-1 tabular-nums text-muted-foreground">
-                    <Star className="h-3 w-3 fill-current text-warning" aria-hidden />{c.match.rating.toFixed(1)}
-                  </span>
-                ) : null}
-              </button>
+              <Button variant="outline" onClick={() => onPick(c)} className="w-full min-w-0 justify-start"
+                icon={<ItemLogo name={c.match.name} logoUrl={c.match.logo_url} website={c.match.website} size={20} fill={photo} />}
+                meta={[c.category, c.match.detail, c.match.rating !== null ? `★ ${c.match.rating.toFixed(1)}` : null].filter(Boolean).join(" · ") || undefined}>
+                {c.match.name}
+              </Button>
             </li>
           ))}
         </ul>

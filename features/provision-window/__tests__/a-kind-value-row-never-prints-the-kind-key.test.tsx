@@ -7,6 +7,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { ValueRow } from "../ProvisionWindowBody";
 import type { ProvisionValue } from "../data";
+import { KIND_KEY } from "@ai-matrx/content-ir/core";
 
 jest.mock("@/components/agent-copy/CopyButtons", () => ({ CopyButtons: () => null }));
 jest.mock("@/components/official/structured-value/KindValueFrontDoor", () => ({ KindValueFrontDoor: () => null }));
@@ -30,7 +31,7 @@ it("a closed kind row shows the kind's label, never the raw __kind key", () => {
   act(() => {
     createRoot(container).render(<ValueRow v={value} />);
   });
-  expect(container.textContent).not.toContain("__kind");
+  expect(container.textContent).not.toContain(KIND_KEY);
   expect(container.textContent).not.toContain("provision-value-workspace:");
   expect(container.textContent).toContain("Acme workspace");
 });

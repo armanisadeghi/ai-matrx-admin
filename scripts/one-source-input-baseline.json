@@ -1,0 +1,74 @@
+{
+  "note": "Shrink-only census of local source-input copies. Delete entries as screens move onto features/resource-manager/source-input. Never add.",
+  "copies": {
+    "app/(core)/transcripts/new/page.tsx": [
+      "known-local-copy"
+    ],
+    "components/markdown-studio/lab/SourcePickerPanel.tsx": [
+      "named-source-input-file"
+    ],
+    "features/data-sources/SourceInputFields.tsx": [
+      "named-source-input-file"
+    ],
+    "features/education/classes/components/AddClassContentSheet.tsx": [
+      "local-association-picker-for-sources"
+    ],
+    "features/education/classes/components/AssignResourceSheet.tsx": [
+      "local-association-picker-for-sources"
+    ],
+    "features/education/data/features.ts": [
+      "hand-rolled-door-row"
+    ],
+    "features/education/media/mindmap/components/MindMapNew.tsx": [
+      "known-local-copy"
+    ],
+    "features/knowledge/hub/hubPresentation.ts": [
+      "hand-rolled-door-row"
+    ],
+    "features/marketing/components/crawls/CrawlUrlsTable.tsx": [
+      "local-source-options-list"
+    ],
+    "features/marketing/seo/topical-map/start/StartMapScreen.tsx": [
+      "known-local-copy"
+    ],
+    "features/marketing/seo/topical-map/start/startMapSources.ts": [
+      "known-local-copy"
+    ],
+    "features/pdf-demo/components/PdfSourcePicker.tsx": [
+      "named-source-input-file"
+    ],
+    "features/podcasts/generator/constants.ts": [
+      "local-source-options-list"
+    ],
+    "features/podcasts/studio/variants/create-a/components/SourcePicker.tsx": [
+      "named-source-input-file"
+    ],
+    "features/podcasts/studio/variants/create-c/components/source-data.ts": [
+      "local-source-options-list",
+      "hand-rolled-door-row"
+    ],
+    "features/podcasts/studio/variants/create-d/components/options.ts": [
+      "local-source-options-list",
+      "hand-rolled-door-row"
+    ],
+    "features/podcasts/studio/variants/create-f/mock/options.ts": [
+      "local-source-options-list",
+      "hand-rolled-door-row"
+    ],
+    "features/podcasts/studio/variants/create-refine/components/SourceInput.tsx": [
+      "named-source-input-file"
+    ],
+    "features/sources/components/SourceCapture.tsx": [
+      "named-source-input-file"
+    ],
+    "features/sources/sourceRows.ts": [
+      "hand-rolled-door-row"
+    ],
+    "features/spaces/data/SourcePicker.tsx": [
+      "named-source-input-file"
+    ],
+    "features/transcript-studio/components/columns/AudioImportDialog.tsx": [
+      "known-local-copy"
+    ]
+  }
+}
