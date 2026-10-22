@@ -1,12 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { readAdminStatus } from "@ai-matrx/auth/admin";
 import type { Database } from "@/types/database.types";
 import type { DbRpcRow } from "@/types/supabase-rpc";
 import type { JsonObject } from "@/types/json";
 import { isJsonObject } from "@/types/json";
 
 export type AdminLevel = Database["public"]["Enums"]["admin_level"];
-
-type AdminsLevelRow = Pick<Database["admin"]["Tables"]["admins"]["Row"], "level">;
 
 export interface AdminStatus {
   isAdmin: boolean;
@@ -32,8 +31,8 @@ declare const _userSessionDataResponseCheck: _CheckUserSessionDataResponse;
 true satisfies typeof _userSessionDataResponseCheck;
 
 /**
- * Single source of truth for admin status. Queries the admins table once and
- * returns both the boolean (any admin) and the level enum.
+ * Admin status for server layouts: THE one admin read (`readAdminStatus`, @ai-matrx/auth/admin),
+ * with this host's policy — a failed read logs and is not admin. Returns the boolean and the level.
  *
  * The day this ships every existing admin row defaults to `super_admin`.
  */
@@ -41,19 +40,15 @@ export async function getAdminStatus(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<AdminStatus> {
-  const { data, error } = await supabase
-    .schema("admin").from("admins")
-    .select("user_id, level")
-    .eq("user_id", userId)
-    .maybeSingle();
+  const status = await readAdminStatus(supabase, userId);
 
-  if (error) {
-    console.error("Error checking admin status:", error);
+  if (status.state === "unknown") {
+    console.error("Error checking admin status:", status.error);
     return { isAdmin: false, level: null };
   }
 
-  const level = (data as AdminsLevelRow | null)?.level ?? null;
-  return { isAdmin: !!data, level };
+  if (status.state === "not_admin") return { isAdmin: false, level: null };
+  return { isAdmin: true, level: status.level };
 }
 
 /**

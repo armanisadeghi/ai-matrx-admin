@@ -4,6 +4,7 @@
 
 import { useEffect, useRef } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { readAdminStatus } from "@ai-matrx/auth/admin";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { whenLateIdle } from "@/lib/boot/lateIdle";
 import {
@@ -55,8 +56,8 @@ export function isExpectedMissingAuthSession(error: unknown): boolean {
  * - Non-blocking, runs after hydration
  */
 /**
- * The browser's own admin read for a user the server did not seed. Any failure (an error answer or a
- * throw) reads as not admin; only a throw is logged.
+ * The browser's admin read (THE one read, `readAdminStatus`) for a user the server did not seed. Any
+ * failure (an error answer or a throw) reads as not admin; only a throw is logged.
  */
 export async function readBrowserAdminStatus(
   supabase: SupabaseClient,
@@ -65,14 +66,9 @@ export async function readBrowserAdminStatus(
   let isAdmin = false;
   let adminLevel: AdminLevel | null = null;
   try {
-    const { data: adminData } = await supabase
-      .schema("admin")
-      .from("admins")
-      .select("user_id, level")
-      .eq("user_id", userId)
-      .maybeSingle();
-    isAdmin = !!adminData;
-    adminLevel = (adminData as { level?: AdminLevel } | null)?.level ?? null;
+    const status = await readAdminStatus(supabase, userId);
+    isAdmin = status.state === "admin";
+    adminLevel = status.state === "admin" ? status.level : null;
   } catch (adminError) {
     console.warn(
       "[usePublicAuthSync] admin status could not be read; proceeding as non-admin.",
