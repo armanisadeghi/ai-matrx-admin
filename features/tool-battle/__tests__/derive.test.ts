@@ -22,9 +22,9 @@ describe("marks", () => {
 
 describe("formatMs", () => {
   it("reads in ms below a second and seconds above", () => {
-    expect(formatMs(820)).toBe("820 ms");
-    expect(formatMs(12400)).toBe("12 s");
-    expect(formatMs(2400)).toBe("2.4 s");
+    expect(formatMs(820)).toBe("820ms");
+    expect(formatMs(12400)).toBe("12s");
+    expect(formatMs(2400)).toBe("2.4s");
     expect(formatMs(null)).toBe("—");
   });
 });

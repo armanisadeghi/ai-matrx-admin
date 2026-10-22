@@ -17,6 +17,7 @@
  * machine is tested without either.
  */
 
+import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import type { OwnPlanStatus } from "@/features/ai-work/lib/ownPlan";
 
 export type ConnectReadiness = {
@@ -48,8 +49,8 @@ export function startTimingOf(answer: object | null | undefined): StartTiming | 
 
 /** `240` -> "4 minutes", rounded up (the server builds its sentences the same way). */
 export function minutesWords(seconds: number): string {
-  const minutes = Math.max(1, Math.ceil(seconds / 60));
-  return minutes === 1 ? "1 minute" : `${minutes} minutes`;
+  // Round UP to the next whole minute (never under one): add 59 s, and the long voice floors to the minute.
+  return formatDurationSeconds(Math.max(60, Math.ceil(seconds) + 59), { style: "long" });
 }
 
 /** What the screen says to expect while the sandbox starts (the measured knob). */

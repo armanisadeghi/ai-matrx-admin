@@ -3,7 +3,7 @@
  * A Tool is named by what it does — never by who serves it (CONTRACT §13; R-1).
  */
 
-import { formatCount } from "@ai-matrx/kit/format";
+import { formatCount, formatDurationMs } from "@ai-matrx/kit/format";
 import {
   BarChart3,
   Building2,
@@ -76,9 +76,7 @@ export function reliabilityFacts(r: CatalogReliability): ReliabilityFacts {
 /** The typical wait: "~0.8 s", "~12 s", "~2 min". Null when nobody has timed it. */
 export function speedText(p50Ms: number | null): string | null {
   if (p50Ms == null || p50Ms <= 0) return null;
-  if (p50Ms < 10_000) return `~${(p50Ms / 1000).toFixed(1)} s`;
-  if (p50Ms < 90_000) return `~${Math.round(p50Ms / 1000)} s`;
-  return `~${Math.round(p50Ms / 60_000)} min`;
+  return `~${formatDurationMs(p50Ms, { style: p50Ms < 90_000 ? "compact" : "coarse" })}`;
 }
 
 /** Values the person typed, minus the empty ones: what the call sends. */

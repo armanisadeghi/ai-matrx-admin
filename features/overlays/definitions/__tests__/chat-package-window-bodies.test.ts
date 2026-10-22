@@ -16,6 +16,11 @@ const MOVED: Array<{ overlay: string; packageModule: string; webCopy: string }> 
     packageModule: "@ai-matrx/chat/window-panels/windows/code/CodeEditorWindow",
     webCopy: "features/window-panels/windows/code/CodeEditorWindow.tsx",
   },
+  {
+    overlay: "features/overlays/definitions/saveContactFromSelection.render.tsx",
+    packageModule: "@ai-matrx/chat/window-panels/windows/crm/SaveContactFromSelectionWindow",
+    webCopy: "features/crm/components/SaveContactFromSelectionDialog.tsx",
+  },
 ];
 
 describe.each(MOVED)("$overlay", ({ overlay, packageModule, webCopy }) => {

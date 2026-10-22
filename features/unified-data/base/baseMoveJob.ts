@@ -3,7 +3,7 @@
 // transaction on the server, under the server's statement budget, as this person. The screen reads the job's durable state
 // (`GET /base-move/jobs/{id}`) once a second, so a closed tab or a server restart loses nothing. Smaller bases move directly.
 
-import { formatCount } from "@ai-matrx/kit/format";
+import { formatCount, formatDurationSeconds } from "@ai-matrx/kit/format";
 import type { RecordsClient } from "@ai-matrx/records/core";
 
 import { getJson, postJson } from "@/lib/python-client";
@@ -102,7 +102,7 @@ export async function followBaseSnapshotJob(organizationId: string, jobId: strin
       const at = typeof p.total === "number" ? ` at ${formatCount(p.done ?? 0, { locale: "en-US" })} of ${formatCount(p.total, { locale: "en-US" })} rows` : "";
       const what = view.kind === "restore" ? "restore" : "snapshot";
       return { state: "refused", kind: view.kind, code: "stalled",
-        message: `The ${what} stopped moving${at} for ${Math.round(SNAPSHOT_JOB_STALL_READS / 60)} minutes, so this screen stopped waiting. Open Snapshots again later to see whether it finished.` };
+        message: `The ${what} stopped moving${at} for ${formatDurationSeconds(SNAPSHOT_JOB_STALL_READS, { style: "long", round: "nearest" })}, so this screen stopped waiting. Open Snapshots again later to see whether it finished.` };
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }

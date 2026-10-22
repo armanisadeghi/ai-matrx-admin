@@ -790,7 +790,7 @@ function BrandCardQueryControls({
           />
         ) : (
           <span className="min-w-[3.5rem] text-right">
-            {first}–{last} of {total.toLocaleString()}
+            {first}–{last} of {formatCount(total)}
           </span>
         )}
         <Button

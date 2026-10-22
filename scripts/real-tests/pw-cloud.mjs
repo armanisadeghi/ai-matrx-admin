@@ -10,6 +10,7 @@
 // Sign-in: the password goes to the Supabase auth API from this Mac (session-cookies.mjs); only the session
 // cookies reach the box. The box belongs to admin@admin.com in the fenced org "Safety Net Real Tests" and
 // stops itself 30 minutes after the last command; `stop` deletes it at once.
+import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -82,7 +83,7 @@ async function box(sandboxId, request, timeoutSec = 180) {
     console.error(`pw-cloud: the orchestrator is busy (${r.status}); retrying in 15 s (${attempt}/8)`);
     await new Promise((res) => setTimeout(res, 15000));
   }
-  if (r.status === 410 || r.status === 404) throw new Gone(`run ${run}'s cloud machine is gone (expired after ${IDLE_TTL_SECONDS / 60} idle minutes or stopped); use: node pw-cloud.mjs ${run} start`);
+  if (r.status === 410 || r.status === 404) throw new Gone(`run ${run}'s cloud machine is gone (expired after ${formatDurationSeconds(IDLE_TTL_SECONDS, { style: "long" })} idle or stopped); use: node pw-cloud.mjs ${run} start`);
   if (r.status !== 200 || !r.json) throw new Error(`the machine answered ${r.status}: ${r.text.slice(0, 400)}`);
   return r.json;
 }
@@ -171,7 +172,7 @@ if (cmd === "stop") {
   const res = await box(id, { cmd: "stop" }, 60).catch((e) => (e instanceof Gone ? { stdout: "stopped (the machine was already gone)" } : null));
   const failed = await deleteMachine(id);
   if (failed) {
-    console.error(`pw-cloud: the cloud machine ${id} was NOT deleted (${failed}); it ends by itself ${IDLE_TTL_SECONDS / 60} minutes after its last command`);
+    console.error(`pw-cloud: the cloud machine ${id} was NOT deleted (${failed}); it ends by itself ${formatDurationSeconds(IDLE_TTL_SECONDS, { style: "long" })} after its last command`);
     process.exit(1);
   }
   fs.rmSync(stateFile, { force: true });
@@ -181,7 +182,7 @@ if (cmd === "stop") {
 
 // Every command keeps the box alive for another IDLE_TTL_SECONDS; an abandoned run's box ends by itself.
 const keepAlive = api("POST", `/sandboxes/${id}/extend`, { ttl_seconds: IDLE_TTL_SECONDS })
-  .then((r) => { if (r.status >= 300) console.error(`pw-cloud: warning: the machine's idle timer was not extended (${r.status}); it may end ${IDLE_TTL_SECONDS / 60} minutes after an earlier command`); })
+  .then((r) => { if (r.status >= 300) console.error(`pw-cloud: warning: the machine's idle timer was not extended (${r.status}); it may end ${formatDurationSeconds(IDLE_TTL_SECONDS, { style: "long" })} after an earlier command`); })
   .catch((e) => console.error(`pw-cloud: warning: the machine's idle timer was not extended (${e.message})`));
 
 let request = { cmd, args };

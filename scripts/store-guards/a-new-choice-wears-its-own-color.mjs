@@ -10,6 +10,7 @@
 //
 //   node scripts/store-guards/a-new-choice-wears-its-own-color.mjs [--apply <file.sql>]
 
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -102,5 +103,5 @@ try {
 }
 for (const p of passes) console.log(`  ok  ${p}`);
 for (const f of failures) console.log(`  RED ${f}`);
-console.log(`${failures.length ? "RED" : "GREEN"}: ${passes.length}/${passes.length + failures.length} checks (${((Date.now() - started) / 1000).toFixed(1)}s, rolled back)`);
+console.log(`${failures.length ? "RED" : "GREEN"}: ${passes.length}/${passes.length + failures.length} checks (${formatDurationMs(Date.now() - started, { style: "compact" })}, rolled back)`);
 process.exit(failures.length ? 1 : 0);

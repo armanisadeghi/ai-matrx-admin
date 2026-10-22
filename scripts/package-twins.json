@@ -293,6 +293,10 @@
       "allow": [],
       "shapeAllow": [
         {
+          "file": "features/records-tool-display/__tests__/background-run-reads-the-run.test.ts",
+          "why": "NOT PRODUCT FORMATTING: a test double. `fmt` is the stand-in formatter the test INJECTS into quietNote so the assertion pins quietNote's own wording (\"last moved 60s ago\", \"No progress for 300s\") independent of any real voice; swapping in kit's compact voice would change the fixture, not the code under test."
+        },
+        {
           "file": "features/calendar-feed/ics.ts",
           "reason": "PROVABLY NOT A DISPLAYED DURATION: Date.UTC calendar arithmetic that computes a timezone offset in milliseconds for an iCalendar feed; no unit string is produced."
         },
@@ -403,6 +407,10 @@
         }
       ],
       "shapeCensus": [
+        {
+          "file": "features/ai-work/lib/codingApps.ts",
+          "why": "IS the duration capability and has not been collapsed: `untilWords` prints hours until a reset time (\"7h\", \"4d\", \"now\") and ROUNDS UP (`Math.ceil` of the hours left, so a limit never reads shorter than it is) and switches to days past 48 h. kit's formatRelativeTime floors in the future direction and has no round-up option, so collapsing today would shorten every countdown by up to an hour on the live coding-apps connections screen. Blocked on a kit `round: \"up\"` option; the sibling `updatedWords` in the same file already calls formatRelativeTime."
+        },
         {
           "file": "features/ai-work/live/presence.ts",
           "why": "IS an elapsed-time-to-short-age string (`compactAge`: \"12s\", \"4m\", \"3h\", \"2d\") and is not collapsed: its three callers (LiveBits, LiveSidebar, SessionDetail) append their own \" ago\" to a BARE age, and kit formatRelativeTime past a year falls to a date (\"seen 3/4/2025 ago\") and has no bare-delta entry point. Collapse with the relative-time lane when the callers pass the timestamp and let formatRelativeTime own the suffix."
@@ -528,48 +536,8 @@
           "why": "IS the duration capability: the eager-graph check's summary line prints its run time as `((Date.now() - t0) / 1000).toFixed(0)`s. Not collapsed by the duplicate watch (2026-10-08): this is another lane's shell-bundle guard, which the watch may not edit. The collapse is one import of formatDurationMs(Date.now() - t0, { style: \"compact\" }) in a session that owns the guard."
         },
         {
-          "file": "features/ai-work/lib/claudeConnectFlow.ts",
-          "why": "kit output differs: `minutesWords` rounds a span UP to whole minutes (\"4 minutes\", minimum 1) because the server builds its sentences the same way; kit's long voice floors or rounds to nearest, so 241 s would read \"4 minutes\" instead of \"5 minutes\"."
-        },
-        {
           "file": "features/ai-work/lib/codingApps.ts",
           "why": "kit output differs: `untilWords` (\"7h\", \"4d\", \"now\") rounds hours UP and flips to days past 48 h; `updatedWords` is the \"Updated 4 min ago\" sentence, which kit's relative voice (\"4m ago\") does not speak."
-        },
-        {
-          "file": "features/comparison/components/FacetOptions.tsx",
-          "why": "kit output differs: the estimate reads \"~30 s\" / \"~2 min\"; kit's coarse voice reads \"< 1 min\" under a minute and has no seconds tier."
-        },
-        {
-          "file": "features/data-sources/advanced-read/contract.ts",
-          "why": "kit output differs: `aboutTime` reads \"about 20 s\" / \"about 3 min\"; kit's coarse voice reads \"< 1 min\" under a minute and has no seconds tier."
-        },
-        {
-          "file": "features/data-sources/library/tools/toolFacts.ts",
-          "why": "kit output differs: `speedText` reads \"~0.8 s\" (one decimal under 10 s) then \"~12 s\" then \"~2 min\"; kit compact prints \"800ms\" / \"1.5s\"."
-        },
-        {
-          "file": "features/marketing/social/components/video/StudioParts.tsx",
-          "why": "kit output differs: `secondsText` reads \"42 s\" / \"2 min 5 s\" with spaced unit words; kit compact reads \"42s\" / \"2m 05s\"."
-        },
-        {
-          "file": "features/research/components/youtube/TopicYouTubeLibrary.tsx",
-          "why": "kit output differs: `hoursOf` shows a whole library's length as decimal hours (\"1.5h\" / \"12h\"); kit reads the same span \"1h 30m\"."
-        },
-        {
-          "file": "features/rich-document/annotations/AnchoredCommentRail.tsx",
-          "why": "kit output differs in ONE case: with {style:\"short\", suffix:false, minUnit:\"minute\", absoluteAfter:86400000, absolute:\"monthDay\"} every age matches, but a comment older than a year prints \"Jul 15\" here and \"Jul 15, 2025\" in kit. Same body is censused under formatRelativeTime."
-        },
-        {
-          "file": "features/search/components/SearchExperience.tsx",
-          "why": "kit output differs: the status bar reads \"(1.23 seconds)\" with two decimals; kit's long voice reads \"1 second\"."
-        },
-        {
-          "file": "features/tool-battle/derive.ts",
-          "why": "kit output differs: `formatMs` reads \"850 ms\" / \"1.2 s\" / \"12 s\" with a space before the unit; kit compact reads \"850ms\" / \"1.2s\"."
-        },
-        {
-          "file": "lib/diagnostics/loadTrace.ts",
-          "why": "kit output differs: the trace line reads \"poll every 60s\" at any interval; kit compact reads \"1m 00s\" from one minute up."
         }
       ]
     },
@@ -581,6 +549,26 @@
       "shapeWhy": "A number becoming a MONEY string is this capability whatever it is called. The NAME lane read formatUsd as adopted and clean while matrx-frontend's features/admin/spend/format.ts exported `usd` and `usdPrecise` bodies that NINE live Spend Dashboard and Spend Explorer components import, UsageTableClient.tsx exported `fmtCost` with ten call sites, features/hindsight/components/tokens.ts exported a third `fmtCost` IN A FILE THAT ALREADY IMPORTS KIT, and 22 more files built an Intl.NumberFormat with style:\"currency\" by hand. The bodies did not merely duplicate the package, they disagreed with it and with their own comments: `usdPrecise(0.000004)` returned \"$0.0000\" under a doc comment promising sub-cent visibility, and `fmtCost` rendered a $0.004 total_cost as \"$0.00\" in the VIEWER's locale, so a German admin read \"0,00 $\". Pattern and its proof: scripts/money-shape.mjs. A `$` in a regex or a shell string can never match \u2014 money is EXACTLY two dollars (one is the interpolation marker, three is LaTeX display math), a Postgres positional parameter interpolates a loop index and is excluded by name, and `/ 100` as a percentage step is excluded because the cents arm requires the dividend to NAME itself cents or millicents. `shapeCensus` below is the pre-existing census, not an exemption: it is reported every run and is ratcheted shrink-only \u2014 a stale entry FAILS the guard.",
       "allow": [],
       "shapeAllow": [
+        {
+          "file": "scripts/route-flow/extract.ts",
+          "why": "NOT MONEY: `\"^\" + ... + \"$\"` builds a regular expression's anchors; the two dollar signs are regex syntax in a route-matching script, not a currency symbol."
+        },
+        {
+          "file": "features/content-ir/studio/playground/demos/reader-locale.ts",
+          "why": "NOT EXECUTED APP CODE: the match sits inside a String.raw template that is the SOURCE TEXT of a playground demo (`useKindLocale`), shown to a person as an example of formatting money in the reader's own locale. It is data in this file, never run here, and kit's en-US-pinned formatUsd would defeat the demo's point."
+        },
+        {
+          "file": "features/data-sources/library/tools/__tests__/tool-result-and-card.test.tsx",
+          "why": "NOT PRODUCT FORMATTING: a jest.mock stub for formatAdminUsd that keeps the card's assertions independent of the real formatter; it renders nothing in the app."
+        },
+        {
+          "file": "components/cost/costColumn.test.ts",
+          "why": "NOT PRODUCT FORMATTING: a test double. `format` is the stand-in dollar formatter the test hands to the cost column so the assertion pins the column's own unit-switching, independent of the real formatter's digits."
+        },
+        {
+          "file": "app/(core)/organizations/[orgId]/settings/payments/page.tsx",
+          "why": "NOT A DISPLAYED PRICE: `(ask.amount_cents / 100).toFixed(2)` seeds the value of an editable amount <input> (\"25.00\", no currency symbol, no grouping) that the person edits and the form parses back to cents. A symbol or thousands separator in an input's value would break the round-trip parse; formatUsd/formatMoney are display formatters."
+        },
         {
           "file": "features/marketing/seo/value-system/offerings/vocabulary.ts",
           "reason": "PROVABLY NOT A RENDERED MONEY STRING: `formatOfferingPrice` composes a vocabulary label \"199 USD \u00b7 Per month\" from a bare amount and a currency CODE written after it, by design of the SEO offering vocabulary; formatUsd would return \"$199.00\" and drop the currency and unit contract."
@@ -655,6 +643,10 @@
         }
       ],
       "shapeCensus": [
+        {
+          "file": "features/marketing/seo/domain-research/summaries.ts",
+          "why": "IS a number becoming a money string: a compact dollar tile (`$1.2M`) built as a `$` prefix on formatCount's compact output. Blocked on a kit option: formatUsd has no compact voice (formatMoney neither), so there is no package call that renders `$1.2M`; adding `style: \"compact\"` to formatUsd is the collapse. The count half of this tile already calls formatCount."
+        },
         {
           "file": "components/mardown-display/blocks/commerce-kinds/commerce-kind-blocks.tsx",
           "why": "IS the money capability and has not been collapsed yet. This session collapsed the bodies the tenth adversarial review named \u2014 the Spend Dashboard/Explorer's `usd`/`usdPrecise`, UsageTableClient's `fmtCost`, hindsight's `fmtCost`, the cx dashboard's `formatCost`, the mandate board's cost cell \u2014 plus the compact-count and percentage voices kit 0.14.0 grew for them. The rest of the lane's census is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
@@ -768,28 +760,8 @@
           "why": "IS the money capability, but as SOURCE TEXT: SHARED_HELPERS is written verbatim into every template Applet's own shared.tsx (Applets own their files), so the formatter runs inside the Applet, not in this repo. Collapsing needs proof that the Applet runtime resolves @ai-matrx/kit/format and a regeneration of the shipped templates; until then the helper stays in the template. Its voice (whole dollars, no cents) is also the whole-dollar price voice formatUsd lacks. (2026-10-07 formatter-drain lane)"
         },
         {
-          "file": "features/admin/attention/sources/tool-health.ts",
-          "why": "kit output differs: the admin consequence sentence prints the price-book proposal's raw values verbatim (`$0.000004 to $0.000005 per unit`, strings of unknown type); formatUsd would regroup or round them."
-        },
-        {
-          "file": "features/admin/tool-control/ToolAlertRecord.tsx",
-          "why": "kit output differs: the alert record prints the vendor's proposal values verbatim as `$` + text (strings of unknown type); formatUsd would regroup, round or turn an unreadable value into an em-dash."
-        },
-        {
-          "file": "features/admin/users/record/ActivityRecordDoor.tsx",
-          "why": "kit output differs: `$${Number(total_cost ?? 0).toFixed(4)}` shows an unmeasured (null) cost as \"$0.0000\"; formatUsd(cost, {digits:4}) shows \"—\" and groups thousands. Admin-only screen."
-        },
-        {
           "file": "features/marketing/seo/domain-research/summaries.ts",
           "why": "kit output differs: the stat-tile `$` voice abbreviates \"$12K\" / \"$1.2M\" (K from 10,000, whole K); kit's compact voice reads \"12k\" / \"1.2M\" in lowercase with different tiers. Same body is censused under formatCount."
-        },
-        {
-          "file": "features/payments/server.ts",
-          "why": "kit output differs: the refusal sentence prints the limit as \"5000.00\" with no currency symbol or grouping; formatUsd reads \"$5,000\"."
-        },
-        {
-          "file": "features/tool-battle/derive.ts",
-          "why": "kit output differs: the cost-per-success lane prints a bare six-decimal number (\"0.001234\") under a column header that names the unit; formatUsd would add `$` and adapt the digits."
         }
       ]
     },
@@ -1811,14 +1783,6 @@
         {
           "file": "scripts/unwired/check-unwired.ts",
           "why": "IS the count capability and has not been collapsed yet. Eight abbreviators (including the two \"B = billion\" bodies) were collapsed onto kit 0.14.0's compact voice in this session, along with the Spend/Usage/console counts; the rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
-        },
-        {
-          "file": "features/marketing/seo/domain-research/summaries.ts",
-          "why": "kit output differs: the tile voice reads \"12K\" / \"1.2M\" / \"1.2B\" (uppercase K from 10,000, whole K); kit compact reads lowercase \"12k\" with other tiers. Same body is censused under formatUsd."
-        },
-        {
-          "file": "features/marketing/smart-add/found/FoundStage.tsx",
-          "why": "kit output differs: `compact` is an exported Intl compact formatter that reads \"1.2K\" (uppercase K, locale of the reader); kit's compact voice reads \"1.2k\" in en-US."
         }
       ]
     },
@@ -1877,6 +1841,18 @@
         }
       ],
       "shapeAllow": [
+        {
+          "file": "features/agent-comparison/modes/smart-add/components/SmartAddRoundPage.tsx",
+          "why": "NOT A RELATIVE TIME: the error notice reads \"Today's AI failed N step(s): <reason>\" - `Today's` names the day's holder agent and N is a COUNT of failed steps pluralised in place. No timestamp, clock or age enters the line."
+        },
+        {
+          "file": "features/launchpad/widgets/bodies/AgendaWidget.tsx",
+          "why": "PROVABLY NOT A RELATIVE AGE (same line as the already-allowed features/start/widgets/bodies/AgendaWidget.tsx, at its new path): it formats a meeting's own start as a clock time (toLocaleTimeString, \"9:30 AM\") followed by \"N today\" for the day's occurrence count; there is no age or distance from now."
+        },
+        {
+          "file": "features/ai-work/components/connections/CodingAppsSection.tsx",
+          "why": "NOT A BODY: line 548 is a CALL SITE of the file's one-line `ago` helper (line 341), which delegates to updatedWords, which calls formatRelativeTime. The detector matched the word `ago` in the helper's name beside a timestamp; there is no arithmetic or wording here to collapse."
+        },
         {
           "file": "components/mardown-display/blocks/search-kinds/primitive-blocks.tsx",
           "why": "NOT A RELATIVE AGE: the matched line is a business-hours label, \"Opens Mon\" or \"Opens tomorrow\" from a weekly opening-hours table (nextOpening over the listed days). No timestamp or distance from now enters it; \"tomorrow\" is the next listed open day, not a computed age."
@@ -1958,14 +1934,6 @@
         {
           "file": "scripts/partition-runway/core.ts",
           "why": "IS the relative-time capability and has not been collapsed yet. The five bodies the tenth review named \u2014 the spend ledger's `staleness`, the dead-ends and lint-debt consoles' split `ageInDays` + \"scanned today\", the provider sync dashboard's `hoursSince` + \"verified today\", and the masterwork panel's `whenDate` \u2014 were collapsed in this session. The rest is listed here so it is READ OUT every run and RATCHETED shrink-only. A debt, not an exemption."
-        },
-        {
-          "file": "features/ai-work/components/connections/CodingAppsSection.tsx",
-          "why": "kit output differs: `ago` strips \"Updated \" from `updatedWords`, so the cell reads \"4 min ago\" / \"2 h ago\"; kit's short voice reads \"4m ago\" / \"2h ago\"."
-        },
-        {
-          "file": "features/rich-document/annotations/AnchoredCommentRail.tsx",
-          "why": "kit output differs in ONE case: a comment older than a year prints \"Jul 15\" here and \"Jul 15, 2025\" in kit; every younger age matches with {style:\"short\", suffix:false, minUnit:\"minute\", absoluteAfter:86400000, absolute:\"monthDay\"}."
         }
       ]
     },
@@ -1999,6 +1967,22 @@
         }
       ],
       "shapeAllow": [
+        {
+          "file": "scripts/speed-test-census.mjs",
+          "why": "NOT A FILE-SIZE STRING: the matched line divides a browser performance counter by 1024 / 1048576 to store a NUMBER in a JSON measurement record (a key named jsKB / heapMB / jsWireKB); no unit label is rendered, the number is later compared and diffed by the harness. This is a Node/Playwright measurement script, never product UI."
+        },
+        {
+          "file": "scripts/perf-probe.mjs",
+          "why": "NOT A FILE-SIZE STRING: the matched line divides a browser performance counter by 1024 / 1048576 to store a NUMBER in a JSON measurement record (a key named jsKB / heapMB / jsWireKB); no unit label is rendered, the number is later compared and diffed by the harness. This is a Node/Playwright measurement script, never product UI."
+        },
+        {
+          "file": "scripts/board-scale-bench.mjs",
+          "why": "NOT A FILE-SIZE STRING: the matched line divides a browser performance counter by 1024 / 1048576 to store a NUMBER in a JSON measurement record (a key named jsKB / heapMB / jsWireKB); no unit label is rendered, the number is later compared and diffed by the harness. This is a Node/Playwright measurement script, never product UI."
+        },
+        {
+          "file": "scripts/.pp-tmp.mjs",
+          "why": "NOT A FILE-SIZE STRING: the matched line divides a browser performance counter by 1024 / 1048576 to store a NUMBER in a JSON measurement record (a key named jsKB / heapMB / jsWireKB); no unit label is rendered, the number is later compared and diffed by the harness. This is a Node/Playwright measurement script, never product UI."
+        },
         {
           "file": "features/data-sources/records.ts",
           "reason": "PROVABLY NOT A BYTE COUNT. `moneyText` abbreviates a currency AMOUNT (\"$1.2M\") on 1e3/1e6/1e9 steps; no byte value enters it. Its counting twin is tracked under formatCount."

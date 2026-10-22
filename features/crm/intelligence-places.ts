@@ -21,7 +21,7 @@ export const CRM_PLACES: FeaturePlaces = {
       label: "Any page",
       trigger: "Save selected text as a contact",
       mandateKeys: [K.crm__save_contact],
-      sources: ["features/crm/components/SaveContactFromSelectionDialog.tsx"],
+      sources: ["../aidream/apps/shared/chat/src/window-panels/windows/crm/SaveContactFromSelectionWindow.tsx"],
     },
     {
       id: "chasebox",

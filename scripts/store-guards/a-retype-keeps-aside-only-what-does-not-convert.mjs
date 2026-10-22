@@ -25,6 +25,7 @@
 // `--apply` executes a SQL file inside the rolled-back transaction first (a migration not yet applied),
 // so the guard can be seen RED on the live bodies and GREEN on the new ones without changing anything.
 
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -139,5 +140,5 @@ try {
   await client.end();
 }
 for (const f of failures) console.log(`  RED ${f}`);
-console.log(`${failures.length ? "RED" : "GREEN"}: ${TARGETS.length - failures.length}/${TARGETS.length} targets (${((Date.now() - started) / 1000).toFixed(1)}s, rolled back)`);
+console.log(`${failures.length ? "RED" : "GREEN"}: ${TARGETS.length - failures.length}/${TARGETS.length} targets (${formatDurationMs(Date.now() - started, { style: "compact" })}, rolled back)`);
 process.exit(failures.length ? 1 : 0);
