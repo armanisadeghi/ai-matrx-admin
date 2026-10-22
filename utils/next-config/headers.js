@@ -28,6 +28,9 @@ const PERMISSIONS_POLICY = [
     "browsing-topics=()",
 ].join(", ");
 
+const DESKTOP_FRAME_ANCESTORS_VALUE =
+    "frame-ancestors 'self' tauri://localhost http://tauri.localhost https://tauri.localhost http://localhost:1420";
+
 const GLOBAL_SECURITY_HEADERS = [
     { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
     { key: "X-Content-Type-Options", value: "nosniff" },
@@ -35,10 +38,15 @@ const GLOBAL_SECURITY_HEADERS = [
     { key: "Permissions-Policy", value: PERMISSIONS_POLICY },
 ];
 
-/** Same-origin framing only (clickjacking). CSP is frame-ancestors ONLY — no script-src rollout here. */
+/**
+ * Clickjacking guard: only our own pages and the Matrx Local desktop app may frame us.
+ * The desktop app's in-app browser (matrx-local desktop/src/pages/BrowserPage.tsx)
+ * frames any aimatrx.com page from its webview origin, so this is CSP
+ * `frame-ancestors` alone — `X-Frame-Options` cannot name those origins and
+ * would refuse them. CSP is frame-ancestors ONLY — no script-src rollout here.
+ */
 const SAME_ORIGIN_FRAMING = [
-    { key: "X-Frame-Options", value: "SAMEORIGIN" },
-    { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+    { key: "Content-Security-Policy", value: DESKTOP_FRAME_ANCESTORS_VALUE },
 ];
 
 // Pages a stranger's site embeds, each only in its embed mode (`?embed=…`):
@@ -51,8 +59,7 @@ const THIRD_PARTY_EMBED_PREFIXES = ["applets", "f", "site"];
 // The Matrx Local desktop app frames this page from its own webview origin
 // (matrx-local desktop/src/pages/AiMatrx.tsx → <web origin>/demos/local-tools).
 const DESKTOP_EMBED_PATH = "demos/local-tools";
-const DESKTOP_FRAME_ANCESTORS =
-    "frame-ancestors 'self' tauri://localhost http://tauri.localhost https://tauri.localhost http://localhost:1420";
+const DESKTOP_FRAME_ANCESTORS = DESKTOP_FRAME_ANCESTORS_VALUE;
 
 const OWN_FRAME_POLICY_ROUTES = ["kind-sandbox", "auth/extension-callback", "api/image-proxy"];
 
