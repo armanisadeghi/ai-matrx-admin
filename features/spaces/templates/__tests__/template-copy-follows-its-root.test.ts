@@ -58,7 +58,7 @@ import { TEMPLATE_BUSY_MESSAGE } from "@ai-matrx/records/templates";
 
 import type { SpaceDoc, SpacesStore } from "../../contract";
 import { installedCopies, refusalSentence, runUseTemplate, type PackRun, type SpaceTemplateFull } from "../use-pack";
-import { forgetTemplateCopyOfPage, removeCopyQuestion, templateCopyOfPageCached, restorePageOrCopy, templateCopyOfPage, templateDoorSentence, trashPageOrCopy, type CopyLifecyclePorts, type TemplateCopy } from "../template-copy";
+import { copyIsLive, copyIsResumable, forgetTemplateCopyOfPage, removeCopyQuestion, templateCopyOfPageCached, restorePageOrCopy, templateCopyOfPage, templateDoorSentence, trashPageOrCopy, type CopyLifecyclePorts, type TemplateCopy } from "../template-copy";
 
 const ORG = "org-1";
 const at = "2026-10-20T06:00:00.000Z";
@@ -106,6 +106,40 @@ describe("F2: 'You already have' offers only a copy that can be opened, or resto
     db.installs = [install("inst-a", "installed")];
     db.docs = [root("root-a", "inst-a", "Personal Goal Tracker", false)];
     expect(await installedCopies(ORG, "SP0203")).toEqual([]);
+  });
+});
+
+describe("never stranded: a removal that stopped part way is resumable", () => {
+  it("an `uninstalling` copy is offered as resuming whether its root is live or already in Trash", async () => {
+    db.installs = [recorded(install("inst-a", "uninstalling"), "root-a")];
+    db.docs = [root("root-a", "inst-a", "Personal Goal Tracker", false)];
+    expect(await installedCopies(ORG, "SP0203")).toEqual([expect.objectContaining({ installId: "inst-a", root: "root-a", resuming: true, trashed: false })]);
+    db.docs = [root("root-a", "inst-a", "Personal Goal Tracker", true)];
+    expect(await installedCopies(ORG, "SP0203")).toEqual([expect.objectContaining({ installId: "inst-a", resuming: true, trashed: false })]);
+  });
+
+  it("the page side reports the uninstalling state and it is resumable, not live", async () => {
+    db.installs = [recorded(install("inst-a", "uninstalling"), "root-a")];
+    db.docs = [root("root-a", "inst-a", "Personal Goal Tracker", false)];
+    const copy = await templateCopyOfPage("root-a");
+    expect(copy).toMatchObject({ state: "uninstalling" });
+    expect(copyIsResumable(copy!.state)).toBe(true);
+    expect(copyIsLive(copy!.state)).toBe(false);
+  });
+
+  it("Finish removing (Move to Trash on the copy) calls the uninstall door with no confirm and ends uninstalled", async () => {
+    const doors: string[] = [];
+    const state = { install: "uninstalling" };
+    const p: CopyLifecyclePorts = {
+      readCopy: async () => ({ installId: "inst-a", catalogueId: "SP0203", organizationId: ORG, rootId: "root-a", title: "T", state: state.install as TemplateCopy["state"], tables: 3 }),
+      archive: async () => undefined,
+      restore: async () => undefined,
+      confirm: async () => false,
+      runDoor: async (door) => (doors.push(door), (state.install = "uninstalled"), true),
+    };
+    expect(await trashPageOrCopy("root-a", p)).toBe("removed");
+    expect(doors).toEqual(["template_uninstall"]);
+    expect(state.install).toBe("uninstalled");
   });
 });
 

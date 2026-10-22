@@ -16,7 +16,7 @@
  *   the Builder's own edit path (unsaved), "Battle it" runs it on the cases, "Keep" saves it.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { RecordList } from "@ai-matrx/design-system/record-list";
 import { FlaskConical, Lightbulb, Send, Swords } from "lucide-react";
 import Link from "next/link";
@@ -28,7 +28,9 @@ import { selectLatestAssistantMessageId } from "@ai-matrx/chat/agents/redux/exec
 import { selectActiveModels } from "@ai-matrx/agents/models";
 import { useModelOptions, useModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
 import { defaultDebriefModelId } from "@ai-matrx/chat/agents/debrief/debrief";
-import { debriefKey, getDebrief, setDebrief, useDebrief } from "@ai-matrx/chat/agents/debrief/debrief-store";
+import { debriefCleared, debriefKey, debriefPatched, useDebrief, type DebriefState } from "@ai-matrx/chat/agents/debrief/debrief-store";
+import { selectDebrief } from "@ai-matrx/chat/agents/redux/debrief/debrief.selectors";
+import { useChatDispatch, useChatStore } from "@ai-matrx/chat/store/hooks";
 import { parseAgentDebrief, type DebriefProposal } from "@ai-matrx/chat/agents/debrief/debrief-proposals";
 import { DebriefProposalCards } from "@ai-matrx/chat/agents/debrief/DebriefProposalCards";
 import { ProInput } from "@/components/official/ProInput";
@@ -413,6 +415,19 @@ function DebriefTab({
   );
   const key = runConversationId && messageId ? debriefKey(runConversationId, messageId) : "";
   const debrief = useDebrief(key);
+  // Reads and writes outside render go through the chat store the debrief lives in (chat >= 0.8.305
+  // dropped the getDebrief / setDebrief doors; writes dispatch debriefPatched / debriefCleared).
+  const chatStore = useChatStore();
+  const chatDispatch = useChatDispatch();
+  const getDebrief = useCallback(
+    (k: string): DebriefState | undefined => selectDebrief(chatStore.getState(), k),
+    [chatStore],
+  );
+  const setDebrief = useCallback(
+    (k: string, patch: Partial<DebriefState> | null) =>
+      void chatDispatch(patch === null ? debriefCleared(k) : debriefPatched({ key: k, patch })),
+    [chatDispatch],
+  );
   // The model the debrief reads the run with: the strongest non-gated Claude unless the person picks one.
   useModelOptions();
   const records = useModelRecords(selectActiveModels);
@@ -447,7 +462,7 @@ function DebriefTab({
       (e: unknown) =>
         toast.error("The saved debrief did not load", { description: e instanceof Error ? e.message : String(e) }),
     );
-  }, [runConversationId, messageId, key]);
+  }, [runConversationId, messageId, key, getDebrief, setDebrief]);
   const doneText = debrief?.status === "done" ? debrief.text : null;
   const doneFork = debrief?.forkConversationId ?? null;
   const doneModel = debrief?.model ?? null;

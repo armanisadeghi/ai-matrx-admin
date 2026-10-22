@@ -114,7 +114,7 @@ export async function makePersona({ useCase, seed } = {}) {
 }
 
 /** The `app_metadata.test_fixture` object. `ttlHours: null` is for a NAMED permanent demo persona only. */
-export function buildTag({ suite, purpose, ttlHours = DEFAULT_TTL_HOURS, now = new Date(), skipFoundSearch = false }) {
+export function buildTag({ suite, purpose, ttlHours = DEFAULT_TTL_HOURS, now = new Date(), skipFoundSearch = true }) {
   if (!suite?.trim() || !purpose?.trim()) {
     throw new PersonaFactoryRefusal("a fixture account needs a suite name and a purpose; both are stamped on it.");
   }
@@ -123,8 +123,9 @@ export function buildTag({ suite, purpose, ttlHours = DEFAULT_TTL_HOURS, now = n
     purpose,
     created_at: now.toISOString(),
     expires_at: ttlHours === null ? null : new Date(now.getTime() + ttlHours * 3600_000).toISOString(),
-    // The sign-up welcome's background found search leaves this persona alone (a real, paid search otherwise runs
-    // on its first load: features/marketing/smart-add/welcome/foundSearchState.ts).
+    // The sign-up welcome's found search leaves a persona alone BY DEFAULT: every sign-in of a new fixture account
+    // (confirm link, password, OTP) would otherwise start a real, paid search it never looks at
+    // (features/marketing/smart-add/welcome/foundSearchState.ts). A welcome test opts in with `skipFoundSearch: false`.
     ...(skipFoundSearch ? { skip_found_search: true } : {}),
     // THE TEST STAMP (lib/test-run/marker.ts): every row this persona's test work creates carries this
     // run id, so platform.archive_test_run(run id) archives it. fixtureSessionCookies sets the cookie.
@@ -177,11 +178,12 @@ export async function fixtureConfirmLink(target, user, { origin }) {
 }
 
 /**
- * Create a tagged, passwordless auth user through the GoTrue admin API.
+ * Create a tagged, passwordless auth user through the GoTrue admin API. `skipFoundSearch` defaults to true (a welcome
+ * test passes false).
  * @param {FixtureTarget} target
  * @param {{ suite?: string, purpose?: string, ttlHours?: number, persona?: Awaited<ReturnType<typeof makePersona>>, useCase?: string, skipFoundSearch?: boolean }} [options]
  */
-export async function createFixtureUser(target, { suite, purpose, ttlHours = DEFAULT_TTL_HOURS, persona, useCase, skipFoundSearch = false } = {}) {
+export async function createFixtureUser(target, { suite, purpose, ttlHours = DEFAULT_TTL_HOURS, persona, useCase, skipFoundSearch = true } = {}) {
   const who = persona ?? (await makePersona({ useCase }));
   const tag = buildTag({ suite, purpose, ttlHours, skipFoundSearch });
   const created = await gotrue(target, "POST", "users", {

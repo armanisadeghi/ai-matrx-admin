@@ -134,8 +134,9 @@ describe("the found search starts at email confirmation, on the server (the 10-2
       source_feature: "marketing",
       inputs: { email: "jmarsh@example.com", website: "example.com", entry_kind: "person" },
     });
-    // The state is recorded BEFORE the run starts, so a second starter never pays twice.
-    expect(calls.indexOf(save!)).toBeLessThan(calls.indexOf(start!));
+    // The run starts FIRST (a repeat start returns the active run), then the state is recorded: a start killed
+    // between the two can never leave an account that is "started" with no run (review 2026-10-21, finding 1).
+    expect(calls.indexOf(start!)).toBeLessThan(calls.indexOf(save!));
     expect(recordSystemError).not.toHaveBeenCalled();
   });
 
@@ -147,15 +148,14 @@ describe("the found search starts at email confirmation, on the server (the 10-2
     expect(pending).toHaveLength(0);
   });
 
-  it("a refused start puts the state back and is recorded, so the next load retries it", async () => {
+  it("a refused or killed start writes no state at all and is recorded, so the next load starts it", async () => {
     const user = signedUp();
     verifyOtp.mockResolvedValue({ data: { user, session: { access_token: "person-token", user } }, error: null });
     const calls = network(user, () => new Response(JSON.stringify({ detail: "boom" }), { status: 500 }));
     await confirm();
     await runAfterWork();
     const saves = calls.filter((c) => c.method === "PUT").map((c) => (c.body as { data: Record<string, unknown> }).data);
-    expect(saves).toHaveLength(2);
-    expect(saves[1]).toMatchObject({ found_search_started_at: null, found_search_round: 0 });
+    expect(saves).toHaveLength(0);
     expect(recordSystemError).toHaveBeenCalledWith(
       "record_system_error",
       expect.objectContaining({ p_error: expect.objectContaining({ kind: "signup_welcome:found-search-start", user_id: USER_ID }) }),

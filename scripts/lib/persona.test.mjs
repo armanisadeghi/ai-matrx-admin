@@ -48,7 +48,9 @@ test("the tag carries suite, purpose and a 24 hour expiry by default; only a nam
     purpose: "invited client",
     created_at: "2026-10-01T09:00:00.000Z",
     expires_at: "2026-10-02T09:00:00.000Z",
+    skip_found_search: true, // no paid welcome search per fixture sign-in, unless a welcome test opts in
   });
+  assert.equal("skip_found_search" in buildTag({ suite: "welcome/walk", purpose: "welcome", skipFoundSearch: false }), false);
   assert.equal(buildTag({ suite: "demo/orchard-clinic", purpose: "walkthrough", ttlHours: null, now }).expires_at, null);
   assert.throws(() => buildTag({ suite: "", purpose: "x" }), PersonaFactoryRefusal);
   assert.throws(() => liveTarget({ reason: "x" }, {}), PersonaFactoryRefusal);

@@ -43,11 +43,11 @@ import { IDENTIFY_WORKFLOW_KEY, welcomeFirstRound } from "./welcomeRound";
 import { MAX_WELCOME_ROUNDS, roundSubject, welcomeSubject } from "./welcomeSession";
 import { welcomeFoundSomething, welcomeVerdict } from "./welcomeVerdict";
 import { FOUND_WINDOW_LINK, foundSearchState, type FoundSearchState } from "./foundSearchState";
+import { readWelcomeKnob } from "./welcomeKnobs";
 import { foundStateMetadata, startFoundSearchWith, type FoundSearchInfo } from "./foundSearchStart";
 
-/** How often an open app checks a running round, and for how long after it started. */
-export const FOUND_POLL_MS = 30_000;
-export const FOUND_POLL_FOR_MS = 15 * 60_000;
+// How often an open app checks a running round, and for how long after it started, are the `welcome.found_poll_ms`
+// and `welcome.found_poll_for_ms` knobs (welcomeKnobs.ts).
 const TERMINAL = ["completed", "failed", "errored", "cancelled", "stopped", "refused"];
 
 export type { FoundSearchInfo } from "./foundSearchStart";
@@ -79,7 +79,7 @@ async function seedFor(user: User): Promise<LoginSeed> {
  * Start a round from the browser (the shared core, foundSearchStart.ts): a later round on new information, or the
  * retry when the sign-in's server start did not land.
  */
-export async function startFoundSearch(info: FoundSearchInfo = {}): Promise<void> {
+export async function startFoundSearch(info: FoundSearchInfo = {}, options: { asUnstarted?: boolean } = {}): Promise<void> {
   const dispatch = dispatchOf();
   await startFoundSearchWith(
     {
@@ -93,6 +93,7 @@ export async function startFoundSearch(info: FoundSearchInfo = {}): Promise<void
         startSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, { subject, organizationId, sourceFeature: "marketing", inputs }, "Identification could not start."),
     },
     info,
+    options,
   );
 }
 
@@ -150,6 +151,12 @@ export async function checkFoundSearch(): Promise<FoundCheck> {
     (subject) => lookupSystemRun(dispatch, IDENTIFY_WORKFLOW_KEY, subject, organizationId, "This session could not be read."),
     user.id,
   );
+  // Started on record, but no run exists (a start that died after the state was written, or a run that was never made):
+  // that is NOT "found nothing". Start it again (idempotent per subject) and keep watching; never settle it as empty.
+  if (runs.length === 0) {
+    await startFoundSearch({}, { asUnstarted: true });
+    return "running";
+  }
   if (runs.some((r) => !TERMINAL.includes(r.status))) return "running";
   const { verdict, seed } = await verdictFor(user, runs);
   const now = new Date().toISOString();
@@ -177,17 +184,19 @@ export async function checkFoundSearch(): Promise<FoundCheck> {
 export function watchFoundSearch(startedAt: string | null): () => void {
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
-  const until = (startedAt ? Date.parse(startedAt) : Date.now()) + FOUND_POLL_FOR_MS;
   const tick = async () => {
+    if (stopped) return;
+    const [pollMs, pollForMs] = await Promise.all([readWelcomeKnob("foundPollMs"), readWelcomeKnob("foundPollForMs")]);
+    const until = (startedAt ? Date.parse(startedAt) : Date.now()) + pollForMs;
     if (stopped) return;
     try {
       const result = await checkFoundSearch();
-      if (result !== "running" || Date.now() + FOUND_POLL_MS > until) return;
+      if (result !== "running" || Date.now() + pollMs > until) return;
     } catch (error) {
       console.error("[found-search] The check failed; the next load tries again.", error);
       return;
     }
-    if (!stopped) timer = setTimeout(() => void tick(), FOUND_POLL_MS);
+    if (!stopped) timer = setTimeout(() => void tick(), pollMs);
   };
   void tick();
   return () => {

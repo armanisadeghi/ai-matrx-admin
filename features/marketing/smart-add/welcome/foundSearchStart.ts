@@ -8,7 +8,13 @@
  *   start did not land.
  *
  * No browser, no React, no store here: every read and write is a dependency. The rules (when to start, what the first
- * round sends, the state recorded BEFORE the start so two starters never pay twice) live only here.
+ * round sends, the RUN started BEFORE the state is recorded) live only here.
+ *
+ * Why the run first (review 2026-10-21): the state used to be written first and rolled back in a `catch`, but a killed
+ * function (the sign-in routes have a time cap) throws nothing, so no rollback ran and the account stayed "started,
+ * nothing found" for good. A repeat start on the same subject returns the active run (aidream system_workflows), so
+ * starting first is idempotent: a death before the start leaves the account unstarted (the next load starts it), and a
+ * death between the start and the write leaves a run with no state (the next load starts again and gets that run).
  */
 
 import type { User } from "@supabase/supabase-js";
@@ -75,14 +81,22 @@ export type FoundSearchStartResult =
 
 /**
  * Start a round. The first one (`info` empty) is exactly the door's first round; a later one carries the new
- * information on a new subject suffix. Records the state BEFORE it starts, so two starters never pay twice; a start
- * that fails puts everything back, so the next starter tries again.
+ * information on a new subject suffix. Starts the run FIRST (idempotent per subject), then records the state: a start
+ * that fails or is killed leaves the state untouched, so the next starter tries again.
+ *
+ * `asUnstarted`: the state says started but no run exists for the subject (a start that died after an older version
+ * wrote the state first); treat the account as never started.
  */
-export async function startFoundSearchWith(deps: FoundSearchStartDeps, info: FoundSearchInfo = {}): Promise<FoundSearchStartResult> {
+export async function startFoundSearchWith(
+  deps: FoundSearchStartDeps,
+  info: FoundSearchInfo = {},
+  options: { asUnstarted?: boolean } = {},
+): Promise<FoundSearchStartResult> {
   const user = await deps.freshUser();
   if (!user) return { outcome: "nothing" };
-  const state = foundSearchState(user);
-  if (state.skip || state.shownAt) return { outcome: "nothing" };
+  const parsed = foundSearchState(user);
+  if (parsed.skip || parsed.shownAt) return { outcome: "nothing" };
+  const state = options.asUnstarted ? { ...parsed, startedAt: null, round: 0, basis: [], checkedAt: null } : parsed;
   const seed = loginSeed(user, await deps.rules());
   // The light keys the island compares on every load are always recorded too, so it never wakes for nothing.
   const basis = [...new Set([...basisOf(seed, info), ...lightBasis(user)])];
@@ -116,16 +130,9 @@ export async function startFoundSearchWith(deps: FoundSearchStartDeps, info: Fou
     }
   }
   if (n === null) return { outcome: "nothing" };
-  await deps.writeState({ startedAt: now, round: n, basis: [...new Set([...state.basis, ...basis])], checkedAt: null });
   const subject = roundSubject(base, n);
-  try {
-    const { runId } = await deps.startRun({ subject, organizationId, inputs });
-    return { outcome: "started", round: n, runId, subject };
-  } catch (error) {
-    // Not started: everything goes back as it was, so the next starter (a load, a save) tries again.
-    await deps
-      .writeState({ startedAt: later ? state.startedAt : null, round: state.round, basis: state.basis, checkedAt: state.checkedAt })
-      .catch(() => undefined);
-    throw error;
-  }
+  // The run first: a repeat start on this subject returns the active run, so a retry never pays twice.
+  const { runId } = await deps.startRun({ subject, organizationId, inputs });
+  await deps.writeState({ startedAt: now, round: n, basis: [...new Set([...state.basis, ...basis])], checkedAt: null });
+  return { outcome: "started", round: n, runId, subject };
 }
