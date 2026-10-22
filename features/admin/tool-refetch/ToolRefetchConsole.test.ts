@@ -241,7 +241,7 @@ describe("ToolDetail canonical repeat grid", () => {
     expect(host.textContent).toContain("50 loaded of 75");
     expect(host.textContent).toContain("Load more");
     expect(host.textContent).not.toContain("Showing 50 of 75 repeats.");
-    expect(Array.from(host.querySelectorAll("th")).map((cell) => cell.textContent)).toEqual(
+    expect(Array.from(host.querySelectorAll("th [data-matrx-header-label]")).map((cell) => cell.textContent)).toEqual(
       expect.arrayContaining([
         "When",
         "Repeat iteration",

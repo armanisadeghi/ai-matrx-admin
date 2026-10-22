@@ -34,14 +34,26 @@ const LOCAL_ROOTS = SOURCE_ROOTS.filter((r) => !r.startsWith("../"));
 const ROOT = new URL("..", import.meta.url).pathname;
 const BASELINE = join(ROOT, "scripts/control-shape-baseline.json");
 
-const CONTROL_TAG = /<(button|Button|input|select|textarea|SelectTrigger|TabsTrigger|TabsList|DropdownMenuTrigger|PopoverTrigger|ProInput|ProTextarea|Input|Textarea)\b/;
+const CONTROL_TAG = /<(button|Button|input|select|textarea|SelectTrigger|TabsTrigger|TabsList|DropdownMenuTrigger|PopoverTrigger|ProInput|ProTextarea|Input|Textarea|Link|a)\b/;
 const FIELD_TAG = /<(input|textarea|select|Input|Textarea|ProInput|ProTextarea|Field|SearchField|SelectTrigger)\b/;
 const ROUND_OK = /\b(avatar|Avatar|dot|Dot|spinner|Spinner|switch|Switch|badge|Badge|progress|Progress|skeleton|Skeleton|matrx-tap|HEADER_MODE_PILL_TRACK|h-1\.5 w-1\.5|h-2 w-2|size-2\b|size-1\.5)\b/;
-const FOCUS_RING = /focus(?:-visible|-within)?:ring-(?:\d|\[\d+px\]|primary)/;
+// A call-site ring, never the shipped focus pattern (`ring-[3px] ring-primary/15`).
+const FOCUS_RING = /focus(?:-visible|-within)?:ring-(?:1|2|4|\[[12]px\]|ring\b|primary(?![\/\w-]))/;
 const GLASS = /matrx-glass-(?:card|thin-border|interactive)/;
 const FRAME = /\brounded-(?:md|lg|xl)\b[^"'`]*\bborder\b|\bborder\b[^"'`]*\brounded-(?:md|lg|xl)\b/;
 const TINT = /\bbg-(?:card|muted|background)\b/;
-const FRAMED_CHILD = /^\s*<(MatrxDataTable|ControlRow)\b/;
+const FRAMED_CHILD = /^\s*<(MatrxDataTable|ControlRow|SearchField|ResearchFilterBar|HierarchyFilter|EntityListPage|LiveRunDisplay)\b/;
+
+function tagClosed(s) {
+  let depth = 0;
+  for (let k = 1; k < s.length; k++) {
+    const c = s[k];
+    if (c === "{") depth++;
+    else if (c === "}") depth--;
+    else if (c === ">" && depth === 0) return true;
+  }
+  return false;
+}
 
 /** Each finding: { line, kind, cls }. Looks at a JSX opening tag with up to 12 lines of attrs. */
 export function findingsForSource(src) {
@@ -52,18 +64,22 @@ export function findingsForSource(src) {
     if (/^\s*(\/\/|\*|\/\*)/.test(line)) continue;
     const tag = CONTROL_TAG.exec(line);
     if (tag) {
-      // The tag plus its attributes, until the first `>` that closes it.
+      // The tag plus its attributes, up to the `>` that closes the opening tag — counted outside
+      // `{}` so an `onClick={() => …}` arrow does not end the scan early.
       let block = line;
-      for (let j = i + 1; j < Math.min(lines.length, i + 12) && !/>/.test(block.slice(tag.index)); j++) block += "\n" + lines[j];
+      for (let j = i + 1; j < Math.min(lines.length, i + 16) && !tagClosed(block.slice(tag.index)); j++) block += "\n" + lines[j];
       const attrs = block.slice(tag.index);
-      if (/\brounded-full\b/.test(attrs) && !ROUND_OK.test(attrs) && !/aria-label=/.test(attrs) /* icon-only round */) {
+      // Icon-only round buttons are 6px too (Arman 2026-10-21); only tap-target pills are the package's.
+      if (/\brounded-full\b/.test(attrs) && !ROUND_OK.test(attrs)) {
         out.push({ line: i + 1, kind: "pill-control", cls: `<${tag[1]} … rounded-full>` });
       }
       if (GLASS.test(attrs)) out.push({ line: i + 1, kind: "glass-control", cls: `<${tag[1]} … ${GLASS.exec(attrs)[0]}>` });
       if (FIELD_TAG.test(line) && FOCUS_RING.test(attrs)) out.push({ line: i + 1, kind: "focus-ring", cls: `<${tag[1]} … ${FOCUS_RING.exec(attrs)[0]}>` });
     }
     if (/^\s*<(div|section)\b/.test(line) && FRAME.test(line) && TINT.test(line)) {
-      const next = lines[i + 1] ?? "";
+      let k = i + 1;
+      while (k < lines.length && (/^\s*$/.test(lines[k]) || /^\s*\{\/\*/.test(lines[k]))) k++;
+      const next = lines[k] ?? "";
       if (FRAMED_CHILD.test(next)) out.push({ line: i + 1, kind: "double-frame", cls: `frame around ${FRAMED_CHILD.exec(next)[1]}` });
     }
   }
@@ -99,10 +115,14 @@ function selfTest() {
     `<DropdownMenuTrigger className="matrx-glass-thin-border rounded-md">`,
     `<div className="rounded-lg border border-border bg-card">\n  <MatrxDataTable data={rows} />`,
     `<section className="rounded-md border bg-muted p-2">\n  <ControlRow>`,
+    `<button type="button" onClick={() => setOpen((o) => !o)}\n  className="h-8 rounded-full border px-3">`, // arrow before className
+    `<button className="h-8 w-8 rounded-full border" aria-label="Close">`, // icon-only round: 6px too
+    `<Link href="/x" className="rounded-full px-3 matrx-glass-card">`, // 2: a link styled as a pill
+    `<div className="rounded-lg border border-border bg-card">\n\n  {/* the bar */}\n  <ResearchFilterBar title="Curate" />`,
   ];
-  const redCounts = [2, 1, 1, 1, 1, 1, 1];
+  const redCounts = [2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1];
   const green = [
-    `<button className="h-8 w-8 rounded-full" aria-label="Close">`, // icon-only round: judged by the tap-target guard
+    `<input className="rounded-md border focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15" />`, // THE shipped focus
     `<span className="h-2 w-2 rounded-full bg-success" />`,
     `<Avatar className="rounded-full" />`,
     `<Button variant="outline">Auto</Button>`,
