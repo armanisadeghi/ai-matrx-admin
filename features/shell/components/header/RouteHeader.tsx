@@ -64,7 +64,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { usePathname } from "next/navigation";
 import { defineClientKeyFamily } from "@/lib/sync/client-storage";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
@@ -449,11 +449,17 @@ export default function RouteHeader({
     };
 
     measure();
+    // 🚨 A REMEASURE COMMITS BEFORE THE FRAME PAINTS (2026-10-21, chat-switch-stability).
+    // Observer and frame callbacks run between layout and paint, but a plain setState
+    // there renders in a later task — so a new title painted one frame with the OLD
+    // centering pad and the center switch jumped sideways on every chat switch.
+    // `flushSync` lands the new geometry in the same frame as the content.
+    const measureNow = () => flushSync(measure);
     // PageHeader mounts through a portal. Its first layout pass can happen
     // before the injection slot has its final width, so measure once more on
     // the next frame instead of leaving the center unmeasured.
-    const frame = requestAnimationFrame(measure);
-    const ro = new ResizeObserver(measure);
+    const frame = requestAnimationFrame(measureNow);
+    const ro = new ResizeObserver(measureNow);
     ro.observe(root);
     if (root.parentElement) ro.observe(root.parentElement);
     if (leftRef.current) ro.observe(leftRef.current);
@@ -480,10 +486,13 @@ export default function RouteHeader({
       navMinEl = next;
       if (navMinEl) {
         ro.observe(navMinEl);
-        measure();
+        if (watching) measureNow();
+        else measure();
       }
     };
+    let watching = false;
     watchNav();
+    watching = true;
     const centerEl = root.querySelector<HTMLElement>("[data-route-header-center]");
     const mo = new MutationObserver(watchNav);
     if (centerEl) mo.observe(centerEl, { childList: true, subtree: true });

@@ -38,15 +38,30 @@ const isLocal = /^http:\/\/[a-z0-9-]+\.localhost:\d+$/.test(origin);
 async function signedInContext(browser) {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   if (isLocal) {
-    const out = execFileSync("pnpm", ["-s", "dev-login", "/chat/new"], {
-      cwd: new URL("../..", import.meta.url).pathname,
-      encoding: "utf8",
-    });
-    const url = out.match(/OPEN\s*:\s*(\S+)/)?.[1];
-    if (!url || !url.startsWith(origin)) throw new Error(`dev-login did not print a URL for ${origin}`);
-    const p = await ctx.newPage();
-    await p.goto(url, { waitUntil: "load", timeout: 420000 });
-    await p.close();
+    // The shared preview restarts under load (watchdog recycles): mint a fresh nonce per try.
+    let lastError = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const out = execFileSync("pnpm", ["-s", "dev-login", "/chat/new"], {
+          cwd: new URL("../..", import.meta.url).pathname,
+          encoding: "utf8",
+        });
+        const url = out.match(/OPEN\s*:\s*(\S+)/)?.[1];
+        if (!url || !url.startsWith(origin)) throw new Error(`dev-login did not print a URL for ${origin}`);
+        const p = await ctx.newPage();
+        try {
+          await p.goto(url, { waitUntil: "load", timeout: 420000 });
+        } finally {
+          await p.close();
+        }
+        lastError = null;
+        break;
+      } catch (error) {
+        lastError = error;
+        await new Promise((r) => setTimeout(r, 30000));
+      }
+    }
+    if (lastError) throw lastError;
   } else {
     const { cookies } = await mintSessionCookies();
     await ctx.addCookies(cookies);
@@ -87,7 +102,11 @@ const RECORDER = () => {
     const ed = editableIn(dock);
     const skelBox = main && main.querySelector("[data-chat-skeleton-composer]");
     let composer = null;
-    if (ed) composer = { kind: "real", y: Math.round(boxOf(ed).getBoundingClientRect().top) };
+    if (ed) {
+      const box = boxOf(ed);
+      const text = [...box.querySelectorAll("*")].filter((n) => n.children.length === 0 && n.textContent.trim() && !n.contains(ed) && !ed.contains(n)).map((n) => n.textContent.trim().slice(0, 30)).slice(0, 5).join(" | ");
+      composer = { kind: "real", y: Math.round(box.getBoundingClientRect().top), h: Math.round(box.getBoundingClientRect().height), text };
+    }
     else if (skelBox) composer = { kind: "skeleton", y: Math.round(skelBox.getBoundingClientRect().top) };
     // The welcome splash: an editable in main painted in the upper half (the centred composer).
     let splash = false;
@@ -166,7 +185,11 @@ function judge(step) {
     const ys = after.filter((f) => f.composer && !f.splash).map((f) => f.composer.y);
     const final = ys[ys.length - 1];
     step.composerYs = [...new Set(ys)];
-    if (ys.length && Math.max(...ys) - Math.min(...ys) > 2) fails.push(`composer moved ${step.composerYs.join("→")} (final ${final})`);
+    if (ys.length && Math.max(...ys) - Math.min(...ys) > 2) {
+      const boxes = [];
+      for (const f of after) if (f.composer?.kind === "real" && boxes[boxes.length - 1]?.h !== f.composer.h) boxes.push({ h: f.composer.h, t: f.t, text: f.composer.text });
+      fails.push(`composer moved ${step.composerYs.join("→")} (final ${final}; box ${boxes.map((b) => `${b.h}@${b.t}ms[${b.text}]`).join(" → ")})`);
+    }
     const splashLate = after.filter((f) => f.splash && f.t > 100);
     if (splashLate.length) fails.push(`new-chat splash visible ${splashLate[0].t}-${splashLate[splashLate.length - 1].t} ms after the click`);
   }
