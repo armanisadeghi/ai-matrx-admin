@@ -164,6 +164,51 @@ describe("an approved task change saves at once, cheaply", () => {
   });
 });
 
+describe("races around an approved save", () => {
+  it("keeps a value the person staged for the same field while the write was in flight", async () => {
+    const store = makeStore();
+    store.dispatch(patchTaskEdit({ taskId: "t1", patch: { priority: "low" } }));
+    updateTask.mockImplementationOnce(async (id: string, patch: Record<string, unknown>) => {
+      store.dispatch(patchTaskEdit({ taskId: "t1", patch: { priority: "medium" } }));
+      return { ...task(id), ...patch };
+    });
+    await save(store, { priority: "high" });
+    expect(store.getState().tasksUi.taskEdits.t1).toEqual({ priority: "medium" });
+  });
+
+  it("a failed write rolls back only its own field, not an overlapping write's value", async () => {
+    const store = makeStore();
+    updateTask.mockImplementationOnce(async () => {
+      // An overlapping write lands a different priority and a status while this one is in flight.
+      store.dispatch(upsertTaskWithLevel({ record: task("t1", { priority: "low", status: "active" }), level: "full-data" }));
+      return null;
+    });
+    jest.spyOn(console, "error").mockImplementation(() => undefined);
+    await expect(save(store, { priority: "high" })).rejects.toBeTruthy();
+    // priority was overwritten by the other write (low != high): left alone; its status is untouched.
+    expect(store.getState().tasks.entities.t1?.priority).toBe("low");
+    expect(store.getState().tasks.entities.t1?.status).toBe("active");
+  });
+
+  it("a failed write with no overlap still puts the old value back", async () => {
+    const store = makeStore();
+    updateTask.mockImplementationOnce(async () => null);
+    jest.spyOn(console, "error").mockImplementation(() => undefined);
+    await expect(save(store, { priority: "high" })).rejects.toBeTruthy();
+    expect(store.getState().tasks.entities.t1?.priority).toBeNull();
+  });
+
+  it("completing a recurring task drops a staged due_date so a later Save cannot undo the roll", async () => {
+    const store = makeStore();
+    store.dispatch(upsertTaskWithLevel({ record: task("t1", { recurrence_rule: "FREQ=DAILY", due_date: "2026-11-01", status: "active" }), level: "full-data" }));
+    store.dispatch(patchTaskEdit({ taskId: "t1", patch: { due_date: "2026-11-01", title: "Keep" } }));
+    completeTask.mockResolvedValueOnce({ ...task("t1"), recurrence_rule: "FREQ=DAILY", due_date: "2026-11-02", status: "planned" });
+    await save(store, { status: "completed" });
+    expect(store.getState().tasks.entities.t1?.due_date).toBe("2026-11-02");
+    expect(store.getState().tasksUi.taskEdits.t1).toEqual({ title: "Keep" });
+  });
+});
+
 describe("the task manifest declares them as saving targets", () => {
   it.each(["task_status", "task_priority", "task_due_date"])("%s is entity-mode", (name) => {
     const target = tasksManifest.writeTargets?.find((t) => t.name === name);
