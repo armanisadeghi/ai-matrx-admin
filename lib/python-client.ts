@@ -24,6 +24,7 @@
  * collapse this back into it.
  */
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { adminLaneHeadersFor, adminLaneOrganizationId } from "@/lib/api/admin-lane";
 import { aiTestModeHeaders, withAiTestModeHeader } from "@/lib/api/ai-test-mode";
 import {
@@ -1136,7 +1137,7 @@ export async function downloadBlobWithProgress(
     if (opts.cloudFilesBypass)
       xhr.setRequestHeader("X-Cloud-Files-Bypass", opts.cloudFilesBypass);
     xhr.setRequestHeader("X-Request-Id", requestId);
-    xhr.setRequestHeader("X-Organization-Id", organizationId);
+    xhr.setRequestHeader(MATRX_HEADERS.organization, organizationId);
     for (const [name, value] of Object.entries({
       ...adminLaneHeadersFor(organizationId),
       ...aiTestModeHeaders(),

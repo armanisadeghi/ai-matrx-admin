@@ -27,6 +27,7 @@
 //        - any other organization is refused exactly as without the header.
 //      The header alone grants nothing.
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { ADMIN_LANE_HEADER, browserAdminLaneOpen } from "@/utils/supabase/adminLane";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 
@@ -42,7 +43,7 @@ function isOrganization(organizationId: string | null | undefined): boolean {
 /** The org header name as the transports write it (case varies by call site). */
 function organizationHeaderOf(headers: Record<string, string>): string | undefined {
   for (const [name, value] of Object.entries(headers)) {
-    if (name.toLowerCase() === "x-organization-id") return value;
+    if (name.toLowerCase() === MATRX_HEADERS.organization.toLowerCase()) return value;
   }
   return undefined;
 }

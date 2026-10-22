@@ -14,11 +14,12 @@
 // response it is — never replayed, never turned into a prompt — and the
 // caller's own error surface renders it honestly.
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 /** The header every Matrx client carries; see app/api/_lib/apply-scope-to-insert.ts. */
-const ORGANIZATION_HEADER = "X-Organization-Id";
+const ORGANIZATION_HEADER = MATRX_HEADERS.organization;
 
 function withOrganizationHeader(
   init: RequestInit | undefined,

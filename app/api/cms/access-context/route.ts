@@ -1,3 +1,4 @@
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createMainSupabaseClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -485,7 +486,7 @@ export async function POST(request: NextRequest) {
         resolved.target,
         user.id,
         message,
-        request.headers.get("X-Organization-Id")?.trim() || undefined,
+        request.headers.get(MATRX_HEADERS.organization)?.trim() || undefined,
       );
     }
 

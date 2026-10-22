@@ -1,3 +1,4 @@
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { createClient } from "@/utils/supabase/server";
 import { hasAdminPower } from "@/utils/auth/adminLaneServer";
 import { catWriteArgs, categoryRow } from "@/lib/db/category-door";
@@ -163,7 +164,7 @@ export async function POST(
         // The organization is ADMITTED at the boundary, never resolved here —
         // same rule, same header, same refusal copy as the create path.
         const admittedOrganizationId =
-          request.headers.get("X-Organization-Id")?.trim() || null;
+          request.headers.get(MATRX_HEADERS.organization)?.trim() || null;
         if (!admittedOrganizationId) {
           return NextResponse.json(
             {

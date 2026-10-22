@@ -36,7 +36,7 @@ const LEGACY_BACKEND_SIGNALS = [
   ".matrxserver.com",
 ];
 const LEGACY_COMPLIANCE_SIGNALS = [
-  "X-Organization-Id", "applyOrganizationContextHeader",
+  "X-Organization-Id", "MATRX_HEADERS.organization", "applyOrganizationContextHeader",
   "requireOrganizationContext", "organizationContextHeaders",
   "waitForOrganizationAdmission", "peekSelectedOrganizationId",
   "stampRunStreamOrganizationContext", "buildApiAuthHeaders",
@@ -52,6 +52,17 @@ const LEGACY_COMPLIANT_IMPORTS = [
 
 interface AllowlistEntry { file: string; reason: string }
 export interface OrganizationHeaderFinding { line: number; reason: string }
+
+/** `[MATRX_HEADERS.organization]: …` — the shared constant spelling of the org header key. */
+function isOrganizationHeaderConstantKey(name: ts.PropertyName): boolean {
+  return (
+    ts.isComputedPropertyName(name) &&
+    ts.isPropertyAccessExpression(name.expression) &&
+    name.expression.name.text === "organization" &&
+    ts.isIdentifier(name.expression.expression) &&
+    name.expression.expression.text === "MATRX_HEADERS"
+  );
+}
 
 function nodeName(node: ts.Node): string | null {
   if (ts.isIdentifier(node)) return node.text;
@@ -459,7 +470,10 @@ function expressionHasOrganizationCompliance(expression: ts.Expression, useSite:
   }
   let found = false;
   const visit = (node: ts.Node) => {
-    if (ts.isPropertyAssignment(node) && nodeName(node.name)?.toLowerCase() === "x-organization-id") found = true;
+    if (
+      ts.isPropertyAssignment(node) &&
+      (nodeName(node.name)?.toLowerCase() === "x-organization-id" || isOrganizationHeaderConstantKey(node.name))
+    ) found = true;
     if (ts.isCallExpression(node) && COMPLIANT_CALLEES.has(nodeName(node.expression) ?? "")) found = true;
     if (ts.isPropertyAccessExpression(node) && node.name.text === "authHeaders") found = true;
     if (

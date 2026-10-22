@@ -1,3 +1,4 @@
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
@@ -199,7 +200,7 @@ export async function GET(req: NextRequest) {
           // JWT requests) — the organization the person held when they
           // started the flow, carried in the OAuth session cookie.
           ...(session.organizationId
-            ? { "X-Organization-Id": session.organizationId }
+            ? { [MATRX_HEADERS.organization]: session.organizationId }
             : {}),
           "Content-Type": "application/json",
         },

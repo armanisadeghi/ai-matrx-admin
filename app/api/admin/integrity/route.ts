@@ -11,6 +11,7 @@
 // probe uses the caller's session token, so it only covers files that token can
 // access (no cross-user service token exists yet — see lib/integrity/checks.ts).
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { requireSuperAdmin } from "@/utils/auth/adminUtils";
@@ -97,8 +98,8 @@ export async function POST(request: NextRequest) {
     // Organization admission for the JWT download probe — the requester's own
     // active organization, forwarded by the admin page. Never resolved here.
     const organizationId =
-      request.headers.get("X-Organization-Id") ??
-      request.headers.get("x-organization-id");
+      request.headers.get(MATRX_HEADERS.organization) ??
+      request.headers.get(MATRX_HEADERS.organization);
 
     const report = await runIntegrityChecks(
       {

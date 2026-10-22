@@ -26,6 +26,7 @@
 // and never placed in a toast — a toast outlives the dialog and can be screenshotted
 // by a passer-by.
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 /** What `POST /api/hr/identity/{employeeId}/ssn/reveal` can honestly come back as. */
 export type HrSsnRevealOutcome =
   /** The value, once. Show it transiently and let it go. */
@@ -127,7 +128,7 @@ export async function revealHrSsn(args: {
         // service compares the two and answers 409 on a disagreement (§1.2).
         headers: {
           "Content-Type": "application/json",
-          "X-Organization-Id": args.organizationId,
+          [MATRX_HEADERS.organization]: args.organizationId,
         },
         body: JSON.stringify({
           organization_id: args.organizationId,

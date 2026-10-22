@@ -1,3 +1,4 @@
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasAdminPower } from "@/utils/auth/adminLaneServer";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -53,7 +54,7 @@ export async function applyScopeToInsertPayload(args: {
       ? body.organization_id.trim()
       : null;
   const headerOrganizationId =
-    request.headers.get("X-Organization-Id")?.trim() || null;
+    request.headers.get(MATRX_HEADERS.organization)?.trim() || null;
 
   // Always normalize so clients cannot inject a scope FK out of band.
   payload.created_by = null;

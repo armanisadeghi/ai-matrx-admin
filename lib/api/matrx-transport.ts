@@ -23,6 +23,7 @@
  *   - diagnostics sinks: `logApiTarget` and `captureApiError`.
  */
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { adminLaneHeadersFor } from "@/lib/api/admin-lane";
 import { aiTestModeHeaders } from "@/lib/api/ai-test-mode";
 import type { Action } from "redux";
@@ -217,7 +218,7 @@ export function createMatrxTransport(
       }
       const policyHeaders: Record<string, string> = {
         ...(organizationId
-          ? { "X-Organization-Id": organizationId, ...adminLaneHeadersFor(organizationId) }
+          ? { [MATRX_HEADERS.organization]: organizationId, ...adminLaneHeadersFor(organizationId) }
           : {}),
         // AI test mode (lib/api/ai-test-mode.ts): absent when the tab is on real.
         ...aiTestModeHeaders(),
@@ -243,7 +244,7 @@ function readCallOrganizationId(
   headers: Record<string, string> | undefined,
 ): string | undefined {
   for (const [name, value] of Object.entries(headers ?? {})) {
-    if (name.toLowerCase() === "x-organization-id" && value.trim()) return value;
+    if (name.toLowerCase() === MATRX_HEADERS.organization.toLowerCase() && value.trim()) return value;
   }
   return undefined;
 }
