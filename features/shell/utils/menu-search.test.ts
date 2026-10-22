@@ -4,12 +4,8 @@
  * and the breadcrumb trail is searchable too.
  */
 import { navItemsForViewer, primaryNavItems, settingsItem, expandNavChildren } from "../constants/nav-data";
-import {
-  buildMenuSearchIndex,
-  highlightMenuMatch,
-  rankMenuSearch,
-  type MenuSearchEntry,
-} from "./menu-search";
+import { buildMenuSearchIndex, type MenuSearchEntry } from "./menu-search";
+import { highlightMenuMatch, rankMenuSearch } from "../frame/searchEngine";
 
 const index = buildMenuSearchIndex([...primaryNavItems, settingsItem]);
 

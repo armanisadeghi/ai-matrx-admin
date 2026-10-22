@@ -4,6 +4,7 @@
 // switches product, variant, theme and width, outlines what is the frame's and
 // what is the page's, and shows which heavy modules have loaded. Everything
 // inside is static sample content.
+import { openOutbound } from "@ai-matrx/kit/outbound";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Check, LayoutList } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
@@ -475,6 +476,8 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             product={product}
             favorites={favorites}
             onFavoritesChange={setFavorites}
+            // The lab has no app behind it: "Go to" opens the real page on the live site.
+            onGoTo={(href) => openOutbound(`https://www.aimatrx.com${href}`, "_blank", "noopener,noreferrer")}
             activeMenuItemId={activeMenuItemId}
             onSelectMenuItem={(item) => {
               if (bodyMode === "flow" && item.id.startsWith("s-")) {

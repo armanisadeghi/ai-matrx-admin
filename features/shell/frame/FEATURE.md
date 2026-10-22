@@ -32,10 +32,20 @@ together. Linear is the visual reference. It is built beside the old shell and i
 - `AppGrid.tsx`: the 9-dot product grid, Google-tight (owner, 2026-10-20): a 320px popover,
   3 columns of 80px cells (32px glyph, one-line 12px name), the favorites (up to 9) in a
   rounded card, then every other product ONCE in family order, with no heading rows; "Edit
-  favorites" sits under the grid. Bake-off until the owner picks (`look`, playground "Grid
-  A | B | C"): A plain; B a hairline with a 10px family name between families; C marks on a
-  soft same-hue shape. A tile always opens its product in a new tab; the grid is one Tab stop
-  and arrow keys move between tiles.
+  favorites" sits under the grid. Grid A is the owner's pick (2026-10-21; B and C are gone). A
+  search field tops the popover (focus on open): it filters tiles as you type by name,
+  section and page, Enter opens the first match, ArrowDown enters the tiles, Esc clears then
+  closes. A tile always opens its product in a new tab; the grid is one Tab stop and arrow
+  keys move between tiles.
+- `GoToSearch.tsx` + `GoToPalette.tsx` + `goToIndex.ts`: the "Go to" search (owner, 2026-10-21):
+  an icon in the sidebar's top row (and beside the grid button when the sidebar is hidden) opens
+  a palette that finds any product or page by name or synonym and goes there; results are
+  grouped under the product's mark. Hotkey Cmd/Ctrl+Shift+K (Cmd+K is the knowledge bar's,
+  Cmd+/ the classic menu search's). Enter goes (`onGoTo`, else the location), Cmd+Enter opens a
+  new tab. The index (from `route-homes.generated.ts`, never the flows) and the palette load on
+  first open. The ranking is `searchEngine.ts`, shared with the classic "Search menu". Host
+  menus merge in through `goToEntries`. The phone header has no icon of its own (its search
+  tool is the host's); the drawer carries it.
 - `FrameSidebar.tsx`: the product's own menu. Every row is a real link (`href`, defaulting to
   `<homeHref>/<id>`). A plain click calls `onSelectItem`; a modified click keeps the browser's
   link behaviour.
@@ -319,6 +329,7 @@ ownership attributes, and no `className`/`style` on any exported props type.
   - Medium form adds a footer "Properties" toggle, so the panel is never removed silently.
   - Tests added.
 
+- 2026-10-21: Grid A is the only grid (B, C removed); grid search; the "Go to" search palette (Cmd+Shift+K); the search engine moved to `searchEngine.ts`, shared with the classic menu search.
 - 2026-10-21: App-grid favorites persist per person (`userPreferences.appGrid.favorites`, null = default nine
   `DEFAULT_GRID_FAVORITES`); the frame stays prop-driven, the host wires `useGridFavorites`. Edit mode reorders.
 - 2026-10-18: Medium form (the drawer sidebar; the companion and properties take turns; body min width). Rows and
