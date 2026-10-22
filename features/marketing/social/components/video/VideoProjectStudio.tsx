@@ -9,7 +9,7 @@
  * stale write is refused and the page reloads the newer version.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,18 +28,19 @@ import { cn } from "@/lib/utils";
 import {
   HEAD_ITEM,
   createVariantMatrix,
+  estimateBatch,
   streamBatch,
   streamGenerate,
   type CloneAspect,
   type LineEvent,
   type ParamSet,
 } from "../../video/clone";
-import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
+import { useActiveBatch, useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
 import { describeTheirs, rebasePending } from "../../video/conflict";
 import { confirmLine, downloadName, estimateLabel, finishedDownloadName, variantDownloadName, outputRows, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { cutText } from "../../video/text";
-import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../../video/variants";
+import { batchCounts, batchProgressText, batchStanding, buildMatrix, countWord, createButtonText, matrixOutcomeText, matrixSize, parseHookLines, rebasedLabel, splitNewSets, zipFileName, type BatchStanding } from "../../video/variants";
 import { BackendApiError } from "@ai-matrx/api";
 import { appendPatch, conflictVersion, estimateProject, getVideoProject } from "../../video/server";
 import { readCompositionHistory } from "../../video/service";
@@ -47,9 +48,10 @@ import { useExpiredSessionGuard } from "../../video/session";
 import { useLocalRenderAllowed } from "../../video/studio-hooks";
 import type { VariantAnswer, VideoProjectAnswer } from "../../video/types";
 import { useSocials } from "../SocialsContext";
-import { CaptionLookPicker, CompositionPreview, CostLine, FailureLine, OutputDownload, RunLog, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
+import { CaptionLookPicker, CompositionPreview, CostLine, FailureLine, OutputDownload, RunLog, ZipAllButton, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
 import { mediaLabel } from "./VideoCloneNew";
 import { MusicPicker } from "./MusicPicker";
+import { ProTextarea } from "@/components/official/ProTextarea";
 import { musicCostLine, musicOfDocument, musicOps, videoSecondsOf, type MusicChoice } from "../../video/music";
 import { useQuery } from "@tanstack/react-query";
 
@@ -68,7 +70,7 @@ const ASPECTS: ReadonlyArray<{ value: CloneAspect; label: string }> = [
 
 type Renderer = "hosted" | "local";
 
-interface ItemOutcome {
+export interface ItemOutcome {
   status: string;
   stage?: string | null;
   error?: string | null;
@@ -82,7 +84,7 @@ function batchHandler(
   setSteps: (fn: (prev: RunStep[]) => RunStep[]) => void,
   setOutcome: (fn: (prev: Record<string, ItemOutcome>) => Record<string, ItemOutcome>) => void,
   labelOf: (id: string) => string,
-  flags: { confirm: boolean; error: string | null; failed: number },
+  flags: { confirm: boolean; error: string | null; failed: number; many: boolean },
 ) {
   return (e: LineEvent) => {
     const type = e.type.startsWith(EVENT) ? e.type.slice(EVENT.length) : e.type;
@@ -111,12 +113,19 @@ function batchHandler(
         break;
       case "render.started":
         setOutcome((o) => ({ ...o, [vid]: { ...o[vid], status: "rendering" } }));
-        setSteps((p) => pushStep(p, { id: `render-${vid}`, label: `Rendering ${labelOf(vid)}`, state: "running" }));
+        // Many renders run at once: a step per variant would close its neighbours as "done" while they still render, and 25
+        // lines is not a log. The per-variant state lives on its card and the count in the progress line.
+        if (!flags.many) setSteps((p) => pushStep(p, { id: `render-${vid}`, label: `Rendering ${labelOf(vid)}`, state: "running" }));
         break;
+      case "render.progress": {
+        const state = typeof e.state === "string" ? e.state : null;
+        if (vid && state) setOutcome((o) => (o[vid]?.stage === state || o[vid]?.status === "rendered" || o[vid]?.status === "failed" ? o : { ...o, [vid]: { ...o[vid], status: o[vid]?.status ?? "queued", stage: state } }));
+        break;
+      }
       case "render.done": {
         const out = (e.output ?? {}) as { file_id?: string };
         setOutcome((o) => ({ ...o, [vid]: { status: "rendered", fileId: out.file_id ?? null } }));
-        setSteps((p) => p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done" } : s)));
+        if (!flags.many) setSteps((p) => p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done" } : s)));
         break;
       }
       case "variant.failed": {
@@ -128,13 +137,26 @@ function batchHandler(
         flags.failed += 1;
         flags.error ??= plain;
         setOutcome((o) => ({ ...o, [vid]: { status: "failed", stage: String(e.stage ?? ""), error: plain } }));
-        setSteps((p) => [...p, { id: `fail-${vid}-${p.length}`, label: `${labelOf(vid)} didn't render`, state: "failed" }]);
+        if (!flags.many) setSteps((p) => [...p, { id: `fail-${vid}-${p.length}`, label: `${labelOf(vid)} didn't render`, state: "failed" }]);
         break;
       }
-      case "batch_report":
+      case "batch_report": {
+        // The report is the truth for every variant: a card never keeps a "rendering" the report did not confirm.
+        const rows = Array.isArray(e.variants) ? (e.variants as Array<{ variant_id?: string; status?: string; stage?: string | null; error?: string | null; output?: { file_id?: string } | null }>) : [];
+        if (rows.length)
+          setOutcome((o) => {
+            const next = { ...o };
+            for (const r of rows) {
+              if (!r.variant_id) continue;
+              if (r.status === "rendered") next[r.variant_id] = { status: "rendered", fileId: r.output?.file_id ?? next[r.variant_id]?.fileId ?? null };
+              else if (r.status === "failed") next[r.variant_id] = { status: "failed", stage: r.stage ?? "", error: plainRenderMessage(null, r.error ?? null) };
+            }
+            return next;
+          });
         // "Done" only when nothing failed; after a failure the line never says it finished.
         setSteps((p) => pushStep(p, { id: "report", label: flags.failed > 0 || flags.error ? "Stopped early" : "Done", state: "done" }));
         break;
+      }
       case "error":
         flags.error = plainRenderMessage(
           typeof e.code === "string" ? e.code : null,
@@ -145,6 +167,26 @@ function batchHandler(
         break;
     }
   };
+}
+
+/**
+ * What this page knows of a batch (its own stream) laid over what the server's run record says. The stream wins where it has
+ * spoken; the record fills in a reloaded page. A variant the record has not finished is "queued" while the batch runs and
+ * "stopped" when the batch stopped under us, never a bare "ready" beside a dead run.
+ */
+export function withServerBatch(local: Record<string, ItemOutcome>, batch: { rows: Array<{ variant_id: string; status: string; stage?: string | null; message?: string | null; error?: string | null }>; variantIds: string[] } | null, standing: BatchStanding): Record<string, ItemOutcome> {
+  if (!batch || standing === "none") return local;
+  const out = { ...local };
+  const byId = new Map(batch.rows.map((r) => [r.variant_id, r]));
+  for (const id of batch.variantIds) {
+    if (out[id]) continue;
+    const r = byId.get(id);
+    if (r?.status === "rendered") out[id] = { status: "rendered" };
+    else if (r?.status === "failed") out[id] = { status: "failed", stage: r.stage ?? "", error: plainRenderMessage(null, r.message ?? r.error ?? null) };
+    else if (standing === "running") out[id] = { status: "queued" };
+    else if (standing === "stopped") out[id] = { status: "stopped" };
+  }
+  return out;
 }
 
 export function VideoProjectStudio({ projectId }: { projectId: string }) {
@@ -240,6 +282,10 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
   const [confirm, setConfirm] = useState<null | { kind: "render" | "variants" | "generate"; ids?: string[] }>(null);
   const [failure, setFailure] = useState<unknown>(null);
   const variants = useProjectVariants(projectId);
+  // The batch the server holds (a reload, or another tab, while it runs): its per-variant state fills in what this page did not see.
+  const variantIds = useMemo(() => (variants.data ?? []).map((v) => v.id), [variants.data]);
+  const activeBatch = useActiveBatch(variantIds, running === null);
+  const standing = batchStanding(activeBatch.data);
   const [view, setView] = useState<"studio" | "timeline">(params.get("view") === "timeline" ? "timeline" : "studio");
 
   const pending = pendingMediaCount(doc);
@@ -363,7 +409,8 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
     setRunning(kind);
     setFailure(null);
     setSteps([{ id: "start", label: kind === "render" ? "Starting the render" : `Starting ${ids.length} variants`, state: "running" }]);
-    const flags = { confirm: false, error: null as string | null, failed: 0 };
+    const flags = { confirm: false, error: null as string | null, failed: 0, many: ids.length > 1 };
+    if (kind === "variants") setOutcome((o) => Object.fromEntries(Object.entries(o).filter(([k]) => !ids.includes(k)))); // a new run starts every card from the queue
     try {
       await streamBatch(
         projectId,
@@ -387,6 +434,25 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
     }
   };
 
+  const shownOutcome = useMemo(() => withServerBatch(outcome, activeBatch.data ?? null, standing), [outcome, activeBatch.data, standing]);
+  // When a batch that was running ends, its finished videos are read in.
+  const wasRunning = useRef(false);
+  useEffect(() => {
+    if (standing === "running") wasRunning.current = true;
+    else if (wasRunning.current) {
+      wasRunning.current = false;
+      void reload();
+    }
+  });
+  const latestByVariant = useMemo(() => {
+    const out: Record<string, string> = {};
+    // The server lists renders oldest first: the last one a variant made is its current video.
+    for (const id of answer.output_file_ids) {
+      const v = answer.output_variants?.[id]?.variant_id;
+      if (v) out[v] = id;
+    }
+    return out;
+  }, [answer.output_file_ids, answer.output_variants]);
   const headOut = outcome[HEAD_ITEM];
   const busy = running !== null || saving;
   const timelineView = view === "timeline";
@@ -476,7 +542,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
           {failure ? <FailureLine error={failure} operation="video render" /> : null}
           {headOut?.fileId ? <OutputDownload fileId={headOut.fileId} label="The video" fileName={downloadName(answer.name)} /> : null}
         </div>
-        <Outputs answer={answer} busy={busy} onRenderAgain={() => void runBatch("render", [], false)} onCards={new Set(Object.entries(outcome).filter(([k, o]) => k !== HEAD_ITEM && o.fileId).map(([, o]) => o.fileId as string))} />
+        <Outputs answer={answer} busy={busy} onRenderAgain={() => void runBatch("render", [], false)} onCards={new Set([...Object.entries(outcome).filter(([k, o]) => k !== HEAD_ITEM && o.fileId).map(([, o]) => o.fileId as string), ...Object.values(latestByVariant)])} />
       </section>
 
       {timelineView ? null : <section className="flex min-w-0 flex-col gap-4">
@@ -520,7 +586,10 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
             projectName={answer.name}
             variants={variants.data ?? []}
             loading={variants.isPending}
-            outcome={outcome}
+            outcome={shownOutcome}
+            standing={standing}
+            outputByVariant={latestByVariant}
+            running={running === "variants"}
             busy={busy}
             openDraft={params.get("variants") === "3"}
             onRun={(ids) => void runBatch("variants", ids, false)}
@@ -654,6 +723,9 @@ function VariantsPanel({
   variants,
   loading,
   outcome,
+  standing,
+  outputByVariant,
+  running,
   busy,
   openDraft,
   onRun,
@@ -666,6 +738,9 @@ function VariantsPanel({
   variants: VariantAnswer[];
   loading: boolean;
   outcome: Record<string, ItemOutcome>;
+  standing: BatchStanding;
+  outputByVariant: Record<string, string>;
+  running: boolean;
   busy: boolean;
   openDraft: boolean;
   onRun: (ids: string[]) => void;
@@ -676,21 +751,37 @@ function VariantsPanel({
   const currentPreset = captionTrack ? (doc.tracks.captions[captionTrack]?.style.preset ?? "") : "";
   const [drafts, setDrafts] = useState<Draft[] | null>(openDraft ? draftDefaults(doc, currentPreset) : null);
   const [creating, setCreating] = useState(false);
+  const [matrix, setMatrix] = useState<null | { hooks: string; looks: string[]; shapes: string[] }>(null);
   const renderable = variants.filter((v) => !(isCaptionVariant(v) && !hasCaptions(doc)));
 
   // What a click will create: the filled-in rows, minus any the project already has (same overrides = the same variant).
   const asked = (drafts ?? []).map(paramSet).filter((p): p is ParamSet => p !== null);
   const { fresh, reused } = splitNewSets(asked, variants.map((v) => v.label));
   const emptyRows = (drafts ?? []).length - asked.length;
-  const createText = createButtonText(fresh.length);
+  const matrixSets = matrix ? buildMatrix({ hooks: parseHookLines(matrix.hooks), looks: matrix.looks, shapes: matrix.shapes }, (id) => CAPTION_PRESETS[id]?.label ?? id) : [];
+  const matrixSplit = splitNewSets(matrixSets, variants.map((v) => v.label));
+  const toCreate = matrix ? matrixSplit.fresh : fresh;
+  const createText = createButtonText(toCreate.length);
+
+  const ids = renderable.map((v) => v.id);
+  const est = useQuery({
+    queryKey: [...videoKeys.project(projectId), "batch-estimate", head, ids.join(",")],
+    queryFn: () => estimateBatch(projectId, { variant_ids: ids }, { organizationId }),
+    enabled: Boolean(organizationId) && ids.length > 0 && !running,
+    staleTime: 30_000,
+  });
+  const counts = batchCounts(ids, outcome);
+  const batchOn = running || standing === "running";
+  const zipItems = variants.flatMap((v) => (outputByVariant[v.id] ? [{ fileId: outputByVariant[v.id] as string, fileName: variantDownloadName(projectName, v.label) }] : []));
 
   const create = async () => {
-    if (!fresh.length) return;
+    if (!toCreate.length) return;
     setCreating(true);
     try {
-      const out = await createVariantMatrix(projectId, fresh, { organizationId });
+      const out = await createVariantMatrix(projectId, toCreate, { organizationId });
       toast.success(matrixOutcomeText(out.variants));
       setDrafts(null);
+      setMatrix(null);
       onCreated();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't create the variants");
@@ -702,14 +793,64 @@ function VariantsPanel({
   return (
     <div className="flex flex-col gap-3">
       {loading ? <RegionSkeleton shape="cards" count={3} aria-label="Loading variants" /> : null}
+      {batchOn || standing === "stopped" || (running === false && counts.finished > 0 && standing === "over" && counts.finished < counts.total) ? (
+        <BatchProgress counts={counts} standing={batchOn ? "running" : standing} cap={est.data?.render_cap ?? null} />
+      ) : null}
       {variants.length ? (
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2 2xl:grid-cols-3">
           {variants.map((v) => (
-            <VariantCard key={v.id} v={v} doc={doc} head={head} outcome={outcome[v.id]} projectName={projectName} blocked={isCaptionVariant(v) && !hasCaptions(doc) ? "This plan has no captions, so this look can't render" : null} />
+            <VariantCard key={v.id} v={v} doc={doc} head={head} outcome={outcome[v.id]} fileId={outputByVariant[v.id] ?? null} projectName={projectName} blocked={isCaptionVariant(v) && !hasCaptions(doc) ? "This plan has no captions, so this look can't render" : null} />
           ))}
         </div>
       ) : null}
-      {drafts ? (
+      {matrix ? (
+        <div className="flex flex-col gap-2 rounded-lg border border-border p-2" role="group" aria-label="Variant matrix">
+          <span className="type-label text-foreground">Hook lines</span>
+          <ProTextarea
+            value={matrix.hooks}
+            onChange={(e) => setMatrix({ ...matrix, hooks: e.target.value })}
+            placeholder="Paste hook lines, one per line"
+            autoGrow
+            minHeight={88}
+            maxHeight={260}
+          />
+          {hasCaptions(doc) ? (
+            <div className="flex flex-col gap-1">
+              <span className="type-label text-foreground">Caption looks</span>
+              <div className="flex flex-wrap gap-1.5">
+                {CAPTION_PRESET_IDS.map((id) => (
+                  <Button key={id} variant={matrix.looks.includes(id) ? "primary" : "outline"} aria-pressed={matrix.looks.includes(id)} onClick={() => setMatrix({ ...matrix, looks: matrix.looks.includes(id) ? matrix.looks.filter((x) => x !== id) : [...matrix.looks, id] })}>
+                    {CAPTION_PRESETS[id]?.label ?? id}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          <div className="flex flex-col gap-1">
+            <span className="type-label text-foreground">Shapes</span>
+            <div className="flex flex-wrap gap-1.5">
+              {ASPECTS.map((a) => (
+                <Button key={a.value} variant={matrix.shapes.includes(a.value) ? "primary" : "outline"} aria-pressed={matrix.shapes.includes(a.value)} onClick={() => setMatrix({ ...matrix, shapes: matrix.shapes.includes(a.value) ? matrix.shapes.filter((x) => x !== a.value) : [...matrix.shapes, a.value] })}>
+                  {a.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="primary" disabled={creating || busy || !createText} onClick={() => void create()}>
+              {createText ?? "Nothing new to create"}
+            </Button>
+            <Button variant="quiet" onClick={() => setMatrix(null)}>
+              Cancel
+            </Button>
+          </div>
+          <span className="type-meta text-muted-foreground">
+            {`${parseHookLines(matrix.hooks).length} hooks × ${matrix.looks.length || 1} looks × ${matrix.shapes.length || 1} shapes = ${matrixSize({ hooks: parseHookLines(matrix.hooks).length, looks: matrix.looks.length, shapes: matrix.shapes.length })} variants`}
+            {matrixSplit.reused.length ? `; ${matrixSplit.reused.length} already made` : ""}
+          </span>
+        </div>
+      ) : null}
+      {drafts && !matrix ? (
         <div className="flex flex-col gap-2 rounded-lg border border-border p-2">
           {drafts.map((d, i) => (
             <div key={i} className="flex flex-wrap items-center gap-2">
@@ -768,23 +909,67 @@ function VariantsPanel({
             {reused.length > 0 ? <span className="type-meta text-muted-foreground">{`${reused.length} already made: ${reused.map((r) => r.label).join(", ")}`}</span> : null}
           </div>
         </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          <Button variant="outline" icon={<Layers />} disabled={busy} onClick={() => setDrafts(draftDefaults(doc, currentPreset))}>
-            Add variants
-          </Button>
-          {renderable.length ? (
-            <Button variant="primary" disabled={busy} onClick={() => onRun(renderable.map((v) => v.id))}>
-              {`Render ${countWord(renderable.length)}`}
-            </Button>
+      ) : null}
+      {!drafts && !matrix ? (
+        <div className="flex flex-col gap-2">
+          {renderable.length && est.isError ? (
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="type-meta min-w-0 flex-1 text-destructive">Couldn't price this batch</span>
+              <ErrorAlchemyMenu error={est.error} operation="video batch estimate" />
+            </div>
           ) : null}
+          {renderable.length && est.data ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5" aria-label="Batch estimate">
+              <span className="type-meta text-muted-foreground">{`${countWord(renderable.length)} · ${est.data.to_generate === 0 ? "nothing new to make" : `${est.data.to_generate} to make`}${est.data.cache_hits ? ` · ${est.data.cache_hits} reused` : ""}`}</span>
+              <CostLine pts={est.data.estimate_points} />
+              <span className="type-meta text-muted-foreground">{`${est.data.render_charged ? "Rendering is charged" : "Rendering is free"} · ${Math.min(est.data.render_cap, renderable.length)} at a time`}</span>
+              {est.data.will_ask ? <span className="type-meta text-muted-foreground">Asks before it starts: over your confirmation setting</span> : null}
+              {est.data.unrenderable.length ? <span className="type-meta text-warning">{`${countWord(est.data.unrenderable.length)} can't render on this version`}</span> : null}
+            </div>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" icon={<Layers />} disabled={busy} onClick={() => setDrafts(draftDefaults(doc, currentPreset))}>
+              Add variants
+            </Button>
+            <Button variant="outline" icon={<Layers />} disabled={busy} onClick={() => setMatrix({ hooks: "", looks: [], shapes: [] })}>
+              Build a matrix
+            </Button>
+            {renderable.length ? (
+              <Button variant="primary" disabled={busy || batchOn} onClick={() => onRun(renderable.map((v) => v.id))}>
+                {`Render ${countWord(renderable.length)}`}
+              </Button>
+            ) : null}
+            {zipItems.length > 1 ? <ZipAllButton items={zipItems} zipName={zipFileName(projectName)} /> : null}
+          </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
-function VariantCard({ v, doc, head, outcome, projectName, blocked }: { v: VariantAnswer; doc: Composition; head: number; outcome?: ItemOutcome; projectName: string; blocked: string | null }) {
+/** Where a running (or stopped) batch stands: a bar, one line of counts, and why a variant waits. */
+function BatchProgress({ counts, standing, cap }: { counts: ReturnType<typeof batchCounts>; standing: BatchStanding; cap: number | null }) {
+  const pct = counts.total ? Math.round((counts.finished / counts.total) * 100) : 0;
+  return (
+    <div className="flex flex-col gap-1 rounded-lg border border-border p-2" role="status" aria-live="polite" aria-label="Batch progress">
+      <div className="flex items-center gap-2">
+        <span className="type-label text-foreground">{standing === "stopped" ? "This batch stopped" : "Rendering"}</span>
+        <span className="type-meta ml-auto text-muted-foreground">{`${pct}%`}</span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden>
+        <div className={cn("h-full", counts.failed ? "bg-warning" : "bg-primary")} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="type-meta text-muted-foreground">{batchProgressText(counts)}</span>
+      {standing === "stopped" ? (
+        <span className="type-meta text-warning">The server stopped updating this batch (a restart can do this). The videos already made are kept; render again to finish the rest.</span>
+      ) : cap && counts.queued > 0 ? (
+        <span className="type-meta text-muted-foreground">{`${cap} render at a time; the rest wait their turn`}</span>
+      ) : null}
+    </div>
+  );
+}
+
+function VariantCard({ v, doc, head, outcome, projectName, blocked, fileId }: { v: VariantAnswer; doc: Composition; head: number; outcome?: ItemOutcome; projectName: string; blocked: string | null; fileId: string | null }) {
   // A variant made on an older version still shows its look: its overrides are laid over the current head (the render does the same).
   const rebased = v.baseVersion !== head;
   const materialized = materializeVariant(doc, (rebased ? { ...v, baseVersion: doc.version } : v) as unknown as VariantOverride);
@@ -792,8 +977,8 @@ function VariantCard({ v, doc, head, outcome, projectName, blocked }: { v: Varia
     <div className="flex min-w-0 flex-col gap-2 overflow-hidden rounded-lg border border-border p-2">
       <div className="flex min-w-0 items-center gap-1.5">
         <span className="type-label truncate text-foreground">{v.label}</span>
-        <Badge tone={outcome?.status === "failed" ? "destructive" : outcome?.status === "rendered" ? "success" : "neutral"} className="ml-auto">
-          {outcome?.status ?? (rebased ? rebasedLabel(v.baseVersion, head) : "ready")}
+        <Badge tone={outcome?.status === "failed" ? "destructive" : outcome?.status === "rendered" || (!outcome && fileId) ? "success" : outcome?.status === "stopped" ? "warning" : "neutral"} className="ml-auto">
+          {outcome?.status === "rendering" && outcome.stage ? `rendering · ${outcome.stage}` : (outcome?.status ?? (fileId ? "rendered" : rebased ? rebasedLabel(v.baseVersion, head) : "ready"))}
         </Badge>
       </div>
       {materialized?.ok ? (
@@ -805,7 +990,7 @@ function VariantCard({ v, doc, head, outcome, projectName, blocked }: { v: Varia
       )}
       {blocked ? <span className="type-meta text-warning">{blocked}</span> : null}
       {outcome?.error ? <ErrorAlchemyMenu error={new Error(outcome.error)} operation="video variant render" /> : null}
-      {outcome?.fileId ? <OutputDownload fileId={outcome.fileId} label={v.label} fileName={variantDownloadName(projectName, v.label)} /> : null}
+      {outcome?.fileId || fileId ? <OutputDownload fileId={(outcome?.fileId ?? fileId) as string} label={v.label} fileName={variantDownloadName(projectName, v.label)} /> : null}
     </div>
   );
 }
