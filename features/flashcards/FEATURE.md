@@ -87,3 +87,7 @@ A headless run has two possible `fc_set` writers: the surface's save and the str
 - Each surface registers only the mandates it can launch (`data/mandate-disclosure.ts`, `intelligence-places.ts`), UI-free: disclosure is the shell's Agents menu. Plan: `common-docs/systems/intelligence/mandates/REGISTER.md`.
 - Surface manifests: `features/surfaces/manifests/education-flashcards`, `-flashcard-set`, `-flashcard-editor`, `-flashcard-study`. Study routes register through ONE hook, `components/study/useFlashcardStudySurface.ts`; Deck and Edit register write targets from `components/editor/deckWriteHandlers.ts`; the list exposes `create_decks` / `update_decks` / `delete_decks` / `duplicate_decks` (`components/home/deckAgentWrites.ts`). A broad route prefix must never claim a child route whose vocabulary it can't emit.
 - Inline voice tutoring (`VoiceTutorPanel`, `education.voice_tutor`) is closed to the current card (no web_search); it hands off to the full tutor for anything else.
+
+## Change log
+
+- 2026-10-22 (platform review, deck in a Board tile): `DeckDetailView embedded` shows Study + the card grid; mastery, learning gain, the Enrich/Illustrate/Convert power-ups and the lineage chips ("made from" / "generated from") fold behind ONE More toggle (`data-deck-more-toggle`). The full page (`/education/flashcards/[setId]`) never folds. Guard: `features/board/__tests__/scope-deck-tile-density.test.ts`.
