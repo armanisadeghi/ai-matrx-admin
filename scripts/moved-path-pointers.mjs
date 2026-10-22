@@ -73,6 +73,54 @@ export function wholeStatement(t) {
   return t.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * A single-statement delegating wrapper is a pointer, not a copy (the twins guard's
+ * option-fixing-wrapper ruling): `export function f(a) { return pkgF(a, OPTS); }` or
+ * `export const f = (a) => pkgF(a, OPTS);`. Returns the consumed length, or 0.
+ */
+function balancedEnd(t, i, open, close) {
+  let d = 0;
+  for (let j = i; j < t.length; j++) {
+    if (t[j] === open) d++;
+    else if (t[j] === close) { d--; if (d === 0) return j; }
+  }
+  return -1;
+}
+const DELEGATE_BODY = /^\s*(?:return\s+)?(?:await\s+)?(?:new\s+)?[\w$.]+\s*(?:<[^;]*?>)?\s*\(/;
+function onlyOneCall(expr) {
+  // expr starts at the callee; the call's parens must close at the end of the expression.
+  const open = expr.indexOf("(");
+  const end = balancedEnd(expr, open, "(", ")");
+  return end !== -1 && /^\s*;?\s*$/.test(expr.slice(end + 1));
+}
+export function delegatorLength(t) {
+  const fn = t.match(/^\s*export\s+(?:async\s+)?function\s+[\w$]+\s*(?:<[^(]*>)?\s*\(/);
+  if (fn) {
+    const pEnd = balancedEnd(t, fn[0].length - 1, "(", ")");
+    if (pEnd === -1) return 0;
+    const bStart = t.indexOf("{", pEnd);
+    if (bStart === -1 || /[;=]/.test(t.slice(pEnd + 1, bStart).replace(/=>/g, ""))) return 0;
+    const bEnd = balancedEnd(t, bStart, "{", "}");
+    if (bEnd === -1) return 0;
+    const body = t.slice(bStart + 1, bEnd);
+    if (!DELEGATE_BODY.test(body)) return 0;
+    return onlyOneCall(body.replace(/^\s*(?:return\s+)?(?:await\s+)?/, "")) ? bEnd + 1 : 0;
+  }
+  const ar = t.match(/^\s*export\s+const\s+[\w$]+\s*(?::\s*[^=]+)?=\s*(?:async\s*)?\(/);
+  if (ar) {
+    const pEnd = balancedEnd(t, ar[0].length - 1, "(", ")");
+    if (pEnd === -1) return 0;
+    const m = t.slice(pEnd + 1).match(/^\s*(?::\s*[^=]+)?=>\s*(?:await\s+)?/);
+    if (!m) return 0;
+    const exprStart = pEnd + 1 + m[0].length;
+    const nl = t.slice(exprStart).search(/;|\n\s*(?:export|import)\b/);
+    const expr = nl === -1 ? t.slice(exprStart) : t.slice(exprStart, exprStart + nl + 1);
+    if (!/^(?:new\s+)?[\w$.]+\s*(?:<[^;]*?>)?\s*\(/.test(expr) || !onlyOneCall(expr)) return 0;
+    return exprStart + expr.length;
+  }
+  return 0;
+}
+
 /** Split code into statements on top-level ';' / newline-terminated import/export. */
 export function violation(src) {
   const code = stripComments(src);
@@ -92,8 +140,10 @@ export function violation(src) {
   let rest = code;
   while (rest.trim()) {
     const hit = allowed.map((r) => rest.match(r)).find(Boolean);
-    if (!hit) return wholeStatement(rest.trim());
-    rest = rest.slice(hit[0].length);
+    if (hit) { rest = rest.slice(hit[0].length); continue; }
+    const del = delegatorLength(rest);
+    if (del > 0) { rest = rest.slice(del); continue; }
+    return wholeStatement(rest.trim());
   }
   return null;
 }
