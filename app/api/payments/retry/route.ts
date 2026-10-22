@@ -9,6 +9,7 @@ import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { PaymentRefusal, readAsk, startCheckout } from "@/features/payments/server";
 import { safeReturnPath } from "@/features/payments/amount";
 import { requestHostOrigin } from "@/utils/auth/request-origin";
+import { pathOnRequestHost } from "@/lib/custom-domains/request-host";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,9 @@ export async function POST(request: NextRequest) {
   const subject = String(form.get("subject") ?? "");
   const record = String(form.get("record") ?? "");
   const origin = requestHostOrigin(request.headers) ?? request.nextUrl.origin;
-  const back = safeReturnPath(String(form.get("back") ?? "/"), origin);
+  // The page names its internal path (/f/<id>); on a business's own domain that page lives at its
+  // mapped path ("/intake") and /f/<id> is Not found there, so the way back uses the host's path.
+  const back = await pathOnRequestHost(request, safeReturnPath(String(form.get("back") ?? "/"), origin));
   const refused = () => {
     const url = new URL(back, origin);
     url.searchParams.set("payment", "refused");
