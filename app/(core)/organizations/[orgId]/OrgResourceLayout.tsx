@@ -40,7 +40,7 @@ export function OrgResourceLayout({
       <>
       <CrumbTrailHeader
         backHref={`/organizations/${orgId}`}
-        trail={[{ label: "", pending: true }, { label: resourceName }]}
+        trail={[{ label: "", pending: true, href: `/organizations/${orgId}` }, { label: resourceName }]}
       />
       <div className="h-full flex items-center justify-center bg-textured">
         <div className="text-center">

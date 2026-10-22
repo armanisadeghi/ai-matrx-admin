@@ -108,7 +108,7 @@ export function PaymentsSettings({ siteMode }: { siteMode: SiteStripeMode }) {
     <RecordPageHeader
       backHref={`/organizations/${orgId}/settings`}
       parents={[
-        organization ? { label: organization.name, href: `/organizations/${orgId}` } : { label: "", pending: true },
+        organization ? { label: organization.name, href: `/organizations/${orgId}` } : { label: "", pending: true, href: `/organizations/${orgId}` },
         { label: "Settings", href: `/organizations/${orgId}/settings` },
       ]}
       record={{ name: "Payments" }}

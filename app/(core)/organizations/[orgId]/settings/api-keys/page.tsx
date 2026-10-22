@@ -141,7 +141,7 @@ export default function OrgApiKeysPage() {
       parents={[
         organization
           ? { label: organization.name, href: `/organizations/${orgId}` }
-          : { label: "", pending: true },
+          : { label: "", pending: true, href: `/organizations/${orgId}` },
         { label: "Settings", href: `/organizations/${orgId}/settings`},
       ]}
       record={{ name: "API Keys" }}
