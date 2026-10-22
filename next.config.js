@@ -615,6 +615,13 @@ const nextConfig = {
         destination: "/chat/message-templates",
         permanent: true,
       },
+      // The bare Smart Add address opens the company page (query kept). A config redirect, not a page
+      // that calls redirect(): that one fired inside the streaming Smart Add layout and threw React #419.
+      {
+        source: "/marketing/brands/smart-add",
+        destination: "/marketing/brands/smart-add/company",
+        permanent: false,
+      },
       // 2026-08-15: "Agent Sets" was renamed to "Orchestras" (Arman's
       // ruling). Config redirects, not route shims, so existing links and
       // bookmarks never dead-end on the old segment.

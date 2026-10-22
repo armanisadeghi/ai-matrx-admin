@@ -2,7 +2,7 @@
  * Smart Add addresses — THE one parser and builder for every Smart Add URL (FEATURE.md › URLs).
  * Every link that sends people to Smart Add is built here; the page reads its state through `parse`.
  *
- *   /marketing/brands/smart-add                 → redirects to /company (query kept)
+ *   /marketing/brands/smart-add                 → redirects to /company (query kept; next.config.js)
  *   /marketing/brands/smart-add/company         → a business (the default)
  *   /marketing/brands/smart-add/found           → a business through the found-first door (VISION Part 23):
  *                                                 the same session, the certain facts as a card grid first

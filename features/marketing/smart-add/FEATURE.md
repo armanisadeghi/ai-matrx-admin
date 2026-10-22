@@ -16,7 +16,7 @@ Smart Add Brand: a person types a website, a social link or a name, Smart Add fi
 
 **Routes** (`app/(core)/marketing/brands/smart-add/`). The UI lives in `layout.tsx`, so one session survives moving between sibling routes. The pages only name the address.
 
-- `/marketing/brands/smart-add` redirects to `/company` and keeps the query.
+- `/marketing/brands/smart-add` redirects to `/company` and keeps the query: a `next.config.js` redirect (a page calling `redirect()` fired inside the streaming layout and threw React #419).
 - `/marketing/brands/smart-add/company` is a business (the default).
 - `/marketing/brands/smart-add/person` is a person.
 - `/marketing/brands/smart-add/found` is the found-first door (VISION Part 23): the SAME company session (`SmartAddBrand door="found"`), whose first findings screen is a calm card grid of only the certain facts (`found/FoundStage.tsx`). "Looks right" gives the full review's answers for exactly what is shown (`foundAnswers`) and opens the full page in place; the way out ("Not quite": Fix something / Not this business / Start over) opens it unanswered or restarts. A session whose name and website are already confirmed skips the grid. Offered beside Smart Add in the Add brand dialog (`marketingRoutes.smartAddFound`).
@@ -113,6 +113,7 @@ The validation page (`validate/fold.ts`) folds findings only when they are copie
 
 ## Change Log
 
+- 2026-10-22 (i) — Four ways in: Website, Social, Company, Person (keys 1-4); Company and Person open the name card with the kind set. Colorful pictures for every card (theme chart tokens). The choice and entry screens fit the frame: `SmartAddHero onFit` turns the page runway off there, so the intake never scrolls. The bare address redirect moved to `next.config.js` (the page `redirect()` threw React #419 inside the streaming layout).
 - 2026-10-22 (h) — An answer whose finding is already saved under another key settles that row (`persist.ts` `answerTwinRow`, on the dedup index 23505) instead of "Not saved". Live: Four Barrel Coffee's About card (`fact:description:…`) collided with Create's saved `description:<80 chars>` row on every Yes and kept coming back. Guard `__tests__/answerSettlesDedupTwin.test.ts` (red with the branch disabled, green now).
 - 2026-10-22 (g) — Yes on a validate NAME card is "alias" once the brand has a real name (`queue.ts` `yesNoFor`); "preferred" (rename) only while it has none or names the same name — P / Other still pick Preferred. Live: Four Barrel Coffee (fresh Smart Add brand) was renamed to its LinkedIn display name "FOURBARREL COFFEE" by one Yes. Guard `__tests__/nameYesIsAlias.test.ts` (red with the old rule, green now).
 - 2026-10-22 (f) — One card asks about one thing: each logo picture and each multi-value fact (service, category, location, license, metric) is its own card; only copies of the same thing fold (same image address or server image group). Set cards and their switches are removed. Guard: `validateFold.test.ts`.

@@ -14,7 +14,7 @@
  */
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { Mail,
@@ -106,6 +106,7 @@ export function SmartAddHero({
   notice = null,
   onBeforeStart,
   released = 0,
+  onFit,
 }: {
   person: boolean;
   onPerson: (person: boolean) => void;
@@ -157,6 +158,8 @@ export function SmartAddHero({
   onBeforeStart?: (typed: { website: string; social: string; platform: SocialPlatform | null; name: string; city: string }) => Promise<boolean>;
   /** Bumped when the held search may go ahead (the person chose a separate brand). */
   released?: number;
+  /** True while the stage is the choice cards or the entry card: the page fits the screen and never scrolls. */
+  onFit?: (fit: boolean) => void;
 }) {
   const [mode, setModeState] = useState<Mode | null>(initialVia);
   const setMode = (m: Mode | null) => {
@@ -352,9 +355,11 @@ export function SmartAddHero({
     submit(p);
   };
 
-  const choose = (m: Mode) => {
+  /** Open a way in; the Company and Person cards also set the kind (after the via, so the /person push carries it). */
+  const choose = (m: Mode, asPerson?: boolean) => {
     setMode(m);
     setSecond(false);
+    if (asPerson !== undefined && asPerson !== person) onPerson(asPerson);
   };
 
   // A link with something typed in it starts once, as if Go was pressed.
@@ -386,17 +391,23 @@ export function SmartAddHero({
     return () => clearTimeout(timer);
   }, [site, social, picked, name, city, occupation, company, email, nameLink?.website, nameLink?.social, nameLink?.platform]);
 
-  // 1 / 2 / 3 pick a way in while nothing is focused for typing.
+  // The choice and entry screens fit the frame (no page runway); the running stage and findings scroll as pages do.
+  const fit = phase === "choose" || phase === "enter";
+  const reportFit = useEffectEvent((f: boolean) => onFit?.(f));
+  useLayoutEffect(() => reportFit(fit), [fit]);
+  useLayoutEffect(() => () => reportFit(false), []);
+
+  // 1-4 pick a way in while nothing is focused for typing.
   useEffect(() => {
     if (phase !== "choose") return;
     const onKey = (e: globalThis.KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      const m = ({ "1": "website", "2": "social", "3": "name" } as const)[e.key as "1" | "2" | "3"];
-      if (m) {
+      const c = CHOICES[Number(e.key) - 1];
+      if (c && /^[1-9]$/.test(e.key)) {
         e.preventDefault();
-        choose(m);
+        choose(c.mode, c.person);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -432,7 +443,7 @@ export function SmartAddHero({
         data-smart-add-stage="intake"
         data-testid="smart-add-hero"
       >
-        <motion.div layout transition={SPRING} className={`flex w-full flex-col items-center ${phase === "choose" ? "max-w-[60rem]" : "max-w-[44rem]"}`}>
+        <motion.div layout transition={SPRING} className={`flex w-full flex-col items-center ${phase === "choose" ? "max-w-[72rem]" : "max-w-[44rem]"}`}>
           <AnimatePresence mode="popLayout" initial={false}>
             {compact ? null : (
               <motion.div
@@ -466,7 +477,7 @@ export function SmartAddHero({
             ) : (
               <motion.div
                 key={`shell-${mode}`}
-                layoutId={`smart-add:card-${mode}`}
+                layoutId={mode === "name" && person ? "smart-add:card-person" : `smart-add:card-${mode}`}
                 transition={SPRING}
                 className={`${styles.shell} w-full overflow-hidden rounded-[1.25rem] sm:rounded-[1.4rem]`}
               >
@@ -726,29 +737,34 @@ export function SmartAddHero({
 
 // ── Choices ──────────────────────────────────────────────────────────────────
 
-const CHOICES: { mode: Mode; title: string; hint: string }[] = [
-  { mode: "website", title: "Website", hint: "yourbrand.com" },
-  { mode: "social", title: "Social", hint: "Any profile or @handle" },
-  { mode: "name", title: "Company or Person", hint: "A name and a city" },
+/** Four ways in. Company and Person are both the name way in; the card sets the kind. */
+const CHOICES: { key: string; mode: Mode; person?: boolean; title: string; hint: string }[] = [
+  { key: "website", mode: "website", title: "Website", hint: "yourbrand.com" },
+  { key: "social", mode: "social", title: "Social", hint: "Any profile or @handle" },
+  { key: "company", mode: "name", person: false, title: "Company", hint: "A business name and city" },
+  { key: "person", mode: "name", person: true, title: "Person", hint: "A full name and city" },
 ];
+
+/** A theme color as a CSS value (the chart tokens: every theme defines them). */
+const tone = (token: string) => `hsl(var(--${token}))`;
 
 /** A tiny browser window: the site you already have. */
 function WebsiteVisual() {
   return (
     <span className="relative flex h-[5.5rem] w-36 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-[0_14px_30px_-16px_hsl(var(--foreground)/0.45)] transition-transform duration-300 group-hover:-rotate-1 group-hover:scale-[1.04]">
       <span className="flex h-4 items-center gap-1 border-b border-border/70 px-1.5">
-        <span className="size-1.5 rounded-full bg-foreground/25" />
-        <span className="size-1.5 rounded-full bg-foreground/25" />
-        <span className="size-1.5 rounded-full bg-foreground/25" />
+        <span className="size-1.5 rounded-full" style={{ background: tone("chart-1") }} />
+        <span className="size-1.5 rounded-full" style={{ background: tone("chart-4") }} />
+        <span className="size-1.5 rounded-full" style={{ background: tone("chart-2") }} />
         <span className="ml-1.5 h-2 flex-1 rounded-full bg-foreground/[0.08]" />
       </span>
       <span className="flex flex-1 gap-2 p-2">
-        <span className="w-10 rounded bg-gradient-to-br from-primary/60 to-primary/20" />
+        <span className="w-10 rounded" style={{ background: `linear-gradient(135deg, ${tone("chart-6")}, ${tone("primary")})` }} />
         <span className="flex flex-1 flex-col gap-1 pt-0.5">
           <span className="h-1.5 w-full rounded-full bg-foreground/20" />
           <span className="h-1.5 w-4/5 rounded-full bg-foreground/[0.12]" />
           <span className="h-1.5 w-3/5 rounded-full bg-foreground/[0.12]" />
-          <span className="mt-auto h-2.5 w-10 rounded-sm bg-primary/70" />
+          <span className="mt-auto h-2.5 w-10 rounded-sm" style={{ background: `linear-gradient(90deg, ${tone("chart-5")}, ${tone("chart-1")})` }} />
         </span>
       </span>
     </span>
@@ -787,26 +803,93 @@ function SocialVisual() {
   );
 }
 
-/** A building beside a portrait: a business or a person. */
-function NameVisual() {
+/** Three lit towers of a small skyline, each its own theme color. */
+const TOWERS: { x: number; y: number; w: number; from: string; to: string; cols: number }[] = [
+  { x: 18, y: 36, w: 38, from: "chart-2", to: "chart-6", cols: 3 },
+  { x: 54, y: 6, w: 38, from: "primary", to: "chart-6", cols: 3 },
+  { x: 90, y: 26, w: 36, from: "chart-5", to: "chart-1", cols: 3 },
+];
+
+/** A business: a small colorful skyline with lit windows. */
+function CompanyVisual() {
+  const id = useId();
   return (
-    <span className="relative flex h-[5.5rem] w-36 items-end justify-center gap-1">
-      <Building2 className="size-[4.5rem] text-foreground/70 transition-transform duration-300 group-hover:-translate-x-1" strokeWidth={1.1} />
-      <svg viewBox="0 0 64 64" className="size-[3.75rem] text-foreground/70 transition-transform duration-300 group-hover:translate-x-1" aria-hidden>
-        <circle cx="32" cy="22" r="11" fill="currentColor" opacity="0.85" />
-        <path d="M10 62c1.5-13 10.5-21 22-21s20.5 8 22 21z" fill="currentColor" opacity="0.85" />
-      </svg>
+    <svg
+      viewBox="0 0 144 90"
+      className="h-[5.5rem] w-36 drop-shadow-[0_14px_18px_hsl(var(--foreground)/0.22)] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-[1.04]"
+      aria-hidden
+    >
+      <defs>
+        {TOWERS.map((t, i) => (
+          <linearGradient key={i} id={`${id}-t${i}`} x1="0" y1="0" x2="0.4" y2="1">
+            <stop offset="0" style={{ stopColor: tone(t.from) }} />
+            <stop offset="1" style={{ stopColor: tone(t.to) }} />
+          </linearGradient>
+        ))}
+      </defs>
+      {TOWERS.map((t, i) => {
+        const rows = Math.floor((84 - t.y) / 11);
+        return (
+          <g key={i}>
+            <rect x={t.x} y={t.y} width={t.w} height={90 - t.y} rx={4} fill={`url(#${id}-t${i})`} />
+            {Array.from({ length: rows * t.cols }, (_, k) => {
+              const r = Math.floor(k / t.cols);
+              const c = k % t.cols;
+              const lit = (k * 7 + i * 3) % 5 !== 0;
+              return (
+                <rect
+                  key={k}
+                  x={t.x + 6 + c * ((t.w - 12) / t.cols) + 1}
+                  y={t.y + 7 + r * 11}
+                  width={(t.w - 12) / t.cols - 3}
+                  height={5}
+                  rx={1.2}
+                  fill="white"
+                  opacity={lit ? 0.78 : 0.3}
+                />
+              );
+            })}
+          </g>
+        );
+      })}
+      <rect x={68} y={76} width={10} height={14} rx={2} fill="white" opacity={0.9} />
+    </svg>
+  );
+}
+
+/** A person: a profile card with a colorful portrait. */
+function PersonVisual() {
+  return (
+    <span className="relative flex h-[5.5rem] w-36 items-center gap-2.5 overflow-hidden rounded-lg border border-border bg-card px-2.5 shadow-[0_14px_30px_-16px_hsl(var(--foreground)/0.45)] transition-transform duration-300 group-hover:rotate-1 group-hover:scale-[1.04]">
+      <span
+        className="relative flex size-14 shrink-0 items-end justify-center overflow-hidden rounded-full"
+        style={{ background: `linear-gradient(140deg, ${tone("chart-4")}, ${tone("chart-5")} 45%, ${tone("chart-1")})` }}
+      >
+        <svg viewBox="0 0 64 64" className="size-12 text-white" aria-hidden>
+          <circle cx="32" cy="24" r="12" fill="currentColor" opacity="0.95" />
+          <path d="M8 66c1.5-14 11-23 24-23s22.5 9 24 23z" fill="currentColor" opacity="0.95" />
+        </svg>
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <span className="h-2 w-full rounded-full bg-foreground/25" />
+        <span className="h-1.5 w-3/4 rounded-full bg-foreground/[0.12]" />
+        <span className="mt-1 flex items-center gap-1">
+          <span className="h-2.5 w-7 rounded-sm" style={{ background: tone("chart-2") }} />
+          <span className="h-2.5 w-5 rounded-sm" style={{ background: tone("chart-6") }} />
+        </span>
+      </span>
     </span>
   );
 }
 
-const VISUAL: Record<Mode, () => ReactNode> = {
+const VISUAL: Record<string, () => ReactNode> = {
   website: WebsiteVisual,
   social: SocialVisual,
-  name: NameVisual,
+  company: CompanyVisual,
+  person: PersonVisual,
 };
 
-function ChoiceCards({ onChoose }: { onChoose: (m: Mode) => void }) {
+function ChoiceCards({ onChoose }: { onChoose: (m: Mode, asPerson?: boolean) => void }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const i = refs.current.findIndex((el) => el === document.activeElement);
@@ -823,40 +906,42 @@ function ChoiceCards({ onChoose }: { onChoose: (m: Mode) => void }) {
       onKeyDown={onKey}
       initial={false}
       exit={{ opacity: 0 }}
-      className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-5"
+      className="grid w-full grid-cols-1 gap-3 md:grid-cols-4 md:gap-4 lg:gap-5"
     >
       {CHOICES.map((c, i) => {
-        const Visual = VISUAL[c.mode];
+        const Visual = VISUAL[c.key];
         return (
           <motion.button
-            key={c.mode}
+            key={c.key}
             ref={(el) => {
               refs.current[i] = el;
             }}
             type="button"
-            layoutId={`smart-add:card-${c.mode}`}
+            // The card morphs into the entry card of its way in (Company and Person share the name card; the open one owns it).
+            layoutId={c.person === true ? `smart-add:card-person` : `smart-add:card-${c.mode}`}
             transition={SPRING}
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0, transition: { delay: 0.08 + i * 0.07, duration: 0.5, ease: [0.2, 0.8, 0.2, 1] } }}
             exit={{ opacity: 0, scale: 0.96 }}
-            onClick={() => onChoose(c.mode)}
+            onClick={() => onChoose(c.mode, c.person)}
             data-clickable
-            className={`${styles.card} group flex items-center gap-4 overflow-hidden rounded-[1.5rem] border border-glass-edge p-3 pr-4 text-left sm:min-h-[19rem] sm:flex-col sm:items-stretch sm:gap-0 sm:p-0`}
+            data-testid={`smart-add-choice-${c.key}`}
+            className={`${styles.card} group flex items-center gap-4 overflow-hidden rounded-[1.5rem] border border-glass-edge p-3 pr-4 text-left md:min-h-[16.5rem] md:flex-col md:items-stretch md:gap-0 md:p-0`}
           >
             {/* The picture: a phone shows it small at the left, a desktop gives it the stage. */}
-            <span className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden sm:h-44 sm:w-full">
-              <span className="origin-center scale-[0.6] sm:scale-125">
+            <span className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden md:h-40 md:w-full">
+              <span className="origin-center scale-[0.6] md:scale-100 lg:scale-[1.2]">
                 <Visual />
               </span>
             </span>
-            <span className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-none sm:px-6 sm:pb-6">
-              <span className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">{c.title}</span>
-              <span className="text-sm text-muted-foreground sm:text-[0.95rem]">{c.hint}</span>
+            <span className="flex min-w-0 flex-1 flex-col gap-1 md:flex-none md:px-5 md:pb-5 lg:px-6 lg:pb-6">
+              <span className="text-lg font-semibold tracking-tight text-foreground md:text-xl">{c.title}</span>
+              <span className="text-sm text-muted-foreground md:text-[0.95rem]">{c.hint}</span>
             </span>
-            <kbd className="absolute right-4 top-4 hidden rounded-md border border-border/70 px-1.5 font-mono text-[11px] text-muted-foreground/70 sm:block">
+            <kbd className="absolute right-4 top-4 hidden rounded-md border border-border/70 px-1.5 font-mono text-[11px] text-muted-foreground md:block">
               {i + 1}
             </kbd>
-            <ArrowRight className="size-5 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 sm:hidden" />
+            <ArrowRight className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 md:hidden" />
           </motion.button>
         );
       })}
