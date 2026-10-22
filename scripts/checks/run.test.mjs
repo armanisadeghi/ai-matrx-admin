@@ -14,7 +14,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { EXTRA_ROWS, categorize, defaultWorkers, fingerprint, judge, parseRows, renderTable, slug } from "./run.mjs";
+import { EXTRA_ROWS, categorize, defaultWorkers, fingerprint, heavyRowsAlone, judge, parseRows, renderTable, runRows, slug } from "./run.mjs";
 
 const RUNNER = new URL("./run.mjs", import.meta.url).pathname;
 
@@ -483,6 +483,41 @@ test("the worker count never exceeds the machine's cores or memory", () => {
   assert.equal(defaultWorkers({ cpus: 16, memBytes: 24 * GiB }), 4, "memory binds before cores");
   assert.equal(defaultWorkers({ cpus: 16, memBytes: 64 * GiB }), 6, "a workstation keeps the full pool");
   assert.equal(defaultWorkers({ cpus: 1, memBytes: 1 * GiB }), 1, "never zero");
+});
+
+// 2026-10-22: run 39725397144 (v0.4.3431) — two workers on the 16 GB runner still ran two heavy
+// rows side by side; 15.7 GB used + 11.3 GB swap, then exit 143 with no finding written.
+test("on a memory-bound machine a heavy row never overlaps another row", async () => {
+  const GiB = 1024 ** 3;
+  assert.equal(heavyRowsAlone({ workers: 2, memBytes: 15.6 * GiB }), true, "GitHub's hosted runner");
+  assert.equal(heavyRowsAlone({ workers: 6, memBytes: 64 * GiB }), false, "a workstation keeps the full pool");
+  assert.equal(heavyRowsAlone({ workers: 1, memBytes: 8 * GiB }), false, "one worker is already alone");
+  const dir = mkdtempSync(join(tmpdir(), "heavy-alone-"));
+  const log = join(dir, "events.log");
+  const row = (id, heavy) => ({
+    id, label: id, category: "build", level: "warning", needsDb: false, timeoutSeconds: 60, heavy,
+    cmd: `node -e "const f=require('fs');f.appendFileSync('${log}','+${id}\\n');setTimeout(()=>f.appendFileSync('${log}','-${id}\\n'),300)"`,
+  });
+  const rows = [row("light-a", false), row("heavy-1", true), row("light-b", false), row("heavy-2", true), row("light-c", false)];
+  const run = async (heavyAlone) => {
+    writeFileSync(log, "");
+    await runRows(rows, { workers: 2, dbWorkers: 1, heavyAlone });
+    const live = new Set();
+    let overlapped = false;
+    for (const line of readFileSync(log, "utf8").trim().split("\n")) {
+      const id = line.slice(1);
+      if (line[0] === "+") {
+        if ([...live, id].some((x) => x.startsWith("heavy")) && live.size > 0) overlapped = true;
+        live.add(id);
+      } else live.delete(id);
+    }
+    return { overlapped, events: readFileSync(log, "utf8").trim().split("\n").length };
+  };
+  const serial = await run(true);
+  assert.equal(serial.events, 10, "every row ran");
+  assert.equal(serial.overlapped, false, "a heavy row ran beside another row");
+  const open = await run(false);
+  assert.equal(open.overlapped, true, "without the rule two rows share the machine (the test can fail)");
 });
 
 // 2026-09-30: 71 checks read "check broken" on /administration/reporting/check-findings and the
