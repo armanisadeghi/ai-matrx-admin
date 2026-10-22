@@ -112,7 +112,7 @@ export interface RecordingSegment {
   /** Denormalized owner (from the parent session) for the cross-session Unsorted query. */
   userId: string | null;
   /**
-   * Crash-safe IndexedDB entry id (`audioSafetyStore`) for this cycle's audio.
+   * Crash-safe IndexedDB entry id (package safety store) for this cycle's audio.
    * Set once the first chunk lands so a stranded recording can be recovered
    * (reconcile pulls the blob from IndexedDB and re-uploads). Null until known.
    */

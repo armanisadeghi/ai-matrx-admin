@@ -86,11 +86,10 @@ export const AUDIO_API_ROUTES = {
 } as const;
 
 // ── IndexedDB configuration ─────────────────────────────────────────────────
-export const SAFETY_STORE_CONFIG = {
-  DB_NAME: "matrx_audio_safety",
-  STORE_NAME: "recordings",
-  DB_VERSION: 1,
-} as const;
+// The app no longer owns a recovery store - recordings live in the package's
+// one store (`getSharedAudioSafetyStore`). This is only the NAME of the old
+// database that `migrateLegacyAudioSafetyStore` drains and deletes.
+export const LEGACY_AUDIO_SAFETY_DB_NAME = "matrx_audio_safety";
 
 // ── Allowed MIME types ──────────────────────────────────────────────────────
 export const ALLOWED_AUDIO_TYPES = [
