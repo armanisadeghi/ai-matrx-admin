@@ -87,7 +87,15 @@ const LIST_ONLY = process.argv.includes("--list");
  * handler" column). Only this AST resolver knows which targets have a handler,
  * so the page reads its output rather than re-deriving it.
  */
-const EMIT = process.argv.includes("--emit");
+const EMIT = process.argv.includes("--emit") || process.argv.includes("--emit-only");
+/**
+ * `--emit-only` (`pnpm surface:write-handlers:emit`): write EMIT_PATH and exit 0
+ * — the build step that keeps the deployed census fresh (findings stay in the
+ * advisory gate, never a stopped build). `--check-emit`: exit 1 when the
+ * committed EMIT_PATH differs from what the code produces now (stale snapshot).
+ */
+const EMIT_ONLY = process.argv.includes("--emit-only");
+const CHECK_EMIT = process.argv.includes("--check-emit");
 const EMIT_PATH = "features/surfaces/data/write-handler-coverage.generated.json";
 
 const C = {
@@ -1961,7 +1969,7 @@ async function main(): Promise<number> {
 
   const surfacesWithRegistrations = new Set(registrations.flatMap((r) => r.surfaces));
 
-  if (EMIT) {
+  if (EMIT || CHECK_EMIT) {
     const missingBySurface = new Map(findings.unhandled.map((u) => [u.surfaceName, new Set(u.targets)]));
     const handled: Record<string, string[]> = {};
     for (const surface of declared.slice().sort((a, b) => a.surfaceName.localeCompare(b.surfaceName))) {
@@ -1974,8 +1982,19 @@ async function main(): Promise<number> {
       handledCount: findings.handledCount,
       handled,
     };
-    writeFileSync(join(ROOT, EMIT_PATH), `${JSON.stringify(out, null, 2)}\n`);
-    console.log(`  ${TAG.info} wrote ${EMIT_PATH}`);
+    const text = `${JSON.stringify(out, null, 2)}\n`;
+    if (CHECK_EMIT) {
+      const current = existsSync(join(ROOT, EMIT_PATH)) ? readFileSync(join(ROOT, EMIT_PATH), "utf8") : "";
+      if (current === text) {
+        console.log(`${TAG.ok} ${EMIT_PATH} is fresh (${findings.handledCount}/${findings.declaredCount}).`);
+        return 0;
+      }
+      console.log(`${TAG.fail} ${EMIT_PATH} is STALE — run \`pnpm surface:write-handlers:emit\` and commit it.`);
+      return 1;
+    }
+    writeFileSync(join(ROOT, EMIT_PATH), text);
+    console.log(`  ${TAG.info} wrote ${EMIT_PATH} (${findings.handledCount}/${findings.declaredCount} handled)`);
+    if (EMIT_ONLY) return 0;
   }
 
   console.log("");

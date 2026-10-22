@@ -48,6 +48,22 @@
  *   --agent-name NAME     default "Badass Agent" (its "Run NAME" button).
  *   --workspace NAME      default "admin's Workspace".
  *
+ * RECORD MODE (surface declarations W0-D; D2 + done bar (c)) — writes the result
+ * onto the surface's `ui.ui_surface.last_check`, the check readiness is earned
+ * from and the Surfaces admin list counts "supplied by probe" from:
+ *   --record [RECORD_ID]  after probing, record the FIRST --route's read through
+ *                         `scripts/surface-probe-record.ts` (direct Postgres,
+ *                         production guard on). RECORD_ID names the admin-test
+ *                         record the route was opened on (omit for a route with
+ *                         no record). Refused unless /api/whoami says the probe
+ *                         is signed in as admin@admin.com, and only for
+ *                         code-declared surfaces. Status pass = every on value
+ *                         that is always-available was supplied; conditional
+ *                         values are listed apart and never fail it.
+ *   SURFACE_PROBE_PROFILE_SLOT=<n>  a separate persistent profile, so two probes
+ *                         can run at once (the batch runner uses slots 0..1).
+ *   Batch: `pnpm surface:probe:batch` (scripts/surface-probe-batch.ts).
+ *
  * Signs in with AI_ADMIN_USERNAME / AI_ADMIN_PASSWORD from the environment (the
  * sanctioned test identity) through the /login form, in a persistent profile so
  * later runs reuse the session. On a *.localhost base, sign in with
@@ -58,7 +74,7 @@
  * error (the message says what to fix); exit 3 when --commit is not deployed yet.
  */
 
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
@@ -105,6 +121,10 @@ for (let i = 0; i < args.length; i += 1) {
   else if (a === "--agent-name") (opts.agentName = v), (i += 1);
   else if (a === "--agent-wait") (opts.agentWait = Number(v)), (i += 1);
   else if (a === "--workspace") (opts.workspace = v), (i += 1);
+  else if (a === "--record") {
+    opts.record = true;
+    if (v && !v.startsWith("--")) (opts.recordId = v), (i += 1);
+  }
   else fail(`unknown argument ${a} — see the header of scripts/surface-probe.mjs`);
 }
 if (!opts.surface || opts.routes.length === 0)
@@ -176,7 +196,8 @@ const isLocal = /\.localhost(:\d+)?$|\/\/localhost(:\d+)?$|127\.0\.0\.1/.test(op
 const launchArgs = ["--no-sandbox", ...egressProxyBrowserArgs("surface-probe")];
 
 const host = new URL(opts.base).host.replace(/[^a-z0-9.-]/gi, "_");
-const profileDir = path.join(os.tmpdir(), "surface-probe-profiles", host);
+const profileSlot = process.env.SURFACE_PROBE_PROFILE_SLOT;
+const profileDir = path.join(os.tmpdir(), "surface-probe-profiles", profileSlot ? `${host}-slot${profileSlot}` : host);
 mkdirSync(profileDir, { recursive: true });
 if (opts.shots) mkdirSync(opts.shots, { recursive: true });
 
@@ -258,6 +279,35 @@ async function readProbe(page) {
         absent,
         undeclared,
       };
+    }
+    // A deployment built before the keyed list (data-declared-keys landed
+    // 2026-10-22) shows the same "This page" window with LABELS only: read
+    // label + line per row, and let the recorder map labels to value names
+    // through the declaration (readMode "labels" in last_check says so).
+    const finder = Array.from(document.querySelectorAll("input")).find((i) => i.placeholder === "Find a value");
+    if (finder) {
+      let root = finder;
+      for (let i = 0; i < 8 && root && !root.querySelector("li button[aria-expanded]"); i += 1) root = root.parentElement;
+      const items = root
+        ? Array.from(root.querySelectorAll("li > button[aria-expanded]")).map((b) => {
+            const spans = b.querySelectorAll("span span, span > span");
+            return {
+              label: (spans[0]?.textContent || "").trim(),
+              line: (spans[1]?.textContent || "").trim(),
+            };
+          }).filter((r) => r.label)
+        : [];
+      if (items.length) {
+        return {
+          counter: `${items.length} rows (labels)`,
+          readMode: "labels",
+          supplied: [],
+          suppliedEmpty: [],
+          absent: [],
+          undeclared: [],
+          byLabel: items,
+        };
+      }
     }
     // A value row carries a status dot titled with its state; group rows do
     // not. (The key <code> trail is admin-only, so it cannot mark a value row
@@ -541,6 +591,7 @@ for (const file of [".env.local", ".env"]) {
 }
 
 let exitCode = 0;
+let probedAs = null;
 
 try {
   if (opts.loginUrl) {
@@ -606,6 +657,21 @@ try {
         await page.keyboard.press("Escape");
       } else console.error(`[surface-probe] organization "${opts.org}" not found in the header picker`);
     }
+  }
+
+  // Who the app itself says is signed in (the record mode refuses anyone but
+  // the admin test account; never assumed from the credentials we typed).
+  if (opts.record) {
+    if (!page.url().startsWith(opts.base)) await page.goto(`${opts.base}/login`, { timeout: 120000 });
+    probedAs = await page
+      .evaluate(async () => {
+        try {
+          return await (await fetch("/api/whoami")).json();
+        } catch {
+          return null;
+        }
+      })
+      .catch(() => null);
   }
 
   for (const [index, route] of opts.routes.entries()) {
@@ -725,7 +791,10 @@ try {
     // every declared row as absent, so counting rows alone passed it): never a
     // pass (2026-10-22, the "This page" redesign). Same for the re-read after
     // an agent run.
-    const suppliedCount = (read) => (read?.supplied?.length ?? 0) + (read?.suppliedEmpty?.length ?? 0);
+    const suppliedCount = (read) =>
+      (read?.supplied?.length ?? 0) +
+      (read?.suppliedEmpty?.length ?? 0) +
+      (read?.byLabel ?? []).filter((r) => r.line !== "Not available").length;
     const readSomething = suppliedCount(result.before) > 0;
     if (!readSomething) result.errors.push("the page supplied no values in its values window (or the window was not read)");
     if (result.afterAgent && suppliedCount(result.afterAgent) === 0)
@@ -739,6 +808,42 @@ try {
 }
 
 const report = { surface: opts.surface, base: opts.base, seconds: Math.round((Date.now() - t0) / 1000), results };
+
+// ── record mode: write the first route's read onto ui.ui_surface.last_check ──
+if (opts.record && results[0]) {
+  const first = results[0];
+  const read = first.before ?? {};
+  const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+  const input = {
+    surface: opts.surface,
+    route: first.route,
+    recordId: opts.recordId ?? null,
+    base: opts.base,
+    supplied: read.supplied ?? [],
+    suppliedEmpty: read.suppliedEmpty ?? [],
+    byLabel: read.byLabel ?? [],
+    surfaceNamed: Boolean(first.surfaceNamed),
+    signedIn: Boolean(first.signedIn),
+    probedAs: { email: probedAs?.email ?? null, userId: probedAs?.user_id ?? null, role: "admin" },
+    errors: first.errors ?? [],
+  };
+  const rec = spawnSync(path.join(root, "node_modules/.bin/tsx"), [path.join(root, "scripts/surface-probe-record.ts")], {
+    input: JSON.stringify(input),
+    encoding: "utf8",
+    cwd: root,
+  });
+  if (rec.status === 0) {
+    try {
+      report.recorded = JSON.parse(rec.stdout.trim().split("\n").pop());
+    } catch {
+      report.recorded = { error: "recorder printed no JSON", stdout: rec.stdout.slice(0, 500) };
+    }
+  } else {
+    report.recorded = { error: (rec.stderr || rec.stdout || "recorder failed").trim().slice(0, 800) };
+    console.error(`[surface-probe] record refused or failed: ${report.recorded.error}`);
+    exitCode = exitCode || 1;
+  }
+}
 const json = JSON.stringify(report, null, 2);
 if (opts.out) writeFileSync(opts.out, json);
 console.log(json);
