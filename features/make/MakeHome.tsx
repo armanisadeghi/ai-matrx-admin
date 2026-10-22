@@ -58,6 +58,7 @@ import {
 } from "./tiles";
 import { answerForRecent, isTestOrganization, recentlyChanged, withoutTestOrganizations } from "./recent";
 import { PortalBlocksEditor } from "@/features/portals/PortalBlocksEditor";
+import { PortalAccessEditor } from "@/features/portals/PortalAccessEditor";
 import { MakeMount, NewTableBody, SAVED_WHERE_CHOSEN, SavesTo } from "./MakeMount";
 import { InstalledOneOffs, TemplateGallerySection } from "./gallery/TemplateGallery";
 import { DescribeBox } from "./describe/DescribeBox";
@@ -425,6 +426,7 @@ function PortalFlow({ organizationId, madeId, onMade, onName }: { organizationId
           }}
         />
         {madeId ? <PortalBlocksEditor portalId={madeId} /> : null}
+        {madeId ? <PortalAccessEditor portalId={madeId} /> : null}
       </MakeMount>
     </div>
   );
