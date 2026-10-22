@@ -9,6 +9,7 @@
 import { MatrxDataTable, type MatrxColumnDef, type MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-table";
 
 import { inputsText, runStatusLabel, usePastRuns, type FetchJobRow } from "./runHistory";
+import { durationWords } from "./runTiming";
 
 interface PastRunRow {
   id: string;
@@ -18,6 +19,8 @@ interface PastRunRow {
   records: number;
   status: string;
   createdAt: string;
+  /** How long it took, in seconds (sorts and filters as a number). */
+  tookSeconds: number | null;
 }
 
 const toRow = (j: FetchJobRow, labelOf: (key: string) => string): PastRunRow => ({
@@ -28,6 +31,7 @@ const toRow = (j: FetchJobRow, labelOf: (key: string) => string): PastRunRow => 
   records: (j.rows_created ?? 0) + (j.rows_updated ?? 0),
   status: runStatusLabel(j.status),
   createdAt: j.created_at,
+  tookSeconds: j.duration_ms != null ? Math.round(j.duration_ms / 1000) : null,
 });
 
 export function PastRuns({
@@ -50,6 +54,7 @@ export function PastRuns({
     ...(showSource ? [{ id: "source", header: "Source", accessorKey: "source" as const, filter: "select" as const, width: 200 }] : []),
     { id: "asked", header: "Asked for", accessorKey: "asked", filter: "text", width: 280 },
     { id: "records", header: "Records", accessorKey: "records", format: { id: "integer" }, width: 100 },
+    { id: "tookSeconds", header: "Took", accessorKey: "tookSeconds", cell: (r) => (r.tookSeconds == null ? "—" : durationWords(r.tookSeconds * 1000)), copyValue: (r) => (r.tookSeconds == null ? "" : durationWords(r.tookSeconds * 1000)), width: 110 },
     { id: "status", header: "Status", accessorKey: "status", format: { id: "choice" }, width: 110 },
   ];
   const copy: MatrxDataTableCopyConfig<PastRunRow> = {
@@ -58,9 +63,9 @@ export function PastRuns({
     location: "Data library — past runs",
     rowKind: "data-fetch-run",
     listKind: "data-fetch-run-list",
-    rowDescription: "One data library run: when, source, what it asked for, records and status.",
+    rowDescription: "One data library run: when, source, what it asked for, records, how long it took and status.",
     listDescription: "Earlier runs of this data library task or source, newest first.",
-    humanRow: (r) => [`When: ${r.createdAt}`, `Source: ${r.source}`, `Asked for: ${r.asked}`, `Records: ${r.records}`, `Status: ${r.status}`].join("\n"),
+    humanRow: (r) => [`When: ${r.createdAt}`, `Source: ${r.source}`, `Asked for: ${r.asked}`, `Records: ${r.records}`, `Took: ${r.tookSeconds == null ? "—" : durationWords(r.tookSeconds * 1000)}`, `Status: ${r.status}`].join("\n"),
   };
   return (
     <section className="flex flex-col gap-2" aria-label="Past runs" data-past-runs="">

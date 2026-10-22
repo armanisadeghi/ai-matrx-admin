@@ -23,6 +23,8 @@ import type { DataFetchResult } from "../contract";
 import type { RunState } from "../runs";
 import { isOpenStatus, runRowFilter, runScope, runStatusLabel, useDataFetchJob, useResumeStalledRun, useRunRowKeys, useTypicalRunMs, type FetchJobRow } from "./runHistory";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { tookWords } from "./runTiming";
+import { UnderTheHood } from "./UnderTheHood";
 
 // The grid is heavy: it loads when there are results to draw, never with the library.
 const LocatedTableViewer = dynamic(() => import("@/features/data-tables/components/LocatedTableViewer"), {
@@ -81,12 +83,15 @@ function DoneLine({
   tableName,
   lowered,
   notices,
+  tookMs,
 }: {
   rows: number;
   tableId: string;
   tableName: string | null;
   lowered?: number | null;
   notices?: readonly string[];
+  /** How long the run took (the job's own clock); said beside the count. */
+  tookMs?: number | null;
 }) {
   return (
     <div className="flex flex-col gap-1" data-fetch-done={tableId}>
@@ -96,6 +101,7 @@ function DoneLine({
           {formatCount(rows)} {rows === 1 ? "record" : "records"}
         </span>
         {tableName ? <span className="min-w-0 truncate text-xs text-muted-foreground">in {tableName}</span> : null}
+        {tookMs != null ? <span className="shrink-0 text-xs text-muted-foreground" data-run-took="">{tookWords(tookMs)}</span> : null}
         <span className="ml-auto flex items-center gap-1">
           <AddToBoard tableId={tableId} tableName={tableName} />
           <OpenAsTable tableId={tableId} />
@@ -156,6 +162,7 @@ export function LiveRunResults({
     return (
       <div className="flex flex-col gap-3" data-results-live="">
         <FetchProgress label={label} progress={progress} startedAt={startedAt} layout="row" typicalMs={typical.data ?? null} />
+        <UnderTheHood jobId={liveJobId} open />
         {tableId ? <InlineResultsTable tableId={tableId} job={row} /> : <RowsComing />}
       </div>
     );
@@ -175,7 +182,9 @@ function DoneRunResults({ result: done }: { result: DataFetchResult }) {
         tableName={done.table_name}
         lowered={done.limit_applied?.value ?? null}
         notices={done.notices}
+        tookMs={job?.duration_ms ?? null}
       />
+      <UnderTheHood jobId={done.job_id ?? null} />
       {jobQuery.isLoading ? <RowsComing /> : <InlineResultsTable tableId={done.table_id} job={job} />}
     </div>
   );
@@ -195,22 +204,27 @@ export function SavedRunResults({ jobId }: { jobId: string }) {
     return (
       <div className="flex flex-col gap-3" data-results-live="">
         <FetchProgress label={runStatusLabel(row.status)} progress={{ label: runStatusLabel(row.status), current: null, total: null, jobId }} startedAt={Date.parse(row.created_at)} layout="row" typicalMs={typical.data ?? null} />
+        <UnderTheHood jobId={jobId} open />
         {row.table_id ? <InlineResultsTable tableId={row.table_id} job={row} /> : <RowsComing />}
       </div>
     );
   }
   if (!row.table_id) {
     return (
+      <div className="flex flex-col gap-3">
       <EmptyState
         icon={<SearchX className="h-5 w-5" />}
         title={row.status === "done" ? "No records came back" : "This run failed"}
         line={row.error ?? "Try again with different words."}
       />
+      <UnderTheHood jobId={jobId} />
+      </div>
     );
   }
   return (
     <div className="flex flex-col gap-3">
-      <DoneLine rows={row.rows_created + row.rows_updated} tableId={row.table_id} tableName={row.table_name} />
+      <DoneLine rows={row.rows_created + row.rows_updated} tableId={row.table_id} tableName={row.table_name} tookMs={row.duration_ms ?? null} />
+      <UnderTheHood jobId={jobId} />
       <InlineResultsTable tableId={row.table_id} job={row} />
     </div>
   );

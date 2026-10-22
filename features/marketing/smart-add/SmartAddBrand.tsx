@@ -192,7 +192,7 @@ import { ChangesReview } from "./enrich/ChangesReview";
 import { useEnrichWebDecisions } from "./enrich/useEnrichWebDecisions";
 import { browserImageUrl } from "@/lib/media/external-image";
 import type { SmartAddAddressBinding } from "./useSmartAddAddress";
-import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddAddress } from "./smartAddUrl";
+import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddAddress, type SmartAddVia } from "./smartAddUrl";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Enrich an existing brand (ENRICH.md): what we already know, the checked facts' seed, and the brand. */
@@ -303,7 +303,7 @@ export function SmartAddBrand({
   const lastMode = useRef(url?.address.mode ?? null);
   if (url?.address.mode) lastMode.current = url.address.mode;
   const person = url ? lastMode.current === "person" : personLocal;
-  const setPerson = (p: boolean) => (url ? url.setMode(p ? "person" : "company") : setPersonLocal(p));
+  const setPerson = (p: boolean, via?: SmartAddVia | null) => (url ? url.setMode(p ? "person" : "company", via) : setPersonLocal(p));
   // The compare dialog rides the address (`?view=compare`): a link opens it, Back closes it.
   const [comparingLocal, setComparingLocal] = useState(false);
   const comparing = url ? url.address.view === "compare" : comparingLocal;

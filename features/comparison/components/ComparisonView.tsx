@@ -10,6 +10,8 @@
  * click away, and honest gaps ("—" with the reason) instead of a confident zero.
  */
 
+import { tookWords } from "@/features/data-sources/library/runTiming";
+import { UnderTheHood } from "@/features/data-sources/library/UnderTheHood";
 import type { ReactNode } from "react";
 import { ExternalLink, Table2, Trophy } from "lucide-react";
 import { Badge, Tile } from "@ai-matrx/design-system/controls";
@@ -149,11 +151,15 @@ function FacetHeading({ result, facetKey, label, confirm }: {
   const rows = comparedItems(result).map((i) => ({ item: i, f: i.facets?.find((x) => x.key === facetKey) }));
   const failed = rows.filter((r) => r.f?.status === "failed" && !isUnconfirmed(r.f));
   const asking = rows.filter((r) => r.f && isUnconfirmed(r.f));
+  // The facet's items read side by side: it took as long as its slowest read.
+  const secs = rows.map((r) => r.f?.seconds).filter((v): v is number => typeof v === "number");
+  const took = secs.length ? Math.max(...secs) * 1000 : null;
   return (
     <div className="space-y-1.5 pt-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="type-title text-foreground">{label}</h2>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {took != null ? <span className="type-meta text-muted-foreground" data-facet-took={facetKey}>{tookWords(took)}</span> : null}
           {failed.map(({ item, f }) => (
             <span key={item.item_id} className="type-meta text-muted-foreground" title={f?.error ?? undefined}>
               Not found for {item.name}
@@ -163,6 +169,9 @@ function FacetHeading({ result, facetKey, label, confirm }: {
       </div>
       {asking.map(({ item, f }) => (
         <ConfirmFacetLine key={item.item_id} item={item} facet={f as NonNullable<typeof f>} confirm={confirm} />
+      ))}
+      {rows.filter((r) => r.f?.job_id).map(({ item, f }) => (
+        <UnderTheHood key={item.item_id} jobId={f?.job_id} facetLabel={`${label} · ${item.name}`} />
       ))}
     </div>
   );

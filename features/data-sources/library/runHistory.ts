@@ -17,6 +17,7 @@ import type { RecordFilter } from "@ai-matrx/records";
 import { createClient } from "@/utils/supabase/client";
 import { getJob, getJobRowKeys } from "../server";
 import { useLibraryOrganizationId } from "./hooks";
+import { useTypicalSpeed } from "./runTiming";
 
 export const OPEN_STATUSES = ["queued", "fetching", "waiting_for_provider", "storing"] as const;
 
@@ -42,10 +43,12 @@ export interface FetchJobRow {
   row_key_field: string | null;
   /** The worker's lease on an open run; lapsed = nobody is advancing it. */
   lease_until: string | null;
+  /** Total run time (created to finished), stamped by the server; null while it runs. */
+  duration_ms?: number | null;
 }
 
 export const JOB_COLUMNS =
-  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, lease_until, row_key_field:metadata->>row_key_field";
+  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, lease_until, duration_ms, row_key_field:metadata->>row_key_field";
 
 const POLL_OPEN_MS = 3000;
 
@@ -238,9 +241,6 @@ export function runStatusLabel(status: string): string {
   return status;
 }
 
-/** Finished runs sampled to learn how long a source usually takes. */
-const TYPICAL_SAMPLE = 30;
-
 /** The median of the finished runs' lengths, in ms; null when fewer than two finished (one is not "typical"). Pure. */
 export function medianRunMs(runs: ReadonlyArray<Pick<FetchJobRow, "status" | "created_at" | "finished_at">>): number | null {
   const lengths = runs
@@ -253,23 +253,11 @@ export function medianRunMs(runs: ReadonlyArray<Pick<FetchJobRow, "status" | "cr
   return lengths.length % 2 ? lengths[mid] : Math.round((lengths[mid - 1] + lengths[mid]) / 2);
 }
 
-/** How long this source usually takes (median of its finished runs under RLS), for the in-flight hint. */
+/**
+ * How long this source usually takes, for the in-flight hint: the median of its latest finished runs across the
+ * platform (`scraper.data_fetch_typical_speed`; the sample size is the knob `data_library.typical_speed_sample_runs`).
+ */
 export function useTypicalRunMs(sourceKey: string | null | undefined) {
-  return useQuery({
-    queryKey: ["data-sources", "typical-run-ms", sourceKey ?? null],
-    queryFn: async (): Promise<number | null> => {
-      const { data, error } = await jobs()
-        .select("status, created_at, finished_at")
-        .eq("source_key", sourceKey ?? "")
-        .eq("status", "done")
-        .is("deleted_at", null)
-        .not("finished_at", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(TYPICAL_SAMPLE);
-      if (error) throw error;
-      return medianRunMs((data as unknown as FetchJobRow[] | null) ?? []);
-    },
-    enabled: Boolean(sourceKey),
-    staleTime: 5 * 60_000,
-  });
+  const speed = useTypicalSpeed(sourceKey);
+  return { data: speed?.typicalMs ?? null };
 }

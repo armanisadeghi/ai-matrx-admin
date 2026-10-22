@@ -64,6 +64,8 @@ export interface ItemFacet {
   seconds: number | null;
   source_url: string | null;
   table_id: string | null;
+  /** The data fetch that read this facet: its stage times and, for an admin, what ran under the hood. */
+  job_id?: string | null;
   /** A page that only resembles the company: shown as "Is this them?", never read or scored until confirmed. */
   possible_url?: string | null;
   possible_name?: string | null;

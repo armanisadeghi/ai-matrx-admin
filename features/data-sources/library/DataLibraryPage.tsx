@@ -40,6 +40,8 @@ import {
 } from "./catalog";
 import { GroupMark } from "./groupMark";
 import { PastRuns } from "./PastRuns";
+import { SourceSpeed } from "./SourceSpeed";
+import { SourceMethodTag } from "./UnderTheHood";
 import { SourceDetail } from "./SourceDetail";
 import { LIBRARY_TASKS, resolveTask, resolveTasks, type ResolvedTask } from "./tasks";
 import { useLibrary, useLibraryOrganizationId } from "./hooks";
@@ -335,6 +337,7 @@ function TaskCard({ resolved, onOpen }: { resolved: ResolvedTask; onOpen: () => 
         ) : (
           `${formatCount(all.length)} ${all.length === 1 ? "source" : "sources"}`
         )}
+        {(confirmed[0] ?? all[0]) ? <SourceSpeed sourceKey={(confirmed[0] ?? all[0]).key} /> : null}
         <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </span>
     </button>
@@ -534,7 +537,9 @@ function SourceCard({ source, rich, onOpen }: { source: LibrarySource; rich: boo
           {preview.more > 0 && <Chip label={`+${preview.more}`} tone="neutral" />}
         </ChipSet>
       )}
-      <div className="mt-auto flex items-center gap-1.5 pt-1">
+      <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-1">
+        <SourceSpeed sourceKey={source.key} />
+        <SourceMethodTag sourceKey={source.key} />
         <span className="ml-auto flex items-center gap-1">
           {source.knownIssue ? (
             <Badge tone="warning" title={plainIssue(source.knownIssue)}>

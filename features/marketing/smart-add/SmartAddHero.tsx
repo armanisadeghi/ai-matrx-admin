@@ -109,7 +109,8 @@ export function SmartAddHero({
   onFit,
 }: {
   person: boolean;
-  onPerson: (person: boolean) => void;
+  /** `via` = the way in this switch opens (the Company / Person cards), written on the same navigation. */
+  onPerson: (person: boolean, via?: SmartAddVia | null) => void;
   /** Person name mode: start the anchor round ("Which of these is you?") on the typed name, city and clues. */
   onFindPerson?: (name: string, city: string, more: PersonMore) => void;
   /** An email typed in any box (VISION Part 19); `startNow` = no other search starts, so run the email round. */
@@ -355,11 +356,12 @@ export function SmartAddHero({
     submit(p);
   };
 
-  /** Open a way in; the Company and Person cards also set the kind (after the via, so the /person push carries it). */
+  /** Open a way in; the Company and Person cards also set the kind, with the way in on that same push. */
   const choose = (m: Mode, asPerson?: boolean) => {
-    setMode(m);
     setSecond(false);
-    if (asPerson !== undefined && asPerson !== person) onPerson(asPerson);
+    if (asPerson === undefined || asPerson === person) return setMode(m);
+    setModeState(m);
+    onPerson(asPerson, m);
   };
 
   // A link with something typed in it starts once, as if Go was pressed.
@@ -740,9 +742,9 @@ export function SmartAddHero({
 /** Four ways in. Company and Person are both the name way in; the card sets the kind. */
 const CHOICES: { key: string; mode: Mode; person?: boolean; title: string; hint: string }[] = [
   { key: "website", mode: "website", title: "Website", hint: "yourbrand.com" },
-  { key: "social", mode: "social", title: "Social", hint: "Any profile or @handle" },
-  { key: "company", mode: "name", person: false, title: "Company", hint: "A business name and city" },
-  { key: "person", mode: "name", person: true, title: "Person", hint: "A full name and city" },
+  { key: "social", mode: "social", title: "Social", hint: "Profile or @handle" },
+  { key: "company", mode: "name", person: false, title: "Company", hint: "Business name" },
+  { key: "person", mode: "name", person: true, title: "Person", hint: "Full name" },
 ];
 
 /** A theme color as a CSS value (the chart tokens: every theme defines them). */
@@ -930,7 +932,7 @@ function ChoiceCards({ onChoose }: { onChoose: (m: Mode, asPerson?: boolean) => 
           >
             {/* The picture: a phone shows it small at the left, a desktop gives it the stage. */}
             <span className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden md:h-40 md:w-full">
-              <span className="origin-center scale-[0.6] md:scale-100 lg:scale-[1.2]">
+              <span className="origin-center scale-[0.6] md:scale-[0.9] xl:scale-[1.2]">
                 <Visual />
               </span>
             </span>

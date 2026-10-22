@@ -56,8 +56,11 @@ timestamp: 2026-08-30
     number or the source.
 12. **Fix where it lives, same session** — a package bug is fixed in the package, published, and
     the consumer updated in the same session (THE SAME-SESSION LAW).
-13. **Rules are enforced at publish; apps get reports.** A package that breaks a rule is refused
-    at the release step; app-side findings are reported, never a CI gate.
+13. **Rules are enforced when code is written and committed; releases get reports.** A package that
+    breaks a rule is refused at authoring and commit time (its `build`, `check:package`, the
+    pre-commit hook). In the release path the same check only reports, loudly, and the package
+    publishes anyway: nothing stops a triggered release (Arman, 2026-10-22). App-side findings are
+    reported, never a CI gate.
 14. **Required is a dependency; optional is a slot.** If a package cannot do its core job without
     something, that something is a direct dependency. If it only works better with it, it is a
     plug-in slot that ships a working generic default. An app's better version of a required piece
