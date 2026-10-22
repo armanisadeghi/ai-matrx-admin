@@ -5,7 +5,7 @@
 // /marketing/brands/all — every brand on the canonical list shell. "Add brand" opens the SAME create
 // body as /marketing/brands/new, in a window panel with "Open full page" (feature-pages contract, rule 3).
 
-import { Globe, Plus, ScanSearch, User } from "lucide-react";
+import { Plus, ScanSearch } from "lucide-react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
 import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
@@ -23,8 +23,6 @@ export function BrandsListPage() {
   const actions: ListPageAction[] = [
     { id: "add", label: "Add brand", icon: Plus, primary: true, onPress: () => openCreate({ onWindowClose: () => forgetBrandListReads() }) },
     { id: "smart-add", label: "Smart Add", icon: ScanSearch, href: marketingRoutes.smartAddBrand() },
-    { id: "smart-add-person", label: "Smart Add a person", icon: User, href: marketingRoutes.smartAddBrand({ mode: "person" }) },
-    { id: "new-website", label: "New website", icon: Globe, href: marketingRoutes.newSite() },
   ];
   return (
     <>
