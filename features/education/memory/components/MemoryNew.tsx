@@ -13,14 +13,12 @@
 // the action (TRUST mandate — no mid-generation ambush).
 // React Compiler is on: no manual memo.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Brain } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
-import { fcService } from "@/features/flashcards/data/fcService";
-import type { FcSetRow } from "@/features/flashcards/data/types";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
 import { studyMediaService } from "@/features/education/media/service";
@@ -33,7 +31,11 @@ import {
   type MemoryDeckOption,
 } from "@/features/surfaces/manifests/education-memory.manifest";
 import { EducationCreatePage } from "@/features/education/create/EducationCreatePage";
-import { useEducationSources } from "@/features/education/create/useEducationSources";
+import { leftOutLine, seedFromParams, useEducationSources } from "@/features/education/create/useEducationSources";
+import { useCreateRun } from "@/features/education/create/useCreateRun";
+import { restoreStudyRunRequest } from "@/features/education/create/createRunRequest";
+import { useDeckChoices } from "@/features/education/create/useDeckChoices";
+import { STUDY_FROM_DECK_KINDS } from "@/features/education/create/studyFromDeck";
 import { useStyleDraft } from "@/features/education/create/useStyleDraft";
 import { generationSourceWrite } from "@/features/education/create/generationSourceWrite";
 import { linkMadeFrom, madeFromConfig } from "@/features/education/create/madeFrom";
@@ -76,24 +78,21 @@ export function MemoryNew() {
   // blocked from AI generation until a parent approves (never a silent failure).
   const coppa = useAiComplianceGate();
 
-  const [decks, setDecks] = useState<FcSetRow[]>([]);
-  const [decksLoaded, setDecksLoaded] = useState(false);
+  // The learner's decks — only for what an agent is offered, read when it asks.
+  const deckChoices = useDeckChoices();
   const [focus, setFocus] = useState("");
   const [busy, setBusy] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fcService.listDecks().then((res) => {
-      if (res.data) setDecks(res.data);
-      setDecksLoaded(true);
-    });
-  }, []);
-
-  const linkDeckId = params.get("deck");
   const sources = useEducationSources(MEMORY_SURFACE_KEY, {
-    seedDeck: linkDeckId ? { id: linkDeckId, name: decks.find((d) => d.id === linkDeckId)?.name } : null,
-    seedReady: decksLoaded,
+    seed: seedFromParams(params),
     onRelease: () => void start(),
+    topicMinChars: MEMORY_TOPIC_MIN,
+    lateMark: "Not in these aids",
+  });
+  // The run lives in this tab: a reload mid-run says so and offers the same request.
+  const createRun = useCreateRun(`${MEMORY_SURFACE_KEY}:run`, restoreStudyRunRequest(restoreMemoryStyle), sources, {
+    onRedo: (req) => setFocus(req.style.focus ?? ""),
   });
 
   const styleDraft = useStyleDraft<StyleDraft>(MEMORY_STYLE_DRAFT_ID, restoreMemoryStyle, (v) => {
@@ -104,58 +103,66 @@ export function MemoryNew() {
     setRunError(null);
     setBusy(true);
     try {
-      const prepared = await sources.prepare();
-      if (prepared.notes.length) toast.info(prepared.notes.join(" "));
-      const payload = await generate(
-        {
-          source_content: prepared.content,
-          title: prepared.title,
-          focus: sources.focusLine(focus),
-        },
-        "user",
-      );
-      const title = payload.title || prepared.title;
-      const media = await studyMediaService.create({
-        mediaKind: "memory_aid",
-        title,
-        source: prepared.source,
-        config: {
+      await createRun.track(sources.runRequest({ focus }), (ctx) => makeAids(ctx.saving));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Couldn't generate memory aids";
+      setRunError(message);
+      toast.error(message);
+    } finally {
+      sources.endRun();
+      setBusy(false);
+    }
+  }
+
+  async function makeAids(saving: () => Promise<void>) {
+    const prepared = await sources.prepare();
+    if (prepared.notes.length) toast.info(prepared.notes.join(" "));
+    const payload = await generate(
+      {
+        source_content: prepared.content,
+        title: prepared.title,
+        focus: sources.focusLine(focus),
+      },
+      "user",
+    );
+    const title = payload.title || prepared.title;
+    // Past this point the save may land even if this page never hears back.
+    await saving();
+    const media = await studyMediaService.create({
+      mediaKind: "memory_aid",
+      title,
+      source: prepared.source,
+      config: {
         focus: focus.trim() || undefined,
         ...memoryAidCounts(payload),
         // Each aid cites the passage it came from (page / place), kept beside the aid by what it says.
         itemCitations: citeMemoryAid(payload, prepared.chunks),
         ...madeFromConfig(prepared),
       },
-        trust: prepared.trust,
-        irEnvelope: payload,
-        status: "ready",
-      });
-      if (media.error || !media.data) {
-        const message = media.error ?? "Couldn't save the memory aids";
-        setRunError(message);
-        toast.error(message);
-        return;
-      }
-      const href = `/education/memory/${media.data.id}`;
-      await linkMadeFrom(
-        prepared,
-        { resourceType: "study_media", artifactId: media.data.id, targetKind: "memory_aid", title, href },
-        await ensureOrgId(undefined),
-      );
-      // Metered action SUCCEEDED — record real usage so the meter decrements
-      // (honest even while enforced:false). Failed branches above return
-      // first, so a failed generation never burns quota.
-      await gen.commit({ initiation: "user" });
-      sources.clearUsed();
-      styleDraft.clear();
-      router.push(href);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Couldn't generate memory aids";
+      trust: prepared.trust,
+      irEnvelope: payload,
+      status: "ready",
+    });
+    if (media.error || !media.data) {
+      const message = media.error ?? "Couldn't save the memory aids";
       setRunError(message);
       toast.error(message);
-    } finally {
-      setBusy(false);
+      return;
     }
+    const href = `/education/memory/${media.data.id}`;
+    await linkMadeFrom(
+      prepared,
+      { resourceType: "study_media", artifactId: media.data.id, targetKind: "memory_aid", title, href },
+      await ensureOrgId(undefined),
+    );
+    // Metered action SUCCEEDED — record real usage so the meter decrements
+    // (honest even while enforced:false). Failed branches above return
+    // first, so a failed generation never burns quota.
+    await gen.commit({ initiation: "user" });
+    const leftOut = sources.clearUsed();
+    if (leftOut > 0) toast.info(leftOutLine(leftOut, "the memory aids"));
+    styleDraft.clear();
+    router.push(href);
   }
 
   async function start() {
@@ -179,6 +186,8 @@ export function MemoryNew() {
     const firstDeck = picked[0]?.draft;
     const kind = !sources.hasSources ? "topic" : picked.length === sources.ready.length ? "deck" : "sources";
     const trimmedFocus = focus.trim();
+    void deckChoices.load();
+    const decks = deckChoices.decks;
     return createEducationMemoryScope({
       view: "new",
       request_source_kind: kind,
@@ -217,10 +226,11 @@ export function MemoryNew() {
         }, nameOf: (aid) => aid.title,
       },
     }, refuseSurfaceWrite),
-    generation_source: generationSourceWrite({
+    generation_source: async (value: unknown) =>
+      generationSourceWrite({
       what: "memory aids",
       isBusy: isGenerating || busy,
-      decks,
+      decks: await deckChoices.load(),
       topicMin: MEMORY_TOPIC_MIN,
       topicMax: MEMORY_TOPIC_MAX,
       setTopic: sources.set.setTopic,
@@ -228,7 +238,7 @@ export function MemoryNew() {
         if (!sources.set.hasRef("fc_set", deck.id))
           sources.intake.addExisting({ token: "fc_set", id: deck.id, title: deck.name });
       },
-    }),
+      })(value),
 
     generation_focus: (value: unknown) => {
       if (isGenerating || busy)
@@ -257,6 +267,7 @@ export function MemoryNew() {
         backHref="/education/memory"
         surfaceKey={MEMORY_SURFACE_KEY}
         purpose="your memory aids"
+        extraKinds={STUDY_FROM_DECK_KINDS}
         sources={sources}
         styleDraft={styleDraft}
         onStartFresh={() => setFocus("")}
@@ -265,8 +276,8 @@ export function MemoryNew() {
           busyLabel: "Building your memory aids…",
           icon: <Brain />,
           busy: busy || isGenerating,
+          checking: gen.isChecking,
           onMake: handleMake,
-          extraBlockedReason: gen.isChecking ? "Checking your limit…" : null,
           summary: sources.hasSources
             ? `Memory aids from ${count} ${count === 1 ? "source" : "sources"}${sources.topic ? `, focused on “${sources.topic}”` : ""}`
             : `Memory aids about “${sources.topic}”`,
@@ -280,6 +291,12 @@ export function MemoryNew() {
             </>
           ),
           operation: "Make memory aids",
+        }}
+        run={{
+          state: createRun,
+          stoppedLabel: "Making your memory aids",
+          savingWhat: "your memory aids",
+          listLabel: "Your memory aids",
         }}
       >
         <div className="flex flex-col gap-1.5">
