@@ -21,11 +21,10 @@
  *
  * NOT DECLARED HERE, ON PURPOSE:
  *
- *   - **Anything destructive.** Deleting a list, deleting an item, or
- *     bulk-clearing items is never an agent write target at any policy. There
- *     is no undo behind these actions and no draft to review, so the agent may
- *     stage a proposal in chat and the human acts on the list's own page. Adding a delete target later would be a defect,
- *     not a feature.
+ *   - **Destroying anything.** Deleting a list or bulk-clearing it is never an
+ *     agent target. Removing a CHOICE is `delete_list_items`, and it ARCHIVES
+ *     (soft, restorable — the same `archiveChoice` the page's Archive button
+ *     calls; "delete means archive", page-pass 2026-10-22).
  *   - **Visibility** (`is_public` / `public_read`, surfaced as
  *     `list_visibility`). Permission-shaped changes stay human-only by the
  *     same doctrine list-manager set: an agent widening who can read a list is
@@ -53,6 +52,7 @@ export const LIST_WRITE_TARGET_NAMES = {
   activeListDescription: "active_list_description",
   addListItems: "add_list_items",
   updateListItem: "update_list_item",
+  deleteListItems: "delete_list_items",
 } as const;
 
 /**
@@ -112,5 +112,17 @@ export const LIST_SURFACE_WRITE_TARGETS: SurfaceWriteTarget[] = [
     applyPolicy: "ask",
     group: "list_items",
     sortOrder: 430,
+  },
+  {
+    name: LIST_WRITE_TARGET_NAMES.deleteListItems,
+    label: "Archive list items",
+    description:
+      'ARCHIVES choices of the ACTIVE list — exactly what the Archive button beside a choice does. Saved as soon as the person approves. Value: a non-empty ARRAY of choice ids from all_items (or { id } objects), e.g. ["…"]. An archived choice leaves the list but is restorable, and records that already hold it keep it. An id that is not in all_items, or the same id twice, refuses the whole write and nothing is archived.',
+    valueType: "array",
+    updatesValue: "all_items",
+    mode: "entity",
+    applyPolicy: "ask",
+    group: "list_items",
+    sortOrder: 440,
   },
 ];

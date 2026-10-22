@@ -7,46 +7,45 @@ import { ProInput } from "@/components/official/ProInput";
 // through the pick-list service; an archived choice is soft and records that hold it keep it. A choice's
 // color is kept on the column that uses it, and its place by the column's editor.
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus, Archive, ListChecks } from "lucide-react";
-import { Button, EmptyState, Field } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState } from "@ai-matrx/design-system/controls";
 
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
-import { addChoices, archiveChoice, getListWithItems, updateChoice } from "../service";
+import { addChoices, archiveChoice, updateChoice } from "../service";
 
 interface Choice {
   id: string;
   label: string;
 }
 
-export function PickListChoicesEditor({ listId }: { listId: string }) {
-  const [choices, setChoices] = useState<Choice[] | null>(null);
+/**
+ * The page reads the list once (`StoreListPage`, which also builds the agent scope from it) and hands
+ * the choices here; `reload` re-reads after every save so the screen shows what was saved.
+ */
+export function PickListChoicesEditor({
+  listId,
+  choices,
+  reload,
+  onFocusChoice,
+}: {
+  listId: string;
+  choices: Choice[];
+  reload: () => Promise<void>;
+  /** The choice the person is in, for the page's agents (selected_item_*). */
+  onFocusChoice?: (choiceId: string | null) => void;
+}) {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState("");
   const [busy, setBusy] = useState(false);
-
-  const load = useCallback(async () => {
-    try {
-      const list = await getListWithItems(listId);
-      const flat = Object.values(list?.items_grouped ?? {}).flat();
-      setChoices(flat.map((i) => ({ id: i.id, label: i.label })));
-      setDrafts({});
-    } catch (e) {
-      setChoices([]);
-      toast.error(e instanceof Error ? e.message : "The choices could not be read.");
-    }
-  }, [listId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   const run = async (work: () => Promise<void>) => {
     setBusy(true);
     try {
       await work();
-      await load();
+      await reload();
+      setDrafts({});
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "That did not save.");
     } finally {
@@ -66,7 +65,7 @@ export function PickListChoicesEditor({ listId }: { listId: string }) {
   const add = () => {
     const label = adding.trim();
     if (!label) return;
-    if (choices?.some((c) => c.label.trim().toLowerCase() === label.toLowerCase())) {
+    if (choices.some((c) => c.label.trim().toLowerCase() === label.toLowerCase())) {
       toast.error(`“${label}” is already a choice.`);
       return;
     }
@@ -84,10 +83,8 @@ export function PickListChoicesEditor({ listId }: { listId: string }) {
     if (yes) void run(() => archiveChoice(listId, choice.id));
   };
 
-  if (choices === null) return <div className="p-4 text-xs text-muted-foreground" data-testid="choices-loading" />;
-
   return (
-    <div className="mx-auto flex h-full w-full max-w-xl flex-col gap-2 overflow-y-auto p-4" data-testid="pick-list-choices-editor">
+    <div className="matrx-touch-targets flex h-full w-full max-w-3xl flex-col gap-2 overflow-y-auto px-4 pb-4 pt-2" data-testid="pick-list-choices-editor">
       {choices.length === 0 ? <EmptyState icon={<ListChecks className="h-5 w-5" />} title="No choices yet" /> : null}
       {choices.map((choice) => (
         <div key={choice.id} className="flex items-center gap-2" data-testid="choice-row">
@@ -96,6 +93,7 @@ export function PickListChoicesEditor({ listId }: { listId: string }) {
             value={drafts[choice.id] ?? choice.label}
             disabled={busy}
             onChange={(e) => setDrafts((d) => ({ ...d, [choice.id]: e.target.value }))}
+            onFocus={() => onFocusChoice?.(choice.id)}
             onBlur={() => rename(choice)}
             onKeyDown={(e) => {
               if (e.key === "Enter") (e.target as HTMLInputElement).blur();
