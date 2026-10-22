@@ -74,6 +74,9 @@ export function isVaultCredentialTrashItem(item: TrashItem): boolean {
  * shape of the underlying loop. Page one kind at a time by passing a single
  * `kinds` entry; the unfiltered call is a recent-items overview, not a full list.
  */
+/** One page per kind unless the caller names a smaller one: /trash never reads a whole archive (FT-1, 2026-10-21). */
+export const TRASH_DEFAULT_PAGE = 50;
+
 export async function listTrash(opts?: {
   kinds?: string[];
   limit?: number;
@@ -81,7 +84,7 @@ export async function listTrash(opts?: {
 }): Promise<TrashItem[]> {
   const { data, error } = await supabase.rpc("trash_list", {
     p_kinds: opts?.kinds,
-    p_limit: opts?.limit ?? 200,
+    p_limit: Math.min(opts?.limit ?? TRASH_DEFAULT_PAGE, TRASH_DEFAULT_PAGE),
     p_offset: opts?.offset ?? 0,
   });
   if (error) throw new Error(`Failed to load trash: ${error.message}`);
