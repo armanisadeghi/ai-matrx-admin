@@ -12,6 +12,7 @@ import { useRef, useState } from "react";
 import { createElement } from "react";
 import { X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
+import { ErrorNotice } from "@ai-matrx/design-system";
 
 import { ProInput } from "@/components/official/ProInput";
 
@@ -107,11 +108,7 @@ export function AskBox({
         aria-label="Describe what you want"
         data-field="ask"
       />
-      {failed && (
-        <p className="type-meta text-destructive" role="alert" data-ask-failed="">
-          Could not read that. Try again, or pick a task below.
-        </p>
-      )}
+      {failed && <ErrorNotice message="Could not read that. Try again, or pick a task below." size="inline" />}
       {offer && (
         <div className="flex flex-col gap-2" role="group" aria-label="Pick a task" data-ask-offer="">
           <span className="text-xs font-medium text-muted-foreground">Which of these?</span>

@@ -370,14 +370,19 @@ function SourceForm({
     : null;
 
   // The plain-language box runs the ask once, after the inputs below have settled their own defaults.
-  const [settled, setSettled] = useState(false);
-  const autoRan = useRef(false);
-  useEffect(() => setSettled(true), []);
+  const latest = useRef({ input: built.input, count, busy, onFetch });
   useEffect(() => {
-    if (!autoRun || !settled || autoRan.current || busy || !built.input) return;
-    autoRan.current = true;
-    onFetch(built.input, count);
+    latest.current = { input: built.input, count, busy, onFetch };
   });
+  useEffect(() => {
+    if (!autoRun) return;
+    const timer = setTimeout(() => {
+      const now = latest.current;
+      if (now.busy || !now.input) return;
+      now.onFetch(now.input, now.count);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [autoRun]);
 
   return (
     <form
