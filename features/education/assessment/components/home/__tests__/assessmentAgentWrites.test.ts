@@ -5,6 +5,7 @@
 import {
   parseCreateAssessmentsValue,
   parseDeleteAssessmentsValue,
+  parseAssessmentListView,
   parseGenerateValue,
   parseUpdateAssessmentsValue,
   type CurrentAssessment,
@@ -132,5 +133,29 @@ describe("generate_quizzes", () => {
     expect(message).toContain("difficulty must be one of");
     expect(message).toContain("applies only to practice tests");
     expect(message).toContain("does not accept color");
+  });
+});
+
+describe("list_view", () => {
+  it("reads a lane, archive filter and search", () => {
+    expect(parseAssessmentListView({ lane: "mine", archived: "all", search: "  cells " })).toEqual({
+      lane: "mine",
+      archived: "all",
+      search: "cells",
+    });
+    expect(parseAssessmentListView({ search: "" })).toEqual({ search: "" });
+  });
+
+  it("refuses an empty change and names every bad key at once", () => {
+    expect(() => parseAssessmentListView({})).toThrow(/changes nothing/);
+    let message = "";
+    try {
+      parseAssessmentListView({ lane: "everyone", archived: "trash", sort: "title" });
+    } catch (e) {
+      message = (e as Error).message;
+    }
+    expect(message).toMatch(/does not accept sort/);
+    expect(message).toMatch(/lane must be one of/);
+    expect(message).toMatch(/archived must be one of/);
   });
 });

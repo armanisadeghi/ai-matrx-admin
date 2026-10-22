@@ -142,7 +142,7 @@ export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceMani
     {
       name: "visibility_filter",
       label: "Lane",
-      description: `The active lane (scope tab): "mine" (${w.plural} the person made), "orgs" (org-mates' ${w.plural} visible to the organization), "shared" (someone else's ${w.noun} granted to the person) or "public" (someone else's published ${w.noun}). Always present.`,
+      description: `The active lane (scope tab): "all" (every lane), "mine" (${w.plural} the person made), "team" (their team's), "orgs" (org-mates' ${w.plural} visible to the organization), "shared" (someone else's ${w.noun} granted to the person) or "public" (someone else's published ${w.noun}). Always present.`,
       valueType: "string",
       alwaysAvailable: true,
       typicalCharCount: 6,
@@ -195,6 +195,17 @@ export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceMani
     'title: string, topic?: string, description?: string, exam_type?: string, depth?: "recall" | "applied" | "exam"';
 
   const writeTargets: SurfaceWriteTarget[] = [
+    {
+      name: "list_view",
+      label: "List view",
+      description: `Changes WHICH ${w.plural} the list shows — nothing is saved or changed on any ${w.noun}. Value is a JSON OBJECT with any of { lane?: "all" | "mine" | "team" | "orgs" | "shared" | "public" (the lane tabs: all, the person's own, their team's, their organizations', shared with them, published), archived?: "active" | "archived" | "all", search?: string (title, topic, exam, description; "" clears it) }, e.g. { "lane": "mine", "archived": "all" }. assessment_list carries only the page on screen, so switch the view to read ${w.plural} that are not showing; read assessment_list again once assessments_loaded is true. An unknown key or value refuses the whole change.`,
+      valueType: "object",
+      updatesValue: "visibility_filter",
+      mode: "ui",
+      applyPolicy: "auto",
+      group: "list_view",
+      sortOrder: 90,
+    },
     {
       name: `create_${w.targetPlural}`,
       label: `Create ${w.plural}`,
@@ -254,7 +265,7 @@ export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceMani
     intro: `<surface_intro>
 You are on ${w.label} at ${w.urlPattern} — the person's LIST of ${w.plural}, not a ${w.noun} being taken. Lanes (Mine, My Orgs, Shared, Public), a search box, sort and filter on every column and an archive filter decide what is on screen; each row opens the ${w.noun}, Take starts it.
 Read assessment_list first: it is the page on screen, with ids. While assessments_loaded is false the list is loading (or load_error explains a real failure) — never say the person has none. If a lane, search, filter or the archive filter narrows the list (visibility_filter, search_query, list_filters, archive_filter), say so rather than concluding a ${w.noun} does not exist.
-To make a full ${w.noun} with AI questions use generate_${w.targetPlural} — it starts a generation the person must approve, so ask for their go-ahead before calling it. To change ${w.plural} use ONLY create_${w.targetPlural} (empty drafts), update_${w.targetPlural} (title, topic, description, exam, depth, archive/restore) and delete_${w.targetPlural} (archive), on ${w.plural} the person may edit (my_assessments). Questions are edited on each ${w.noun}'s own page.
+To make a full ${w.noun} with AI questions use generate_${w.targetPlural} — it starts a generation the person must approve, so ask for their go-ahead before calling it. To read ${w.plural} that are not on screen, switch the lane, archive filter or search with list_view (it changes only the view). To change ${w.plural} use ONLY create_${w.targetPlural} (empty drafts), update_${w.targetPlural} (title, topic, description, exam, depth, archive/restore) and delete_${w.targetPlural} (archive), on ${w.plural} the person may edit (my_assessments). Questions are edited on each ${w.noun}'s own page.
 </surface_intro>`,
     groups,
     values: mergeBaselineValues(pickBaseline("selection", "context"), values),
