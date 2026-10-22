@@ -38,11 +38,15 @@ export async function loadAdminOrganizationDirectory(
   let memberships_: Awaited<ReturnType<typeof readMemberships>>;
   let kinds_: Awaited<ReturnType<typeof readKinds>>;
   try {
-    [organizations_, memberships_, kinds_] = await Promise.all([
+    [organizations_, kinds_] = await Promise.all([
       readOrganizations(admin, archiveFilter),
-      readMemberships(admin),
-      readKinds(admin),
+      readKinds(admin, archiveFilter),
     ]);
+    // Only the memberships of the organizations this read lists (never every organization's).
+    memberships_ = await readMemberships(
+      admin,
+      organizations_.map((organization) => organization.id),
+    );
   } catch (error) {
     throw new Error(
       `Failed to load organization directory: ${error instanceof Error ? error.message : String(error)}`,
@@ -114,7 +118,9 @@ export async function loadAdminOrganizationDirectory(
       member_count: counts.members,
       owner_count: counts.owners,
       admin_count: counts.admins,
-      kind: kindByOrganization.get(row.id) ?? "tests",
+      // A kind row can be missing only when the organization was born between the two reads;
+      // it says so ("Unknown") instead of borrowing another kind's label.
+      kind: kindByOrganization.get(row.id) ?? "unknown",
     };
   });
 
@@ -172,29 +178,38 @@ function readOrganizations(
 }
 
 type KindRow = { organization_id: string; kind: string };
+type KindQuery = {
+  is: (column: string, value: null) => KindQuery;
+  not: (column: string, operator: string, value: null) => KindQuery;
+  range: (from: number, to: number) => PromiseLike<{
+    data: KindRow[] | null;
+    count: number | null;
+    error: { message: string } | null;
+  }>;
+};
 
 // iam.organization_kind is newer than types/database.types.ts (run `pnpm db-types` to drop this cast).
-function readKinds(admin: ReturnType<typeof createAdminClient>) {
+function readKinds(
+  admin: ReturnType<typeof createAdminClient>,
+  archiveFilter: ArchiveFilterValue,
+) {
   const iam = admin.schema("iam") as unknown as {
     from: (view: string) => {
       select: (columns: string, options: { count: "exact" }) => {
-        order: (column: string, options: { ascending: boolean }) => {
-          range: (from: number, to: number) => PromiseLike<{
-            data: KindRow[] | null;
-            count: number | null;
-            error: { message: string } | null;
-          }>;
-        };
+        order: (column: string, options: { ascending: boolean }) => KindQuery;
       };
     };
   };
   return readAllRows<KindRow>(
-    ({ from, to }) =>
-      iam
+    ({ from, to }) => {
+      let query = iam
         .from("organization_kind")
         .select("organization_id, kind", { count: "exact" })
-        .order("organization_id", { ascending: true })
-        .range(from, to),
+        .order("organization_id", { ascending: true });
+      if (archiveFilter === "active") query = query.is("archived_at", null);
+      else if (archiveFilter === "archived") query = query.not("archived_at", "is", null);
+      return query.range(from, to);
+    },
     { label: "iam.organization_kind (admin directory)" },
   );
 }
@@ -207,17 +222,29 @@ async function readDefaultKind(): Promise<AdminOrganizationDirectory["defaultKin
     : "real";
 }
 
-function readMemberships(admin: ReturnType<typeof createAdminClient>) {
-  return readAllRows(
-    ({ from, to }) =>
-      admin
-        .schema("iam")
-        .from("organization_member")
-        .select("id, organization_id, user_id, role, joined_at, invited_by", {
-          count: "exact",
-        })
-        .order("id", { ascending: true })
-        .range(from, to),
-    { label: "iam.organization_member (admin directory)" },
+async function readMemberships(
+  admin: ReturnType<typeof createAdminClient>,
+  organizationIds: string[],
+) {
+  // 80 ids per read keeps each request address short; each chunk is paged to its declared total.
+  const chunks: string[][] = [];
+  for (let i = 0; i < organizationIds.length; i += 80) chunks.push(organizationIds.slice(i, i + 80));
+  const rows = await Promise.all(
+    chunks.map((ids) =>
+      readAllRows(
+        ({ from, to }) =>
+          admin
+            .schema("iam")
+            .from("organization_member")
+            .select("id, organization_id, user_id, role, joined_at, invited_by", {
+              count: "exact",
+            })
+            .in("organization_id", ids)
+            .order("id", { ascending: true })
+            .range(from, to),
+        { label: "iam.organization_member (admin directory)" },
+      ),
+    ),
   );
+  return rows.flat();
 }

@@ -51,11 +51,15 @@ async function parseMembershipRequest(
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await requireSuperAdmin();
+    // ?archive=active (default) | archived | all — the table's ArchiveFilter, answered by the read.
+    const archive = new URL(request.url).searchParams.get("archive");
     return NextResponse.json({
-      directory: await loadAdminOrganizationDirectory(),
+      directory: await loadAdminOrganizationDirectory(
+        archive === "archived" || archive === "all" ? archive : "active",
+      ),
     });
   } catch (error) {
     return errorResponse(error);
