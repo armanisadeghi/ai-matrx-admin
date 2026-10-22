@@ -520,6 +520,8 @@ const nextConfig = {
   // is implicit. Run lint in pre-commit / CI only; never on production builds
   // (the no-barrel-files plugin parses every imported module and adds 5-10+ min).
   reactStrictMode: false,
+  // CASA AL1: no `x-powered-by: Next.js` fingerprint header.
+  poweredByHeader: false,
   headers: getHeaders,
   async redirects() {
     return [

@@ -74,15 +74,13 @@ const parentIdentity = {
   ParentCallSid: "CA" + "2".repeat(32),
 };
 test("signed parent identity selects saved work, never the child call or URL data", async () => {
-  jest
-    .mocked(readTransferWorkSummary)
-    .mockResolvedValue({
-      requests: 3,
-      completed: 1,
-      failed: 1,
-      unfinished: 1,
-      toolCalls: 3,
-    });
+  jest.mocked(readTransferWorkSummary).mockResolvedValue({
+    requests: 3,
+    completed: 1,
+    failed: 1,
+    unfinished: 1,
+    toolCalls: 3,
+  });
   const response = await POST(
     request("?summary=private", false, parentIdentity),
   );
@@ -117,3 +115,39 @@ test("unavailable saved work preserves the receiver bridge introduction", async 
   expect(xml).toContain("Connecting you now");
   expect(xml).not.toMatch(/private|Saved work|<Hangup|<Dial/);
 });
+
+test.each([true, false])(
+  "signed handoff keeps request facts and the bridge with tool detail available=%s",
+  async (available) => {
+    jest.mocked(readTransferWorkSummary).mockResolvedValue({
+      requests: 3,
+      completed: 1,
+      failed: 1,
+      unfinished: 1,
+      toolCalls: 3,
+      toolOutcomes: available
+        ? {
+            recorded: 3,
+            returnedWithoutError: 1,
+            reportedErrors: 1,
+            unconfirmed: 1,
+            failedToolNames: ["calendar create event"],
+          }
+        : null,
+    });
+    const xml = await (await POST(request("", false, parentIdentity))).text();
+    expect(xml).toContain("Saved work for this call");
+    expect(xml).toContain("Connecting you now");
+    expect(xml).not.toMatch(/<Dial|<Hangup/);
+    if (available) {
+      expect(xml).toContain(
+        "1 returned without a reported error, 1 reported an error, and 1 remain unconfirmed",
+      );
+      expect(xml).toContain("Reported errors include calendar create event");
+      expect(xml).toContain("before repeating any action");
+    } else {
+      expect(xml).not.toContain("Tool records:");
+      expect(xml).toContain("Tool-result details are unavailable");
+    }
+  },
+);
