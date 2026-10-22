@@ -338,7 +338,7 @@ describe("a declared page sidebar never flashes the route rows first", () => {
   });
 
   it("a page that never claims it gets the route rows back", async () => {
-    jest.useFakeTimers();
+    jest.useFakeTimers({ advanceTimers: true });
     try {
       await mount(<FrameHost pathname="/notes" productId="docs" page={<p>Narrow list</p>} />);
       expect(sidebar().querySelector("[data-mf-page-sidebar-pending]")).not.toBeNull();
