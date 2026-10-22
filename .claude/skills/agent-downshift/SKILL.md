@@ -73,7 +73,11 @@ each case from the big model's best run.
 One fact per thing that must be in the answer ("records that the person manages Daniel and writes his
 review") and per thing that must not ("names no company the person did not write"). Never one "same as
 this approved answer" fact: the judge compares whole answers and comes back undecided.
-*Done when:* `update_case` returned `ok` for every case with 2–5 facts.
+**Calibrate the facts on the big model.** Run the big model's own answers past the facts (a launch with the
+big model alone). A fact the big model fails too is a bad fact: it tests one answer's wording, not what
+matters. Rewrite it before any small-model run counts against it. Facts about the input ("names nothing the
+person did not write") need the judge to see the input; it does (both judges get the case's variables).
+*Done when:* `update_case` returned `ok` for every case with 2–5 facts, and the big model passes them.
 
 ### 4. Side by side on the hard cases
 
@@ -100,6 +104,11 @@ already matches, stop: there is nothing to fix.
 ### 5. Fix the instructions, not the model
 
 Copy the agent (never tune the live one) and put the copy on the small model. Then for each named miss:
+
+- **Check the input first.** Read the miss's case input exactly as the model received it. When the input
+  mislabels, cuts or hides what the model missed, the fix is in the input (the job's provision), never an
+  instruction. In the reference run the person's own words, typed into the same message as the agent's
+  template, were labeled "template, not the person's words"; the reviewer was obeying its instructions.
 
 - **Cut noise first.** Drop variables that repeat another one (a "person's messages" variable beside the
   full transcript) and inputs the agent cannot use (the chat agent's own system prompt). A small model

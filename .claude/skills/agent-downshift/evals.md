@@ -73,3 +73,26 @@ required slot).
 **Executed evidence (not plan-only):** the climb-back ran for real on the memory reviewer, run
 `967cd9c8-770b-4675-b913-a360535d5f00`: Opus with the tuned instructions passed 16/16 specific-fact checks
 on the 8 known cases where Opus with its original instructions passed 14/16, at 20% lower cost.
+
+## 2026-10-22 — check the input first (step 5), calibrate facts on the big model (step 3)
+
+**Why:** both came from the executed memory-reviewer run. The person's own words, typed into the same
+message as the agent's template, were rendered as "template, not the person's words", so the reviewer
+obeyed its instructions and ignored them; and five of seven fails in run `52b08432-…` were facts that Opus
+itself failed (they tested one answer's wording).
+
+**Scenario 3 (giveaway, discarded):** spelled out the mislabel and that Opus failed the fact too. RED
+3/3 already passed (reps `a7a8f1ed9a6e01f3f`, `a793b1b721d7399ab`, `acbf51ddf664f585c`); GREEN 3/3
+(`a4321738e0f0871a2`, `ac2c31971cceb99f2`, `ae2e636fe5567f561`). A scenario that names the cause proves
+nothing — rewritten.
+
+**Scenario 3b (what you actually see first):** only the failing facts and counts; the cause is
+discoverable, not stated.
+
+| Criterion | v3 (before) | v4 (this edit) |
+|---|---|---|
+| Reads the failing case's input before writing an instruction | 0/3 (all three go from "the answer omits it" straight to "add a sentence") | 3/3 |
+| Runs the big model on the facts before counting a fact against the small one | 0/3 (all three only read a stored answer) | 3/3 |
+
+**Reps:** v3 `aeed9577b7cdd1c0d`, `a2bd705cb66538c83`, `a9ca9accf7637772e` · v4 `ac49bb853ba7fc767`,
+`a05fdba1211575465`, `acdc5eaba0df86017`.
