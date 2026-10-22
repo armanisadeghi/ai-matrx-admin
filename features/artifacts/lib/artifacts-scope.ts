@@ -16,6 +16,7 @@ import {
   type ArtifactListRow,
 } from "@/features/surfaces/manifests/artifacts.manifest";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import type { TableViewQuery } from "@ai-matrx/design-system/data-table";
 import type {
   ArtifactStatus,
   ArtifactType,
@@ -34,12 +35,28 @@ export function toArtifactListRow(a: CxArtifactRecord): ArtifactListRow {
   };
 }
 
-/** List route. `visible` is the list exactly as the table shows it. */
+/** The table's own header filters that are set (cleared entries dropped). */
+function activeColumnFilters(
+  query: TableViewQuery | undefined,
+): Record<string, unknown> | undefined {
+  if (!query) return undefined;
+  const active = Object.fromEntries(
+    Object.entries(query.columnFilters).filter(([, v]) => v !== undefined),
+  );
+  return Object.keys(active).length > 0 ? active : undefined;
+}
+
+/**
+ * List route. `visible` is the list exactly as the table shows it — after the
+ * page's filters AND the table's own header filters and sort, before paging
+ * (from `MatrxDataTable.onViewChange`); `tableQuery` is the query behind it.
+ */
 export function buildArtifactListScope(input: {
   typeFilter: ArtifactType | "all";
   statusFilter: ArtifactStatus | "all";
   search: string;
   visible: CxArtifactRecord[];
+  tableQuery?: TableViewQuery | undefined;
   fetchStatus: string;
   fetchError: string | null;
 }): SurfaceScopePayload {
@@ -57,6 +74,10 @@ export function buildArtifactListScope(input: {
     artifact_search_query: input.search.length > 0 ? input.search : undefined,
     visible_artifact_count: loaded ? rows.length : undefined,
     visible_artifacts: loaded ? rows : undefined,
+    artifact_column_filters: activeColumnFilters(input.tableQuery),
+    artifact_sort: input.tableQuery?.sort
+      ? { column: input.tableQuery.sort.id, direction: input.tableQuery.sort.direction }
+      : undefined,
     artifacts_load_status: {
       status: input.fetchStatus,
       error: input.fetchError,

@@ -61,7 +61,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
+import { MatrxDataTable, type MatrxColumnDef, type TableViewQuery } from "@ai-matrx/design-system/data-table";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -345,12 +345,16 @@ export function CmsArtifactList() {
    * group only. Built from state this component already rendered from; it
    * never fetches (the Surface Context window polls it every 400ms).
    */
+  // What the table shows after its own header filters and sort (before
+  // paging), and the query behind it — told by the table, read at trigger time.
+  const tableViewRef = useRef<{ rows: CxArtifactRecord[]; query?: TableViewQuery } | null>(null);
   const getArtifactsScope = () =>
     buildArtifactListScope({
       typeFilter: filters.type,
       statusFilter: filters.status,
       search: filters.search,
-      visible: filtered,
+      visible: tableViewRef.current?.rows ?? filtered,
+      tableQuery: tableViewRef.current?.query,
       fetchStatus,
       fetchError,
     });
@@ -570,6 +574,9 @@ export function CmsArtifactList() {
             );
           } }]}
           getRowId={(artifact) => artifact.id}
+          onViewChange={(rows, query?: TableViewQuery) => {
+            tableViewRef.current = { rows, ...(query ? { query } : {}) };
+          }}
           selection={bulk.selection}
           isLoading={isLoading}
           density="condensed"
