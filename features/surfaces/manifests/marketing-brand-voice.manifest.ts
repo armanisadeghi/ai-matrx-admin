@@ -251,6 +251,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Put text in the \"Fix a draft's voice\" box. Value: string — the FULL draft (it replaces the box). Only works once a voice is confirmed. The owner presses Fix voice.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "voice_fix_draft",
     mode: "draft",
     applyPolicy: "ask",

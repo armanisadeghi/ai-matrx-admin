@@ -441,6 +441,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Stages the text of the Knowledge search box — what the next search will ask. Value: a non-empty string, which REPLACES the full contents of the box (there is no append mode; to extend the user's wording, read the current text from `query` and send the whole new string). Whitespace-only is refused. This only STAGES the query: the user still presses Search, and running the search is never an agent action. Use this to repair a query the evidence says failed — read `query_term_coverage` for words that landed in zero results, and `rerank_status` (\"low_confidence\" means nothing matched strongly) — rather than to ask the same question twice.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "query",
     mode: "draft",
     applyPolicy: "ask",

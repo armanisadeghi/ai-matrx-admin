@@ -673,6 +673,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Set the topic's description — the research question that frames every downstream prompt. Value: a plain string that REPLACES the whole description (read topic_description first and include anything worth keeping); an empty string clears it. Persists immediately to research.rs_topic through updateTopicMeta.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "topic_description",
     mode: "entity",
     applyPolicy: "ask",

@@ -356,6 +356,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "REPLACES the entire HTML document this page publishes with the value. This page is a COMPLETE standalone document, not a fragment: the value must be a full, valid HTML document — <!doctype>, <html>, <head> (with its <title>, meta tags, and <style>), and <body>. Sending a bare fragment or a body-only snippet breaks the published page, and sending a markdown or code-fenced block is always wrong. Read `html_content` first and edit that document rather than writing a new one from scratch, so the page's existing styles, scripts, and structure survive. Staged into the HTML tab's live code editor and marks the page unsaved — the user reviews the diff in the editor and the Preview tab, then presses Save, which is what republishes the live page at its /p/{id} URL.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "html_content",
     mode: "draft",
     applyPolicy: "ask",

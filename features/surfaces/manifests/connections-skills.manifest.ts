@@ -272,6 +272,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Sets the skill's one-line discovery summary in the OPEN EDITOR FORM — the text agents match against when deciding whether to load this skill, so it should say WHEN to use the skill, not just what it is. Value is a plain non-empty string; it REPLACES the existing description rather than appending to it (read skill_draft_description first if you mean to extend it). Only stages the value — the user still presses Save. Fails if no editor is open or the form is read-only.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "skill_draft_description",
     mode: "draft",
     applyPolicy: "ask",
@@ -296,6 +298,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Sets the skill's markdown body in the OPEN EDITOR FORM — the document inlined into an agent's system prompt when this skill is included. Value is a markdown string and REPLACES THE ENTIRE BODY; to extend rather than overwrite, read skill_draft_body first and send the full new text including what you kept. Pass real newlines in the string, not escaped ones. Only stages the value — nothing is written to the registry until the user presses Save. Fails if no editor is open or the form is read-only.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "skill_draft_body",
     mode: "draft",
     applyPolicy: "ask",

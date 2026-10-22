@@ -327,6 +327,8 @@ const writeTargets: SurfaceWriteTarget[] = [
       "Staged only — the panel's Save button appears and the user saves.",
     ].join(" "),
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "selected_task_description",
     mode: "draft",
     applyPolicy: "ask",

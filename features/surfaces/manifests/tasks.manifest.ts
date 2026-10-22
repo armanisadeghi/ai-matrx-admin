@@ -363,6 +363,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Stages a full replacement description into the open task's draft (markdown-friendly plain text; the live editor content the user sees). The user still saves. To append, read active_task_description first and include the existing text.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "active_task_description",
     mode: "draft",
     applyPolicy: "ask",

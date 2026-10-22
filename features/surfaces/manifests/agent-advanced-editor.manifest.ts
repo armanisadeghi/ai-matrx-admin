@@ -310,6 +310,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "REPLACES the entire system prompt of the agent open in the Agent Advanced Editor WINDOW with the text you pass. Value: plain text — not JSON, not JSON-encoded, no surrounding quotes, real newlines. This is a full replacement, not a merge: read the `system_instruction` value first and include everything you want kept, or use `editor_append_system_instruction` when you only mean to add. Files and images attached to the system message are preserved. Staged into the editor as unsaved changes; the user reviews and presses Save.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "system_instruction",
     mode: "draft",
     applyPolicy: "ask",

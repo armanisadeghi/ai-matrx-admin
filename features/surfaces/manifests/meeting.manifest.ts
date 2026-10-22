@@ -380,6 +380,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Replaces the meeting's whole agenda (markdown) immediately through its canonical update, and tells invitees as the page's own Edit does. Value: the full agenda text; an empty string clears it. Read agenda first and include what should stay. Refused unless can_manage is true and the meeting is not ended, canceled or archived.",
     valueType: "string",
+    patchable: true,
     updatesValue: "agenda",
     approvalComparison: "text-replacement",
     mode: "entity",

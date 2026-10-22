@@ -142,6 +142,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     label: "Optional priority",
     description: `Replaces the ENTIRE "Optional priority" note in the run form — pass the full text you want, not an addition, and pass "" to clear it. Free-form prose telling the next analysis which pages to favor or leave alone (e.g. "prioritize the California service pages and avoid changing the pricing guide"). Maximum ${AUTHORITY_GUIDANCE_MAX_CHARS} characters. This only stages the note: nothing is persisted and no analysis runs until the user presses the run button themselves. Refused while an analysis is already running.`,
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "authority_guidance",
     mode: "draft",
     applyPolicy: "ask",

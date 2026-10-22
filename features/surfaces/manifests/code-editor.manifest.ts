@@ -323,6 +323,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "REPLACES THE ENTIRE CONTENTS of the focused file with the string you pass. This is a full replacement, not a merge: read `current_file_content` first and include every line that should survive, or use `replace_selection` / `insert_at_cursor` when you only mean to change part of it. Pass raw file content only, with no markdown fences. Must be non-empty — emptying a file is a human action. Applied as ONE undoable edit (⌘Z restores the previous file); nothing is written to disk, the tab goes modified and the user still saves.",
     valueType: "string",
+    patchable: true,
     updatesValue: "current_file_content",
     approvalComparison: "text-replacement",
     mode: "draft",

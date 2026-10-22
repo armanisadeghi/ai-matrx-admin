@@ -83,6 +83,8 @@ export const LIST_SURFACE_WRITE_TARGETS: SurfaceWriteTarget[] = [
     description:
       "Replaces the ACTIVE list's description. Saved to the database immediately — there is no draft to review. Value: a plain string (pass an empty string to clear it). This REPLACES the full description rather than appending — read active_list_description first and include any existing text you want kept.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "active_list_description",
     mode: "entity",
     applyPolicy: "ask",

@@ -574,6 +574,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     label: "Tool description",
     description: `Replaces the open tool's description — the text an LLM reads when deciding whether to call this tool, so write it as a decision aid: what the tool does, when to reach for it, and when not to. This is a FULL replacement, not a merge: read \`tool_description\` first and include anything you mean to keep. Plain text, 1-${TOOL_DESCRIPTION_MAX_CHARS} characters after trimming; the empty string is REJECTED rather than treated as a way to clear the field, because the column is NOT NULL. PERSISTS IMMEDIATELY on apply, through the same admin tool API the human editor saves to — there is no draft step, so the confirm dialog is the review.`,
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "tool_description",
     mode: "entity",
     applyPolicy: "ask",

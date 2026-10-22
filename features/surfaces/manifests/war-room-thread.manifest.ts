@@ -468,6 +468,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "REPLACES the entire body of the note anchored to THIS thread with the value — markdown text, exactly as it should read. Use for rewrites, cleanups, restructures, and for writing up what the thread has worked out; read the current body from `note_content` first so nothing the user wants kept is dropped. To add to the note instead of replacing it, use `append_to_thread_note`. Staged into the live note editor (undoable, autosaved exactly like the user's own typing). Refused when the thread has no note yet — ask the user to add one from the thread's Notes tab.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "note_content",
     mode: "draft",
     savedBy: "autosave",

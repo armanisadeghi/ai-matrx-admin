@@ -395,6 +395,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Writes the room's free-text description immediately through the same save the room's identity popover uses (persisted, no separate save step). Value: a plain-text string (a short paragraph — what this room is for), or an empty string to clear it. Replaces the FULL description — read room_description first and include anything you want kept.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "room_description",
     mode: "entity",
     applyPolicy: "ask",

@@ -177,6 +177,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       `Replaces the ENTIRE mermaid source in the open workbench — send the full diagram, not a patch or a snippet (read diagram_source first and include everything you want kept). Raw DSL only: no \`\`\` code fence, no prose. The first significant line must open a supported diagram type: ${DETECTABLE_DIAGRAM_TYPES.join(" | ")}. It lands exactly as if a person had typed it in Code view: on screen at once, then autosaved as a new artifact version — reversible with ⌘Z or from the workbench's version history, never destructive. Refused while the workbench's "Edit with AI" panel has a run in flight.`,
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "diagram_source",
     mode: "entity",
     applyPolicy: "ask",

@@ -361,6 +361,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Replaces the open project's whole description — the body shown on the workspace hero (plain text, newlines fine, up to 2000 characters). Saved immediately. This REPLACES rather than appends: to extend the existing text, read active_project_description first and include it.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "active_project_description",
     mode: "entity",
     applyPolicy: "ask",

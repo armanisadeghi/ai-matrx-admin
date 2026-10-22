@@ -123,6 +123,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Stage text in the guidelines editor. Value: string — the FULL document (it replaces the editor; start from guidelines_draft_text when revising). Plain sentences that name terms beat rules. Nothing is saved until the person presses Save.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "guidelines_draft_text",
     mode: "draft",
     applyPolicy: "ask",

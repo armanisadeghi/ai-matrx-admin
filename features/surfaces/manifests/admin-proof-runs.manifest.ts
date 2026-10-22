@@ -557,6 +557,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Replaces the open scenario's authored description text. Nothing is saved. Open the scenario first with open_scenario.",
     valueType: "string",
+    approvalComparison: "text-replacement",
     updatesValue: "scenario_description",
     mode: "draft",
     applyPolicy: "ask",
@@ -570,6 +571,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Replaces the open scenario's human-message test fixture. This is engineered scenario data; it does not send a message or run the subject agent. Nothing is saved. Open a scenario first.",
     valueType: "string",
+    approvalComparison: "text-replacement",
     updatesValue: "scenario_user_input",
     mode: "draft",
     applyPolicy: "ask",

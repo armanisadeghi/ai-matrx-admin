@@ -529,6 +529,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     label: "Model description",
     description: `Replaces the open model's registry description — the prose a USER reads under the model's name when picking a model, so write it as a choosing aid: what this model is good at, how it differs from its siblings, and when to reach for something else. This is a FULL replacement, not a merge: read \`model_description\` first and include anything you mean to keep. Plain text, up to ${MODEL_DESCRIPTION_MAX_CHARS} characters after trimming; the empty string CLEARS the description, which is a legitimate value because the column is nullable. Do NOT restate the numbers the picker already shows on its own (context window, max tokens, cost and speed ratings) — those are separate fields and are not writable here. PERSISTS IMMEDIATELY on apply, through the same \`aiModelService.update\` call the panel's Save button makes, so the confirm dialog is the review. Refused while the panel is creating a new model, while a save is in flight, or while the Raw JSON tab has unsaved edits.`,
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "model_description",
     mode: "entity",
     applyPolicy: "ask",

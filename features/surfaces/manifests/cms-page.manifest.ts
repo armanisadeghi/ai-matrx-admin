@@ -689,6 +689,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Stage the page's excerpt — the short summary listing pages show — into the Settings tab. Value: a string that REPLACES the current excerpt (empty string clears it). Excerpt has no draft twin, so it is written by Save & Publish, not by Save Draft.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "excerpt",
     mode: "draft",
     applyPolicy: "ask",

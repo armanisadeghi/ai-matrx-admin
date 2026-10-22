@@ -701,6 +701,9 @@ if $STRICT; then
         # wire, never a stopped release. `pnpm check:surface-write-handlers:self-test`
         # proves the guard can still fail.
         "Surface write targets without a handler|pnpm check:surface-write-handlers"
+        # Long-text write targets take an anchored edit (patchable) and show the shared diff
+        # on overwrite; patchable count never drops below its baseline. ADVISORY.
+        "Surface text targets not patchable|pnpm check:surface-patchable"
         "Admin dashboard catalog|pnpm exec tsx scripts/check-admin-catalog.ts --strict"
         "Entity registry generation drift|pnpm check:entity-types"
         # --live pulls the deployed agx_sync_linked_agents() and diffs the TS
@@ -1584,6 +1587,9 @@ else
         # wire, never a stopped release. `pnpm check:surface-write-handlers:self-test`
         # proves the guard can still fail.
         "Surface write targets without a handler|pnpm check:surface-write-handlers"
+        # Long-text write targets take an anchored edit (patchable) and show the shared diff
+        # on overwrite; patchable count never drops below its baseline. ADVISORY.
+        "Surface text targets not patchable|pnpm check:surface-patchable"
         "Admin dashboard catalog|pnpm exec tsx scripts/check-admin-catalog.ts"
         "Entity registry generation drift|pnpm check:entity-types"
         "Agent sync fields vs live RPC (snapshot fallback)|pnpm exec tsx scripts/check-agent-sync-fields.ts --live"

@@ -198,6 +198,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       'Stages the problem statement into the composer\'s "The problem" box — the exact problem the learner solved on paper (e.g. "Solve for x: 3(x + 2) = 15", or an essay prompt). Value is a PLAIN TEXT STRING, never JSON and never JSON-encoded: pass the problem text itself. Replaces the whole box — read problem_text first if you mean to refine rather than overwrite. Grading does NOT start: the learner still attaches a photo of their handwritten work and presses "Grade my work".',
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "problem_text",
     mode: "draft",
     applyPolicy: "ask",
@@ -210,6 +212,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       'Stages the optional model answer or full-credit rubric into the composer\'s "Model answer or rubric" box — the correct result and what full credit must show, which the vision grader then grades the photo against. Value is a PLAIN TEXT STRING, never JSON and never JSON-encoded; pass an empty string to clear it, which makes the grader solve the problem itself and grade against its own solution. Replaces the whole box — read expected_answer first if you mean to refine rather than overwrite. Grading does NOT start: the learner still attaches a photo and presses "Grade my work".',
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "expected_answer",
     mode: "draft",
     applyPolicy: "ask",

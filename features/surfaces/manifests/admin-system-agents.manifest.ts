@@ -547,6 +547,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Replaces the open SYSTEM agent's description — the prose shown in the admin roster and the agent catalog explaining what this platform agent is for. Value: a plain-text string, a few sentences, no markdown headings. This REPLACES the whole description; read `agent_description` first if you mean to preserve any of it. Saved immediately through the admin's own save path, and the prior definition is snapshotted as a new version.",
     valueType: "string",
+    patchable: true,
     updatesValue: "agent_description",
     approvalComparison: "text-replacement",
     mode: "entity",

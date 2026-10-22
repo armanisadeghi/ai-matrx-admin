@@ -384,6 +384,8 @@ const writeTargets: SurfaceWriteTarget[] = [
       "Statements that would MODIFY the database (INSERT/UPDATE/DELETE/ALTER/DROP/CREATE) may be staged like any other text — they are inert until the admin runs them — but say plainly in your message what the SQL would do, because the admin is the only thing standing between it and the live database. " +
       "Refused while a query is already running.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "sql_query",
     mode: "draft",
     applyPolicy: "ask",

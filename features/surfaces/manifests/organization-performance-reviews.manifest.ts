@@ -570,13 +570,17 @@ const writeTargets: SurfaceWriteTarget[] = [
       sortOrder: 200 + ci * 20 + ii,
     })),
   ),
-  immediateTextTarget(
-    "goals",
-    "Goals & Objectives",
-    "Replaces the active review's complete goals and objectives text. Read the existing value first if the intent is to append.",
-    "review_close",
-    10,
-  ),
+  {
+    ...immediateTextTarget(
+      "goals",
+      "Goals & Objectives",
+      "Replaces the active review's complete goals and objectives text. Read the existing value first if the intent is to append.",
+      "review_close",
+      10,
+    ),
+    patchable: true,
+    approvalComparison: "text-replacement",
+  },
   immediateTextTarget(
     "overall_rating",
     "Overall Performance Rating",
@@ -584,13 +588,17 @@ const writeTargets: SurfaceWriteTarget[] = [
     "review_close",
     20,
   ),
-  immediateTextTarget(
-    "additional_comments",
-    "Additional Comments",
-    "Replaces the active review's complete additional-comments text. Read the existing value first if the intent is to append.",
-    "review_close",
-    30,
-  ),
+  {
+    ...immediateTextTarget(
+      "additional_comments",
+      "Additional Comments",
+      "Replaces the active review's complete additional-comments text. Read the existing value first if the intent is to append.",
+      "review_close",
+      30,
+    ),
+    patchable: true,
+    approvalComparison: "text-replacement",
+  },
 ];
 
 export const organizationPerformanceReviewsManifest: SurfaceManifest = {

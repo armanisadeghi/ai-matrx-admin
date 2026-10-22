@@ -203,6 +203,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       'Replaces the FULL welcome message shown to teammates joining a shared agent in this workspace. Value: a plain-prose string, 2000 characters or fewer; newlines are allowed and preserved. This REPLACES rather than appends — read welcome_message first and include any existing text you want kept. Pass "" to clear it. Persists immediately to the user\'s synced preferences; there is no separate Save step.',
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "welcome_message",
     mode: "entity",
     applyPolicy: "ask",

@@ -408,6 +408,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Sets the open table's description — the short prose that says what this table holds and what it is for. Value is PLAIN TEXT, not JSON and not JSON-encoded: send the sentence itself, with no surrounding quotes and no escaped newlines. Replaces the existing description in full, so include anything from table_description worth keeping; read that value first. 1-3 sentences is right (hard limit 2000 characters, refused above it) and an empty or whitespace-only value is refused — clearing the description is the user's call, not an agent's. Persists immediately on confirm through the table's own record (`custom.record_update` on the Table, version-checked, so a colleague's change since is refused, never overwritten), which changes ONLY the description: the table's name, columns and other settings are left untouched. Refused when is_read_only is true.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "table_description",
     mode: "entity",
     applyPolicy: "ask",

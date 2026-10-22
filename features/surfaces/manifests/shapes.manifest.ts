@@ -666,6 +666,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Stages the \"What does one of these hold?\" answer on /shapes/new — the plain-words description of the pieces one instance carries. Plain string, 1-4000 characters; REPLACES the whole field, so read the new_shape_intent value first if you mean to extend what the user already wrote. Describe the DATA and how they want to see it, never an instruction to a person. Nothing is created by this write: the user still reviews the form and presses 'Build my Shape'.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "new_shape_intent",
     mode: "draft",
     applyPolicy: "ask",
@@ -678,6 +680,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Stages the optional real-data example on /shapes/new that the builder designs the structure around. For a JSON sample pass the OBJECT OR ARRAY ITSELF — it is written into the box as pretty-printed JSON; never hand-encode it into a quoted string, which lands as escaped \\n and stray quotes. For CSV or plain text pass a plain string. Either way REPLACES the whole field, max 20000 characters rendered, and no markdown fences. Nothing is created by this write: the user still presses 'Build my Shape'.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "new_shape_sample",
     mode: "draft",
     applyPolicy: "ask",

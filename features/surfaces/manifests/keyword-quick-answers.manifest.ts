@@ -331,6 +331,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Replaces the optional reason text staged beneath the current batch. This does not answer or persist any keyword; the user still chooses an answer button, which is the existing explicit save action.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "reason_draft",
     mode: "draft",
     // Was "auto". Under the approval system (Arman, 2026-09-27) only `ui`

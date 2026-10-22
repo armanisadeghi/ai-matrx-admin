@@ -320,6 +320,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Stages review feedback into the editor on this page — the same buffer the human types into. String value: plain prose (newlines fine) that REPLACES the whole editor, so include anything already in feedback_draft that should survive; an empty string clears it. Nothing is written to the database and no status moves: the human reads the staged text and decides whether to press Request changes, Approve, or Run agent review again.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "feedback_draft",
     mode: "draft",
     applyPolicy: "ask",

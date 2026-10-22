@@ -185,6 +185,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Stage text in the strategy's corrections box. Value: string — the FULL corrections text (it replaces the box; include what is already in strategy_guidance_draft when adding to it). Write it the way the owner would say it out loud. Nothing is saved until the owner presses Confirm or Save.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "strategy_guidance_draft",
     mode: "draft",
     applyPolicy: "ask",

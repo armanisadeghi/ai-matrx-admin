@@ -191,6 +191,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Replaces this scope's description. Saved immediately. Value: a plain string (empty clears it), the finished description text.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "scope_description",
     mode: "entity",
     applyPolicy: "ask",

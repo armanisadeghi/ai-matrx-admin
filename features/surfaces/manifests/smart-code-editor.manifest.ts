@@ -264,6 +264,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "REPLACES THE ENTIRE ACTIVE BUFFER with the string you pass. This is a full replacement, not a merge: read `content` first and include every line that should survive, or use `replace_selection` / `insert_at_cursor` when you only mean to change part of it. Pass a plain text string of raw code only, with no markdown fences. Must be non-empty — emptying the buffer is a human action. Applied as ONE undoable edit, so the user can reverse it with undo. This editor is a scratch buffer: the code stays in the window until the user copies it out or hands it back to their IDE, and a reload discards it.",
     valueType: "string",
+    patchable: true,
     updatesValue: "content",
     approvalComparison: "text-replacement",
     mode: "draft",

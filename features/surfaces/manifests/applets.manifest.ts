@@ -394,6 +394,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Stages the longer description of what the open Applet does into the Description field on the Settings > Overview tab. Value: a plain string (pass an empty string to clear it), which REPLACES the full description rather than appending — read app_description first and include any existing text you want kept. This is a draft — the user still presses Save, so the app_description read value does not change until they do.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "app_description",
     mode: "draft",
     applyPolicy: "ask",

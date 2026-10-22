@@ -185,6 +185,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "REPLACES the pad's entire working text with the string you pass — it lands in the pad's textarea exactly as given, as if the user had selected all and retyped it. This is the cleaned-up-dictation target: read `content` first (that is the text the user is looking at, draft or entries joined) and pass back the full rewritten version, since nothing you omit is kept. Plain text only, not JSON or an object. An empty or whitespace-only string is refused — clearing the pad is the user's own button, not a write. The original dictation stays untouched in `transcript_entries` beside your rewrite, so the user can always compare. Refused while a dictation is in flight (`is_recording` or `is_transcribing` true) — check those before you offer. Do NOT stage this in the same turn as `append_draft_text`: this replaces the WHOLE buffer, the two are applied in an order you do not control, and a replacement landing second would discard the append. Rewrite in one turn, then append in the next.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "draft_text",
     mode: "draft",
     applyPolicy: "ask",

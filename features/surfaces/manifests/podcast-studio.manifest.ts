@@ -423,6 +423,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Replaces the text in the source box — the topic line for the 'topic' source, or the pasted body for 'rough notes' / 'full script'. Value: a non-empty string that REPLACES the whole box; to extend rather than replace, read source_text first and include the existing text. Fails when the selected source is a file-URL or an external source (website / note / YouTube / audio file), because those own their own input — a person has to switch the source kind first.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "source_text",
     mode: "draft",
     applyPolicy: "ask",
@@ -459,6 +461,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Sets the freeform steer handed to the research / extraction agent, e.g. 'focus on the practical takeaways'. Value: a string that REPLACES the FULL field — read prep_instructions first and include anything worth keeping, because it may already carry an entryway agent-profile note. An empty string clears it.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "prep_instructions",
     mode: "draft",
     applyPolicy: "ask",
@@ -471,6 +475,8 @@ const writeTargets: SurfaceWriteTarget[] = [
     description:
       "Sets the short intro describing the SHOW (the series this episode belongs to), used when this episode creates a brand-new show. Value: a string that REPLACES the field, or an empty string to clear it. Generation ignores it when the user has picked an existing show in the destination picker.",
     valueType: "string",
+    patchable: true,
+    approvalComparison: "text-replacement",
     updatesValue: "first_show_info",
     mode: "draft",
     applyPolicy: "ask",
