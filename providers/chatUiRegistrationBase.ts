@@ -113,8 +113,6 @@ const lazySlot = lazySlotsFrom(() =>
 const InfoHint = lazySlot("InfoHint", SlotLoadingGlyphSmall);
 const ErrorAlchemyMenu = lazySlot("ErrorAlchemyMenu", SlotLoadingGlyph);
 const AdvancedMenu = lazySlot("AdvancedMenu");
-const AuthGateDialog = lazySlot("AuthGateDialog");
-const EmailInputDialog = lazySlot("EmailInputDialog");
 const TableChooser = lazySlot("TableChooser", SlotLoadingControl);
 const FileResourceChip = lazySlot("FileResourceChip", SlotLoadingInline);
 const ConnectorMark = lazySlot("ConnectorMark", SlotLoadingGlyphSmall);
@@ -249,8 +247,6 @@ registerChatUi({
   ErrorAlchemyMenu,
   EntityRef,
   AdvancedMenu,
-  AuthGateDialog,
-  EmailInputDialog,
   DockedSidePanel,
   EditableContextMenu,
   NonEditableContextMenu,
