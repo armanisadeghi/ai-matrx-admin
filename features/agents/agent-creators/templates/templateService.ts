@@ -14,10 +14,14 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 export type TemplateCopyResult = { agentId: string } | { error: string } | { cancelled: true };
 
-export async function createAgentFromTemplate(templateId: string): Promise<TemplateCopyResult> {
+export async function createAgentFromTemplate(
+  templateId: string,
+  /** The organization the copy belongs to (a record's own); omitted = the active one. */
+  inOrganizationId?: string | null,
+): Promise<TemplateCopyResult> {
   let organizationId: string;
   try {
-    organizationId = await ensureOrgId(null);
+    organizationId = await ensureOrgId(inOrganizationId ?? null);
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Choose an organization for the new agent." };
   }

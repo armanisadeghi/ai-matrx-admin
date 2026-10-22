@@ -6,9 +6,8 @@
 // seat. Everything after (goal writer, building the agent, testing) happens in
 // the mandate's own window, opened in place.
 //
-// The mandate is an ORGANIZATION soft mandate homed in the seat's organization
-// (`createSoftMandate`, the one door). Its key is made from the seat's name, as
-// the mandate pages make it, and the next number is tried when it is taken.
+// The job is made by `createSeatJob` (../seatJob.ts) — the same door the
+// department batch uses.
 
 "use client";
 
@@ -16,14 +15,11 @@ import { useState } from "react";
 import { Plus, Wand2, X } from "lucide-react";
 import { useHeadlessAgentJson } from "@ai-matrx/chat/agents/hooks/useHeadlessAgentJson";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
-import { MANDATE_KEYS, type AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { Button, Field } from "@ai-matrx/design-system/controls";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import { Button } from "@ai-matrx/design-system/controls";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { createSoftMandate } from "@/features/mandates/authoring-level/service";
-import { keyFromName, softMandateNamespace } from "@/features/mandates/authoring-level/soft-key";
-import { BackendApiError } from "@ai-matrx/api";
-import { updateOrgPosition, loadSeatJobs } from "@/features/agents/redux/orchestras/orgChartThunks";
+import { createSeatJob, SEAT_JOB_SURFACE, seatJobScope, type DefinedSeatJob } from "../seatJob";
 import type { OrgPosition } from "../positionsService";
 
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -46,10 +42,6 @@ interface SeatJobSuggestion {
   questions?: string[];
 }
 
-export interface DefinedSeatJob {
-  mandateKey: AnyMandateKey;
-  mandateId: string;
-}
 
 export function DefineSeatJobDialog({
   position,
@@ -133,31 +125,12 @@ function Body({
     setSaving(true);
     setError(null);
     try {
-      const namespace = softMandateNamespace("organization");
-      let attempt = 1;
-      let made: Awaited<ReturnType<typeof createSoftMandate>> | null = null;
-      while (!made) {
-        try {
-          made = await createSoftMandate(dispatch, {
-            level: "organization",
-            organizationId: position.organizationId,
-            mandateKey: keyFromName(position.name, attempt, namespace),
-            label: position.name,
-            goal: goal.trim(),
-            description: position.description ?? undefined,
-            outputConstraints: output.trim() || undefined,
-            draftInputs: inputs.filter((i) => i.trim()).map((description) => ({ description })),
-          });
-        } catch (e) {
-          // A made key can belong to a job this person cannot see: try the next number.
-          if (!(e instanceof BackendApiError && e.status === 409) || attempt >= 50) throw e;
-          attempt += 1;
-        }
-      }
-      const linked = await dispatch(updateOrgPosition(position.id, { mandateId: made.mandateId }));
-      if (!linked.ok) throw new Error(`The job was created, but the position could not be linked to it: ${linked.error}`);
-      await dispatch(loadSeatJobs([made.mandateId]));
-      onDefined({ mandateKey: made.mandateKey, mandateId: made.mandateId });
+      const made = await createSeatJob(dispatch, position, {
+        goal,
+        output,
+        inputs: inputs.filter((i) => i.trim()).map((description) => ({ description })),
+      });
+      onDefined(made);
     } catch (e) {
       setError(e instanceof Error ? e.message : "The job could not be created.");
     } finally {
@@ -185,6 +158,10 @@ function Body({
             onChange={(e) => setGoal(e.target.value)}
             placeholder="What this seat is for, and what a great result looks like"
             rows={3}
+            autoGrow
+            maxHeight={240}
+            surfaceName={SEAT_JOB_SURFACE}
+            getApplicationScope={seatJobScope}
           />
         </label>
 
@@ -192,11 +169,16 @@ function Body({
           <span className="type-secondary font-medium text-foreground">What it&apos;s given</span>
           {inputs.map((value, i) => (
             <div key={i} className="flex items-center gap-1.5">
-              <Field
+              <ProTextarea
                 value={value}
                 onChange={(e) => setInputs((cur) => cur.map((v, j) => (j === i ? e.target.value : v)))}
                 placeholder={i === 0 ? "e.g. the client's website address" : "Another input"}
                 aria-label={`Input ${i + 1}`}
+                rows={1}
+                autoGrow
+                maxHeight={160}
+                surfaceName={SEAT_JOB_SURFACE}
+                getApplicationScope={seatJobScope}
                 className="flex-1"
               />
               {inputs.length > 1 && (
@@ -218,10 +200,15 @@ function Body({
 
         <label className="flex flex-col gap-1.5">
           <span className="type-secondary font-medium text-foreground">What it hands back</span>
-          <Field
+          <ProTextarea
             value={output}
             onChange={(e) => setOutput(e.target.value)}
             placeholder="e.g. a one-page SEO audit with the top 5 fixes"
+            rows={2}
+            autoGrow
+            maxHeight={200}
+            surfaceName={SEAT_JOB_SURFACE}
+            getApplicationScope={seatJobScope}
           />
         </label>
 

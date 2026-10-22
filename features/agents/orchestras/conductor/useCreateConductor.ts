@@ -29,13 +29,15 @@ export function useCreateConductor() {
       name: string;
       accent: OrchestraAccent;
       tagline?: string;
+      /** The organization the leader belongs to (e.g. the department's); omitted = the active one. */
+      organizationId?: string | null;
     }): Promise<string | null> => {
       setError(null);
       setCreating(true);
       try {
         // 1) Copy the template. The new agent ships the empty <available_agents>
         //    placeholder; org is backfilled by the DB `_stamp_org_default` trigger.
-        const created = await conductorService.createFromTemplate();
+        const created = await conductorService.createFromTemplate(args.organizationId);
         if (isRecordsErr(created)) {
           setError(created.error.message);
           return null;
