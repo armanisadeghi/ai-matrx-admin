@@ -9,7 +9,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { AlertTriangle, ExternalLink, HelpCircle, Inbox, Loader2, Scale } from "lucide-react";
+import { AlertTriangle, ExternalLink, HelpCircle, Hourglass, Inbox, Loader2, Scale } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -103,6 +103,10 @@ export function AttentionQueue() {
             ) : item.kind === "recall_disagreement" ? (
               <Badge variant="secondary" className="gap-1">
                 <Scale className="h-3 w-3" /> Disagreement
+              </Badge>
+            ) : item.kind === "blocked_asset" ? (
+              <Badge variant="outline" className="gap-1">
+                <Hourglass className="h-3 w-3" /> Waiting
               </Badge>
             ) : (
               <Badge variant="outline" className="gap-1">

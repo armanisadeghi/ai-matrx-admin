@@ -79,7 +79,7 @@ export function StoreConnectShell() {
   useEffect(() => {
     if (!organizationId) return;
     let live = true;
-    hasConnectedEbayStore(organizationId)
+    hasConnectedEbayStore(organizationId) // org-filter: server-call onboarding asks whether THIS organization has a store
       .then((connected) => {
         if (live) setStoreConnected(connected);
       })
@@ -98,7 +98,7 @@ export function StoreConnectShell() {
     if (!message) return;
     if (message.ok) toast.success(message.text);
     else toast.error(message.text);
-    window.history.replaceState(null, "", window.location.pathname);
+    window.history.replaceState(window.history.state, "", window.location.pathname);
   }, [returnStatus]);
 
   const connectEbay = async () => {
