@@ -23,6 +23,9 @@
  *                                    PageHeaderRightPortal with an onClick — a button whose action is
  *                                    not in the declared `actions` list, so "…" cannot carry it.
  *
+ * NOT A PAGE: a page file whose body is only a server redirect (`redirect(` / `permanentRedirect(` and
+ * no JSX at all) has no UI and so no header — it is skipped, never exempted (`isRedirectOnly`).
+ *
  * EXEMPT only by Arman's word, in the file: `// crumb-doors-exempt: Arman <date> <quote>`.
  *
  * LIMITS (static, best-effort): imports are followed two hops and only through `@/`, `./`, `../`
@@ -227,6 +230,13 @@ function reachesTemplate(root, file, hops, seen = new Set()) {
   return false;
 }
 
+const JSX = /<>|(?:^|[^\w$.])<[A-Za-z][\w.:-]*(?=[\s/>])/m;
+/** A page whose body is only a server redirect renders nothing: no header to declare. */
+export function isRedirectOnly(text) {
+  const code = text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  return /\b(redirect|permanentRedirect)\(/.test(code) && !JSX.test(code);
+}
+
 /** no-declared-trail: the page, or any layout above it, reaches a template within two hops. */
 export function pageDeclaresTrail(root, pageFile) {
   const dirs = posix.dirname(pageFile).split("/");
@@ -256,7 +266,7 @@ export function collect({ root = ROOT, paths = null } = {}) {
   for (const file of files) {
     const text = read(root, file);
     for (const site of scanSource(file, text)) add(site.rule, file, site);
-    if (PAGE_FILE.test(file) && !EXEMPT.test(text) && !pageDeclaresTrail(root, file)) {
+    if (PAGE_FILE.test(file) && !EXEMPT.test(text) && !isRedirectOnly(text) && !pageDeclaresTrail(root, file)) {
       add("no-declared-trail", file, { rule: "no-declared-trail", line: 1, what: "no page-top template within two hops" });
     }
   }
@@ -336,6 +346,12 @@ function selfTest() {
       // GREEN: the contract — links on every level, siblings, one action list.
       "app/(core)/notes/[id]/page.tsx":
         'import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";\nexport default function P() { return <RecordPageHeader parents={[{ label: "Notes", href: "/notes" }]} record={{ name: "A", siblings: [] }} actions={[]} />; }\n',
+      // GREEN: a redirect-only page renders nothing — no header to declare.
+      "app/(core)/forms/old/page.tsx":
+        'import { redirect } from "next/navigation";\nexport default async function P({ params }: { params: Promise<{ id: string }> }) { redirect(`/forms/${(await params).id}`); }\n',
+      // RED: a redirect guard in front of a real body is still a page.
+      "app/(core)/forms/guarded/page.tsx":
+        'import { redirect } from "next/navigation";\nexport default function P() { if (Math.random()) redirect("/login");\n  return (\n    <>\n      <div>Forms</div>\n    </>\n  ); }\n',
       // GREEN: exempt by Arman's word.
       "app/(core)/kiosk-like/page.tsx": '// crumb-doors-exempt: Arman 2026-10-22 "no header on this one"\nexport default function P() { return <div />; }\n',
     };
@@ -348,6 +364,7 @@ function selfTest() {
       "button-outside-actions|features/forms/FormRecord.tsx",
       "dead-crumb|features/forms/FormRecord.tsx",
       "no-declared-trail|app/(core)/forms/bare/page.tsx",
+      "no-declared-trail|app/(core)/forms/guarded/page.tsx",
       "record-without-siblings|features/forms/FormRecord.tsx",
     ];
     const ok = JSON.stringify(keys) === JSON.stringify(want);
