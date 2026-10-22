@@ -49,7 +49,7 @@ function targetDockWidth(path: string): number | null {
   const open =
     raw === undefined
       ? (home.defaultOpen ?? window.matchMedia(SHELL_CHAT_WIDE_QUERY).matches)
-      : parseCanvasChatCookie(raw, true).open && parseCanvasChatCookie(raw, true).placement === "side";
+      : parseCanvasChatCookie(raw, false).open && parseCanvasChatCookie(raw, false).placement === "side";
   return open ? readSidePanelWidthClient(CANVAS_PANEL_IDS.chat, CANVAS_CHAT_SIZES) : 0;
 }
 

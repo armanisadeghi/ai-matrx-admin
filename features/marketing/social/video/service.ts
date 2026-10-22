@@ -33,9 +33,52 @@ export async function readBrandVideoProjects(brandId: string): Promise<VideoProj
         .returns<EdgeRow[]>(),
     { label: "platform.associations (video project → brand)" },
   );
-  const ids = brandEdges.map((e) => e.source_id);
-  if (ids.length === 0) return [];
+  return readProjectItems(brandEdges.map((e) => e.source_id));
+}
 
+/** A list row on the cross-brand page: the project card's facts + the brand it belongs to. */
+export interface CrossBrandVideoItem extends VideoProjectListItem {
+  brandId: string;
+  brandName: string;
+}
+
+/**
+ * Every video project the person can read, across all brands and organizations (RLS decides; the active
+ * organization is never a filter). Projects with no brand link are left out: a card must open a brand's page.
+ */
+export async function readAllVideoProjects(): Promise<CrossBrandVideoItem[]> {
+  const edges = await readAllRows<EdgeRow>(
+    ({ from, to }) =>
+      supabase
+        .schema("platform")
+        .from("associations")
+        .select("source_id, target_id")
+        .eq("source_type", "social_video_project")
+        .eq("target_type", "web_brand")
+        .is("deleted_at", null)
+        .order("source_id", { ascending: true })
+        .range(from, to)
+        .returns<EdgeRow[]>(),
+    { label: "platform.associations (all video project → brand)" },
+  );
+  const brandOf = new Map<string, string>();
+  for (const e of edges) if (!brandOf.has(e.source_id)) brandOf.set(e.source_id, e.target_id);
+  const items = await readProjectItems([...brandOf.keys()]);
+  const brandIds = [...new Set(brandOf.values())];
+  const names = new Map<string, string>();
+  for (let i = 0; i < brandIds.length; i += 100) {
+    const { data, error } = await supabase.schema("web").from("brand").select("id, name").in("id", brandIds.slice(i, i + 100));
+    if (error) throw error;
+    for (const b of data ?? []) names.set(b.id, b.name);
+  }
+  return items.map((item) => {
+    const brandId = brandOf.get(item.project.id) as string;
+    return { ...item, brandId, brandName: names.get(brandId) ?? "Brand" };
+  });
+}
+
+async function readProjectItems(ids: string[]): Promise<VideoProjectListItem[]> {
+  if (ids.length === 0) return [];
   const [projects, postEdges, variants] = await Promise.all([
     supabase
       .schema("social")

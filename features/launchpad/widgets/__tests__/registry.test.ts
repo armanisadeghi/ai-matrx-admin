@@ -11,6 +11,8 @@ jest.mock("../bodies/TableWidget", () => ({ TableWidget: () => null }));
 jest.mock("../bodies/AppletWidget", () => ({ AppletWidget: () => null }));
 jest.mock("../bodies/LaunchpadLinkWidget", () => ({ LaunchpadLinkWidget: () => null }));
 jest.mock("../bodies/AppPageWidget", () => ({ AppPageWidget: () => null }));
+jest.mock("../bodies/DashboardWidget", () => ({ DashboardWidget: () => null }));
+jest.mock("../bodies/BoardItemWidget", () => ({ BoardItemWidget: () => null }));
 
 import { BOARD_SECTIONS } from "@/features/board/items/types";
 import { LAUNCHPAD_WIDGET_CATALOG, describeLaunchpadWidget } from "../catalog";
@@ -39,5 +41,11 @@ describe("launchpad widget registry", () => {
 
   it("names an unknown widget instead of dropping it", () => {
     expect(describeLaunchpadWidget({ type: "gone", config: {} })).toBe('Unavailable widget "gone"');
+  });
+
+  it("folds in records-ui dashboards and every Board item (one registry, lane U)", () => {
+    const types = LAUNCHPAD_WIDGETS.map((w) => w.type);
+    expect(types).toEqual(expect.arrayContaining(["page", "records_dashboard", "board_item", "applet"]));
+    expect(LAUNCHPAD_WIDGET_CATALOG.find((s) => s.type === "board_item")!.fields[0]!.picker).toBe("boardItem");
   });
 });

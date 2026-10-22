@@ -157,6 +157,8 @@ export function WelcomeClient({
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save your progress.");
     }
+    // The transition carries the busy state from here: a navigation that never lands leaves the tiles usable.
+    setFinishing(false);
     startNav(() => {
       router.push(href);
     });

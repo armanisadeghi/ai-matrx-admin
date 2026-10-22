@@ -142,5 +142,26 @@ export function primeGuestChallenge(): Promise<string | null> {
   return priming;
 }
 
+/** A token for a request that may mint a new visitor. `fresh` drops the held one first (the server
+ *  refused it: used, expired or failed). The chat package's turns ask through this
+ *  (`registerChatGuestChallenge`, providers/chatGuestChallengeRegistration.ts). */
+export function guestChallengeToken(options: { fresh?: boolean } = {}): Promise<string | null> {
+  if (options.fresh) held = null;
+  return primeGuestChallenge();
+}
+
+/** The server's refusal of a new visitor whose request carried no passing human check. */
+export const GUEST_CHALLENGE_REFUSAL = "guest_challenge_failed";
+
+/** True when a refusal body (any envelope: top level or `detail`, `error` or `code`) is that refusal. */
+export function isGuestChallengeRefusalBody(body: unknown): boolean {
+  const rec = (v: unknown): Record<string, unknown> | null =>
+    v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
+  const top = rec(body);
+  if (!top) return false;
+  const inner = rec(top.detail);
+  return [top.error, top.code, inner?.error, inner?.code].includes(GUEST_CHALLENGE_REFUSAL);
+}
+
 /** The header the fingerprint lane carries (aidream services/auth_guest/mint_challenge.py HEADER). */
 export const TURNSTILE_HEADER = "X-Turnstile-Token";

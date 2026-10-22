@@ -24,6 +24,7 @@ import {
   Plug,
   Upload,
 } from "lucide-react";
+import type { PrimitiveId } from "@ai-matrx/icons/domain";
 import { Youtube } from "@/components/icons/brand-icons";
 import { GoogleG as Google } from "@/components/icons/google-brand";
 
@@ -36,6 +37,12 @@ export type ResourcePickerMenuItem = {
   icon: LucideIcon | typeof Youtube | typeof Google;
   /** Tailwind classes on the menu row icon — module / brand tint. */
   iconClassName: string;
+  /**
+   * The platform identity this door stands for (color + icon owned only in
+   * `@ai-matrx/icons/domain`). When set, rows and tiles draw its PrimitiveTile
+   * instead of the tinted `icon`.
+   */
+  primitive?: PrimitiveId;
   requiresCapability:
     | null
     | "supportsImageUrls"
@@ -68,6 +75,7 @@ export const RESOURCE_PICKER_MENU_CATEGORIES: ResourcePickerMenuCategory[] = [
       {
         id: "files",
         label: "Files",
+        primitive: "files",
         icon: FolderOpen,
         iconClassName: "text-primary",
         requiresCapability: null,
@@ -154,6 +162,7 @@ export const RESOURCE_PICKER_MENU_CATEGORIES: ResourcePickerMenuCategory[] = [
         // (agent_call history_conversation_id). See ConversationReferencePicker.
         id: "conversations",
         label: "Chats",
+        primitive: "chats",
         icon: MessagesSquare,
         iconClassName: "text-emerald-600 dark:text-emerald-400",
         requiresCapability: null,
@@ -171,6 +180,7 @@ export const RESOURCE_PICKER_MENU_CATEGORIES: ResourcePickerMenuCategory[] = [
       {
         id: "notes",
         label: "Notes",
+        primitive: "notes",
         icon: StickyNote,
         iconClassName: "text-yellow-600 dark:text-yellow-400",
         requiresCapability: null,
@@ -178,20 +188,23 @@ export const RESOURCE_PICKER_MENU_CATEGORIES: ResourcePickerMenuCategory[] = [
       {
         id: "tasks",
         label: "Tasks",
+        primitive: "tasks",
         icon: CheckSquare,
         iconClassName: "text-blue-600 dark:text-blue-400",
         requiresCapability: null,
       },
       {
         id: "workbooks",
-        label: "Workbooks",
+        label: "Sheets",
+        primitive: "workbooks",
         icon: Notebook,
         iconClassName: "text-violet-600 dark:text-violet-400",
         requiresCapability: null,
       },
       {
         id: "documents",
-        label: "Documents",
+        label: "Docs",
+        primitive: "docs",
         icon: FileText,
         iconClassName: "text-indigo-600 dark:text-indigo-400",
         requiresCapability: null,
@@ -199,6 +212,7 @@ export const RESOURCE_PICKER_MENU_CATEGORIES: ResourcePickerMenuCategory[] = [
       {
         id: "research",
         label: "Research",
+        primitive: "research",
         icon: Telescope,
         iconClassName: "text-orange-600 dark:text-orange-400",
         requiresCapability: null,
@@ -296,6 +310,8 @@ export type ResourcePickerTileItem = {
   icon: ComponentType<{ className?: string }>;
   /** Tailwind classes on the icon — module / brand tint. */
   iconClassName: string;
+  /** The platform identity this door stands for; drawn as its PrimitiveTile. */
+  primitive?: PrimitiveId;
 };
 
 export type ResourcePickerSourceItemId =
@@ -316,7 +332,7 @@ function menuItemAsTile(
 ): ResourcePickerTileItem {
   const row = flattenResourcePickerItems().find((item) => item.id === viewId);
   if (!row) throw new Error(`resource-picker-menu-items: no menu row "${viewId}"`);
-  return { id, label: label ?? row.label, icon: row.icon, iconClassName: row.iconClassName };
+  return { id, label: label ?? row.label, icon: row.icon, iconClassName: row.iconClassName, primitive: row.primitive };
 }
 
 /** Source doors (Create deck, Podcast Studio, …) keyed by source tile id. */

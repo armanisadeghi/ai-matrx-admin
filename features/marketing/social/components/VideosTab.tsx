@@ -73,9 +73,9 @@ export function VideosTab() {
   );
 }
 
-function ProjectCard({ item, href }: { item: VideoProjectListItem; href: string }) {
+/** One video card. Shared by the brand Videos tab and the cross-brand Videos page (which adds `brandName`). */
+export function ProjectCard({ item, href, brandName }: { item: VideoProjectListItem; href: string; brandName?: string }) {
   const { project } = item;
-  const { organizationId } = useSocials();
   const queryClient = useQueryClient();
   const remove = async () => {
     const ok = await confirm({
@@ -86,7 +86,7 @@ function ProjectCard({ item, href }: { item: VideoProjectListItem; href: string 
     });
     if (!ok) return;
     try {
-      await deleteVideoProject(project.id, { organizationId: project.organization_id || organizationId });
+      await deleteVideoProject(project.id, { organizationId: project.organization_id });
       await queryClient.invalidateQueries({ queryKey: videoKeys.all });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't delete this video");
@@ -105,6 +105,7 @@ function ProjectCard({ item, href }: { item: VideoProjectListItem; href: string 
         </div>
         <div className="flex flex-col gap-1 p-2">
           <span className="type-label truncate text-foreground">{project.name}</span>
+          {brandName ? <span className="type-meta truncate text-muted-foreground">{brandName}</span> : null}
           <div className="flex items-center gap-1.5">
             <Badge tone={project.head_version > 0 ? "neutral" : "warning"}>{project.head_version > 0 ? `v${project.head_version}` : "Not planned yet"}</Badge>
             {item.variantCount > 0 ? <Badge>{`${item.variantCount} variants`}</Badge> : null}

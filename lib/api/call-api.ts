@@ -137,7 +137,13 @@ export {
 import type { paths, components } from "@ai-matrx/api/types";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { heldGuestChallengeToken, primeGuestChallenge, TURNSTILE_HEADER } from "@/lib/guest/turnstile";
+import {
+  guestChallengeToken,
+  heldGuestChallengeToken,
+  isGuestChallengeRefusalBody,
+  primeGuestChallenge,
+  TURNSTILE_HEADER,
+} from "@/lib/guest/turnstile";
 
 // ============================================================================
 // SECTION 1 — UTILITY TYPE HELPERS
@@ -984,11 +990,11 @@ export function callApi<
               ).firstResponseMs,
             }
           : config;
-      const result = await executeMatrxCall<unknown, TypedStreamEvent>(
+      const execute = (sendHeaders: Record<string, string>) => executeMatrxCall<unknown, TypedStreamEvent>(
         {
           url,
           method: config.method,
-          headers,
+          headers: sendHeaders,
           body,
           stream: !!config.stream,
           signal: streamConfig.signal,
@@ -1002,6 +1008,17 @@ export function callApi<
         },
         { parseStream: parseNdjsonStream },
       );
+      let result = await execute(headers);
+      // A NEW visitor refused for want of a passing human check (403 guest_challenge_failed, before
+      // any handler ran, so nothing was started): retried ONCE with a fresh token.
+      if (
+        isGuestLane &&
+        result.error?.status === 403 &&
+        isGuestChallengeRefusalBody(result.error.serverDetail)
+      ) {
+        const fresh = await guestChallengeToken({ fresh: true });
+        if (fresh) result = await execute({ ...headers, [TURNSTILE_HEADER]: fresh });
+      }
       if (isPaidAi) {
         // The server's usage refusal → a person gets `over` + the limit
         // dialog; a guest gets the sign-up reminder only, never both.

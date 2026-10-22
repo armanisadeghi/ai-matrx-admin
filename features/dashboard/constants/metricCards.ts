@@ -6,15 +6,22 @@
 // secondary strip. `emptyHint` is the nudge shown when the count is zero — the
 // "encourage users to do more" goal.
 
+import type { IdentityId } from "@ai-matrx/icons/domain";
 import type { DashboardMetrics } from "../types";
 import type { ShellIconName } from "@/features/shell/shellIconMap";
 
 export interface MetricCardConfig {
   key: keyof DashboardMetrics;
   label: string;
-  /** ShellIcon (Lucide) name. */
+  /** ShellIcon (Lucide) name. For a card with an `identity`, that identity's icon. */
   iconName: ShellIconName;
-  /** iconColorMap key (shared with the nav). */
+  /**
+   * The platform identity (color + icon) of the thing this card counts. Owned only in
+   * `@ai-matrx/icons/domain`; a card with none keeps the neutral look, never another
+   * thing's color.
+   */
+  identity?: IdentityId;
+  /** iconColorMap key for the neutral look (cards with no identity). */
   color: string;
   /** Where clicking the card goes. */
   href: string;
@@ -32,7 +39,8 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     label: "Agents",
     singular: "agent",
     iconName: "Webhook",
-    color: "blue",
+    identity: "agent_studio",
+    color: "slate",
     href: "/agents/all",
     featured: true,
     emptyHint: "Build your first agent",
@@ -41,8 +49,9 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     key: "conversations",
     label: "Conversations",
     singular: "conversation",
-    iconName: "MessageCircle",
-    color: "indigo",
+    iconName: "MessagesSquare",
+    identity: "chats",
+    color: "slate",
     href: "/chat/new",
     featured: true,
     emptyHint: "Start a conversation",
@@ -51,8 +60,9 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     key: "knowledge_files",
     label: "Knowledge",
     singular: "file",
-    iconName: "Database",
-    color: "amber",
+    iconName: "Library",
+    identity: "knowledge",
+    color: "slate",
     href: "/files/all",
     featured: true,
     emptyHint: "Add to your knowledge base",
@@ -62,7 +72,8 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     label: "Published Apps",
     singular: "app",
     iconName: "Puzzle",
-    color: "emerald",
+    identity: "applets",
+    color: "slate",
     href: "/applets",
     featured: true,
     emptyHint: "Publish your first app",
@@ -71,8 +82,9 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     key: "notes",
     label: "Notes",
     singular: "note",
-    iconName: "NotebookPen",
-    color: "amber",
+    iconName: "StickyNote",
+    identity: "notes",
+    color: "slate",
     href: "/notes",
     emptyHint: "Capture a note",
   },
@@ -80,8 +92,9 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     key: "tasks",
     label: "Tasks",
     singular: "task",
-    iconName: "ListTodo",
-    color: "emerald",
+    iconName: "ListChecks",
+    identity: "tasks",
+    color: "slate",
     href: "/tasks",
     emptyHint: "Add a task",
   },
@@ -89,8 +102,9 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     key: "transcripts",
     label: "Transcripts",
     singular: "transcript",
-    iconName: "Mic",
-    color: "rose",
+    iconName: "AudioLines",
+    identity: "transcripts",
+    color: "slate",
     href: "/transcripts",
     emptyHint: "Record a transcript",
   },
@@ -99,7 +113,7 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     label: "Scopes",
     singular: "scope",
     iconName: "Layers",
-    color: "emerald",
+    color: "slate",
     href: "/scopes",
     emptyHint: "Define a scope",
   },
@@ -108,7 +122,7 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     label: "Shortcuts",
     singular: "shortcut",
     iconName: "Zap",
-    color: "blue",
+    color: "slate",
     href: "/agents/shortcuts",
     emptyHint: "Create a shortcut",
   },
@@ -116,8 +130,9 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     key: "research_reports",
     label: "Research",
     singular: "report",
-    iconName: "FlaskConical",
-    color: "purple",
+    iconName: "Telescope",
+    identity: "research",
+    color: "slate",
     href: "/research",
     emptyHint: "Run a research report",
   },
@@ -126,7 +141,7 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     label: "Podcasts",
     singular: "podcast",
     iconName: "Radio",
-    color: "violet",
+    color: "slate",
     href: "/podcast",
     emptyHint: "Create a podcast",
   },
@@ -135,7 +150,7 @@ export const METRIC_CARDS: MetricCardConfig[] = [
     label: "Messages",
     singular: "message",
     iconName: "Mail",
-    color: "pink",
+    color: "slate",
     href: "/messages",
     emptyHint: "Send a message",
   },

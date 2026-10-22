@@ -37,7 +37,8 @@ export type DrillBuiltInView = DrillView;
 export type DrillFinding = PackageDrillFinding;
 
 /** The records behind a number, when the definition declares them (read through `drill_rows`). */
-export type DrillRecordsDeclaration = DrillRecords;
+/** `noun` is what ONE record is, singular ("tool call"), when the grain sentence names no single noun. */
+export type DrillRecordsDeclaration = DrillRecords & { noun?: string };
 
 /** What `drill_describe` returns (the package's definition carries the additions). */
 export type DrillDefinitionPlus = DrillDefinition;
@@ -71,6 +72,7 @@ export function recordsOf(def: DrillDefinition | null): DrillRecordsDeclaration 
   const records = def ? (def as DrillDefinitionPlus).records : undefined;
   if (!isRecord(records) || typeof records.fact !== "string" || !Array.isArray(records.columns)) return null;
   const out: DrillRecordsDeclaration = { fact: records.fact, columns: records.columns.filter((c): c is string => typeof c === "string") };
+  if (typeof records.noun === "string" && records.noun.trim().length > 0 && records.noun.length <= 40) out.noun = records.noun.trim();
   if (isRecord(records.labels)) {
     const labels = Object.fromEntries(Object.entries(records.labels).filter((e): e is [string, string] => typeof e[1] === "string" && e[1].length > 0));
     if (Object.keys(labels).length > 0) out.labels = labels;

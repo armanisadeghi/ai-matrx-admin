@@ -11,6 +11,7 @@
  * Copy law: a tile is a noun — no helper line, nothing that wraps.
  */
 
+import { PrimitiveTile } from "@ai-matrx/icons/domain";
 import { cn } from "@/utils/cn";
 import type { ResourcePickerTileItem } from "./resource-picker-menu-items";
 
@@ -69,14 +70,20 @@ export function ResourcePickerTiles<T extends ResourcePickerTileItem>({
                 {badge}
               </span>
             ) : null}
-            <span
-              className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg bg-muted transition-colors",
-                selected && "bg-background ring-1 ring-primary/30",
-              )}
-            >
-              <Icon className={cn(compact ? "h-[18px] w-[18px]" : "h-4 w-4", item.iconClassName)} />
-            </span>
+            {item.primitive ? (
+              <span className="flex h-8 w-8 items-center justify-center">
+                <PrimitiveTile primitive={item.primitive} size="lg" />
+              </span>
+            ) : (
+              <span
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-lg bg-muted transition-colors",
+                  selected && "bg-background ring-1 ring-primary/30",
+                )}
+              >
+                <Icon className={cn(compact ? "h-[18px] w-[18px]" : "h-4 w-4", item.iconClassName)} />
+              </span>
+            )}
             <span
               className={cn(
                 "max-w-full truncate whitespace-nowrap font-medium text-foreground",
