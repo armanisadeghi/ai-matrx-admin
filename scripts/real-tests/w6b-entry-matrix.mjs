@@ -181,7 +181,7 @@ async function ensureBinding(orgId) {
   const { data, error } = await userDb.rpc("assoc_add", {
     p_source_type: "agent", p_source_id: TEST_DATA_AGENT.id, p_target_type: "surface", p_target_id: surf.id,
     p_org_id: orgId, p_label: null, p_role: role, p_position: null,
-    p_metadata: { tier: "organization", user_id: null, project_id: null, task_id: null, version: 1, w6b_fixture: true },
+    p_metadata: { tier: "org", user_id: null, project_id: null, task_id: null, version: 1, w6b_fixture: true },
     p_payload_kind: "surface_binding", p_payload: { value_mappings },
   });
   if (error) return { id: null, created: false, role, refused: error.message, others: (rows || []).map((r) => ({ role: r.role, payload: r.payload })) };
@@ -230,9 +230,13 @@ const TRIGGERS = {
       // picker panel (a pointer that leaves the submenu closes it).
       const panel = search.locator('xpath=ancestor::div[.//button[starts-with(normalize-space(.),"All")]][1]');
       await search.hover().catch(() => {});
-      await panel.locator("button", { hasText: /^All\s*\d*$/ }).first().click({ timeout: 5000 }).catch(() => {});
       await page.waitForTimeout(3000);
-      const option = panel.getByText(ctx.agent.name, { exact: true }).first();
+      let option = panel.getByText(ctx.agent.name).first();
+      if (!(await option.count())) {
+        await panel.locator("button", { hasText: /^All\s*\d*$/ }).first().click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(3000);
+        option = panel.getByText(ctx.agent.name).first();
+      }
       if (!(await option.count())) { await shot(page, "chat-picker"); return `side chat agent picker offered no "${ctx.agent.name}"`; }
       await option.click({ timeout: 5000 });
       await page.waitForTimeout(1500);
@@ -290,7 +294,7 @@ async function findRun(t0) {
     .eq("created_by", session.userId).gte("created_at", t0).order("created_at", { ascending: true }).limit(5);
   return data || [];
 }
-async function receivedOracle(conversationId, want) {
+async function receivedOracle(conversationId, want, situationWants = []) {
   const r = await fetch(`${SERVER}/admin/surface-evidence/receives`, {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${adminSession.accessToken}`, ...agentTrafficHeaders("w6b-entry-matrix") },
@@ -304,17 +308,20 @@ async function receivedOracle(conversationId, want) {
     situation = body.situation;
     checks = body.checks;
   } else {
-    // W6-A not released yet (404) or refused: read the stored request itself — the same row receives reads.
+    // W6-A not released yet (404) or refused: read the stored request itself — the rows receives reads.
+    // The first iteration's snapshots; request_payload may be empty ({}) with the text in unified_payload.
     source = `request_snapshot (receives answered ${r.status})`;
-    const { data } = await refDb.schema("chat").from("request_snapshot").select("request_payload,unified_payload")
-      .eq("conversation_id", conversationId).order("created_at", { ascending: true }).limit(1);
-    text = data?.[0] ? JSON.stringify(data[0].request_payload ?? data[0].unified_payload) : "";
+    const { data } = await refDb.schema("chat").from("request_snapshot").select("iteration,request_payload,unified_payload")
+      .eq("conversation_id", conversationId).eq("iteration", 1).order("created_at", { ascending: true });
+    text = (data || []).map((d) => `${JSON.stringify(d.request_payload ?? "")}\n${JSON.stringify(d.unified_payload ?? "")}`).join("\n")
+      .replace(/\\+n/g, "\n").replace(/\\+"/g, '"');
     const m = text.match(/<situation>([\s\S]*?)<\/situation>/);
     situation = m ? m[1] : null;
   }
   const missing = want.filter((w) => !text.includes(w));
-  const situationOk = Boolean(situation && situation.trim());
-  return { pass: missing.length === 0 && situationOk, source, missing, situation: situation?.slice(0, 600) ?? null, checks, chars: text.length };
+  const situationMissing = situationWants.filter((w) => !(situation || "").includes(w));
+  const situationOk = Boolean(situation && situation.trim()) && situationMissing.length === 0;
+  return { pass: missing.length === 0 && situationOk, source, missing, situation_missing: situationMissing, situation: situation?.slice(0, 600) ?? null, checks, chars: text.length };
 }
 async function patchOracle(conversationId) {
   const { data } = await refDb.schema("chat").from("tool_call").select("id,status,arguments,error_message,created_at")
@@ -383,7 +390,8 @@ async function runNotes(trigger, orgId, browser) {
     const run = runs.find((r) => r.agent_id === TEST_DATA_AGENT.id) ?? runs[0];
     if (!run) { res.blocked = "no run row (chat.user_request) after the trigger"; await ctx.close(); return res; }
     res.conversation_id = run.conversation_id;
-    res.oracles.received = await receivedOracle(run.conversation_id, [note.canary]);
+    // The page situation: the module paragraph (AI Matrx › …) and the Notes page paragraph naming this note.
+    res.oracles.received = await receivedOracle(run.conversation_id, [note.canary], ["AI Matrx ›", '"Notes" screen', `W6-B ${runTag}`]);
     res.oracles.patch = await patchOracle(run.conversation_id);
     res.oracles.db = await dbOracle(note);
     res.oracles.page = await pageOracle(ctx, note);
@@ -413,12 +421,13 @@ async function runHr(trigger, browser) {
   if (why) { res.blocked = why; await ctx.close(); return res; }
   await sleep(25000);
   await shot(page, `hr-${opt.as}-after`);
-  const runs = await findRun(t0);
+  // Only this seat's Test Reply run started after t0 (never run two harnesses as one seat at once).
+  const runs = (await findRun(t0)).filter((r) => r.agent_id === TEST_REPLY_AGENT.id);
   const run = runs[0];
-  if (!run) { res.blocked = "no run row after the chat send"; await ctx.close(); return res; }
+  if (!run) { res.blocked = "no Test Reply run row after the chat send"; await ctx.close(); return res; }
   res.conversation_id = run.conversation_id;
   res.runs = runs.map((r) => ({ id: r.id, conversation_id: r.conversation_id, agent_id: r.agent_id, source_feature: r.source_feature }));
-  res.oracles.received = await receivedOracle(run.conversation_id, ["Human Resources", ...(orgName ? [orgName] : [])]);
+  res.oracles.received = await receivedOracle(run.conversation_id, [], ["Human Resources", ...(orgName ? [orgName] : [])]);
   await ctx.close();
   return res;
 }
