@@ -21,14 +21,9 @@ import { photosOf } from "./subject-photos";
 import { SubjectPhotosDialog } from "./SubjectPhotosDialog";
 import { listBrandAssets } from "@/features/marketing/data/service";
 
-const KEY_PERSON_ROLES = ["key_person", "owns"];
+import { brandPeopleKey, setSpokespersonEdge, type Person } from "./spokespeople";
 
-interface Person {
-  partyId: string;
-  name: string;
-  role: string;
-  metadata: Record<string, unknown>;
-}
+const KEY_PERSON_ROLES = ["key_person", "owns"];
 
 async function listPeople(brandId: string): Promise<Person[]> {
   const res = await associationsService.listForTargets("web_brand", [brandId]);
@@ -52,7 +47,7 @@ async function listPeople(brandId: string): Promise<Person[]> {
 
 export function BrandSpokespeople({ brand, canEdit }: { brand: MarketingBrand; canEdit: boolean }) {
   const qc = useQueryClient();
-  const people = useQuery({ queryKey: ["marketing", "brand-people", brand.id], queryFn: () => listPeople(brand.id) });
+  const people = useQuery({ queryKey: brandPeopleKey(brand.id), queryFn: () => listPeople(brand.id) });
   const assets = useQuery({
     queryKey: ["marketing", "subject-photos", brand.id, "all"],
     queryFn: ({ signal }) => listBrandAssets(brand.id, signal),
@@ -62,18 +57,8 @@ export function BrandSpokespeople({ brand, canEdit }: { brand: MarketingBrand; c
 
   const setSpokesperson = async (p: Person, on: boolean) => {
     try {
-      const res = await associationsService.add({
-        sourceType: "party",
-        sourceId: p.partyId,
-        targetType: "web_brand",
-        targetId: brand.id,
-        orgId: brand.organization_id,
-        role: p.role,
-        metadata: { ...p.metadata, is_spokesperson: on },
-        replaceMetadata: true,
-      });
-      if (!res.ok) throw new Error(res.error.message);
-      await qc.invalidateQueries({ queryKey: ["marketing", "brand-people", brand.id] });
+      await setSpokespersonEdge(brand, p, on);
+      await qc.invalidateQueries({ queryKey: brandPeopleKey(brand.id) });
     } catch (e) {
       toast.error("Could not change spokesperson", { description: extractErrorMessage(e) });
     }
