@@ -47,6 +47,8 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- `2026-10-22` — **One catalog read per tab.** `listSpaceTemplates` reads `custom.space_templates` once per tab for the plain catalog (in-flight shared, failures forgotten); an `installedIn` read is shared while in flight and never kept. The board start dialog had asked ~13 times on one open. Per-pack reads stay one per pack (`readSpaceTemplate`, cached per tab).
+
 - 2026-10-21 — CLOSE-TPL. **The Notion keys, the phone toolbar, and the ••• menu's missing rows.** B7: `editor/notion-keys.ts`
   holds Cmd+Shift+H (last color used, default yellow highlight; every toolbar color pick is remembered through `applyColor`),
   Cmd+A (block text, then every block), Cmd+/ (opens the ⋮⋮ block menu of the current block via `openBlockMenu`), and Esc
