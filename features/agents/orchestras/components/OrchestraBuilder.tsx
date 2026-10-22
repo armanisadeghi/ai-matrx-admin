@@ -341,7 +341,8 @@ export function OrchestraBuilder({
         modes={modes}
         activeModeHref={activeModeHref}
         actions={headerActions}
-        right={<IntelligenceIndicator feature="orchestras" label="Orchestra builder" />}
+        // An indicator, not an action: it sits beside the name (entityStatus), so "…" holds every action.
+        entityStatus={<IntelligenceIndicator feature="orchestras" label="Orchestra builder" />}
       />
 
       {/* body — builder chrome (rail search, canvas Arrange panel) is static top
