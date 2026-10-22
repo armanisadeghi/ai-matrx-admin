@@ -33,11 +33,9 @@ const PAID_AI_POST_PATHS: ReadonlySet<string> = new Set([
   "/mandates/{mandate_key}/try",
   "/mandates/{mandate_key}/test",
   "/mandates/{mandate_key}/tests",
-  // The Matrix Battle door is `/agent-battles/{set_id}/queue-run` on the server; this census names the
-  // OLD spelling only until `@ai-matrx/api` is regenerated with the queue routes (the census test below
-  // checks every entry against the installed schema). `retired-battle-doors.test.ts` fails the day the
-  // installed schema carries `queue-run`, forcing the swap here.
-  "/agent-battles/{set_id}/run",
+  "/agent-battles/{set_id}/queue-run",
+  "/agent-tests/runs",
+  "/agent-tests/runs/live",
   "/agent-iteration/run-initial",
   "/agent-iteration/feedback",
   "/workflows/{definition_id}/runs",

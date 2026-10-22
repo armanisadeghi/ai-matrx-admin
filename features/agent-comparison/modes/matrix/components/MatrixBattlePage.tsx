@@ -5,13 +5,13 @@
  * every cell on the server, read the grid and the analysis.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, Minus, Plus } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 import { BattleRouteNotice, useBattleRoute } from "@/features/agent-comparison/shared/useBattleRoute";
-import { MAX_REPEATS, POLL_IDLE_LIMIT_MS, shouldPoll } from "../model";
+import { MAX_REPEATS, shouldPoll } from "../model";
 import { setBasePatch, setRepeats } from "../redux/slice";
 import {
   selectMatrixBase,
@@ -59,27 +59,13 @@ export function MatrixBattlePage({ setId = null }: { setId?: string | null }) {
     if (!tabChosen && cells.length > 0) setTab("results");
   }, [cells.length, tabChosen]);
 
-  // Live while a run call is in flight or a cell is queued/running under a
-  // fresh lease; stalled cells never keep it alive. A hard idle limit means it
-  // can never poll forever.
-  const signature = cells.map((c) => `${c.entryId}:${c.status}:${c.attempt}:${c.stalled}`).join("|");
-  const lastChange = useRef(0);
-  const [idleStopped, setIdleStopped] = useState(false);
-  useEffect(() => {
-    lastChange.current = Date.now();
-    setIdleStopped(false);
-  }, [signature, runInFlight]);
-  const polling = shouldPoll(cells, runInFlight) && !idleStopped;
+  // Live while a run call is in flight or the server still holds a cell as queued or running (the
+  // work queue owns liveness). It stops only when the set is terminal.
+  const polling = shouldPoll(cells, runInFlight);
   useEffect(() => {
     if (!polling || !activeSetId) return undefined;
     void dispatch(refreshMatrixCells());
-    const t = setInterval(() => {
-      if (Date.now() - lastChange.current > POLL_IDLE_LIMIT_MS) {
-        setIdleStopped(true);
-        return;
-      }
-      void dispatch(refreshMatrixCells());
-    }, POLL_MS);
+    const t = setInterval(() => void dispatch(refreshMatrixCells()), POLL_MS);
     return () => clearInterval(t);
   }, [polling, activeSetId, dispatch]);
 
@@ -165,7 +151,6 @@ function ProgressLine() {
   if (p.running) parts.push(`${p.running} running`);
   if (p.queued) parts.push(`${p.queued} queued`);
   if (p.failed) parts.push(`${p.failed} failed`);
-  if (p.stalled) parts.push(`${p.stalled} stalled`);
   if (p.cancelled) parts.push(`${p.cancelled} canceled`);
   return (
     <div className="flex items-center gap-3 type-secondary text-muted-foreground tabular-nums">

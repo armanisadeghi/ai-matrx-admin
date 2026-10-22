@@ -8,7 +8,8 @@
  * full pathname (only its own params), so it resolves the row, computes the
  * expected segment, and renders one of these. When the address in the URL is
  * not the canonical one, the helper rewrites that single segment in place —
- * `router.replace`, so Back still goes where the user came from, and the query
+ * `window.history.replaceState` (never a navigation, which renders the page again:
+ * guard an-address-rewrite-never-reloads-the-page.test.ts), so Back still goes where the user came from, and the query
  * string rides along untouched (a `?site=` picker or `?brief=` handoff must
  * survive canonicalization).
  *
@@ -16,7 +17,7 @@
  */
 
 import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 interface CanonicalSegmentProps {
   /** The segment as it appears in the URL right now (an address). */
@@ -44,7 +45,6 @@ export function canonicalizePath(
 }
 
 function useCanonicalSegment(param: string, expected: string): void {
-  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -55,8 +55,8 @@ function useCanonicalSegment(param: string, expected: string): void {
     // component mounts in a layout, and the hook would opt the whole subtree
     // into a Suspense requirement for a value only an effect ever reads.
     const search = window.location.search;
-    router.replace(`${next}${search}`, { scroll: false });
-  }, [router, pathname, param, expected]);
+    window.history.replaceState(null, "", `${next}${search}${window.location.hash}`);
+  }, [pathname, param, expected]);
 }
 
 /** Canonicalizes `/marketing/[brandId]` to the brand's key address. */

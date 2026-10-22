@@ -191,10 +191,23 @@ export function EnhancedImageViewer({
         animate={{ scale: 1 }}
         exit={{ scale: 0.9 }}
       >
+        <div className="flex shrink-0 items-center justify-end gap-2 bg-black/40 p-1">
+          <Button
+            variant="quiet"
+            icon={isFullScreen ? <Minimize2 /> : <Maximize2 />}
+            aria-label={isFullScreen ? "Exit full screen" : "Full screen"}
+            onClick={toggleFullScreen}
+          />
+          <Button
+            icon={<X />} aria-label="Close"
+            variant="quiet"
+            onClick={onClose}
+          />
+        </div>
         <div className="relative flex-grow overflow-hidden bg-black/20">
           {/* Fixed height container to prevent layout shifts */}
           <div
-            className={`${isFullScreen ? "h-dvh" : "h-[60dvh]"} w-full relative`}
+            className={`${isFullScreen ? "h-[calc(100dvh-3rem)]" : "h-[60dvh]"} w-full relative`}
           >
             <AnimatePresence initial={false} custom={direction}>
               <motion.div
@@ -241,19 +254,6 @@ export function EnhancedImageViewer({
             </AnimatePresence>
           </div>
 
-          <Button
-            icon={<X />} aria-label="Close"
-            className="absolute top-2 right-2 z-10"
-            variant="quiet"
-            onClick={onClose}
-          />
-          <Button
-            className="absolute top-2 right-10 z-10"
-            variant="quiet"
-            icon={isFullScreen ? <Minimize2 /> : <Maximize2 />}
-            aria-label={isFullScreen ? "Exit full screen" : "Full screen"}
-            onClick={toggleFullScreen}
-          />
           {isFullScreen && (
             <>
               <Button

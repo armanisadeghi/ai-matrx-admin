@@ -38,10 +38,9 @@ export const selectMatrixCellCount = createSelector(
 
 /** Cells counted by status for the progress line. */
 export const selectMatrixProgress = createSelector([selectMatrixCells], (cells) => {
-  const out = { queued: 0, running: 0, completed: 0, failed: 0, cancelled: 0, stalled: 0 };
+  const out = { queued: 0, running: 0, completed: 0, failed: 0, cancelled: 0 };
   for (const c of cells) {
-    if (c.stalled) out.stalled += 1;
-    else out[c.status] += 1;
+    out[c.status] += 1;
   }
   return out;
 });

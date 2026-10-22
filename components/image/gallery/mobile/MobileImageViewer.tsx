@@ -134,6 +134,15 @@ export function MobileImageViewer({
       className="fixed inset-0 bg-black flex flex-col z-50"
       ref={viewerRef}
     >
+      {/* Top bar: the close control is the last item of its row */}
+      <div className="flex shrink-0 items-center justify-end gap-2 bg-black px-4 pt-safe pb-1">
+        <Button
+          icon={<X />} aria-label="Close"
+          variant="primary"
+          onClick={onClose}
+        />
+      </div>
+
       {/* Full-screen image container with touch handlers */}
       <div
         className="flex-grow w-full relative overflow-hidden"
@@ -163,14 +172,6 @@ export function MobileImageViewer({
             />
           </motion.div>
         </AnimatePresence>
-
-        {/* Close button - repositioned to top right */}
-        <Button
-          icon={<X />} aria-label="Close"
-          variant="primary"
-          className="absolute top-safe right-4 z-10"
-          onClick={onClose}
-        />
       </div>
 
       {/* Bottom control bar */}

@@ -234,7 +234,7 @@ describe("reading Jev", () => {
   it("reads cells, using the answer store when a cell has no text", () => {
     const b = captured();
     const cell = (rowId: string, conv: string, answer: string | undefined): MatrixCell => ({
-      entryId: rowId, conversationId: conv, rowId, columnId: "jev", repeat: 0, status: "completed", stalled: false,
+      entryId: rowId, conversationId: conv, rowId, columnId: "jev", repeat: 0, status: "completed",
       attempt: 1, startedAt: null, finishedAt: null, error: null, request: null, history: [],
       result: { answer, duration_ms: 1200, cost: 0.0001 },
     });

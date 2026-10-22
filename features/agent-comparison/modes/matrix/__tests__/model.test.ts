@@ -1,6 +1,7 @@
 import {
   breakEven,
   entryToCell,
+  isLive,
   metadataToSetup,
   parsePastedPrompts,
   realToolCalls,
@@ -82,7 +83,6 @@ describe("tool usage", () => {
         created_at: "",
         metadata: { kind: "matrix_cell", row_id: "r", column_id: "k", repeat: 0, status, result: { tools_used: tools } },
       } as ComparisonEntryRow,
-      Date.now(),
     )!;
 
   it("never counts a bundle lister as using a tool", () => {
@@ -92,13 +92,15 @@ describe("tool usage", () => {
     expect(rowUsedTools([cell([], "running")])).toBeNull();
   });
 
-  it("marks a running cell past its lease as stalled", () => {
+  it("reads a queued cell the server wrote with no timestamps as queued, and live", () => {
     const row = {
       id: "e", comparison_set_id: "s", conversation_id: "c", display_order: 0, agent_id: "a",
       agent_version: null, agent_version_snapshot_id: null, created_at: "",
-      metadata: { kind: "matrix_cell", status: "running", heartbeat_at: new Date(Date.now() - 120_000).toISOString() },
+      metadata: { kind: "matrix_cell", status: "queued", run_token: "exec-1", queued_at: new Date().toISOString() },
     } as ComparisonEntryRow;
-    expect(entryToCell(row, Date.now())?.stalled).toBe(true);
+    const c = entryToCell(row)!;
+    expect(c.status).toBe("queued");
+    expect(isLive(c)).toBe(true);
   });
 });
 

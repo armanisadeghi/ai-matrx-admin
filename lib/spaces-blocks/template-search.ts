@@ -126,13 +126,16 @@ const PHRASES: ReadonlyArray<[RegExp, string]> = [
 /** Words that carry no meaning in a template search. */
 const STOP = new Set(["a", "an", "the", "for", "my", "of", "and", "to", "in", "with", "on", "template", "page", "free", "notion", "app"]);
 /** Words that rank when they match but never exclude a card ("habit tracker" finds a "Habits" pack). */
-const SOFT = new Set(["list", "tracker", "track", "tracking", "manager", "management", "system", "os", "simple", "basic", "ultimate", "dashboard", "log", "plan", "planning", "organizer", "business", "company", "firm", "hq"]);
+const SOFT = new Set(["list", "tracker", "track", "tracking", "manager", "management", "system", "os", "simple", "basic", "ultimate", "dashboard", "log", "plan", "planning", "organizer", "business", "company", "firm", "hq", "office", "studio", "agency", "practice", "shop", "desk", "team", "small", "local", "workspace", "hub"]);
 
 /** Field weights: where a concept matched. */
 const WEIGHT = { title: 10, tags: 7, main: 6, category: 5, description: 4, forWho: 3, layout: 3, find: 2, body: 1 } as const;
 type Field = keyof typeof WEIGHT;
 /** Added when the template's main view is the layout a concept names (ADVERSARIAL-2 #3: main boards first). */
 const MAIN_BONUS = 4;
+/** A soft word's share of its field weight: alone it is the query; beside a meaningful word it is a tie-breaker. */
+const SOFT_SHARE_ALONE = 0.5;
+const SOFT_SHARE_WITH_HARD = 0.1;
 /** A synonym's match counts for this share of the person's own word. */
 const SYNONYM_SHARE = 0.6;
 /** A form made from the person's own word ("plumber" → "plumbing") counts for this share. */
@@ -283,7 +286,9 @@ function matchConcepts(words: Record<Field, string[]>, title: string, concepts: 
     // A template whose MAIN view is the layout asked for ranks above one that only names it (a "kanban" tag).
     if (best > 0) best += MAIN_BONUS * conceptHit(c, words.main);
     if (best > 0 && !c.soft) matched++;
-    score += c.soft ? best / 2 : best;
+    // A generic business word ("company", "office", "hq") only breaks ties once a meaningful word is typed: every
+    // title carries one, so at half weight "logistics company" ranked Plumbing Company HQ first.
+    score += c.soft ? best * (hard.length ? SOFT_SHARE_WITH_HARD : SOFT_SHARE_ALONE) : best;
   }
   // The whole typed phrase inside the title: the card the person is naming.
   const phrase = searchWords(query).join(" ");

@@ -130,8 +130,7 @@ export const loadMatrixBattleSet = createAsyncThunk<void, { setId: string }, Thu
   async ({ setId }, { dispatch }) => {
     const { set, entries } = await loadComparisonSet(setId);
     const setup = metadataToSetup(set.metadata);
-    const now = Date.now();
-    const cells = entries.map((e) => entryToCell(e, now)).filter((c) => c !== null);
+    const cells = entries.map((e) => entryToCell(e)).filter((c) => c !== null);
     dispatch(loadMatrix({ id: set.id, name: set.name, setup, cells }));
   },
 );
@@ -145,8 +144,7 @@ export const refreshMatrixCells = createAsyncThunk<void, void, ThunkApi>(
     try {
       const rows = await listMatrixEntries(setId);
       if (getState().agentComparisonMatrix.activeSetId !== setId) return;
-      const now = Date.now();
-      dispatch(setCells(rows.map((e) => entryToCell(e, now)).filter((c) => c !== null)));
+      dispatch(setCells(rows.map((e) => entryToCell(e)).filter((c) => c !== null)));
     } catch (err) {
       dispatch(setReadError(err instanceof Error ? err.message : String(err)));
     }

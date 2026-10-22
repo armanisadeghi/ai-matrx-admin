@@ -514,7 +514,6 @@ export function placeholderCells(refs: { row_id: string; column_id: string; repe
     columnId: r.column_id,
     repeat: r.repeat,
     status: "queued",
-    stalled: false,
     attempt: 1,
     startedAt: null,
     finishedAt: null,
@@ -575,7 +574,7 @@ export function rowStatus(cells: MatrixCell[], bench: BenchState, key: string, s
   const cell = cells.find((c) => c.rowId === rowId && c.columnId === COLUMN_ID[system]);
   if (!cell) return "idle";
   if (cell.status === "completed") return "done";
-  if (cell.status === "failed" || cell.status === "cancelled" || cell.stalled) return "failed";
+  if (cell.status === "failed" || cell.status === "cancelled") return "failed";
   return cell.status === "running" ? "judging" : "waiting";
 }
 

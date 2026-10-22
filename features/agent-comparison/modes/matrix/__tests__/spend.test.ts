@@ -25,7 +25,7 @@ function row(md: Record<string, unknown>, conversationId = "conv-now"): Comparis
     metadata: { kind: "matrix_cell", row_id: "r", column_id: "c", repeat: 0, ...md },
   };
 }
-const cell = (md: Record<string, unknown>, id?: string) => entryToCell(row(md, id), Date.now())!;
+const cell = (md: Record<string, unknown>, id?: string) => entryToCell(row(md, id))!;
 const res = (input: number, cached: number, output: number, cost: number) => ({
   input_tokens: input,
   cached_tokens: cached,
@@ -79,8 +79,8 @@ describe("cached input is its own number (finding 2)", () => {
 
 describe("queued is never labeled running (finding 3)", () => {
   it("names the state each cell is in", () => {
-    expect(cellStatusLabel([cell({ status: "queued", heartbeat_at: new Date().toISOString() })])).toBe("Queued");
-    expect(cellStatusLabel([cell({ status: "running", heartbeat_at: new Date().toISOString() })])).toBe("Running");
+    expect(cellStatusLabel([cell({ status: "queued" })])).toBe("Queued");
+    expect(cellStatusLabel([cell({ status: "running", started_at: new Date().toISOString() })])).toBe("Running");
     expect(cellStatusLabel([])).toBe("Not run");
   });
 });
@@ -95,24 +95,28 @@ describe("archive reaches every attempt (finding 4)", () => {
   });
 });
 
-describe("a lapsed lease is stalled, never polled forever", () => {
-  const old = new Date(Date.now() - 120_000).toISOString();
-  const fresh = new Date().toISOString();
+describe("a cell is live while the server holds it (the work queue owns liveness)", () => {
+  // The server writes no heartbeat: a queued cell has only `queued_at`, a running one `started_at`.
+  const longAgo = new Date(Date.now() - 20 * 60_000).toISOString();
 
-  it("marks a queued cell past its heartbeat lease as stalled", () => {
-    const c = cell({ status: "queued", heartbeat_at: old });
-    expect(c.stalled).toBe(true);
-    expect(cellStatusLabel([c])).toBe("Stalled");
-    expect(cell({ status: "queued", heartbeat_at: fresh }).stalled).toBe(false);
+  it("a queued cell with no timestamps is queued, not stalled", () => {
+    const c = cell({ status: "queued", run_token: "exec-1" });
+    expect(cellStatusLabel([c])).toBe("Queued");
+    expect(failedCellCount([c])).toBe(0);
+    expect(shouldPoll([c], false)).toBe(true);
   });
 
-  it("stops polling when every unfinished cell is stalled", () => {
-    const stalled = [cell({ status: "queued", heartbeat_at: old }), cell({ status: "running", heartbeat_at: old })];
-    expect(shouldPoll([...stalled, cell({ status: "completed" })], false)).toBe(false);
-    expect(shouldPoll([...stalled, cell({ status: "queued", heartbeat_at: fresh })], false)).toBe(true);
+  it("a cell running for twenty minutes is still running", () => {
+    const c = cell({ status: "running", started_at: longAgo, run_token: "exec-1" });
+    expect(cellStatusLabel([c])).toBe("Running");
+    expect(unfinishedLabel([c])).toBe("");
+    expect(shouldPoll([c], false)).toBe(true);
   });
 
-  it("treats a queued cell with no time signal as stalled", () => {
-    expect(cell({ status: "queued" }).stalled).toBe(true);
+  it("polls after a reload with queued cells, and stops only when every cell is terminal", () => {
+    const live = [cell({ status: "queued" }), cell({ status: "running", started_at: longAgo })];
+    expect(shouldPoll(live, false)).toBe(true);
+    const done = [cell({ status: "completed" }), cell({ status: "failed" }), cell({ status: "cancelled" })];
+    expect(shouldPoll(done, false)).toBe(false);
   });
 });

@@ -138,10 +138,9 @@ export function SmartAddRoundPage({
           throw new Error("This saved battle is not a Smart Add round.");
         setBench(saved);
         setRunStatus(saved.runStatus);
-        const now = Date.now();
         setCells(
           entries
-            .map((e) => entryToCell(e, now))
+            .map((e) => entryToCell(e))
             .filter((c): c is MatrixCell => c !== null),
         );
       })
@@ -229,17 +228,16 @@ export function SmartAddRoundPage({
 
   // Jev's cells while any is queued or running, or while a start is in flight.
   const live = cells.some(
-    (c) => (c.status === "queued" || c.status === "running") && !c.stalled,
+    (c) => (c.status === "queued" || c.status === "running"),
   );
   useEffect(() => {
     if (!setId || !bench.captured || (!live && !jevStarting)) return undefined;
     const t = setInterval(() => {
       listMatrixEntries(setId)
         .then((rows) => {
-          const now = Date.now();
           setCells(
             rows
-              .map((e) => entryToCell(e, now))
+              .map((e) => entryToCell(e))
               .filter((c): c is MatrixCell => c !== null),
           );
         })

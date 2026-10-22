@@ -20,24 +20,29 @@ export function DismissibleAlert({ sourceName, title, url, index }: DismissibleA
     };
 
     return (
-        <Alert id={`headline-${index}`} className="relative">
-            <AlertTitle className="pr-8">{sourceName}</AlertTitle>
-            <AlertDescription className="pr-8">
-                <OutboundLink
-                    href={url}
-                    className="hover:underline"
+        <Alert id={`headline-${index}`}>
+            <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1">
+                    <AlertTitle>{sourceName}</AlertTitle>
+                    <AlertDescription>
+                        <OutboundLink
+                            href={url}
+                            className="hover:underline"
+                        >
+                            {title}
+                        </OutboundLink>
+                    </AlertDescription>
+                </div>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    aria-label="Dismiss"
+                    onClick={handleDismiss}
                 >
-                    {title}
-                </OutboundLink>
-            </AlertDescription>
-            <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 top-2"
-                onClick={handleDismiss}
-            >
-                <X className="h-4 w-4" />
-            </Button>
+                    <X className="h-4 w-4" />
+                </Button>
+            </div>
         </Alert>
     );
 }

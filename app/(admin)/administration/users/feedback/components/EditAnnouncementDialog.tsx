@@ -245,21 +245,22 @@ export default function EditAnnouncementDialog({ announcement, open, onOpenChang
                         <div className="rounded-lg bg-black/70 p-4">
                             <p className="text-xs text-gray-400 mb-2 text-center font-medium">User View Preview</p>
                             <Card className={`relative w-full border-4 shadow-2xl ${previewStyles[announcementType]}`}>
-                                <button
-                                    type="button"
-                                    className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-default"
-                                    tabIndex={-1}
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
                                 <div className="p-6">
-                                    <div className="flex items-start justify-between mb-4">
+                                    <div className="flex items-start justify-between gap-2 mb-4">
                                         <div className="flex-shrink-0">
                                             {previewIcons[announcementType]}
                                         </div>
                                         <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                                             Please read ({minDisplaySeconds}s)
                                         </div>
+                                        <button
+                                            type="button"
+                                            aria-label="Close"
+                                            className="shrink-0 p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-default"
+                                            tabIndex={-1}
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
                                     </div>
                                     <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-100">
                                         {title || 'Announcement Title'}
