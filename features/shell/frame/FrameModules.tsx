@@ -8,11 +8,12 @@
 // handle and the page's featherweight ask bar.
 import { Component, Suspense, createElement, lazy, useEffect, useMemo, useRef, useState } from "react";
 import type { ComponentType, KeyboardEvent, LazyExoticComponent, PointerEvent, ReactNode } from "react";
-import { ArrowUp, Mic, Shapes, Webhook, X } from "lucide-react";
+import { ArrowUp, Mic, Shapes, X } from "lucide-react";
 import { holdDragCursor } from "@ai-matrx/design-system";
 import { cn } from "@ai-matrx/design-system/cn";
 import { Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import type { FrameModuleLoader } from "./types";
+import { CHAT_PRODUCT_ICON } from "./products";
 
 // One lazy component per loader, for the page's lifetime: React.lazy calls the loader the
 // first time the component renders, and never again.
@@ -122,9 +123,9 @@ export function ModuleSlot<P extends object>({
 export function CompanionPlaceholder({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <PanelTitle icon={<Webhook />} title="Side chat" onClose={onClose} closeLabel="Close side chat" />
+      <PanelTitle icon={<CHAT_PRODUCT_ICON />} title="Side chat" onClose={onClose} closeLabel="Close side chat" />
       <div className="flex min-h-0 flex-1 items-center justify-center p-4">
-        <EmptyState icon={<Webhook />} title="Side chat placeholder" line="The agent chat will sit here" />
+        <EmptyState icon={<CHAT_PRODUCT_ICON />} title="Side chat placeholder" line="The agent chat will sit here" />
       </div>
     </div>
   );

@@ -13,7 +13,6 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
-  Webhook,
   CircleUserRound as AccountIcon,
   Copy,
   ExternalLink,
@@ -36,6 +35,7 @@ import {
 import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
 import type { FrameAction, FrameCrumb, FrameForm, FrameHeaderTool } from "./types";
+import { CHAT_PRODUCT_ICON } from "./products";
 
 export interface FrameFavorite {
   starred: boolean;
@@ -256,7 +256,7 @@ export function SheetHeader({
           {sideChatToggle ? (
             <Button
               variant={sideChatToggle.open ? "outline" : "quiet"}
-              icon={<Webhook />}
+              icon={<CHAT_PRODUCT_ICON />}
               aria-label="Side chat"
               aria-pressed={sideChatToggle.open}
               disabled={Boolean(sideChatToggle.unavailable)}

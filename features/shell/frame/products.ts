@@ -106,6 +106,9 @@ import {
   Workflow,
   Wrench,
 } from "lucide-react";
+
+/** The Chat product's icon — also the side chat's (its door and title), never the reserved Agents glyph. */
+export const CHAT_PRODUCT_ICON = MessageSquare;
 import { INTELLIGENCE_ICON } from "@ai-matrx/icons/domain";
 // HR is the one product whose URLs are owned by a routes module rather than
 // written here — `features/hr/__tests__/no-hand-built-hr-urls.test.ts` fails a
@@ -163,7 +166,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
     id: "chat",
     name: "Chat",
     family: "yours",
-    icon: MessageSquare,
+    icon: CHAT_PRODUCT_ICON,
     color: "indigo",
     homeHref: "/chat",
     menu: [

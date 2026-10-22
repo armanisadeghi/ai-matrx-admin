@@ -15,7 +15,7 @@
 // load it late and flash the frame unstyled when its chunk arrives after the HTML.
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { Maximize2, Menu, Minimize2, Shapes, Webhook } from "lucide-react";
+import { Maximize2, Menu, Minimize2, Shapes } from "lucide-react";
 import { PortalContainerProvider } from "@ai-matrx/design-system";
 import { accentAttributes } from "@ai-matrx/design-system/accents";
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
@@ -45,7 +45,7 @@ import {
 } from "./geometry";
 import type { FrameInitialGeometry } from "./geometry";
 import { useModalPanel } from "./useModalPanel";
-import { bigItemProducts } from "./products";
+import { CHAT_PRODUCT_ICON, bigItemProducts } from "./products";
 import type {
   CanvasProps,
   CompanionProps,
@@ -537,7 +537,7 @@ export function AppFrame(props: AppFrameProps) {
     {
       id: "side-chat",
       label: companionShown ? "Close side chat" : "Side chat",
-      icon: Webhook,
+      icon: CHAT_PRODUCT_ICON,
       onSelect: () => toggleCompanion(menuTrigger()),
     },
     {
@@ -557,7 +557,7 @@ export function AppFrame(props: AppFrameProps) {
       loader={loadCompanion}
       props={{ onClose: closeCompanion, companionSeed: seed }}
       title="Side chat"
-      icon={<Webhook />}
+      icon={<CHAT_PRODUCT_ICON />}
       onClose={closeCompanion}
     />
   ) : (
