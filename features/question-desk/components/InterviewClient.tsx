@@ -72,6 +72,10 @@ import { ReviewTriage } from "./ReviewTriage";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { browserAdminLaneOpen } from "@/utils/supabase/adminLane";
 import { identityBannerText } from "../identityBanner";
+import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ADMIN_QUESTION_DESK_INTERVIEW_SURFACE_NAME } from "@/features/surfaces/manifests/admin-question-desk-interview.manifest";
 // Every seat gets the editorial face, not only the admin route.
 import "../question-desk.css";
 
@@ -647,6 +651,77 @@ export function InterviewClient({
     resolvedView,
     story,
   ]);
+
+  // Surface `matrx-admin/question-desk-interview` (the admin desk seat only): the interview as
+  // shown, and a draft written into the answer box — the answer stays the person's to save.
+  useSurfaceRuntimeRegistration(
+    seat === QUESTION_DESK_SEAT
+      ? {
+          surfaceName: ADMIN_QUESTION_DESK_INTERVIEW_SURFACE_NAME,
+          getScope: () =>
+            ({
+              interview_id: interviewId,
+              interview_load_status: interviewError || error ? "failed" : !interview || loading ? "loading" : "loaded",
+              interview_title: interview?.title,
+              interview_purpose: [interview?.subtitle, interview?.purpose].filter(Boolean).join(" — ") || undefined,
+              respondent_email: respondentEmail ?? undefined,
+              view: resolvedView ?? undefined,
+              question_count: loading ? undefined : askQuestions.length,
+              answered_count: loading ? undefined : askQuestions.filter(isAnswered).length,
+              review_count: loading ? undefined : reviewQuestions.length,
+              questions: loading
+                ? undefined
+                : questions.map((q) => ({
+                    id: q.id,
+                    slug: q.slug,
+                    title: q.title,
+                    mode: q.mode,
+                    status: q.status,
+                    answered: isAnswered(q),
+                    verdict: q.verdict,
+                    answer_text: q.answer_text,
+                  })),
+              current_question: current
+                ? {
+                    id: current.id,
+                    slug: current.slug,
+                    title: current.title,
+                    question: current.question,
+                    background: current.background,
+                    recommendation: current.recommendation,
+                    ruled_before: current.ruled_before,
+                    the_best_do: current.the_best_do,
+                    today: current.today,
+                    implications: current.implications,
+                    blocks: current.blocks,
+                    default_in_force: current.default_in_force,
+                    answered: isAnswered(current),
+                    verdict: current.verdict,
+                    answer_text: current.answer_text,
+                  }
+                : undefined,
+              answer_box_open: writing,
+              answer_draft: current ? draft.text : undefined,
+            }) as SurfaceScopePayload,
+          getWriteHandlers: () => ({
+            answer_draft: {
+              validate: (value: unknown) => {
+                if (!current) refuseSurfaceWrite("No question is open.");
+                if (typeof value !== "string") refuseSurfaceWrite("answer_draft takes the answer text.");
+              },
+              apply: (value: unknown) => {
+                if (!current) refuseSurfaceWrite("No question is open.");
+                draft.setText(String(value));
+                setDraftFromVoice(false);
+                openWrite();
+                return { summary: `Drafted into the answer box for "${current.title}"; the person saves it.` };
+              },
+              readCurrent: async () => draft.text,
+            },
+          }),
+        }
+      : null,
+  );
 
   // ---- render ------------------------------------------------------------
   if (interviewError) {

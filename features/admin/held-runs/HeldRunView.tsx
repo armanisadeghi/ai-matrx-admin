@@ -35,6 +35,10 @@ import {
   variableRows,
   type HeldRun,
 } from "./heldRuns";
+import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ADMIN_HELD_RUN_SURFACE_NAME } from "@/features/surfaces/manifests/admin-held-run.manifest";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -128,6 +132,52 @@ export function HeldRunView({ id }: { id: string }) {
 
   const replays = run?.replays ?? [];
   const label = run ? (mandateLabel ?? run.agent_name ?? run.mandate_key ?? "Held run") : loading ? "Held run" : "Held run not found";
+
+  // Surface `matrx-admin/held-run`: the frozen run as shown; its automation can be paused or resumed.
+  useSurfaceRuntimeRegistration({
+    surfaceName: ADMIN_HELD_RUN_SURFACE_NAME,
+    getScope: () =>
+      ({
+        held_run_address_id: id,
+        held_run_load_status: loading ? "loading" : error ? "failed" : run ? "loaded" : "none",
+        ...(run
+          ? {
+              held_run_id: run.id,
+              run_label: label,
+              gate: GATE_LABEL[run.gate] ?? run.gate,
+              why_stopped: run.refusal_message,
+              mandate_key: run.mandate_key,
+              agent: run.agent_id ? { id: run.agent_id, name: run.agent_name, version_number: run.agent_version_number ?? null } : null,
+              driver: run.driver,
+              model: run.model,
+              estimated_cost_usd: run.estimated_cost_usd,
+              times_stopped: run.occurrence_count,
+              last_seen_at: run.last_seen_at,
+              replays: replays.map((r) => ({ conversation_id: r.conversation_id, mode: r.version_mode, at: r.at })),
+              automation: taskId ? { task_id: taskId, enabled: taskEnabled } : null,
+              inputs: variableRows(run.variables),
+              typed_message: typeof run.user_input === "string" ? run.user_input : null,
+              context_values: run.context_entries ? variableRows(run.context_entries) : [],
+              messages: (run.messages ?? []).map((m) => ({ role: m.role, content: messageText(m.content) })),
+              tools: run.tools ?? [],
+            }
+          : {}),
+      }) as SurfaceScopePayload,
+    getWriteHandlers: () => ({
+      pause_automation: {
+        validate: (value: unknown) => {
+          if (!taskId) refuseSurfaceWrite("This run names no automation.");
+          if (typeof value !== "boolean") refuseSurfaceWrite("Send true to pause or false to resume.");
+        },
+        apply: async (value: unknown) => {
+          if (!taskId) refuseSurfaceWrite("This run names no automation.");
+          await patchSystemTask(taskId, { enabled: value !== true });
+          setTaskEnabled(value !== true);
+          return { summary: value === true ? "Automation paused." : "Automation resumed.", data: { task_id: taskId, enabled: value !== true } };
+        },
+      },
+    }),
+  });
 
   return (
     <div className="flex h-full min-h-0 flex-col">

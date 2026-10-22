@@ -3,7 +3,7 @@
 // held runs, spend (Arman 2026-10-16).
 import Link from "@/components/navigation/AppLink";
 import { ArrowLeft } from "lucide-react";
-import { SubjectApprovalsPanel } from "@/features/admin/spend-approvals/SubjectApprovalsPanel";
+import { WorkflowApprovalsSurface } from "@/features/admin/spend-approvals/WorkflowApprovalsSurface";
 
 export const metadata = { title: "Workflow Approvals | Admin" };
 
@@ -21,7 +21,7 @@ export default async function AdminWorkflowApprovalsRoute({
       >
         <ArrowLeft className="h-3.5 w-3.5" /> Workflow
       </Link>
-      <SubjectApprovalsPanel subject={{ kind: "workflow", id }} seat="admin" />
+      <WorkflowApprovalsSurface workflowId={id} />
     </div>
   );
 }

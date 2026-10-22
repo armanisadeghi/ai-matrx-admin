@@ -26,6 +26,11 @@ import { ApprovalEditBody } from "./ApprovalEditBody";
 import { DecisionDialog, HistoryList, spendApprovalsTableId, type Pending } from "./SpendApprovalsBoard";
 import { HeldRunsList } from "./SubjectApprovalsPanel";
 import { useSpendApprovalsData } from "./useSpendApprovalsData";
+import { spendApprovalSurfaceRow } from "./spendApprovalSurface";
+import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ADMIN_SPEND_APPROVAL_SURFACE_NAME } from "@/features/surfaces/manifests/admin-spend-approval.manifest";
 import {
   APPROVAL_STATUS_LABEL,
   COVERED_LABEL,
@@ -94,6 +99,46 @@ export function ApprovalRecordView({
   const row = rows.find((r) => r.subject_kind === subject.kind && r.subject_id === subject.id) ?? null;
   const related = row ? rows.filter((r) => r.id !== row.id && rowMatchesSubject(r, subject)) : [];
   const kindLabel = SUBJECT_KIND_LABEL[subject.kind] ?? subject.kind;
+
+  // Surface `matrx-admin/spend-approval` (admin seat only): the record as shown; a decision is
+  // only OPENED in the page's own dialog, the person presses.
+  const proposable = (value: unknown): "approve" | "approve_temporary" | "reject" | "reopen" | null =>
+    value === "approve" || value === "approve_temporary" || value === "reject" || value === "reopen" ? value : null;
+  useSurfaceRuntimeRegistration(
+    seat === "admin"
+      ? {
+          surfaceName: ADMIN_SPEND_APPROVAL_SURFACE_NAME,
+          getScope: () =>
+            ({
+              subject_kind: subject.kind,
+              subject_id: subject.id,
+              approval_load_status: loading ? "loading" : error ? "failed" : row ? "loaded" : "none",
+              approval: row ? spendApprovalSurfaceRow(row) : undefined,
+              related_approvals: related.map((r) => ({
+                id: r.id,
+                subject_name: r.subject_name ?? r.subject_id,
+                kind_label: SUBJECT_KIND_LABEL[r.subject_kind],
+                status_label: APPROVAL_STATUS_LABEL[r.status],
+              })),
+            }) as SurfaceScopePayload,
+          getWriteHandlers: () => ({
+            propose_decision: {
+              validate: (value: unknown) => {
+                if (!row) refuseSurfaceWrite("There is no approval on this page.");
+                if (!row.can_decide) refuseSurfaceWrite("This approval cannot be decided from this seat.");
+                if (!proposable(value)) refuseSurfaceWrite('Send "approve", "approve_temporary", "reject" or "reopen".');
+              },
+              apply: (value: unknown) => {
+                const decision = proposable(value);
+                if (!row || !decision) refuseSurfaceWrite("There is no decision to open.");
+                setPending({ row, decision });
+                return { summary: "The decision dialog is open; nothing is decided until the person presses it." };
+              },
+            },
+          }),
+        }
+      : null,
+  );
 
   const header = (name: string, r: SpendApprovalRow | null) => {
     const actions: RecordPageAction[] = [];

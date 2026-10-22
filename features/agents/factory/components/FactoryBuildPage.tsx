@@ -23,6 +23,9 @@
 
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { useEffect, useMemo, useState } from "react";
+import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ADMIN_AGENT_FACTORY_BUILD_SURFACE_NAME } from "@/features/surfaces/manifests/admin-agent-factory-build.manifest";
 import Link from "@/components/navigation/AppLink";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -534,6 +537,48 @@ export function FactoryBuildPage({ buildId }: { buildId: string }) {
   }, [conversationIds]);
 
   const rows = useMemo(() => (detail ? buildRows(detail) : []), [detail]);
+
+  // Surface `matrx-admin/agent-factory-build`: the build as shown (read-only).
+  useSurfaceRuntimeRegistration({
+    surfaceName: ADMIN_AGENT_FACTORY_BUILD_SURFACE_NAME,
+    getScope: () => {
+      const st = detail?.state ?? null;
+      return {
+        build_id: buildId,
+        build_load_status: detail === undefined && !error ? "loading" : error ? "failed" : !detail ? "not_found" : "loaded",
+        ...(detail && st
+          ? {
+              job: st.request?.mandate_key ?? null,
+              agent_name: st.request?.spec?.display_name ?? st.request?.spec?.name ?? null,
+              run_status: detail.spineStatus,
+              outcome: st.outcome ?? null,
+              send_backs: st.send_backs ?? 0,
+              agent_id: st.agent_id ?? null,
+              archived_agent: st.archived_agent ?? false,
+              model: st.model ?? null,
+              created_at: detail.createdAt,
+              ended_at: detail.endedAt,
+              error: st.error ?? null,
+              workflow_suggestion: st.workflow_suggestion ?? null,
+              steps: rows.map((row) => ({
+                step: row.step,
+                status: row.status,
+                attempt: row.attempt ?? null,
+                findings: row.record?.findings ?? row.loop?.findings ?? [],
+              })),
+              proof_cases: (st.proof ?? []).map((pc) => ({
+                case_id: pc.case_id,
+                source: pc.source ?? null,
+                gates: (pc.gates ?? []).map(([name, passed, gateDetail]) => ({ name, passed, detail: gateDetail })),
+                preferred: pc.preferred ?? null,
+              })),
+              flags: st.flags ?? [],
+              assumptions: st.assumptions ?? [],
+            }
+          : {}),
+      } as SurfaceScopePayload;
+    },
+  });
 
   if (detail === undefined && !error) {
     return (

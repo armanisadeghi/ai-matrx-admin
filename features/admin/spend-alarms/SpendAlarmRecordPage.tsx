@@ -46,6 +46,10 @@ import { AlarmSourcesList } from "./AlarmSourcesList";
 import { HeldRunsSection } from "@/features/admin/held-runs/HeldRunsSection";
 import { PausedAutomationSection } from "./PausedAutomationSection";
 import { Button } from "@ai-matrx/design-system/controls";
+import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ADMIN_SPEND_ALARM_SURFACE_NAME } from "@/features/surfaces/manifests/admin-spend-alarm.manifest";
 import {
   SPEND_ALARMS_PATH,
   alarmActions,
@@ -297,6 +301,40 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
     description: "One spend alarm with its ids and occurrences.",
     attributes: { level: record?.level ?? "", status: record?.status ?? "", count: String(record?.occurrence_count ?? 0) },
     data: record ? alarmAgentData({ ...record, names: record.names }, occurrences, typeof window === "undefined" ? "" : window.location.origin) : null,
+  });
+
+  // Surface `matrx-admin/spend-alarm`: the record as Copy for AI gives it, and its actions opened for the person.
+  const proposable = (value: unknown): Exclude<Pending, null>["kind"] | null => {
+    if (value === "resolve") return record && record.status !== "resolved" ? "resolve" : null;
+    if (value === "approve" || value === "reject" || value === "pause" || value === "run_now") return has(value) ? value : null;
+    return null;
+  };
+  useSurfaceRuntimeRegistration({
+    surfaceName: ADMIN_SPEND_ALARM_SURFACE_NAME,
+    getScope: () =>
+      ({
+        alarm_id: id,
+        alarm_load_status: loading ? "loading" : error ? "failed" : "loaded",
+        alarm_status_label: statusLabel || undefined,
+        alarm_sentence: record ? alarmSentence({ ...record, names: Object.fromEntries(names) }) : undefined,
+        alarm: agentPayload().data ?? undefined,
+        automation: task ? { title: task.title, enabled: task.enabled } : undefined,
+        approval_status: approvalStatus ?? undefined,
+        actions_offered: record ? actions : undefined,
+      }) as SurfaceScopePayload,
+    getWriteHandlers: () => ({
+      propose_action: {
+        validate: (value: unknown) => {
+          if (!proposable(value)) refuseSurfaceWrite(`"${String(value)}" is not an action this alarm offers right now.`);
+        },
+        apply: (value: unknown) => {
+          const kind = proposable(value);
+          if (!kind) refuseSurfaceWrite(`"${String(value)}" is not an action this alarm offers right now.`);
+          setPending({ kind });
+          return { summary: "The confirm dialog is open; nothing happens until the person presses it." };
+        },
+      },
+    }),
   });
 
   const columns: MatrxColumnDef<SpendAlarmOccurrence>[] = [

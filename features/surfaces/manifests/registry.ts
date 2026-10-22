@@ -418,6 +418,13 @@ import { termListsManifest } from "./term-lists.manifest";
 import { acquisitionConsoleManifest } from "./acquisition-console.manifest";
 // W2 area: route-groups
 import { clientPortalManifest, clientPortalFormManifest, clientPortalRecordManifest } from "./client-portal.manifest";
+import { adminToolAlertManifest } from "./admin-tool-alert.manifest";
+import { adminSpendAlarmManifest } from "./admin-spend-alarm.manifest";
+import { adminHeldRunManifest } from "./admin-held-run.manifest";
+import { adminSpendApprovalManifest, adminWorkflowSpendApprovalsManifest } from "./admin-spend-approval.manifest";
+import { adminAgentFactoryBuildManifest } from "./admin-agent-factory-build.manifest";
+import { adminJurisdictionRuleManifest, adminJurisdictionVerificationManifest } from "./admin-jurisdiction-rules.manifest";
+import { adminQuestionDeskInterviewManifest } from "./admin-question-desk-interview.manifest";
 
 /**
  * Manifests exactly as authored. Do NOT consume directly at runtime — generic
@@ -831,6 +838,15 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   clientPortalManifest,
   clientPortalFormManifest,
   clientPortalRecordManifest,
+  adminToolAlertManifest,
+  adminSpendAlarmManifest,
+  adminHeldRunManifest,
+  adminSpendApprovalManifest,
+  adminWorkflowSpendApprovalsManifest,
+  adminAgentFactoryBuildManifest,
+  adminJurisdictionRuleManifest,
+  adminJurisdictionVerificationManifest,
+  adminQuestionDeskInterviewManifest,
 ];
 
 // ---------------------------------------------------------------------------

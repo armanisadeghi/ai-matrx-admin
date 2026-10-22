@@ -15,6 +15,10 @@ import { toolHealthItems, proposalDecisionPlan, proposalUsd, TOOL_HEALTH_SOURCE_
 import { extractErrorMessage } from "@/utils/errors";
 import { formatRelativeTime } from "@/utils/datetime";
 import { TOOL_CONTROL_PATH, TOOL_CONTROL_QUERY_KEY } from "./paths";
+import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ADMIN_TOOL_ALERT_SURFACE_NAME } from "@/features/surfaces/manifests/admin-tool-alert.manifest";
 
 type Facts = Record<string, unknown>;
 
@@ -102,6 +106,45 @@ export function ToolAlertRecord({ alarmId }: { alarmId: string }) {
     }
   };
   const item = row ? toolHealthItems([row], { muteLocally: () => {}, unmuteLocally: () => {} })[0] : null;
+
+  // Surface `matrx-admin/tool-alert`: the alert as shown, and its decision opened for the person.
+  useSurfaceRuntimeRegistration({
+    surfaceName: ADMIN_TOOL_ALERT_SURFACE_NAME,
+    getScope: () =>
+      ({
+        alert_id: alarmId,
+        alert_load_status: query.isLoading ? "loading" : query.error ? "failed" : !row ? "closed" : "open",
+        alert_kind: row?.kind,
+        alert_title: row?.title,
+        alert_sentence: row?.sentence,
+        alert_detail: row?.detail,
+        alert_state: item?.state,
+        last_seen_at: row?.last_seen_at,
+        findings: row?.facts ?? undefined,
+        decision_offered: plan
+          ? {
+              can_approve: plan.canApprove,
+              approve_label: plan.approveLabel,
+              approve_consequence: plan.approveConsequence,
+              decline_label: plan.declineLabel,
+              decline_consequence: plan.declineConsequence,
+            }
+          : undefined,
+      }) as SurfaceScopePayload,
+    getWriteHandlers: () => ({
+      propose_decision: {
+        validate: (value: unknown) => {
+          if (!plan) refuseSurfaceWrite("This alert offers no decision.");
+          if (value !== "approve" && value !== "decline") refuseSurfaceWrite('Send "approve" or "decline".');
+          if (value === "approve" && !plan.canApprove) refuseSurfaceWrite("This alert can only be declined.");
+        },
+        apply: (value: unknown) => {
+          void decide(value === "approve" ? "approve" : "decline");
+          return { summary: "The confirm dialog is open; nothing changes until the person presses it." };
+        },
+      },
+    }),
+  });
 
   return (
     <div className="flex flex-col gap-3 p-3 pt-[var(--matrx-page-top)]" data-testid="tool-alert-record">

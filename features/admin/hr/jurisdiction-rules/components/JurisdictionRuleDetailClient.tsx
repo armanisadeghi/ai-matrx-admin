@@ -51,6 +51,10 @@ import {
   formatDateRange,
 } from "./rule-chrome";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ADMIN_JURISDICTION_RULE_SURFACE_NAME } from "@/features/surfaces/manifests/admin-jurisdiction-rules.manifest";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -179,6 +183,75 @@ export function JurisdictionRuleDetailClient({ ruleId }: { ruleId: string }) {
     reason: string;
     detail: string | null;
   } | null>(null);
+
+  // Surface `matrx-admin/jurisdiction-rule`: the rule as shown; a status change is only OPENED
+  // in the page's own confirm dialog, the person presses.
+  const shownRule = load?.state === "ok" ? (load.data.rules.find((candidate) => candidate.id === ruleId) ?? null) : null;
+  useSurfaceRuntimeRegistration({
+    surfaceName: ADMIN_JURISDICTION_RULE_SURFACE_NAME,
+    getScope: () => {
+      const r = shownRule;
+      return {
+        rule_id: ruleId,
+        rule_load_status: !load || loading ? "loading" : load.state !== "ok" ? load.state : r ? "loaded" : "not_found",
+        ...(r
+          ? {
+              rule: {
+                rule_class: r.rule_class,
+                rule_class_label: r.rule_class_label,
+                produces_money: r.produces_money,
+                jurisdiction_key: r.jurisdiction_key,
+                jurisdiction_name: r.jurisdiction_name,
+                jurisdiction_level: r.jurisdiction_level,
+                status: r.status,
+                version: r.version,
+                effective_from: r.effective_from,
+                effective_to: r.effective_to,
+                source_scope: r.source_scope,
+                organization_id: r.organization_id,
+                basis: r.basis,
+                verification_due: r.verification_due,
+                unverified_keys: r.unverified_keys,
+                jur_seed_task: r.jur_seed_task,
+                supersedes_id: r.supersedes_id,
+                correction_of_id: r.correction_of_id,
+              },
+              allowed_status_changes: allowedTransitionsFrom(r.status),
+              citation: r.citation,
+              parameters: r.parameters,
+              applicability: r.applicability,
+              fixtures: r.fixtures,
+              status_history: r.status_history.map((h) => ({ at: h.at, by: h.by, from: h.from, to: h.to, reason: h.reason })),
+            }
+          : {}),
+      } as SurfaceScopePayload;
+    },
+    getWriteHandlers: () => ({
+      propose_status_change: {
+        validate: (value: unknown) => {
+          parseStatusProposal(value);
+        },
+        apply: (value: unknown) => {
+          const proposal = parseStatusProposal(value);
+          setRefusal(null);
+          setSignOff(proposal.note);
+          setPendingStatus(proposal.status);
+          return { summary: `The confirm dialog to move the rule to ${proposal.status} is open; nothing changes until the person presses it.` };
+        },
+      },
+    }),
+  });
+  const parseStatusProposal = (value: unknown): { status: JurisdictionRuleStatus; note: string } => {
+    if (!shownRule) refuseSurfaceWrite("The rule has not loaded.");
+    if (!value || typeof value !== "object") refuseSurfaceWrite('Send { "status", "sign_off_note" }.');
+    const { status, sign_off_note } = value as Record<string, unknown>;
+    const allowed = allowedTransitionsFrom(shownRule.status);
+    const target = allowed.find((candidate) => candidate === status);
+    if (!target) refuseSurfaceWrite(`"${String(status)}" is not allowed from ${shownRule.status}. Allowed: ${allowed.join(", ") || "none"}.`);
+    const note = typeof sign_off_note === "string" ? sign_off_note.trim() : "";
+    if (target === "active" && !note) refuseSurfaceWrite("Promoting to active needs a sign-off note.");
+    return { status: target, note };
+  };
 
   const gate = (
     <RuleLoadGate load={load} loading={loading} loadingLabel="Loading the rule…" />

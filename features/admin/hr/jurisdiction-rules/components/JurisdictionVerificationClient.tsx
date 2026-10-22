@@ -5,6 +5,10 @@
 
 "use client";
 
+import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ADMIN_JURISDICTION_VERIFICATION_SURFACE_NAME } from "@/features/surfaces/manifests/admin-jurisdiction-rules.manifest";
+
 import { cloneElement, isValidElement, type ReactNode } from "react";
 import AppLink from "@/components/navigation/AppLink";
 import { AlertTriangle, CheckCircle2, Circle } from "lucide-react";
@@ -229,6 +233,31 @@ function seedTaskRowWrapper(task: JurSeedProgress, children: ReactNode) {
 
 export function JurisdictionVerificationClient() {
   const { load, loading, reload } = useJurisdictionRulesAdminData();
+
+  // Surface `matrx-admin/jurisdiction-verification`: the board as shown (read-only).
+  useSurfaceRuntimeRegistration({
+    surfaceName: ADMIN_JURISDICTION_VERIFICATION_SURFACE_NAME,
+    getScope: () =>
+      ({
+        board_load_status: !load || loading ? "loading" : load.state !== "ok" ? load.state : "loaded",
+        ...(load?.state === "ok"
+          ? {
+              seed_tasks: load.data.seedProgress,
+              overdue_rules: load.data.overdue.map((r) => ({
+                rule_id: r.rule_id,
+                rule_version: r.rule_version,
+                rule_class_label: r.rule_class_label,
+                jurisdiction_key: r.jurisdiction_key,
+                jurisdiction_name: r.jurisdiction_name,
+                status: r.status,
+                jur_seed_task: r.jur_seed_task,
+                verification_due: r.verification_due,
+                days_overdue: r.days_overdue,
+              })),
+            }
+          : {}),
+      }) as SurfaceScopePayload,
+  });
 
   const gate = (
     <RuleLoadGate

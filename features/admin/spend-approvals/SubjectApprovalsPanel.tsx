@@ -112,13 +112,20 @@ export function SubjectApprovalsPanel({
   seat,
   orgId = null,
   orgSlug,
+  onRows,
 }: {
   subject: ApprovalSubject;
   seat: ApprovalSeat;
   orgId?: string | null;
   orgSlug?: string;
+  /** Told the rows each time the board reads them (a host's surface runtime reads them). */
+  onRows?: (rows: SpendApprovalRow[]) => void;
 }) {
-  const [rows, setRows] = useState<SpendApprovalRow[] | null>(null);
+  const [rows, setRowsState] = useState<SpendApprovalRow[] | null>(null);
+  const setRows = (next: SpendApprovalRow[]) => {
+    setRowsState(next);
+    onRows?.(next);
+  };
   // Its own record first, then the related ones (an agent's mandates, a mandate's holders).
   const ordered = rows
     ? [...rows].sort(
