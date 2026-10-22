@@ -17,7 +17,7 @@ import { isUuidShape } from "@ai-matrx/kit/uuid";
 export function grainNoun(grain: string | null | undefined): string | null {
   const m = /one row per\s+(.+)$/i.exec(grain ?? "");
   if (!m) return null;
-  const noun = m[1]!.split(/\s+(?:of|for|with|in|from|per|where|that|whose)\s+|[,(;:—–-]/)[0]!.trim().toLowerCase();
+  const noun = m[1]!.split(/\s+(?:of|for|with|in|from|per|where|that|whose|the)\s+|[,(;:—–-]/)[0]!.trim().toLowerCase();
   return noun.length > 0 && noun.length <= 40 ? noun : null;
 }
 
