@@ -10,11 +10,9 @@
  * to a separate tree below 768px, and page-local state died on every rotate.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AgentVariableEditorWindowData } from "@/features/agents/components/variables-management/AgentVariableEditorWindow";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "agentVariableEditorWindow" as const;
 
@@ -24,29 +22,16 @@ export interface AgentVariableEditorWindowHandle {
   close: () => void;
 }
 
-export function useOpenAgentVariableEditorWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (
-      opts: OpenAgentVariableEditorWindowOptions,
-    ): AgentVariableEditorWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenAgentVariableEditorWindowOptions>(OVERLAY_ID, {
+  instanceId: () => undefined,
+  data: (opts: OpenAgentVariableEditorWindowOptions) => ({
             agentId: opts.agentId,
             variableName: opts.variableName,
             justCreated: opts.justCreated ?? false,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenAgentVariableEditorWindow = opener.useOpen;
 
 export type AgentVariableEditorWindowDefinitionData = OpenAgentVariableEditorWindowOptions;
 

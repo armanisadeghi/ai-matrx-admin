@@ -6,10 +6,8 @@
  * `SiteTrackingPanel`.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "siteTrackingWindow" as const;
 
@@ -19,24 +17,14 @@ export interface OpenSiteTrackingWindowOptions {
   siteLabel?: string | null;
 }
 
-export function useOpenSiteTrackingWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenSiteTrackingWindowOptions) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenSiteTrackingWindowOptions>(OVERLAY_ID, {
+  data: (options: OpenSiteTrackingWindowOptions) => ({
             siteId: options.siteId,
             siteLabel: options.siteLabel ?? "",
-          },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenSiteTrackingWindow = opener.useOpen;
 
 export type SiteTrackingWindowDefinitionData = OpenSiteTrackingWindowOptions;
 

@@ -25,7 +25,7 @@
 import { useEffect, useMemo } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createFullScreenEditorCallbackGroup,
   disposeFullScreenEditorCallbackGroup,
@@ -87,7 +87,7 @@ export function createFullScreenMarkdownEditorBridgeOpener(store: AppStore) {
   ): FullScreenMarkdownEditorBridgeHandle => {
     const instanceId =
       opts.instanceId ??
-      `fullScreenEditor-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      mintInstanceId(OVERLAY_ID);
 
     // Register a callback group only when the caller wants to be told about
     // the save. Plain "edit content" callers pass conversationId+messageId

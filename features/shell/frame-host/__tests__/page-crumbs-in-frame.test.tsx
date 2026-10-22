@@ -1,0 +1,153 @@
+/**
+ * THE PAGE HANDS ITS CRUMBS TO THE FRAME (owner, 2026-10-22: the new header is enforced in frame
+ * mode). In the new app frame a page-top template (RecordPageHeader here) used to draw its own
+ * title row in the header slot beside the frame's route-table crumbs, so the title showed twice
+ * and the frame's trail was a guess. Now the template declares its real trail to the frame and
+ * keeps only its modes and actions in the slot. Classic (no frame host) draws exactly as before.
+ *
+ * PROVEN FAILING BEFORE PASSING: against the pre-change templates the record name appears twice in
+ * frame mode and the frame's crumbs are the route table's ("Route title"), not the page's.
+ */
+import React, { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { Pencil, Tag } from "lucide-react";
+import type { FrameProduct } from "@/features/shell/frame/types";
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => false }));
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => "/marketing/brands/b1",
+}));
+jest.mock("@/lib/navigation/useBackHref", () => ({ useBackHref: (h: string) => h }));
+// The header slot renders where it stands (the portal machinery has its own tests).
+jest.mock("@/features/shell/components/header/PageHeader", () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="page-header">{children}</div>,
+}));
+// The page's REAL trail: what the address + menu derive for this record page.
+jest.mock("@/features/shell/breadcrumbs/useDerivedTrail", () => ({
+  useDerivedTrail: () => [
+    { label: "Marketing", href: "/marketing" },
+    { label: "Brands", href: "/marketing/brands" },
+    { label: "Acme Coffee" },
+  ],
+}));
+
+class RO {
+  observe() {}
+  disconnect() {}
+}
+(globalThis as { ResizeObserver?: unknown }).ResizeObserver = RO;
+
+/* eslint-disable @typescript-eslint/no-require-imports */
+const { TooltipProvider } = require("@/components/ui/tooltip") as typeof import("@/components/ui/tooltip");
+const { RecordPageHeader } = require("@/features/shell/components/header/templates/RecordPageHeader") as typeof import("@/features/shell/components/header/templates/RecordPageHeader");
+const { SheetHeader } = require("@/features/shell/frame/SheetHeader") as typeof import("@/features/shell/frame/SheetHeader");
+const page = require("../framePageHeader") as typeof import("../framePageHeader");
+/* eslint-enable @typescript-eslint/no-require-imports */
+
+const product: FrameProduct = {
+  id: "marketing",
+  name: "Marketing",
+  family: "business",
+  icon: Tag,
+  color: "blue",
+  homeHref: "/marketing",
+  menu: [],
+};
+const ROUTE_TABLE_CRUMBS = [
+  { id: "product", label: "Marketing", icon: Tag, iconOnly: true, href: "/marketing" },
+  { id: "page", label: "Route title" },
+];
+
+function Record() {
+  return (
+    <RecordPageHeader
+      backHref="/marketing/brands"
+      record={{ name: "Acme Coffee" }}
+      modes={[
+        { name: "Overview", href: "/marketing/brands/b1" },
+        { name: "Settings", href: "/marketing/brands/b1/settings" },
+      ]}
+      actions={[{ label: "Rename", icon: Pencil, onPress: () => {} }]}
+    />
+  );
+}
+
+/** What FrameHostImpl does: the page's declared trail, else the route table's crumbs. */
+function FrameHarness({ children }: { children: React.ReactNode }) {
+  const { host, pageCrumbs } = page.useFramePageHeaderHost();
+  const crumbs = pageCrumbs && pageCrumbs.length > 0 ? page.pageTrailCrumbs(product, pageCrumbs, () => {}) : ROUTE_TABLE_CRUMBS;
+  return (
+    <page.FramePageHeaderContext value={host}>
+      <SheetHeader form="desktop" crumbs={crumbs} actions={[]} hostSlots onOpenDrawer={() => {}} />
+      {children}
+    </page.FramePageHeaderContext>
+  );
+}
+
+let root: Root;
+let el: HTMLElement;
+function mount(node: React.ReactNode) {
+  el = document.createElement("div");
+  document.body.appendChild(el);
+  root = createRoot(el);
+  act(() => root.render(<TooltipProvider>{node}</TooltipProvider>));
+}
+afterEach(() => {
+  act(() => root.unmount());
+  document.body.innerHTML = "";
+});
+
+const occurrences = (text: string) =>
+  [...el.querySelectorAll("*")].filter((n) => n.children.length === 0 && n.textContent?.trim() === text).length;
+
+describe("page-top templates in the new app frame", () => {
+  it("frame crumbs: never the same level twice (product root, a list named like its section)", () => {
+    const labels = page
+      .pageTrailCrumbs(product, [{ label: "Marketing", href: "/marketing" }, { label: "Brands", href: "/marketing/brands" }, { label: "Brands" }], () => {})
+      .map((c) => c.label);
+    expect(labels).toEqual(["Marketing", "Brands"]);
+  });
+
+  it("frame: the record's name shows ONCE, as the frame's last crumb; the trail is the page's", () => {
+    mount(
+      <FrameHarness>
+        <Record />
+      </FrameHarness>,
+    );
+    expect(occurrences("Acme Coffee")).toBe(1);
+    const frameCrumbs = el.querySelector("[data-frame-crumbs]") as HTMLElement;
+    expect(frameCrumbs.querySelector("h1")?.textContent).toBe("Acme Coffee");
+    expect(frameCrumbs.textContent).toContain("Brands");
+    expect(frameCrumbs.textContent).not.toContain("Route title");
+    // The page's root level repeated the product: it is dropped, never shown twice.
+    expect(frameCrumbs.querySelectorAll('a[href="/marketing"]')).toHaveLength(1);
+    // The template's own row keeps its modes and actions, and no trail, name or back button.
+    const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
+    expect(slot.querySelector("[data-entity-trail]")).toBeNull();
+    expect(slot.querySelector('[aria-label="Back"]')).toBeNull();
+    expect(slot.textContent).toContain("Settings");
+    expect(slot.querySelector('[aria-label="Rename"]')).not.toBeNull();
+  });
+
+  it("frame: the crumbs fall back to the route table once the page's header is gone", () => {
+    function Toggle({ on }: { on: boolean }) {
+      return <FrameHarness>{on ? <Record /> : null}</FrameHarness>;
+    }
+    mount(<Toggle on />);
+    act(() => root.render(<TooltipProvider><Toggle on={false} /></TooltipProvider>));
+    expect(el.querySelector("[data-frame-crumbs] h1")?.textContent).toBe("Route title");
+  });
+
+  it("classic: the template draws its own back, trail and name, as before", () => {
+    mount(<Record />);
+    const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
+    expect(slot.querySelector('[aria-label="Back"]')).not.toBeNull();
+    expect(slot.querySelector("[data-entity-trail]")?.textContent).toContain("Brands");
+    expect(occurrences("Acme Coffee")).toBe(1);
+    expect(slot.querySelector('[aria-label="Rename"]')).not.toBeNull();
+  });
+});

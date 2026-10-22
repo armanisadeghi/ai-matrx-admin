@@ -15,7 +15,9 @@ import { cn } from "@/lib/utils";
 import {
   CrumbNode,
   CrumbTrailHeader,
+  frameCrumbOf,
 } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 import { useDerivedTrail, type UseDerivedTrailOptions } from "./useDerivedTrail";
 
 export interface DerivedBreadcrumbProps extends UseDerivedTrailOptions {
@@ -26,7 +28,9 @@ export interface DerivedBreadcrumbProps extends UseDerivedTrailOptions {
 
 export function DerivedBreadcrumb({ className, max, ...options }: DerivedBreadcrumbProps) {
   const all = useDerivedTrail(options);
-  if (all.length === 0) return null;
+  // THE NEW APP FRAME draws the trail in its own crumb row: hand it over and draw nothing here.
+  const inFrame = useDeclareFrameCrumbs(all.length > 0 ? all.map(frameCrumbOf) : null);
+  if (all.length === 0 || inFrame) return null;
   const trail = max && all.length > max ? all.slice(-max) : all;
   return (
     <nav

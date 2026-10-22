@@ -1041,7 +1041,6 @@
   "window:features/window-panels/windows/crm/CrmManagerWindow.tsx",
   "window:features/window-panels/windows/crm/GmailComposeWindow.tsx",
   "window:features/window-panels/windows/data-sources/DataChangesWindow.tsx",
-  "window:features/window-panels/windows/data-sources/DataSourceWindow.tsx",
   "window:features/window-panels/windows/directive-item/DirectiveItemWindow.tsx",
   "window:features/window-panels/windows/files/StorageSourcePickerWindow.tsx",
   "window:features/window-panels/windows/flashcards/FlashcardItemWindow.tsx",

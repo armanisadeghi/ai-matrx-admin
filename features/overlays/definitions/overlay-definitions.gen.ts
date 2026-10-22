@@ -84,7 +84,6 @@ export { cropStudioWindowOverlay } from "./cropStudioWindow.definition";
 export { curatedIconPickerWindowOverlay } from "./curatedIconPickerWindow.definition";
 export { customAgentWindowOverlay } from "./customAgentWindow.definition";
 export { dataChangesWindowOverlay } from "./dataChangesWindow.definition";
-export { dataSourceWindowOverlay } from "./dataSourceWindow.definition";
 export { detailWindowOverlay } from "./detailWindow.definition";
 export { dictionarySelectorWindowOverlay } from "./dictionarySelectorWindow.definition";
 export { diffViewerWindowOverlay } from "./diffViewerWindow.definition";

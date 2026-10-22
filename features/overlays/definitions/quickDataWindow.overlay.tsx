@@ -8,13 +8,11 @@
  * - `<QuickDataWindowController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "quickDataWindow" as const;
 
@@ -26,39 +24,16 @@ export interface QuickDataWindowHandle {
   close: () => void;
 }
 
-export function useOpenQuickDataWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenQuickDataWindowOptions = {}): QuickDataWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            selectedTable: opts.selectedTable,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenQuickDataWindowOptions>(OVERLAY_ID);
+
+export const useOpenQuickDataWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function QuickDataWindowController(props: OpenQuickDataWindowOptions): null {
-  const open = useOpenQuickDataWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.selectedTable]);
-  return null;
-}
+export const QuickDataWindowController = opener.Controller;
 
 export type QuickDataWindowDefinitionData = OpenQuickDataWindowOptions;
 

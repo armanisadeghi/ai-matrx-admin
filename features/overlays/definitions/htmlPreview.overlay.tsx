@@ -19,7 +19,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import { createFullScreenEditorCallbackGroup, disposeFullScreenEditorCallbackGroup } from "./callbacks/fullScreenEditor";
 import type { OverlayWire } from "./overlay-types";
 
@@ -54,7 +54,7 @@ export function createHtmlPreviewBridgeOpener(dispatch: ReturnType<typeof useApp
   return (opts: OpenHtmlPreviewBridgeOptions): HtmlPreviewBridgeHandle => {
       const instanceId =
         opts.instanceId ??
-        `htmlPreview-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        mintInstanceId(OVERLAY_ID);
 
       let callbackGroupId: string | null = null;
       if (opts.onSave) {

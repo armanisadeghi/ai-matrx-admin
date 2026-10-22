@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createImageAnnotationCallbackGroup,
   type ImageAnnotationWindowData,
@@ -47,7 +47,7 @@ export function useOpenImageAnnotationWindow() {
     ): ImageAnnotationWindowHandle => {
       const instanceId =
         options.windowInstanceId ??
-        `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        mintInstanceId(OVERLAY_ID);
       // The window closing itself releases its group (the window owns it).
       const { callbackGroupId, dispose } = createImageAnnotationCallbackGroup({
         ...options,

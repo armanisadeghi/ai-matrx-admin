@@ -12,11 +12,9 @@
  * window rather than stacking copies.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { ContextBundle } from "@/features/research/resources/types";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "researchContextPreviewWindow" as const;
 
@@ -32,29 +30,9 @@ export interface ResearchContextPreviewHandle {
   close: () => void;
 }
 
-export function useOpenResearchContextPreview() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (
-      opts: OpenResearchContextPreviewOptions,
-    ): ResearchContextPreviewHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            topicId: opts.topicId,
-            bundle: opts.bundle,
-            title: opts.title,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenResearchContextPreviewOptions>(OVERLAY_ID);
+
+export const useOpenResearchContextPreview = opener.useOpen;
 
 export type ResearchContextPreviewWindowDefinitionData = OpenResearchContextPreviewOptions;
 

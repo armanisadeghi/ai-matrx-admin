@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "keywordWindow" as const;
 
@@ -23,14 +21,8 @@ export interface OpenKeywordWindowOptions {
   tab?: string;
 }
 
-export function useOpenKeywordWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenKeywordWindowOptions = {}) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenKeywordWindowOptions>(OVERLAY_ID, {
+  data: (options: OpenKeywordWindowOptions = {}) => ({
             phrase: options.phrase ?? "",
             targetPhrase: options.phrase ?? "",
             history: [],
@@ -39,14 +31,10 @@ export function useOpenKeywordWindow() {
             pageId: options.pageId ?? "",
             brandId: options.brandId ?? "",
             activeTab: options.tab ?? "overview",
-          },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenKeywordWindow = opener.useOpen;
 
 export type KeywordWindowDefinitionData = OpenKeywordWindowOptions;
 

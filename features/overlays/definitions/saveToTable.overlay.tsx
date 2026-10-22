@@ -11,7 +11,7 @@
 
 import { useCallback, useContext } from "react";
 import { ReactReduxContext } from "react-redux";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createSaveToTableCallbackGroup,
   type SaveToTableHandlers,
@@ -53,7 +53,7 @@ export function useOpenSaveToTable(): ((options: OpenSaveToTableOptions) => Save
   const dispatch = redux?.store.dispatch ?? null;
   const open = useCallback(
     (options: OpenSaveToTableOptions): SaveToTableHandle => {
-      const instanceId = `saveToTable-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const instanceId = mintInstanceId(OVERLAY_ID);
       const callbacks = options.onSaved ? createSaveToTableCallbackGroup({ onSaved: options.onSaved }) : null;
       dispatch?.(
         openOverlay({

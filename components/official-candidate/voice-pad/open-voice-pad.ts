@@ -1,4 +1,4 @@
-import { closeOverlay, openOverlay, toggleOverlay, DEFAULT_INSTANCE_ID } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, toggleOverlay, DEFAULT_INSTANCE_ID, mintInstanceId } from "@ai-matrx/summon/open";
 import type { VoicePadOverlayVariant } from "@/lib/redux/slices/voicePadSlice";
 
 /**
@@ -17,11 +17,6 @@ import type { VoicePadOverlayVariant } from "@/lib/redux/slices/voicePadSlice";
  * Use `openNew*` to spawn a fresh instance while leaving existing ones open.
  */
 
-const newId = () =>
-  typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `vp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
 export const openVoicePad = (instanceId: string = DEFAULT_INSTANCE_ID) =>
   openOverlay({ overlayId: "voicePad", instanceId });
 
@@ -29,7 +24,7 @@ export const toggleVoicePad = (instanceId: string = DEFAULT_INSTANCE_ID) =>
   toggleOverlay({ overlayId: "voicePad", instanceId });
 
 export const openNewVoicePad = () =>
-  openOverlay({ overlayId: "voicePad", instanceId: newId() });
+  openOverlay({ overlayId: "voicePad", instanceId: mintInstanceId("voicePad") });
 
 export const openVoicePadAdvanced = (
   instanceId: string = DEFAULT_INSTANCE_ID,
@@ -40,7 +35,7 @@ export const toggleVoicePadAdvanced = (
 ) => toggleOverlay({ overlayId: "voicePadAdvanced", instanceId });
 
 export const openNewVoicePadAdvanced = () =>
-  openOverlay({ overlayId: "voicePadAdvanced", instanceId: newId() });
+  openOverlay({ overlayId: "voicePadAdvanced", instanceId: mintInstanceId("voicePadAdvanced") });
 
 export const closeVoicePadInstance = (
   overlayId: VoicePadOverlayVariant,

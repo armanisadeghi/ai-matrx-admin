@@ -39,7 +39,7 @@ import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { Button } from "@/components/ui/button";
 import { WindowPanel } from "@ai-matrx/summon/window";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 // Legacy openFilePreview removed in Phase 11 — we just open the source URL
 // in a new tab now (signed / share URLs are browser-loadable directly).
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -179,7 +179,7 @@ export function PdfExtractorFloatingWorkspace({
         // each other's draft via the shared singleton "default" slot.
         instanceId: doc?.id
           ? `save-notes-pdf-${doc.id}`
-          : `save-notes-pdf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          : mintInstanceId("saveToNotes"),
         data: {
           initialContent: text,
           // Large extractions can stall the markdown preview pane on open.

@@ -9,10 +9,8 @@
  *   open, unmount to close.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "scopeBatchImportWindow" as const;
 
@@ -24,40 +22,15 @@ export interface ScopeBatchImportWindowHandle {
   close: () => void;
 }
 
-export function useOpenScopeBatchImportWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenScopeBatchImportWindowOptions): ScopeBatchImportWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            agentId: opts.agentId,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenScopeBatchImportWindowOptions>(OVERLAY_ID);
+
+export const useOpenScopeBatchImportWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function ScopeBatchImportWindowController(
-  props: OpenScopeBatchImportWindowOptions,
-): null {
-  const open = useOpenScopeBatchImportWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.agentId]);
-  return null;
-}
+export const ScopeBatchImportWindowController = opener.Controller;
 
 export type ScopeBatchImportWindowDefinitionData = OpenScopeBatchImportWindowOptions;
 

@@ -248,7 +248,6 @@ export const OVERLAY_META_INDEX: readonly OverlayMetaRow[] = [
   { id: "voicePadAdvanced", label: "Voice Pad Advanced", instance: "multi", window: { windowId: "voice-pad-advanced", mobile: "fullscreen" } },
   { id: "transcriptionCleanup", label: "Transcription Cleanup", instance: "multi", window: { windowId: "transcription-cleanup", mobile: "fullscreen" } },
   { id: "dictionarySelectorWindow", label: "Dictionary Context", instance: "single", window: { windowId: "dictionary-selector", mobile: "drawer" } },
-  { id: "dataSourceWindow", label: "Data Source", instance: "single", window: { windowId: "data-source", mobile: "fullscreen" } },
   { id: "dataChangesWindow", label: "Data Changes", instance: "single", window: { windowId: "data-changes", mobile: "fullscreen" } },
   { id: "welcomeFoundWindow", label: "We found you", instance: "single", window: { windowId: "welcome-found-window", mobile: "fullscreen" } },
   { id: "meetMatrxWindow", label: "Meet Matrx", instance: "single", window: { windowId: "meet-matrx-window", mobile: "fullscreen" } },

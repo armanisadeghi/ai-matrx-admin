@@ -242,7 +242,6 @@ export const APP_OVERLAYS = [
   d.voicePadAdvancedOverlay,
   d.transcriptionCleanupOverlay,
   d.dictionarySelectorWindowOverlay,
-  d.dataSourceWindowOverlay,
   d.dataChangesWindowOverlay,
   d.welcomeFoundWindowOverlay,
   d.meetMatrxWindowOverlay,

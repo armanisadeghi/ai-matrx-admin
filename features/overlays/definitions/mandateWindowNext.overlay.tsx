@@ -9,11 +9,9 @@
  * only chooses which one is selected, and `initialTab` which tab opens.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "mandateWindowNext" as const;
 
@@ -28,38 +26,17 @@ export interface MandateWindowNextHandle {
   close: () => void;
 }
 
-export function useOpenMandateWindowNext() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenMandateWindowNextOptions = {}): MandateWindowNextHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenMandateWindowNextOptions>(OVERLAY_ID, {
+  data: (opts: OpenMandateWindowNextOptions = {}) => ({
             initialMandateKey: opts.initialMandateKey ?? null,
             initialTab: opts.initialTab ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenMandateWindowNext = opener.useOpen;
 
 /** Declarative form — opens on mount, closes on unmount. */
-export function MandateWindowNextController(
-  props: OpenMandateWindowNextOptions,
-): null {
-  const open = useOpenMandateWindowNext();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialMandateKey, props.initialTab]);
-  return null;
-}
+export const MandateWindowNextController = opener.Controller;
 
 export type MandateWindowNextDefinitionData = OpenMandateWindowNextOptions;
 

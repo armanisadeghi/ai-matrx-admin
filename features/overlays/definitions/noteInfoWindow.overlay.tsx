@@ -11,10 +11,8 @@
  * Singleton: re-opening for a different note retargets the same window.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "noteInfoWindow" as const;
 
@@ -27,41 +25,15 @@ export interface NoteInfoWindowHandle {
   close: () => void;
 }
 
-export function useOpenNoteInfoWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenNoteInfoWindowOptions = {}): NoteInfoWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            noteId: opts.noteId,
-            title: opts.title,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenNoteInfoWindowOptions>(OVERLAY_ID);
+
+export const useOpenNoteInfoWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function NoteInfoWindowController(
-  props: OpenNoteInfoWindowOptions,
-): null {
-  const open = useOpenNoteInfoWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.noteId, props.title]);
-  return null;
-}
+export const NoteInfoWindowController = opener.Controller;
 
 export type NoteInfoWindowDefinitionData = OpenNoteInfoWindowOptions;
 

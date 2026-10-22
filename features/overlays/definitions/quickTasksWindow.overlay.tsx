@@ -8,13 +8,11 @@
  * - `<QuickTasksWindowController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "quickTasksWindow" as const;
 
@@ -25,32 +23,18 @@ export interface QuickTasksWindowHandle {
   close: () => void;
 }
 
-export function useOpenQuickTasksWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenQuickTasksWindowOptions = {}): QuickTasksWindowHandle => {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID }));
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenQuickTasksWindowOptions>(OVERLAY_ID, {
+  data: () => ({}),
+});
+
+export const useOpenQuickTasksWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function QuickTasksWindowController(props: OpenQuickTasksWindowOptions): null {
-  const open = useOpenQuickTasksWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const QuickTasksWindowController = opener.Controller;
 
 export type QuickTasksWindowDefinitionData = OpenQuickTasksWindowOptions;
 

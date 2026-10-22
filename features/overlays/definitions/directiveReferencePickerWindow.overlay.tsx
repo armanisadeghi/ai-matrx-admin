@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createDirectiveReferencePickerCallbackGroup,
   type DirectiveReferencePickerHandlers,
@@ -38,7 +38,7 @@ export function useOpenDirectiveReferencePickerWindow() {
     ): DirectiveReferencePickerHandle => {
       const instanceId =
         options.instanceId ??
-        `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        mintInstanceId(OVERLAY_ID);
       const { callbackGroupId, dispose } =
         createDirectiveReferencePickerCallbackGroup({
           onPicked: options.onPicked,

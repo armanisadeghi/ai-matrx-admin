@@ -11,10 +11,8 @@
  * Opens a markdown table at full size in a floating WindowPanel.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "tableViewerWindow" as const;
 
@@ -27,41 +25,15 @@ export interface TableViewerWindowHandle {
   close: () => void;
 }
 
-export function useOpenTableViewerWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenTableViewerWindowOptions = {}): TableViewerWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            content: opts.content,
-            title: opts.title,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenTableViewerWindowOptions>(OVERLAY_ID);
+
+export const useOpenTableViewerWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function TableViewerWindowController(
-  props: OpenTableViewerWindowOptions,
-): null {
-  const open = useOpenTableViewerWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.content, props.title]);
-  return null;
-}
+export const TableViewerWindowController = opener.Controller;
 
 export type TableViewerWindowDefinitionData = OpenTableViewerWindowOptions;
 

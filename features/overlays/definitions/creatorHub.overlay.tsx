@@ -12,10 +12,8 @@
  * Bug). This opener is for programmatic opens (e.g. the Creator tools tile).
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "creatorHub" as const;
 
@@ -51,32 +49,11 @@ export interface CreatorHubHandle {
   close: () => void;
 }
 
-export function useOpenCreatorHub() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenCreatorHubOptions = {}): CreatorHubHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: { initialTab: opts.initialTab },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenCreatorHubOptions>(OVERLAY_ID);
 
-export function CreatorHubController(props: OpenCreatorHubOptions): null {
-  const open = useOpenCreatorHub();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialTab]);
-  return null;
-}
+export const useOpenCreatorHub = opener.useOpen;
+
+export const CreatorHubController = opener.Controller;
 
 export type CreatorHubDefinitionData = OpenCreatorHubOptions;
 

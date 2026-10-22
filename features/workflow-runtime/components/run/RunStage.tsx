@@ -61,6 +61,7 @@ import { useFloatingWorkflowRun } from "../../floating/useFloatingWorkflowRun";
 import {
   selectNodeAggregatePhases,
   selectRunEmissions,
+  selectRunInput,
   selectRunStatus,
 } from "../../redux/workflow-runs.selectors";
 import { DeliveredStream } from "../../kind-emissions/DeliveredStream";
@@ -99,6 +100,7 @@ import { flagsByNode, useRunFlags } from "../../review/useRunFlags";
 import {
   deliverableSteps,
   describeWorkflowSteps,
+  relabelStepsForRun,
   type RunStepPresentation,
 } from "./node-presentation";
 
@@ -215,7 +217,8 @@ export function RunStage({
    */
   floatOnLeave?: boolean;
 }) {
-  const steps = useMemo(() => describeWorkflowSteps(definition), [definition]);
+  const runInput = useAppSelector(selectRunInput(runId));
+  const steps = useMemo(() => relabelStepsForRun(describeWorkflowSteps(definition), runInput), [definition, runInput]);
   const deliverables = useMemo(() => deliverableSteps(steps), [steps]);
   const surface = useMemo(
     () => config ?? deriveDefaultSurfaceConfig(definition),

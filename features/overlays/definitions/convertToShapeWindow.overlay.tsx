@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "convertToShapeWindow" as const;
 
@@ -11,41 +9,13 @@ export interface OpenConvertToShapeWindowOptions {
   initialJsonContent: string;
 }
 
-export function useOpenConvertToShapeWindow() {
-  const dispatch = useAppDispatch();
+const opener = appOpener<OpenConvertToShapeWindowOptions>(OVERLAY_ID, {
+  data: ({ initialJsonContent }: OpenConvertToShapeWindowOptions) => ({ initialJsonContent }),
+});
 
-  return useCallback(
-    ({ initialJsonContent }: OpenConvertToShapeWindowOptions) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: { initialJsonContent },
-        }),
-      );
-      return {
-        close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
-        },
-      };
-    },
-    [dispatch],
-  );
-}
+export const useOpenConvertToShapeWindow = opener.useOpen;
 
-export function ConvertToShapeWindowController({
-  initialJsonContent,
-}: OpenConvertToShapeWindowOptions): null {
-  const open = useOpenConvertToShapeWindow();
-
-  useEffect(() => {
-    const handle = open({ initialJsonContent });
-    return () => {
-      handle.close();
-    };
-  }, [initialJsonContent, open]);
-
-  return null;
-}
+export const ConvertToShapeWindowController = opener.Controller;
 
 export type ConvertToShapeWindowDefinitionData = OpenConvertToShapeWindowOptions;
 

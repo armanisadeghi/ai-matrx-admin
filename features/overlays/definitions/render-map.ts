@@ -92,7 +92,6 @@ export const RENDER_MAP: OverlayRenderMap = {
   curatedIconPickerWindow: () => import("./curatedIconPickerWindow.render"),
   customAgentWindow: () => import("./customAgentWindow.render"),
   dataChangesWindow: () => import("./dataChangesWindow.render"),
-  dataSourceWindow: () => import("./dataSourceWindow.render"),
   detailWindow: () => import("./detailWindow.render"),
   dictionarySelectorWindow: () => import("./dictionarySelectorWindow.render"),
   diffViewerWindow: () => import("./diffViewerWindow.render"),

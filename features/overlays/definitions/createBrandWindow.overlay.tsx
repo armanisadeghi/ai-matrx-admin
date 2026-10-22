@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createCreateBrandCallbackGroup,
   type CreateBrandWindowHandlers,
@@ -30,7 +30,7 @@ export function useOpenCreateBrandWindow() {
 
   return useCallback(
     (options: OpenCreateBrandWindowOptions = {}): CreateBrandWindowHandle => {
-      const instanceId = `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const instanceId = mintInstanceId(OVERLAY_ID);
       const { callbackGroupId, dispose } = createCreateBrandCallbackGroup(options);
       dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data: { callbackGroupId } }));
       const detach = () => {

@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { RecordId, Skeleton } from "@ai-matrx/design-system";
+import { useDeclareFrameCrumbs, type FramePageCrumb } from "@/features/shell/frame-host/framePageHeader";
 
 export interface CrumbOption {
   label: string;
@@ -146,6 +147,18 @@ function CrumbOptions({ crumb }: { crumb: Crumb }) {
   );
 }
 
+/** A template crumb as the frame's crumb data (the classic-only drawing hints stay behind). */
+export function frameCrumbOf(crumb: Crumb): FramePageCrumb {
+  return {
+    label: crumb.label,
+    href: crumb.href,
+    options: crumb.options,
+    optionsLabel: crumb.optionsLabel,
+    optionsAllHref: crumb.optionsAllHref,
+    optionsAllLabel: crumb.optionsAllLabel,
+  };
+}
+
 export function CrumbNode({ crumb, isLast }: { crumb: Crumb; isLast: boolean }) {
   if (crumb.pending) {
     return (
@@ -195,10 +208,13 @@ export function CrumbTrailHeader({
   right,
   fallback = false,
 }: CrumbTrailHeaderProps) {
-  if (trail.length === 0) return null;
-  const last = trail[trail.length - 1];
+  // THE NEW APP FRAME: the trail goes to the frame's crumb row; only `right` stays in the header slot.
+  const inFrame = useDeclareFrameCrumbs(trail.length > 0 ? trail.map(frameCrumbOf) : null, { fallback });
   // Back returns where this tab came from; the crumb is the fallback.
   const back = useBackHref(backHref ?? trail[0]?.href ?? "/");
+  if (trail.length === 0) return null;
+  if (inFrame) return right != null && right !== false ? <RouteHeader fallback={fallback} right={right} /> : null;
+  const last = trail[trail.length - 1];
 
   return (
     <RouteHeader

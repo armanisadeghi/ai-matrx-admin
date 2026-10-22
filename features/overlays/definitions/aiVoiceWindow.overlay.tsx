@@ -8,13 +8,11 @@
  * - `<AiVoiceWindowController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "aiVoiceWindow" as const;
 
@@ -26,39 +24,16 @@ export interface AiVoiceWindowHandle {
   close: () => void;
 }
 
-export function useOpenAiVoiceWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenAiVoiceWindowOptions = {}): AiVoiceWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            title: opts.title,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenAiVoiceWindowOptions>(OVERLAY_ID);
+
+export const useOpenAiVoiceWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function AiVoiceWindowController(props: OpenAiVoiceWindowOptions): null {
-  const open = useOpenAiVoiceWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.title]);
-  return null;
-}
+export const AiVoiceWindowController = opener.Controller;
 
 export type AiVoiceWindowDefinitionData = OpenAiVoiceWindowOptions;
 

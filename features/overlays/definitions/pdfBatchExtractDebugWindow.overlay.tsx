@@ -4,10 +4,8 @@
  * Opener for the `pdfBatchExtractDebugWindow` overlay.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "pdfBatchExtractDebugWindow" as const;
 
@@ -19,38 +17,15 @@ export interface PdfBatchExtractDebugWindowHandle {
   close: () => void;
 }
 
-export function useOpenPdfBatchExtractDebugWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (
-      opts: OpenPdfBatchExtractDebugWindowOptions = {},
-    ): PdfBatchExtractDebugWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenPdfBatchExtractDebugWindowOptions>(OVERLAY_ID, {
+  data: (opts: OpenPdfBatchExtractDebugWindowOptions = {}) => ({
             initialSessionId: opts.initialSessionId ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
 
-export function PdfBatchExtractDebugWindowController(
-  props: OpenPdfBatchExtractDebugWindowOptions,
-): null {
-  const open = useOpenPdfBatchExtractDebugWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialSessionId]);
-  return null;
-}
+export const useOpenPdfBatchExtractDebugWindow = opener.useOpen;
+
+export const PdfBatchExtractDebugWindowController = opener.Controller;
 
 export type PdfBatchExtractDebugWindowDefinitionData = OpenPdfBatchExtractDebugWindowOptions;
 

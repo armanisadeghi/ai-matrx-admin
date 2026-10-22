@@ -8,13 +8,11 @@
  * - `<FullscreenMarkdownEditorController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "markdownEditor" as const;
 
@@ -30,43 +28,16 @@ export interface FullscreenMarkdownEditorHandle {
   close: () => void;
 }
 
-export function useOpenFullscreenMarkdownEditor() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenFullscreenMarkdownEditorOptions = {}): FullscreenMarkdownEditorHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            triggerClassName: opts.triggerClassName,
-            triggerLabel: opts.triggerLabel,
-            initialMarkdown: opts.initialMarkdown,
-            showSampleSelector: opts.showSampleSelector,
-            showConfigSelector: opts.showConfigSelector,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenFullscreenMarkdownEditorOptions>(OVERLAY_ID);
+
+export const useOpenFullscreenMarkdownEditor = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function FullscreenMarkdownEditorController(props: OpenFullscreenMarkdownEditorOptions): null {
-  const open = useOpenFullscreenMarkdownEditor();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.triggerClassName, props.triggerLabel, props.initialMarkdown, props.showSampleSelector, props.showConfigSelector]);
-  return null;
-}
+export const FullscreenMarkdownEditorController = opener.Controller;
 
 export type MarkdownEditorDefinitionData = OpenFullscreenMarkdownEditorOptions;
 
