@@ -394,6 +394,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const scannerManifest: SurfaceManifest = {
   surfaceName: "matrx-user/scanner",
+  situation:
+    "They are scanning \"{scan_title|an untitled scan}\": {scan_page_count} pages, {scan_uploading_count} uploading, {scan_error_count} failed, all saved: {scan_all_uploaded}; processing step: {scan_processing_stage|not started}. They can rename the scan and label its pages.",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

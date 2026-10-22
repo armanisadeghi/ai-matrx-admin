@@ -219,6 +219,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const extractorChunkerManifest: SurfaceManifest = {
   surfaceName: "matrx-user/extractor-chunker",
+  situation:
+    "They are on the Chunked Runs tab, running the extraction job \"{job_name|not named}\" over the document chunk by chunk; this chunk starts at page {chunk_first_page|unknown}, of {chunk_count|an unknown number of} chunks.",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

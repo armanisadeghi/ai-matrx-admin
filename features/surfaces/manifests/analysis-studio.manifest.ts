@@ -383,6 +383,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const analysisStudioManifest: SurfaceManifest = {
   surfaceName: "matrx-user/analysis-studio",
+  situation:
+    "They have \"{filename|a PDF}\" open in the PDF Analysis Studio on the {inspector_tab} panel, page view in {canvas_mode} mode: {active_page_count} pages, {annotation_count} annotations. They can relabel an annotation, change its extracted text, focus it or redact it.",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

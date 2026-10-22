@@ -187,6 +187,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const connectedSourcesManifest: SurfaceManifest = {
   surfaceName: CONNECTED_SOURCES_SURFACE_NAME,
+  situation:
+    "They are in Connected sources, browsing {browsing.source_title|no account yet} ({browsing.email|no email}) live from the provider; search: {search_query|none}. {browse_summary|No page has loaded yet.} They can ask to read an item's comments, history or speaker notes.",
   inheritsFrom: "matrx-default/files",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

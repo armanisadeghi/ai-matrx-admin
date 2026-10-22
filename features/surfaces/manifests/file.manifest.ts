@@ -451,6 +451,8 @@ const clientTools: SurfaceClientTool[] = [
 
 export const fileManifest: SurfaceManifest = {
   surfaceName: FILE_SURFACE_NAME,
+  situation:
+    "They have the file \"{file_name|still loading}\" open on the {active_tab} tab ({file_preview_kind|unknown kind}, version {file_current_version|unknown}, Knowledge: {file_knowledge_status|unknown}). They can rename, move or restore it, change who sees it, switch tabs, go to a page or download it.",
   inheritsFrom: "matrx-default/files",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

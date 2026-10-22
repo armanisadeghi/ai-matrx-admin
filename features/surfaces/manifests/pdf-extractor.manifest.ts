@@ -549,6 +549,8 @@ export const PDF_EXTRACTOR_SURFACE_NAME = "matrx-user/pdf-extractor";
 
 export const pdfExtractorManifest: SurfaceManifest = {
   surfaceName: PDF_EXTRACTOR_SURFACE_NAME,
+  situation:
+    "They have \"{filename}\" open in the PDF Extractor, on page {current_page} of {total_pages}, with the {scope_kind} scope chosen (full, current page, page range or selection); clean text in use: {using_clean_text}. They can run an agent on that scope and edit the extraction template and its output columns.",
   inheritsFrom: "matrx-default/files",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

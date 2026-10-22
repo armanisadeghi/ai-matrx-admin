@@ -111,6 +111,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const filePreviewManifest: SurfaceManifest = {
   surfaceName: FILE_PREVIEW_SURFACE_NAME,
+  situation:
+    "They are previewing the file \"{file_name|still loading}\" ({file_mime_type|unknown type}, visibility: {file_visibility|unknown}).",
   inheritsFrom: "matrx-default/files",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
