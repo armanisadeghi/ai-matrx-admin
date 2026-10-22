@@ -16,7 +16,7 @@ import { readAllRows } from "@ai-matrx/data/db";
 
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
-import { authenticatedWebDb } from "@/utils/supabase/webDb";
+import { authenticatedWebDb, signedInPersonId } from "@/utils/supabase/webDb";
 import { listBrandRelationKinds, type BrandRelationKind } from "@/features/marketing/data/service";
 import type { MarketingBrand } from "@/features/marketing/types";
 import { suggestContext } from "@/features/marketing/smart-add/relations";
@@ -26,7 +26,7 @@ import { EMPTY_KNOWN, foldQueue } from "@/features/marketing/smart-add/validate/
 import { partOf, type ChoiceRow, type DecideAction, type ElementRow, type Placement, type WordRow } from "./deck";
 
 const CHOICE_COLUMNS =
-  "id, brand_id, element_id, value, origin, recommended_placement, opinion_reason, word_signals, decision, placement, decided_by, decided_at, decision_reason, organization_id, created_at";
+  "id, brand_id, element_id, value, origin, recommended_placement, opinion_reason, word_signals, decision, placement, decided_by, decided_at, decision_reason, organization_id, created_at, created_by";
 
 export const SESSION_VIA = "brand_session";
 
@@ -109,6 +109,11 @@ async function loadChoices(brandId: string): Promise<ChoiceRow[]> {
   ) as Promise<ChoiceRow[]>;
 }
 
+/** The signed-in person (a stance answer withdraws only their own earlier answer). */
+export async function sessionPersonId(): Promise<string> {
+  return signedInPersonId(supabase);
+}
+
 const PLACEMENT_OF: Record<string, Placement> = { declined: "not_us", parked: "not_sure" };
 
 function wordRows(choices: readonly ChoiceRow[]): Map<string, WordRow[]> {
@@ -188,7 +193,7 @@ export async function answerAudience(
   row: string,
   name: string,
   action: Placement | "retract" | null,
-  origin: "said" | "ai",
+  origin: "said" | "team",
 ): Promise<{ category_id: string; choice_id: string }> {
   const db = await authenticatedWebDb(supabase);
   const { data, error } = await db.rpc("brand_audience_answer", {

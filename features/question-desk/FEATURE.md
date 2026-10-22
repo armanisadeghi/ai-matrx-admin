@@ -146,6 +146,7 @@ Built 2026-09-12 as lane L2 of the Question Desk campaign, then re-worked the sa
 ---
 
 ## Change log
+- 2026-10-22 — `useAnswerDraft`: one controller per mount (no manual `useCallback`, no ref writes in render — React Compiler law); every server write runs on one ordered queue and a draft write older than its question's last clear is dropped, so a Save can never be undone by an upsert still in flight. Guard: `__tests__/answer-draft-server.test.tsx` (red on the old hook).
 
 - `2026-10-22` — **Answer drafts on the server.** `useAnswerDraft` moved from `localStorage` to the person's `users.user_surface_state` row per interview + question (restored on reload and on another device, retired on save; the answer row is untouched while typing). Guard: `__tests__/answer-draft-server.test.tsx` (red against the localStorage hook).
 

@@ -1,13 +1,12 @@
 /**
- * The PURE layout engine for the Run Surface — Grafana model (ruling R7).
+ * THE TIER-0 GENERATOR for the Run Surface.
  *
- * A 24-column grid with vertical compaction: items keep their x/w; overlap is
- * resolved by pushing DOWN (never sideways); everything floats UP into the
- * nearest free space, preserving relative vertical order. All functions are
- * deterministic (processing order is (y, x, id)) and pure — inputs are never
- * mutated, outputs are new objects.
+ * Its old 24-column compaction engine (compactLayout / applyPlacement /
+ * findFreeSlot / mobileOrderOf) was deleted in lane W (2026-10-22): the run
+ * page flows on THE ONE GRID ENGINE, design-system GridCanvas line mode
+ * (`./grid.ts`), and the builder derives positions through it.
  *
- * Also home to THE TIER-0 GENERATOR (`autoLayoutSurface`, PLAN §4.2-1):
+ * Home to THE TIER-0 GENERATOR (`autoLayoutSurface`, PLAN §4.2-1):
  * a workflow definition in, the default RunSurfaceConfig out — SUMMARIZE,
  * NEVER MIRROR THE GRAPH.
  *
@@ -17,138 +16,11 @@
 import {
   GRID_COLUMNS,
   SURFACE_SCHEMA_VERSION,
-  type GridPos,
   type Readout,
   type ReadoutSource,
   type RunSurfaceConfig,
 } from "./config";
 import type { WorkflowDefinitionLike } from "../trigger-points";
-
-export interface LayoutItem {
-  id: string;
-  pos: GridPos;
-}
-
-// ── Geometry primitives ─────────────────────────────────────────────────────
-
-function collides(a: GridPos, b: GridPos): boolean {
-  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-}
-
-function collidesAny(placed: readonly LayoutItem[], pos: GridPos): boolean {
-  return placed.some((p) => collides(p.pos, pos));
-}
-
-/** Deterministic processing order: (y, x, id). */
-function byYXId(a: LayoutItem, b: LayoutItem): number {
-  if (a.pos.y !== b.pos.y) return a.pos.y - b.pos.y;
-  if (a.pos.x !== b.pos.x) return a.pos.x - b.pos.x;
-  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-}
-
-function clonePos(pos: GridPos): GridPos {
-  return { x: pos.x, y: pos.y, w: pos.w, h: pos.h };
-}
-
-/** Clamp a box onto the 24-column grid (w to 1..24, x to fit, y >= 0, h >= 1). */
-function clampToGrid(pos: GridPos): GridPos {
-  const w = Math.min(GRID_COLUMNS, Math.max(1, Math.round(pos.w)));
-  const x = Math.min(GRID_COLUMNS - w, Math.max(0, Math.round(pos.x)));
-  const y = Math.max(0, Math.round(pos.y));
-  const h = Math.max(1, Math.round(pos.h));
-  return { x, y, w, h };
-}
-
-/**
- * Core compaction pass. Items are processed in the given comparator's order;
- * each item first floats UP row-by-row into the nearest free space (it cannot
- * jump over a blocker), then is pushed DOWN past any remaining collision.
- * x/w never change.
- */
-function compactWith(
-  items: readonly LayoutItem[],
-  cmp: (a: LayoutItem, b: LayoutItem) => number,
-): LayoutItem[] {
-  const sorted = items
-    .map((item) => ({ id: item.id, pos: clonePos(item.pos) }))
-    .sort(cmp);
-  const placed: LayoutItem[] = [];
-  for (const item of sorted) {
-    let y = item.pos.y;
-    // Float up while the row above is free (never jumps over a blocker).
-    while (y > 0 && !collidesAny(placed, { ...item.pos, y: y - 1 })) y -= 1;
-    // Resolve any remaining overlap by pushing DOWN — never sideways.
-    while (collidesAny(placed, { ...item.pos, y })) y += 1;
-    placed.push({ id: item.id, pos: { ...item.pos, y } });
-  }
-  return placed;
-}
-
-/**
- * Vertical compaction, Grafana-style: items keep their x/w; overlapping items
- * are pushed DOWN (never sideways); then everything floats UP into the
- * nearest free space, preserving relative vertical order. Deterministic:
- * process in (y, x, id) order. Pure — returns NEW items, input untouched.
- */
-export function compactLayout(items: LayoutItem[]): LayoutItem[] {
-  return compactWith(items, byYXId);
-}
-
-/**
- * Place a moved/resized item: clamp x/w to the 24-col grid, then resolve
- * collisions by pushing overlapped items down, then compact. The moved item
- * KEEPS the position the user chose (it wins ties).
- */
-export function applyPlacement(items: LayoutItem[], moved: LayoutItem): LayoutItem[] {
-  const movedItem: LayoutItem = { id: moved.id, pos: clampToGrid(moved.pos) };
-
-  // Pin the moved item first, then push every colliding other DOWN, cascading
-  // in (y, x, id) order so shoves propagate deterministically.
-  const placed: LayoutItem[] = [movedItem];
-  const others = items
-    .filter((item) => item.id !== moved.id)
-    .map((item) => ({ id: item.id, pos: clonePos(item.pos) }))
-    .sort(byYXId);
-  for (const other of others) {
-    let y = other.pos.y;
-    while (collidesAny(placed, { ...other.pos, y })) y += 1;
-    placed.push({ id: other.id, pos: { ...other.pos, y } });
-  }
-
-  // Compact — the moved item wins ties at equal (y, x).
-  const movedWinsTies = (a: LayoutItem, b: LayoutItem): number => {
-    const base = byYXId(a, b);
-    if (a.pos.y === b.pos.y && a.pos.x === b.pos.x) {
-      if (a.id === moved.id) return -1;
-      if (b.id === moved.id) return 1;
-    }
-    return base;
-  };
-  return compactWith(placed, movedWinsTies);
-}
-
-/** First free slot scanning left-to-right, top-to-bottom for a w×h box. */
-export function findFreeSlot(items: LayoutItem[], w: number, h: number): GridPos {
-  const boxW = Math.min(GRID_COLUMNS, Math.max(1, Math.round(w)));
-  const boxH = Math.max(1, Math.round(h));
-  // Everything fits at or above the bottom edge of the current layout.
-  const bottom = items.reduce((max, item) => Math.max(max, item.pos.y + item.pos.h), 0);
-  for (let y = 0; y <= bottom; y += 1) {
-    for (let x = 0; x <= GRID_COLUMNS - boxW; x += 1) {
-      const candidate: GridPos = { x, y, w: boxW, h: boxH };
-      if (!collidesAny(items, candidate)) return candidate;
-    }
-  }
-  return { x: 0, y: bottom, w: boxW, h: boxH };
-}
-
-/** Single-column order for mobile: sort by (y, x), stable by id. */
-export function mobileOrderOf(readouts: Readout[]): string[] {
-  return readouts
-    .map((r) => ({ id: r.id, pos: r.pos }))
-    .sort(byYXId)
-    .map((r) => r.id);
-}
 
 // ── THE TIER-0 GENERATOR (PLAN §4.2-1 — summarize, never mirror the graph) ──
 

@@ -16,10 +16,12 @@
  * Writes: Yes → `web.brand_offering` (+ every row of the item `confirmed`, `resolved_offering_id`; a kept offering
  * with no finding gets one person-reviewed finding naming it, so the Yes is on record);
  * No → `web.brand_exclusion` (name match, never returns) + rows `dismissed`. Every answer names the person
- * (`reviewed_at` + `reviewed_by` = the signed-in person; a cleared answer clears both): the person-only readers
+ * (`reviewed_at` + `reviewed_by` = the signed-in person, a Clear included — it is signed, status pending): the person-only readers
  * (aidream `person_validated_offerings`) and the DB triggers (`web._stance_follows_kept_offering`,
  * `web._offering_no_withdraws_stances`) act only on an answer that names who gave it.
  */
+
+import { readAllRows } from "@ai-matrx/data/db";
 
 import { supabase } from "@/utils/supabase/client";
 import { signedInPersonId } from "@/utils/supabase/webDb";
@@ -237,29 +239,46 @@ export async function fetchPersonValidatedOfferingIds(brandId: string): Promise<
   return new Set((data ?? []).map(String));
 }
 
+/**
+ * Every offering finding and every kept offering of the brand — read COMPLETE (`readAllRows`): PostgREST caps a plain
+ * read at 1000 rows and Tentree has 3,747 offering findings, so a `.limit(5000)` read showed (and a Yes stamped) only
+ * the rows that loaded (REVIEW3 I6).
+ */
 export async function fetchOfferingItems(brandId: string): Promise<OfferingItem[]> {
   const [found, kept, validated] = await Promise.all([
-    supabase
-      .schema("web")
-      .from("discovered_item")
-      .select("id, value, context, status, resolved_offering_id")
-      .eq("brand_id", brandId)
-      .eq("category", "offering")
-      .is("deleted_at", null)
-      .limit(5000),
-    supabase
-      .schema("web")
-      .from("brand_offering")
-      .select("id, name, kind, price_note, metadata")
-      .eq("brand_id", brandId)
-      .eq("status", "active")
-      .is("deleted_at", null)
-      .limit(5000),
+    readAllRows<DiscoveredOfferingRow>(
+      ({ from, to }) =>
+        supabase
+          .schema("web")
+          .from("discovered_item")
+          .select("id, value, context, status, resolved_offering_id", { count: "exact" })
+          .eq("brand_id", brandId)
+          .eq("category", "offering")
+          .is("deleted_at", null)
+          .order("id", { ascending: true })
+          .range(from, to),
+      { label: "web.discovered_item (offering)" },
+    ).catch((e: unknown) => {
+      throw new Error(`Products and services could not be read: ${e instanceof Error ? e.message : String(e)}`);
+    }),
+    readAllRows<KeptOfferingRow>(
+      ({ from, to }) =>
+        supabase
+          .schema("web")
+          .from("brand_offering")
+          .select("id, name, kind, price_note, metadata", { count: "exact" })
+          .eq("brand_id", brandId)
+          .eq("status", "active")
+          .is("deleted_at", null)
+          .order("id", { ascending: true })
+          .range(from, to),
+      { label: "web.brand_offering" },
+    ).catch((e: unknown) => {
+      throw new Error(`Kept products and services could not be read: ${e instanceof Error ? e.message : String(e)}`);
+    }),
     fetchPersonValidatedOfferingIds(brandId),
   ]);
-  if (found.error) throw new Error(`Products and services could not be read: ${found.error.message}`);
-  if (kept.error) throw new Error(`Kept products and services could not be read: ${kept.error.message}`);
-  return buildOfferingItems(found.data ?? [], kept.data ?? [], validated);
+  return buildOfferingItems(found, kept, validated);
 }
 
 export async function fetchOfferingsVerdict(brandId: string): Promise<OfferingsVerdict> {
@@ -428,13 +447,19 @@ export async function rejectOffering(brand: { id: string; organizationId: string
   if (upd.error) throw new Error(`Could not mark "${item.name}" rejected: ${upd.error.message}`);
 }
 
-/** Undo a decision: back to undecided (a kept offering stays; its rows are pending again). */
+/**
+ * Undo a decision: back to undecided (a kept offering stays; its rows are pending again). The Clear is the person's act
+ * and is signed like every answer (`reviewed_at` + `reviewed_by`, status pending — the same shape as Smart Add's
+ * "later"): `web.person_validated_offering_ids` takes the LATEST person act on the offering, so a Clear after a Yes
+ * un-validates it (whoever's insert minted the row), and `web._offering_clear_unlinks_stances` drops the `about` links
+ * that Yes gave its stances (REVIEW3 I3).
+ */
 export async function clearDecision(item: OfferingItem): Promise<void> {
   if (!item.rowIds.length) return;
   const upd = await supabase
     .schema("web")
     .from("discovered_item")
-    .update({ status: "pending", reviewed_at: null, reviewed_by: null })
+    .update({ status: "pending", reviewed_at: new Date().toISOString(), reviewed_by: await signedInPersonId(supabase) })
     .in("id", item.rowIds);
   if (upd.error) throw new Error(`Could not clear "${item.name}": ${upd.error.message}`);
 }

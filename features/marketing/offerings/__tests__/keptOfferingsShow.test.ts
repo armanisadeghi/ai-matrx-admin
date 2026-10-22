@@ -10,7 +10,9 @@ function chain(table: string) {
     select: () => q,
     eq: () => q,
     is: () => q,
-    limit: () => Promise.resolve({ data: tables[table] ?? [], error: null }),
+    order: () => q,
+    // every list is read complete (readAllRows): one page, with its exact count
+    range: () => Promise.resolve({ data: tables[table] ?? [], error: null, count: (tables[table] ?? []).length }),
   };
   return q;
 }
