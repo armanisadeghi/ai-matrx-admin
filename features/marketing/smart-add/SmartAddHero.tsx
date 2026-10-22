@@ -50,7 +50,8 @@ import { AiTestReplayBadge } from "@/features/ai-test-mode/AiTestReplayBadge";
 import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddPatch, type SmartAddPrefill, type SmartAddVia } from "./smartAddUrl";
 import { Shared } from "./stage/Shared";
 import { entryCopy, handleProblem, websiteProblem, type EntryOutcome } from "./entryOutcome";
-import { browserImageUrl, proxiedExternalImageUrl } from "@/lib/media/external-image";
+import { proxiedExternalImageUrl } from "@/lib/media/external-image";
+import { ShadedLogo } from "./ShadedLogo";
 import styles from "./stage/stage.module.css";
 import { withReferral } from "@ai-matrx/kit/outbound";
 
@@ -1355,7 +1356,7 @@ function Centerpiece({
                     className="size-full rounded-full object-cover"
                   />
                 ) : (
-                  <img src={browserImageUrl(logo.image_url ?? "")} alt="" className="max-h-[78%] max-w-[78%] object-contain drop-shadow-[0_10px_24px_hsl(var(--foreground)/0.18)]" />
+                  <ShadedLogo url={logo.image_url ?? ""} className="max-h-[78%] max-w-[78%]" imgClassName="max-h-full max-w-full object-contain drop-shadow-[0_10px_24px_hsl(var(--foreground)/0.18)]" />
                 )}
               </Shared>
             ) : (
