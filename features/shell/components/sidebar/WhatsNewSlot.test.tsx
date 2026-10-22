@@ -8,16 +8,19 @@
 import * as React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { CATALOG_ADDED_IN, getCatalogEntry } from "@/features/shell/shell-layout/catalog";
+import { CATALOG_ADDED_IN, getCatalogEntry, SHELL_CATALOG_VERSION } from "@/features/shell/shell-layout/catalog";
 import { SHELL_LAYOUT_SCHEMA_VERSION, type ShellLayoutBody } from "@/features/shell/shell-layout/contract";
 import { initialShellLayoutState, type ShellLayoutState } from "@/features/shell/shell-layout/shellLayoutSlice";
 import { serializeShellLayoutBody } from "@/features/shell/shell-layout/validate";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-// The fake catalog version: one real menu entry, not in the default sidebar's top level, "added in v2".
+// One real menu entry, not in the default sidebar's top level, marked "added in" the current version; the
+// body is one version behind with every other real addition dismissed, so only NEW_ID is offered whatever
+// the live catalog version is.
 const NEW_ID = "data.bases";
-(CATALOG_ADDED_IN as Record<string, number>)[NEW_ID] = 2;
+const OTHER_NEW = Object.keys(CATALOG_ADDED_IN);
+(CATALOG_ADDED_IN as Record<string, number>)[NEW_ID] = SHELL_CATALOG_VERSION;
 
 let state: { shellLayout: ShellLayoutState; userAuth: { id: string; isAdmin: boolean } };
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: (selector: (s: unknown) => unknown) => selector(state) }));
@@ -32,7 +35,7 @@ jest.mock("@/features/shell/shell-layout/useShellLayoutStore", () => ({
 import { WhatsNewSlot } from "./SidebarLayoutSlots";
 
 function personBody(extra: Partial<ShellLayoutBody> = {}): ShellLayoutBody {
-  return { schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: 1, sidebar: [{ kind: "nav", id: "n1", ref: "workspace" }], ...extra } as ShellLayoutBody;
+  return { schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: SHELL_CATALOG_VERSION - 1, sidebar: [{ kind: "nav", id: "n1", ref: "workspace" }], dismissedNew: OTHER_NEW, ...extra } as ShellLayoutBody;
 }
 
 function hold(body: ShellLayoutBody) {
@@ -81,7 +84,7 @@ it("renders nothing once dismissed", async () => {
 });
 
 it("renders nothing for a layout already based on the new catalog version", async () => {
-  hold(personBody({ basedOnCatalogVersion: 2 }));
+  hold(personBody({ basedOnCatalogVersion: SHELL_CATALOG_VERSION }));
   const { host, unmount } = await render();
   expect(host.textContent).not.toContain("New:");
   unmount();
@@ -90,7 +93,7 @@ it("renders nothing for a layout already based on the new catalog version", asyn
 it("'Your organization updated its menu' hydrates without a mismatch (localStorage is read after hydration)", async () => {
   const { renderToString } = await import("react-dom/server");
   const { hydrateRoot } = await import("react-dom/client");
-  hold(personBody({ basedOnCatalogVersion: 2 }));
+  hold(personBody({ basedOnCatalogVersion: SHELL_CATALOG_VERSION }));
   state.shellLayout = {
     ...state.shellLayout,
     organizationId: "o-1",
