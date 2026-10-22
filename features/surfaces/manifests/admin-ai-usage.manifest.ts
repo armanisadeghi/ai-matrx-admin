@@ -159,6 +159,8 @@ const values: SurfaceValue[] = [
 ];
 
 export const adminAiUsageManifest: SurfaceManifest = {
+  situation:
+    "They are in the AI Usage explorer, asking the platform-wide usage ledger one question: {question_words}, over {window_label}. The answer is {answer_state}, counted through {counted_through|now}; its totals and rows are in your context, with money shown in {money_unit}.",
   surfaceName: ADMIN_AI_USAGE_SURFACE_NAME,
   inheritsFrom: "matrx-default/ai",
   client: "matrx-admin",

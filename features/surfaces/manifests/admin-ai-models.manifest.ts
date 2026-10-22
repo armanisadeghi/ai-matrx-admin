@@ -549,6 +549,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminAiModelsManifest: SurfaceManifest = {
+  situation:
+    "They are in the AI Model Registry admin, on the {active_tab_label} tab: {model_count} models from {provider_count} providers, {deprecated_model_count} marked deprecated. Model open: {model_common_name|none} ({model_name|no model}, made by {model_maker|unknown}); its record is in your context. You can rewrite its display name or description for them.",
   surfaceName: ADMIN_AI_MODELS_SURFACE_NAME,
   inheritsFrom: "matrx-default/ai",
   client: "matrx-admin",

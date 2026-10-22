@@ -129,6 +129,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminAiModelAuditManifest: SurfaceManifest = {
+  situation:
+    "They are on the AI Model Data Audit page, checking every model record for missing or inconsistent data, on the {active_category} tab. The audit summary, findings and rules are in your context; load problem: {audit_error|none}.",
   surfaceName: ADMIN_AI_MODEL_AUDIT_SURFACE_NAME,
   inheritsFrom: "matrx-default/ai",
   client: "matrx-admin",
