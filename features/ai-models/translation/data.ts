@@ -491,6 +491,11 @@ export async function readConfidenceThreshold(): Promise<number> {
     supabase.schema("platform").rpc("knob_resolve", {
       p_feature: "ai.translation",
       p_key: "agent_confidence_threshold",
+      // org-fallback-deliberate: this knob is resolved at PLATFORM scope on
+      // purpose — the number compared here must be the one the database gate
+      // itself reads, not the reading admin's organization or user rung (see
+      // this function's docstring). It is a read of platform configuration, not
+      // a write into a tenant.
       p_organization_id: SYSTEM_ORGANIZATION_ID,
     }),
   );
