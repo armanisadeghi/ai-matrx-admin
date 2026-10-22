@@ -32,7 +32,6 @@ import {
 // markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modeled 0.01 MB).
 import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
-import { CitationChip } from "@ai-matrx/design-system/controls";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { NotesAPI } from "@/features/notes/service/notesApi";
 
@@ -214,8 +213,6 @@ registerChatUi({
   JsonInspector: JsonInspector,
 });
 
-registerChatUi({
-});
 
 registerChatUi({
 });
@@ -294,7 +291,6 @@ registerChatUi({
 });
 
 registerChatUi({
-  CitationChip: CitationChip,
 });
 
 registerChatUi({

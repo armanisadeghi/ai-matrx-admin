@@ -111,7 +111,6 @@ const asSlot = <T>(impl: T) => impl as unknown as never;
 const lazySlot = lazySlotsFrom(() =>
   import("@/providers/chatUiRegistrationBaseImpl").then((m) => m.baseSlotImpls),
 );
-const InfoHint = lazySlot("InfoHint", SlotLoadingGlyphSmall);
 const ErrorAlchemyMenu = lazySlot("ErrorAlchemyMenu", SlotLoadingGlyph);
 const AdvancedMenu = lazySlot("AdvancedMenu");
 const TableChooser = lazySlot("TableChooser", SlotLoadingControl);
@@ -243,7 +242,6 @@ registerChatUi({
   RecordChangeApprovalCard,
   BackgroundRunCard,
   CopyButtons,
-  InfoHint,
   AnswerValueView: AnswerValueSlot,
   ErrorAlchemyMenu,
   AdvancedMenu,

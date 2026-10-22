@@ -5,7 +5,6 @@
 // route's first load (THE FRAGMENTATION LAW: one impl module per registration file, one async
 // edge). Import this module from nowhere else.
 
-import { InfoHint } from "@ai-matrx/design-system/controls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import AdvancedMenu from "@/components/official/AdvancedMenu";
 import { TableChooser } from "@/features/unified-data/hub/TableChooser";
@@ -31,7 +30,6 @@ import { PdfNamedSurfaceSwitcher } from "@/features/pdf/components/PdfNamedSurfa
 import { ChangeDiff } from "@/components/ui/change-diff";
 
 export const baseSlotImpls = {
-  InfoHint,
   ErrorAlchemyMenu,
   AdvancedMenu,
   TableChooser,
