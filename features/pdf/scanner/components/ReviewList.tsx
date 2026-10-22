@@ -119,7 +119,7 @@ function SortableTile({
     isDragging,
   } = useSortable({ id: item.itemId });
 
-  const previewSrc = useScanThumbSrc(item);
+  const { src: previewSrc, updating, enhanceFailed } = useScanThumbSrc(item);
 
   return (
     <div
@@ -169,6 +169,19 @@ function SortableTile({
       )}
 
       {/* Status */}
+      {item.status === "uploaded" && updating && (
+        <span className="absolute bottom-1 right-1 rounded bg-black/60 p-1">
+          <Loader2 className="h-3 w-3 animate-spin text-white" />
+        </span>
+      )}
+      {item.status === "uploaded" && enhanceFailed && (
+        <span
+          className="absolute bottom-1 right-1 rounded bg-black/60 p-1"
+          title="Enhanced version unavailable — showing the original"
+        >
+          <AlertCircle className="h-3 w-3 text-white" />
+        </span>
+      )}
       {item.status === "uploading" && (
         <span className="absolute bottom-1 right-1 rounded bg-black/60 p-1">
           <Loader2 className="h-3 w-3 animate-spin text-white" />
