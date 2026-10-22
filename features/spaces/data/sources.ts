@@ -61,6 +61,8 @@ export interface SpaceDbView {
   subGroupField?: string | null;
   /** Notion's "Load limit": how many rows the view reads at first (one of `LOAD_LIMITS`); absent = the grid's default. */
   loadLimit?: number | null;
+  /** Notion's "Card size" on a board or gallery (records-ui `boardSize` / `gallerySize`); absent = medium. */
+  cardSize?: "small" | "medium" | "large" | null;
   dateField?: string | null;
   sorts?: Array<{ field: string; direction: "asc" | "desc" }>;
   /** Field key → value: a scalar is "is", a list is "is any of" (the store's own filter shape). */

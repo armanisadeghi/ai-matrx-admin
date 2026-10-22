@@ -80,11 +80,31 @@ export function blockPageSize(view: Pick<SpaceDbView, "loadLimit">): number | un
   return typeof n === "number" && (LOAD_LIMITS as readonly number[]).includes(n) ? n : undefined;
 }
 
+/** Notion's card sizes for a board and a gallery. */
+export const CARD_SIZES = ["small", "medium", "large"] as const;
+export type CardSize = (typeof CARD_SIZES)[number];
+
+const isCardSize = (v: unknown): v is CardSize => typeof v === "string" && (CARD_SIZES as readonly string[]).includes(v);
+
+/** The records-ui presentation key a layout's card size lives in (absent: the layout has no card size). */
+function cardSizeKey(layout: string): "gallerySize" | "boardSize" | null {
+  return layout === "gallery" ? "gallerySize" : layout === "kanban" ? "boardSize" : null;
+}
+
+/** A card size a person picked on the board or gallery itself (records-ui's look patch), to keep on the view. */
+export function cardSizeFromLook(layout: string, presentation: Record<string, unknown> | undefined): CardSize | undefined {
+  const key = cardSizeKey(layout);
+  const v = key ? presentation?.[key] : undefined;
+  return isCardSize(v) ? v : undefined;
+}
+
 export function viewSpec(tableId: string, view: ViewWithSummaries, fields: Field[] = []): SavedViewSpec {
   const layout = view.layout === "chart" ? "grid" : view.layout;
   const formats = longDates(fields);
   const hasFormats = Object.keys(formats).length > 0;
   const hidden = effectiveHidden(view, fields);
+  const sizeKey = cardSizeKey(layout);
+  const size = sizeKey && isCardSize(view.cardSize) ? { [sizeKey]: view.cardSize } : {};
   return {
     name: view.name,
     subject: tableId,
@@ -98,6 +118,6 @@ export function viewSpec(tableId: string, view: ViewWithSummaries, fields: Field
     ...(view.where ? { where: view.where as unknown as RuleExpression } : {}),
     // Notion's inline table: columns at their natural width, one line each, the table scrolling sideways
     // inside the block when it is wider than the column it sits in (screenshot 1) — never squeezed to "…".
-    presentation: { fit: "scroll", wrap: false, ...(hidden.length && !isCardLayout(layout) ? { hiddenFields: hidden } : {}), ...(isCardLayout(layout) ? { cardHidden: hidden } : {}), ...(hasFormats ? { formats } : {}), ...(view.summaries && Object.keys(view.summaries).length ? { summaries: view.summaries } : {}), ...(view.widths && Object.keys(view.widths).length ? { widths: view.widths } : {}), ...(view.columnOrder?.length ? { columnOrder: view.columnOrder } : {}), ...(view.wrapColumns?.length ? { wrapColumns: view.wrapColumns } : {}) },
+    presentation: { fit: "scroll", wrap: false, ...(hidden.length && !isCardLayout(layout) ? { hiddenFields: hidden } : {}), ...(isCardLayout(layout) ? { cardHidden: hidden } : {}), ...(hasFormats ? { formats } : {}), ...(view.summaries && Object.keys(view.summaries).length ? { summaries: view.summaries } : {}), ...(view.widths && Object.keys(view.widths).length ? { widths: view.widths } : {}), ...(view.columnOrder?.length ? { columnOrder: view.columnOrder } : {}), ...(view.wrapColumns?.length ? { wrapColumns: view.wrapColumns } : {}), ...size },
   };
 }

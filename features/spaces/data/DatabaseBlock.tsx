@@ -59,7 +59,7 @@ import { designMarkdown } from "./designed-database";
 import { FieldList, MenuRow, SidePeek, ViewerSaveBar, ViewerSortButton, ViewTab, filtersDiffer, shownFilters, shownSorts, type FilterChoice, type SortChoice, NewButton } from "./menu-parts";
 import { ChartView, choicesOfField } from "./ChartView";
 import { DEFAULT_CHART } from "./first-reads";
-import { LOAD_LIMITS, blockPageSize, blockQuestion, effectiveHidden, kindOf, viewSpec, type ViewWithSummaries } from "./view-spec";
+import { CARD_SIZES, LOAD_LIMITS, blockPageSize, blockQuestion, cardSizeFromLook, effectiveHidden, kindOf, viewSpec, type ViewWithSummaries } from "./view-spec";
 import { primeOwningRow, useOwningRow } from "./owning-row";
 import { newRowData, readRowTemplates, setDefaultRowTemplate, startNewRow, startTemplatePage, templateFor, type NewRowPick, type RowTemplateChoice } from "./row-templates";
 import type { RowPageDb } from "../embed/row-page";
@@ -582,6 +582,9 @@ function DatabaseBody({
                 // N5 "Wrap column": present means these columns wrap; absent from a look patch means none do.
                 const wrapColumns = patch.presentation ? (patch.presentation.wrapColumns ?? []) : undefined;
                 if (wrapColumns && JSON.stringify(wrapColumns) !== JSON.stringify(view.wrapColumns ?? [])) look.wrapColumns = wrapColumns;
+                // Notion's "Card size": a size picked on the gallery's own S / M / L (or a board's) is the view's.
+                const cardSize = cardSizeFromLook(view.layout, patch.presentation as Record<string, unknown> | undefined);
+                if (cardSize && cardSize !== (view.cardSize ?? "medium")) look.cardSize = cardSize;
                 if (Object.keys(look).length) onLook(look);
               }
             : // A view this block cannot save onto (preview, published, read-only): the change is kept for the
@@ -593,6 +596,9 @@ function DatabaseBody({
     </ReservedBody>
   );
 }
+
+/** Notion's card size words. */
+const CARD_SIZE_WORDS: Record<(typeof CARD_SIZES)[number], string> = { small: "Small", medium: "Medium", large: "Large" };
 
 /** records-ui's onViewChange for a view nothing saves: its own state already keeps the change. */
 const KEEP_FOR_THE_VISIT = () => undefined;
@@ -876,7 +882,7 @@ function ViewSettings({
   const designer = useDatabaseDesigner();
   const client = useRecordsClient();
   const table = useTable(tableId);
-  const [page, setPage] = useState<"main" | "layout" | "group" | "subgroup" | "limit" | "x" | "yfield" | "props" | "newprop">("main");
+  const [page, setPage] = useState<"main" | "layout" | "group" | "subgroup" | "limit" | "cardsize" | "x" | "yfield" | "props" | "newprop">("main");
   const chart = { ...DEFAULT_CHART, ...view.chart };
   const setChart = (p: Partial<ChartSettings>) => onView({ chart: { ...chart, ...p } });
   const label = (key?: string | null) => (key ? (fields.find((f) => f.key === key)?.label ?? key) : "None");
@@ -916,6 +922,7 @@ function ViewSettings({
             <MenuRow icon={<List size={15} />} label="Properties" end={<span className="text-xs text-muted-foreground">{fields.length - effectiveHidden(view, fields).filter((k) => fields.some((f) => f.key === k)).length} shown</span>} onClick={() => setPage("props")} />
             {view.layout === "kanban" ? <MenuRow icon={<Kanban size={15} />} label="Group" end={<span className="type-secondary text-muted-foreground">{label(view.groupField)}</span>} onClick={() => editable && setPage("group")} /> : null}
             {view.layout === "kanban" ? <MenuRow icon={<Kanban size={15} />} label="Sub-group" end={<span className="type-secondary text-muted-foreground">{label(view.subGroupField)}</span>} onClick={() => editable && setPage("subgroup")} /> : null}
+            {view.layout === "kanban" || view.layout === "gallery" ? <MenuRow icon={<Square size={15} />} label="Card size" end={<span className="type-secondary text-muted-foreground">{CARD_SIZE_WORDS[view.cardSize ?? "medium"]}</span>} onClick={() => editable && setPage("cardsize")} /> : null}
             {view.layout !== "chart" && (view.layout as string) !== "form" ? <MenuRow icon={<List size={15} />} label="Load limit" end={<span className="type-secondary text-muted-foreground">{blockPageSize(view) ? `${blockPageSize(view)} rows` : "Default"}</span>} onClick={() => editable && setPage("limit")} /> : null}
             {view.layout === "chart" ? (
               <>
@@ -1013,6 +1020,9 @@ function ViewSettings({
             <FieldList fields={fields.filter((f) => f.key !== view.groupField)} value={view.subGroupField} onPick={(k) => (onView({ subGroupField: k }), setPage("main"))} />
           </>
         ) : null}
+        {page === "cardsize"
+          ? CARD_SIZES.map((s) => <MenuRow key={s} label={CARD_SIZE_WORDS[s]} active={(view.cardSize ?? "medium") === s} onClick={() => (onView({ cardSize: s }), setPage("main"))} />)
+          : null}
         {page === "limit"
           ? LOAD_LIMITS.map((n) => <MenuRow key={n} label={`${n} rows`} active={blockPageSize(view) === n} onClick={() => (onView({ loadLimit: n }), setPage("main"))} />)
           : null}
