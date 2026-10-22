@@ -1256,6 +1256,14 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       status: "Live",
     },
     {
+      url: "/marketing/social/videos",
+      label: "Videos roll-up",
+      description:
+        "Every brand's video projects in one list with a brand filter (default All); each card opens its brand's project page.",
+      filePath: "app/(core)/marketing/social/videos/page.tsx",
+      status: "Live",
+    },
+    {
       url: "/marketing/calendar",
       label: "PR calendar door",
       description:

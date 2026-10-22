@@ -9,7 +9,7 @@ import { fetchOperationsByLink } from "@/lib/runtime-operations/operationsByLink
 
 import { useSocials } from "../components/SocialsContext";
 import { getVideoProject, listVariants } from "./server";
-import { readBrandVideoProjects, readReferencePost, readVideoStructure } from "./service";
+import { readAllVideoProjects, readBrandVideoProjects, readReferencePost, readVideoStructure } from "./service";
 
 export const videoKeys = {
   all: ["marketing", "social", "video"] as const,
@@ -22,6 +22,11 @@ export const videoKeys = {
 export function useBrandVideoProjects() {
   const { brandId } = useSocials();
   return useQuery({ queryKey: videoKeys.list(brandId), queryFn: () => readBrandVideoProjects(brandId) });
+}
+
+/** Every brand's video projects (the cross-brand Videos page). */
+export function useAllVideoProjects() {
+  return useQuery({ queryKey: videoKeys.list("all-brands"), queryFn: readAllVideoProjects });
 }
 
 export function useVideoProject(projectId: string) {
