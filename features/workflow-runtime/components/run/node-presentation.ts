@@ -18,6 +18,7 @@ import { kebabCaseToLucidePascalCase } from "@ai-matrx/icons";
 
 import type { WorkflowDefinitionLike } from "../../trigger-points";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { lookStepTitle } from "../../../records-tool-display/lookActions";
 
 /** The five families a step can belong to — drives icon + color. */
 export type NodeFamily = "input" | "prepare" | "think" | "agent" | "deliver";
@@ -261,6 +262,20 @@ export function presentStepTitles(titles: readonly string[]): string[] {
       dropArticleAfterPossessive(completeCutTailWord(title.trim(), titles)),
     ),
   );
+}
+
+/**
+ * A late `notion_sync` call (a preview, a find, Sync now …) runs as a run of the Notion import workflow, whose one step
+ * is labelled "Bring Notion in as tables". The run records its action in its input; the step then says what it does
+ * ("Mapping your Notion"). A run that really is an import is returned untouched.
+ */
+export function relabelStepsForRun(
+  steps: RunStepPresentation[],
+  runInput: Record<string, unknown> | null | undefined,
+): RunStepPresentation[] {
+  const title = lookStepTitle(runInput);
+  if (!title) return steps;
+  return steps.map((step) => (step.specType === "data.notion_import" ? { ...step, label: title } : step));
 }
 
 export function describeWorkflowSteps(

@@ -19,8 +19,10 @@
 
 import type { NodeInvocationState, WorkflowRunState } from "@/features/workflow-runtime/redux/workflow-runs.slice";
 import { runIsOver } from "@/features/workflow-runtime/types";
+import { LOOK_ACTIONS, lookActionOf, lookTitle, type LookAction } from "./lookActions";
 
-export type BackgroundRunKind = "import" | "copy" | "workflow";
+/** "look": a late notion_sync call (a preview, a find, Sync now …) run in the background — moves nothing it does not say. */
+export type BackgroundRunKind = "import" | "copy" | "workflow" | "look";
 
 /** The import's stages, in the order the importer walks them (aidream `notion_import.progress`). */
 export const IMPORT_STAGES = [
@@ -34,7 +36,7 @@ export const IMPORT_STAGES = [
 ] as const;
 
 /** The node each system workflow runs its one step on. */
-const NODE_OF: Record<Exclude<BackgroundRunKind, "workflow">, string> = { import: "import", copy: "sync" };
+const NODE_OF: Record<Exclude<BackgroundRunKind, "workflow">, string> = { import: "import", copy: "sync", look: "import" };
 
 function str(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -132,6 +134,39 @@ export interface ImportReport {
   different: ImportLoss[];
   notCarried: ImportLoss[];
   reportTableId: string | null;
+}
+
+/** What a finished look found, from the server's own `look_summary`: only what that action counts. */
+export interface LookReport {
+  kind: "look";
+  action: LookAction;
+  title: string;
+  /** The server's one sentence about the answer. */
+  said: string | null;
+  facts: { label: string; count: number }[];
+  /** What may be missing, in the server's words. */
+  note: string | null;
+  movesSomething: boolean;
+}
+
+export function readLookReport(output: Record<string, unknown> | null, action: LookAction): LookReport | null {
+  const summary = obj(output?.look_summary);
+  if (!output || !summary) return null;
+  const facts: LookReport["facts"] = [];
+  for (const raw of Array.isArray(summary.facts) ? summary.facts : []) {
+    const fact = obj(raw);
+    const label = str(fact?.label);
+    if (label) facts.push({ label, count: num(fact?.count) ?? 0 });
+  }
+  return {
+    kind: "look",
+    action,
+    title: str(summary.title) ?? LOOK_ACTIONS[action].title,
+    said: str(summary.said),
+    facts,
+    note: str(summary.note),
+    movesSomething: summary.moves_something === true,
+  };
 }
 
 export interface CopyReport {
@@ -284,7 +319,7 @@ export interface BackgroundRunView {
   startedAt: string | null;
   /** The run's end, once it is over. */
   endedAt: string | null;
-  report: ImportReport | CopyReport | WorkflowReport | null;
+  report: ImportReport | CopyReport | WorkflowReport | LookReport | null;
   /** The server's own sentence for a stopped run. */
   stoppedBecause: string | null;
   /** Why the run cannot be read right now (never the run's own failure). */
@@ -299,6 +334,7 @@ export interface BackgroundRunView {
 export function runKindOf(run: Pick<WorkflowRunState, "input" | "nodeOrder"> | null, hint: BackgroundRunKind | null): BackgroundRunKind {
   if (hint === "workflow") return "workflow";
   const input = run?.input ?? null;
+  if (lookActionOf(input)) return "look";
   if (input && ("root" in input)) return "import";
   if (input && ("map" in input)) return "copy";
   if (run?.nodeOrder.includes("import")) return "import";
@@ -333,7 +369,8 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
   if (run.replaying) return empty;
   if (kind === "workflow") return readWorkflowRun(run, empty);
   const input = run.input ?? {};
-  const name = kind === "import" ? str(input.name) : str(obj(input.map)?.name);
+  const lookAction = kind === "look" ? lookActionOf(input) ?? "sync" : null;
+  const name = kind === "import" ? str(input.name) : kind === "look" ? lookTitle(input, lookAction ?? "sync") : str(obj(input.map)?.name);
   const node = nodeInvocation(run, NODE_OF[kind]);
   const progress = node?.progress ?? null;
   const sample: ProgressSample | null = progress
@@ -343,7 +380,11 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
   const output = node?.output ?? null;
   // A copy that stopped part-way keeps its counts in the failure's details.
   const details = obj(node?.error?.details);
-  const report = kind === "import" ? readImportReport(output) : readCopyReport(output ?? details);
+  const report = kind === "import"
+    ? readImportReport(output)
+    : kind === "look"
+      ? readLookReport(output, lookAction ?? "sync")
+      : readCopyReport(output ?? details);
   const phase = phaseOf(run, progress != null, node?.phase === "failed");
   return {
     kind,
@@ -441,6 +482,7 @@ export function quietNote(view: Pick<BackgroundRunView, "phase" | "readFailure">
 
 export function whatToDoWhenStopped(kind: BackgroundRunKind): string {
   if (kind === "workflow") return "Open the run to see the step and continue it.";
+  if (kind === "look") return "Ask again; nothing was changed by looking.";
   return kind === "import"
     ? "Run it again; nothing is copied twice."
     : "Run it again to continue; finished rows are kept.";
