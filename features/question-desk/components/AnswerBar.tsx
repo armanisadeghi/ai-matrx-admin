@@ -165,39 +165,39 @@ export function AnswerBar(props: AnswerBarProps) {
         ) : null}
         <div className="mb-2.5 flex flex-wrap gap-2">
           {hasRecommendation ? (
-            <Act primary keyCap="1" onClick={onTakeRecommendation} busy={busy}>
+            <Act hideKey={story} primary keyCap="1" onClick={onTakeRecommendation} busy={busy}>
               Go with your recommendation
             </Act>
           ) : null}
           {story ? null : (
             <>
-              <Act keyCap="2" onClick={onSkip} busy={busy}>
+              <Act hideKey={story} keyCap="2" onClick={onSkip} busy={busy}>
                 {skipShipsRecommendation ? "Skip — ship it anyway" : "Skip — defer"}
               </Act>
-              <Act keyCap="3" onClick={onHandBack} busy={busy}>
+              <Act hideKey={story} keyCap="3" onClick={onHandBack} busy={busy}>
                 Not mine — you decide
               </Act>
             </>
           )}
-          <Act keyCap="W" onClick={onOpenWrite} busy={busy}>
+          <Act hideKey={story} keyCap="W" onClick={onOpenWrite} busy={busy}>
             Write an answer
           </Act>
         </div>
 
         <div className="mb-2.5 flex flex-wrap gap-2">
-          <Act keyCap="V" onClick={onAnswerByVoice} busy={busy}>
+          <Act hideKey={story} keyCap="V" onClick={onAnswerByVoice} busy={busy}>
             <Mic className="size-3.5" aria-hidden />
             Answer by voice
           </Act>
 
           {canReadAloud ? (
             speaking ? (
-              <Act keyCap="R" onClick={onStopReading} busy={false}>
+              <Act hideKey={story} keyCap="R" onClick={onStopReading} busy={false}>
                 <VolumeX className="size-3.5" aria-hidden />
                 Stop reading
               </Act>
             ) : (
-              <Act keyCap="R" onClick={onReadAloud} busy={busy}>
+              <Act hideKey={story} keyCap="R" onClick={onReadAloud} busy={busy}>
                 <Volume2 className="size-3.5" aria-hidden />
                 Read aloud
               </Act>
@@ -205,7 +205,7 @@ export function AnswerBar(props: AnswerBarProps) {
           ) : null}
 
           {story ? null : (
-            <Act keyCap="T" onClick={onToggleView} busy={false}>
+            <Act hideKey={story} keyCap="T" onClick={onToggleView} busy={false}>
               Table view
             </Act>
           )}
@@ -226,7 +226,7 @@ export function AnswerBar(props: AnswerBarProps) {
                 onChange={(event) => onDraftChange(event.target.value)}
                 onTranscriptionComplete={onTranscriptionComplete}
                 onTranscriptionError={onTranscriptionError}
-                placeholder="In your own words, typed or spoken. It is recorded exactly as you give it."
+                placeholder="In your own words, typed or spoken."
                 autoGrow
                 minHeight={96}
                 maxHeight={340}
@@ -238,7 +238,7 @@ export function AnswerBar(props: AnswerBarProps) {
               />
             </RecordingOriginProvider>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Act primary keyCap="⌘↵" onClick={onSaveOwnWords} busy={busy}>
+              <Act hideKey={story} primary keyCap="⌘↵" onClick={onSaveOwnWords} busy={busy}>
                 Save this answer
               </Act>
               {draftText.length > 0 ? (
@@ -252,10 +252,13 @@ export function AnswerBar(props: AnswerBarProps) {
                   Discard
                 </button>
               ) : null}
-              <span className="font-mono text-[10.5px] text-muted-foreground">
-                To speak it, press V or tap the microphone at the top-right of
-                the box. Esc stops the microphone.
-              </span>
+              {/* The story seat carries no on-screen instructions (owner
+                  direction for this kind of flow): the mic sits in the box. */}
+              {story ? null : (
+                <span className="font-mono text-[10.5px] text-muted-foreground">
+                  Press V or tap the mic to speak; Esc stops it.
+                </span>
+              )}
             </div>
             {draftFromVoice ? (
               <p className="mt-1.5 font-mono text-[10.5px] text-muted-foreground">
@@ -314,12 +317,15 @@ export function AnswerBar(props: AnswerBarProps) {
 
 function Act({
   keyCap,
+  hideKey,
   onClick,
   children,
   primary,
   busy,
 }: {
   keyCap: string;
+  /** The story seat shows no keyboard legend (no instructions on that flow). */
+  hideKey: boolean;
   onClick: () => void;
   children: React.ReactNode;
   primary?: boolean;
@@ -337,9 +343,11 @@ function Act({
           : "border-border bg-card text-foreground hover:border-primary hover:text-primary",
       )}
     >
-      <kbd className="rounded border border-current px-1 font-mono text-[10px] opacity-65">
-        {keyCap}
-      </kbd>
+      {hideKey ? null : (
+        <kbd className="rounded border border-current px-1 font-mono text-[10px] opacity-65">
+          {keyCap}
+        </kbd>
+      )}
       {children}
     </button>
   );
