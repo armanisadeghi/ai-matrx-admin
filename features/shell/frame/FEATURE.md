@@ -123,6 +123,26 @@ them would pull the app's client graph into the fast lab build; parity is proven
   `--shell-header-h: 0`, `--header-height` = the frame's chrome. Side chat and canvas show as
   disabled toggles ("comes … in the next step") until P3.
 
+## Product sidebars (owner, 2026-10-22: one sidebar column, the product's own navigation)
+
+`AppFrameProps.sidebarContent` fills the sidebar body in place of the route table's rows (top row,
+Pinned, big items and footer stay; the frame's width and resize govern it). The live host picks it
+in `frame-host/frameProductSidebar.tsx`, most specific first:
+
+1. **A page's own sidebar** (kind B): the page wraps its column's content in `<FrameSidebarContent>`
+   and drops its own column chrome when `useFrameSidebarSlot()` is true (`frame-host/frameSidebarSlot.tsx`,
+   tiny and eager; FrameHostImpl provides the slot around the page body only, so windows never
+   claim it). In the frame the content is portalled into the column; in classic it renders in place.
+   Users: Notes (route instance, `config.frameSidebar`), Files `PageShell`, Messages, Agent connections.
+2. **A Large Route's registered menu** (kind A, `constants/route-menu-registry.ts`, `defaultView`
+   `"route"` only): the same component the classic sidebar flips into, through the registry's own
+   loader and `ModuleSlot` (row skeleton, honest failure), always `expanded`. legacy-contracts.css
+   shows its `.shell-nav-label`s.
+3. Otherwise the route table's rows.
+
+Inventory and open list: `common-docs/projects/app-frame/SIDEBARS.md`. Test:
+`frame-host/__tests__/product-sidebar-in-frame.test.tsx`.
+
 ## Ours and the page's (owner, 2026-10-20)
 
 A page hands the frame DATA; the frame owns every region's geometry and look. `AppFrameProps`
@@ -289,6 +309,10 @@ removes it on the first `requestAnimationFrame`; it is not a second mount.
 
 ## Change log
 
+- 2026-10-22: Product sidebars. The frame's one sidebar column shows the product's own navigation:
+  `sidebarContent` slot, kind-A registered menus (Chat, Marketing, Code, Images, Your staff,
+  research topic, agent runs, user settings) and the kind-B door `<FrameSidebarContent>` (Notes,
+  Files, Messages, Agent connections). Classic unchanged.
 - 2026-10-22: Investigated "a second hidden frame header": React 19.2's queued streaming reveal
   (`$RB`/`$RV`) waits for `requestAnimationFrame`, which a hidden Browser pane never fires, so the
   server segment stays in the DOM. A painting browser shows one frame, header, crumb trail, sidebar
