@@ -32,6 +32,9 @@ import {
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { configureChat, _resetChatHostForTests } from "@ai-matrx/chat/host";
 import { createFakeDb } from "@ai-matrx/chat/testing/fake-db";
+import { createInstance } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.slice";
+import { setFocus } from "@ai-matrx/chat/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
+import type { Middleware, UnknownAction } from "@reduxjs/toolkit";
 
 const ORGANIZATION_ID = "5dc930e9-bd65-44a1-8369-af773f6e1a5b";
 const REQUEST_ID = "438921dc-c214-4411-98c8-87bdd041f5dc";
@@ -90,10 +93,14 @@ function streamResponse(text: string, options: { status?: number; json?: unknown
   } as unknown as Response;
 }
 
-function makeStore() {
+function makeStore(log?: UnknownAction[]) {
+  const recordActions: Middleware = () => (next) => (action) => {
+    log?.push(action as UnknownAction);
+    return next(action);
+  };
   const store = configureStore({
     reducer: createSlimRootReducer(),
-    middleware: (gdm) => gdm({ serializableCheck: false, immutableCheck: false }),
+    middleware: (gdm) => gdm({ serializableCheck: false, immutableCheck: false }).concat(recordActions),
   });
   store.dispatch(setAuthReady(true));
   store.dispatch(setAccessToken("test-token"));
@@ -278,5 +285,54 @@ describe.each(Object.keys(DOORS) as (keyof typeof DOORS)[])("%s adopts its strea
     expect(rec.completes).toBe(1);
     expect(rec.events.length).toBeGreaterThan(0);
     expect(rec.events.length).toBeLessThan(LINES.length);
+  });
+});
+
+/**
+ * The run helpers are HEADLESS: the reply composer, the debrief and the assignment
+ * demo start a turn on a conversation that may also be loaded in this tab. Watch AI
+ * needs the run under the server's request id, but the run's conversation-keyed
+ * effects (instance status, working-document deltas, overlay opens) belong only to
+ * a chat that has that conversation OPEN — otherwise a background run would flip
+ * the status of, or open windows over, a conversation nobody is looking at.
+ */
+describe.each(Object.keys(DOORS) as (keyof typeof DOORS)[])("%s keeps its effects off a conversation no chat has open", (name) => {
+  const door = DOORS[name];
+  // The server's title for the conversation (`conversation_labeled`) still reaches the
+  // history lists: that is the server's record, not an effect on an open chat.
+  const touchesConversation = (action: UnknownAction) =>
+    (action.payload as { conversationId?: unknown } | undefined)?.conversationId === CONVERSATION_ID &&
+    !/^conversation(List|History)\//.test(action.type);
+  const opensAWindow = (action: UnknownAction) => /overlay|window/i.test(action.type) && /open/i.test(action.type);
+
+  it("leaves a loaded-but-unopened conversation untouched and opens nothing, yet stays watchable", async () => {
+    routeFetch(streamResponse(RAW));
+    const log: UnknownAction[] = [];
+    const store = makeStore(log);
+    store.dispatch(createInstance({ conversationId: CONVERSATION_ID, agentId: "agent-test", agentType: "user", origin: "manual", status: "ready" } as never));
+    const seeded = log.length;
+    const rec = recorder();
+    const result = await store.dispatch(door(rec));
+
+    expect(result).toEqual({ requestId: REQUEST_ID, conversationId: CONVERSATION_ID });
+    expect(rec.events).toHaveLength(LINES.length);
+    expect(store.getState().activeRequests.byRequestId[REQUEST_ID]?.status).toBe("complete");
+    expect(store.getState().conversations.byConversationId[CONVERSATION_ID]?.status).toBe("ready");
+    const runActions = log.slice(seeded);
+    expect(runActions.filter(touchesConversation).map((a) => a.type)).toEqual([]);
+    expect(runActions.filter(opensAWindow).map((a) => a.type)).toEqual([]);
+    expect(store.getState().activeRequests.byRequestId[REQUEST_ID]?.conversationId).not.toBe(CONVERSATION_ID);
+  });
+
+  it("applies the run's effects when this tab's chat has the conversation open", async () => {
+    routeFetch(streamResponse(RAW));
+    const store = makeStore();
+    store.dispatch(createInstance({ conversationId: CONVERSATION_ID, agentId: "agent-test", agentType: "user", origin: "manual", status: "ready" } as never));
+    store.dispatch(setFocus({ surfaceKey: "chat-test", conversationId: CONVERSATION_ID }));
+    const result = await store.dispatch(door(recorder()));
+
+    expect(result).toEqual({ requestId: REQUEST_ID, conversationId: CONVERSATION_ID });
+    expect(store.getState().activeRequests.byRequestId[REQUEST_ID]?.conversationId).toBe(CONVERSATION_ID);
+    expect(store.getState().conversations.byConversationId[CONVERSATION_ID]?.status).toBe("complete");
   });
 });
