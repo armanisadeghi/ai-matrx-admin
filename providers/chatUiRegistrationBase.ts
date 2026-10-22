@@ -12,7 +12,7 @@
 //   · AnswerValueView → AnswerValueSlot: text draws at once; a structured value loads the kind
 //     stack through the kind front door's existing lazy edge (a static AnswerValueView here put
 //     the content-ir component registry in every route's first load).
-//   · EditableContextMenu, MicrophoneIconButton, MicDeviceMenu — the composer on /chat/new.
+//   · EditableContextMenu — the composer on /chat/new.
 //   · ConnectorPromptHost — NewChatGreeting draws it above the composer on first paint.
 //   · NonEditableContextMenu, SearchGroup (+ its trigger) — wrappers: a loading state would hide
 //     their `children` (the SSR'd conversation, a toolbar's contents).
