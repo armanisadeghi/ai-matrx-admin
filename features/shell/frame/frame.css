@@ -251,13 +251,7 @@
 [data-matrx-frame] .mf-mark {
   color: hsl(var(--mf-hue-ink));
 }
-/* Bake-off look C only: a soft same-hue shape behind the glyph. */
-[data-matrx-frame] .mf-mark-filled {
-  background: hsl(var(--mf-hue-ink) / 0.15);
-  border-radius: 12px;
-}
-
-/* THE APP GRID (Google-tight): the favorites card, the 12px one-line names, look B's family rule. */
+/* THE APP GRID (Google-tight): the favorites card, the 12px one-line names. */
 [data-matrx-frame] .mf-grid-card {
   background: hsl(var(--matrx-frame-well));
   border-radius: 16px;
@@ -267,29 +261,6 @@
   line-height: 16px;
   color: hsl(var(--foreground));
 }
-[data-matrx-frame] .mf-grid-divider {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 16px;
-  margin: 4px 8px;
-  font-size: 10px;
-  line-height: 1;
-  color: hsl(var(--muted-foreground));
-}
-[data-matrx-frame] .mf-grid-divider::before,
-[data-matrx-frame] .mf-grid-divider::after {
-  content: "";
-  height: 1px;
-  background: hsl(var(--matrx-frame-hairline));
-}
-[data-matrx-frame] .mf-grid-divider::before {
-  width: 8px;
-}
-[data-matrx-frame] .mf-grid-divider::after {
-  flex: 1;
-}
-
 [data-matrx-frame] .mf-noscrollbar {
   scrollbar-width: none;
 }

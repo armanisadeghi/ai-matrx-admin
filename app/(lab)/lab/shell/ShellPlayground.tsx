@@ -9,7 +9,6 @@ import { Check, LayoutList } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
 import type { FrameHeaderEdge, FrameSidebarColor, FrameSpace } from "@/features/shell/frame/AppFrame";
-import type { FrameGridLook } from "@/features/shell/frame/AppGrid";
 import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/products";
 import { INTELLIGENCE_PARTS, flowByName, flowForTile } from "@/features/shell/frame/flows";
 import { BigPicture, FlowView } from "./FlowView";
@@ -123,7 +122,6 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   const [showOwner, setShowOwner] = useState(false);
   const loaded = useLoadedModules();
   const [headerEdge, setHeaderEdge] = useState<FrameHeaderEdge>("fade");
-  const [gridLook, setGridLook] = useState<FrameGridLook>("A");
   const [space, setSpace] = useState<FrameSpace>("flush");
   const [bodyMode, setBodyMode] = useState<"flow" | "sample">("flow");
   const [bigPicture, setBigPicture] = useState(false);
@@ -393,16 +391,6 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             { value: "375", label: "375" },
           ]}
         />
-        <SegmentedControl<FrameGridLook>
-          aria-label="Grid"
-          value={gridLook}
-          onValueChange={setGridLook}
-          data={[
-            { value: "A", label: "Grid A" },
-            { value: "B", label: "Grid B" },
-            { value: "C", label: "Grid C" },
-          ]}
-        />
         <SegmentedControl<"flow" | "sample">
           aria-label="Body"
           value={bodyMode}
@@ -508,7 +496,6 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             properties={frameVariant === "record" ? properties : undefined}
             askBar={askBar}
             headerEdge={headerEdge}
-            gridLook={gridLook}
             space={space}
             sidebarColor={sidebarColor}
             loadCompanion={loadSampleCompanion}

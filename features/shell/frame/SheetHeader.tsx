@@ -397,11 +397,12 @@ export function placeholderHeaderTools(onSelect?: (id: string) => void): FrameHe
 }
 
 /** The controls that bring a hidden sidebar back, shown at the header's start. */
-export function SidebarRestore({ onShow, grid }: { onShow: () => void; grid: ReactNode }) {
+export function SidebarRestore({ onShow, grid, goTo }: { onShow: () => void; grid: ReactNode; goTo: ReactNode }) {
   return (
     <div className="flex shrink-0 items-center gap-0.5">
       <Button variant="quiet" icon={<PanelLeftOpen />} aria-label="Show sidebar" onClick={onShow} />
       {grid}
+      {goTo}
     </div>
   );
 }

@@ -21,7 +21,9 @@ import { accentAttributes } from "@ai-matrx/design-system/accents";
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
 import { AppGrid } from "./AppGrid";
-import type { AppGridProps, FrameGridLook } from "./AppGrid";
+import type { AppGridProps } from "./AppGrid";
+import { GoToSearch } from "./GoToSearch";
+import type { GoToSearchProps } from "./GoToSearch";
 import { FrameSidebar } from "./FrameSidebar";
 import {
   AskBar,
@@ -240,8 +242,10 @@ export interface AppFrameProps {
   initialGeometry?: FrameInitialGeometry;
   /** PLAYGROUND A/B ONLY (see FrameHeaderEdge); default `fade`. */
   headerEdge?: FrameHeaderEdge;
-  /** PLAYGROUND BAKE-OFF ONLY: the app grid's look (see FrameGridLook); default `A`. */
-  gridLook?: FrameGridLook;
+  /** "Go to" search: same-tab navigation (the host's router); default assigns the location. */
+  onGoTo?: (href: string) => void;
+  /** "Go to" search: more places the host knows, merged into the index. */
+  goToEntries?: GoToSearchProps["extraEntries"];
   /** PLAYGROUND A/B ONLY (see FrameSpace); default `flush` (owner, 2026-10-21). */
   space?: FrameSpace;
   /** PLAYGROUND A/B ONLY (see FrameSidebarColor); default `same` (owner, 2026-10-21). */
@@ -422,7 +426,8 @@ export function AppFrame(props: AppFrameProps) {
   const companionMounted = useLatched(companionShown);
   const canvasMounted = useLatched(canvasOpen);
 
-  const grid: AppGridProps = { products, families, favorites, onFavoritesChange, look: props.gridLook };
+  const grid: AppGridProps = { products, families, favorites, onFavoritesChange };
+  const goTo: GoToSearchProps = { products, families, onGo: props.onGoTo, extraEntries: props.goToEntries };
 
   const drawer = useModalPanel({
     open: drawerShown,
@@ -597,6 +602,7 @@ export function AppFrame(props: AppFrameProps) {
                 <FrameSidebar
                   product={product}
                   grid={grid}
+                  goTo={goTo}
                   activeItemId={activeMenuItemId}
                   onSelectItem={onSelectMenuItem}
                   onHide={() => setSidebarOpen(false)}
@@ -652,6 +658,7 @@ export function AppFrame(props: AppFrameProps) {
                     <SidebarRestore
                       onShow={() => (inlineSidebar ? setSidebarOpen(true) : openDrawer())}
                       grid={<AppGrid {...grid} currentProductId={product.id} />}
+                      goTo={<GoToSearch {...goTo} />}
                     />
                   ) : undefined
                 }
@@ -817,6 +824,7 @@ export function AppFrame(props: AppFrameProps) {
               <FrameSidebar
                 product={product}
                 grid={grid}
+                goTo={goTo}
                 activeItemId={activeMenuItemId}
                 onSelectItem={(item) => {
                   onSelectMenuItem?.(item);

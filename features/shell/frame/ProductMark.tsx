@@ -12,26 +12,23 @@ import type { FrameProduct } from "./types";
 /**
  * `grid` = a 32px glyph (the app grid's cell); `inline` = an 18px glyph beside a name. Sizes are
  * whole pixels on the SVG itself (no scaling, no transforms), stroke 1.75, so the line stays crisp.
- * `filled` (the grid bake-off's look C) puts a soft shape of the same hue (15%) behind a 24px glyph.
  */
 export function ProductMark({
   product,
   size,
-  filled = false,
 }: {
   product: FrameProduct;
   size: "grid" | "inline";
-  filled?: boolean;
 }) {
   const Icon = product.icon;
   const hue = { "--mf-hue-ink": `var(--matrx-chip-${product.color}-ink)` } as CSSProperties;
-  const px = size === "inline" ? 18 : filled ? 24 : 32;
+  const px = size === "inline" ? 18 : 32;
   return (
     <span
       data-mf-mark={product.color}
       className={cn(
         "mf-mark flex shrink-0 items-center justify-center",
-        size === "inline" ? "size-5" : filled ? "mf-mark-filled size-10" : "size-8",
+        size === "inline" ? "size-5" : "size-8",
       )}
       style={hue}
     >

@@ -122,13 +122,11 @@ export function PersonFoundStage({
                     key={a.item.key}
                     href={href(a.item.url ?? a.item.value)}
                     data-clickable
-                    className="flex min-w-0 items-center gap-2.5"
+                    className="flex min-w-0 max-w-full items-center gap-2.5"
                   >
                     <AccountPicture account={a} size="size-10" />
                     <span className="flex min-w-0 flex-col">
-                      <span className="text-lg font-semibold text-foreground">
-                        <FitText text={handleOf(a)} />
-                      </span>
+                      <span className="truncate text-lg font-semibold leading-tight text-foreground">{handleOf(a)}</span>
                       <span className="text-sm text-muted-foreground">
                         {a.followers != null ? `${formatCount(a.followers, { style: "compact" })} followers` : platformLabel(a.platform)}
                       </span>

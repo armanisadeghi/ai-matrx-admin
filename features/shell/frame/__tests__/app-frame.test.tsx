@@ -574,7 +574,7 @@ describe("the app grid is Google-tight (owner, 2026-10-20 fourth round)", () => 
     const all = names(grid);
     expect(new Set(all).size).toBe(PRODUCTS.length);
     expect(all).toHaveLength(PRODUCTS.length);
-    expect(grid.querySelectorAll(".type-label, .mf-grid-divider")).toHaveLength(0);
+    expect(grid.querySelectorAll(".type-label")).toHaveLength(0);
     // Tight cells: 80px tall, one-line names.
     for (const tile of grid.querySelectorAll("[data-mf-mark]")) {
       expect(tile.parentElement!.className).toContain("h-20");
@@ -582,19 +582,77 @@ describe("the app grid is Google-tight (owner, 2026-10-20 fourth round)", () => 
     }
   });
 
-  it("B: a hairline with a tiny family name between families, still no heading rows and no repeats", async () => {
-    const grid = await openGrid({ gridLook: "B" });
-    const labels = [...grid.querySelectorAll(".mf-grid-divider")].map((d) => d.textContent);
-    expect(labels.length).toBeGreaterThan(3);
-    expect(labels).not.toContain("Memory"); // Memory's only tile is a favorite here: no empty family
-    expect(names(grid)).toHaveLength(PRODUCTS.length);
+  // ── the grid's search (owner, 2026-10-21) ──
+  const searchBox = () => document.querySelector<HTMLInputElement>('input[aria-label="Search products"]')!;
+  function type(input: HTMLInputElement, value: string) {
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    act(() => {
+      set.call(input, value);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  }
+  const press = (el: Element, key: string) =>
+    act(() => {
+      el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+    });
+
+  it("a search field tops the grid and has focus when it opens", async () => {
+    await openGrid();
+    expect(searchBox()).not.toBeNull();
+    expect(document.activeElement).toBe(searchBox());
   });
 
-  it("C: the same layout, each mark on a soft same-hue shape", async () => {
-    const grid = await openGrid({ gridLook: "C" });
-    const marks = [...grid.querySelectorAll("[data-mf-mark]")];
-    expect(marks.every((m) => m.className.includes("mf-mark-filled"))).toBe(true);
-    expect(marks[0].querySelector("svg")!.getAttribute("width")).toBe("24");
+  it("typing filters the tiles by name: favorites card and other tiles give way to the matches", async () => {
+    const grid = await openGrid({ favorites: nine });
+    type(searchBox(), "crm");
+    expect(names(grid)).toEqual(["CRM"]);
+    expect(grid.querySelector(".mf-grid-card")).toBeNull();
+  });
+
+  it("it also matches a product's sections and pages, not only its name", async () => {
+    const grid = await openGrid({ favorites: nine });
+    type(searchBox(), "sandboxes");
+    expect(names(grid)).toContain("Code");
+    expect(names(grid).length).toBeLessThan(PRODUCTS.length);
+  });
+
+  it("no match says so", async () => {
+    const grid = await openGrid();
+    type(searchBox(), "zzzzqqq");
+    expect(names(grid)).toEqual([]);
+    expect(grid.textContent).toContain("No product matches");
+  });
+
+  it("Enter opens the first match in a new tab", async () => {
+    await openGrid();
+    const opened = jest.spyOn(window, "open").mockReturnValue(null);
+    type(searchBox(), "crm");
+    press(searchBox(), "Enter");
+    expect(opened).toHaveBeenCalled();
+    expect(String(opened.mock.calls[0][0])).toContain(PRODUCTS.find((p) => p.id === "crm")!.homeHref);
+    expect(opened.mock.calls[0][1]).toBe("_blank");
+    opened.mockRestore();
+  });
+
+  it("ArrowDown moves into the tiles (one Tab stop kept); Esc clears the field before the grid closes", async () => {
+    const grid = await openGrid();
+    type(searchBox(), "c");
+    press(searchBox(), "ArrowDown");
+    expect(document.activeElement?.hasAttribute("data-mf-tile")).toBe(true);
+    expect(grid.querySelectorAll('[data-mf-tile][tabindex="0"]')).toHaveLength(1);
+    searchBox().focus();
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    });
+    expect(searchBox().value).toBe("");
+    expect(document.querySelector('[role="group"][aria-label="Products"]')).not.toBeNull();
+  });
+
+  it("only grid A exists: no look switch, no family dividers, no filled marks", () => {
+    const src = readFileSync(join(__dirname, "..", "AppGrid.tsx"), "utf8");
+    expect(src).not.toMatch(/FrameGridLook|look === /);
+    const css = readFileSync(join(__dirname, "..", "frame.css"), "utf8");
+    expect(css).not.toMatch(/mf-grid-divider|mf-mark-filled/);
   });
 });
 

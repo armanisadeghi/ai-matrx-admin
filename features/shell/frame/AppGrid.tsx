@@ -5,17 +5,21 @@
 // and a one-line name), the favorites in a rounded card on top, then every other product in
 // ONE grid in family order. No heading rows, and nothing appears twice: a favorite is not
 // repeated below. A tile ALWAYS opens its product in a new tab (owner, 2026-10-17). The grid is
-// ONE Tab stop (roving tabindex); arrows move between tiles by position; Esc closes (Radix).
-// `look` is the owner's bake-off (A plain, B family hairlines, C filled marks) until he picks.
+// ONE Tab stop (roving tabindex); arrows move between tiles by position. Grid A is the owner's
+// pick (2026-10-21), with a search field on top: it filters the tiles as you type (names plus
+// their sections and pages), Enter opens the first match, ArrowDown moves into the tiles, Esc
+// clears the field and, when it is already empty, closes (Radix).
 import { useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { Check, ChevronLeft, ChevronRight, Grip, Pencil, Star } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
-import { Button } from "@ai-matrx/design-system/controls";
+import { Button, SearchField } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
 import { ProductMark } from "./ProductMark";
 import type { FrameProduct, ProductFamily } from "./types";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
+import { rankMenuSearch } from "./searchEngine";
 
 export interface AppGridProps {
   products: readonly FrameProduct[];
@@ -24,12 +28,7 @@ export interface AppGridProps {
   onFavoritesChange: (ids: string[]) => void;
   /** The product the frame is showing — marked in the grid. */
   currentProductId?: string;
-  /** PLAYGROUND BAKE-OFF ONLY (owner picks one, then this goes); default `A`. */
-  look?: FrameGridLook;
 }
-
-/** A = Google's layout; B = A plus a hairline and a tiny family name between families; C = A with filled marks. */
-export type FrameGridLook = "A" | "B" | "C";
 
 /** The card holds at most this many favorites (3 × 3, as Google's does). */
 export const GRID_FAVORITES_MAX = 9;
@@ -77,12 +76,13 @@ export function AppGrid({
   favorites,
   onFavoritesChange,
   currentProductId,
-  look = "A",
 }: AppGridProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [rovingKey, setRovingKey] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const bodyRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const favoriteProducts = favorites
     .map((id) => products.find((p) => p.id === id))
@@ -92,6 +92,9 @@ export function AppGrid({
   // Every other product once, in family order (editing: every product, so each can be starred).
   const rest = families.flatMap((f) => products.filter((p) => p.family === f.id && !favoriteIds.has(p.id)));
   const full = favoriteProducts.length >= GRID_FAVORITES_MAX;
+  // Searching: one flat list of matches, best first (editing ignores the search).
+  const searching = query.trim().length > 0 && !editing;
+  const matches = searching ? matchProducts(products, families, query) : [];
 
   // Edits start from the favorites that resolve to a product, so a retired id never lingers.
   function toggleFavorite(id: string) {
@@ -109,17 +112,32 @@ export function AppGrid({
     onFavoritesChange(current);
   }
 
+  function onSearchKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      const first = matches[0];
+      if (!first) return;
+      e.preventDefault();
+      openOutbound(first.homeHref, "_blank", "noopener,noreferrer");
+      setOpen(false);
+    } else if (e.key === "ArrowDown") {
+      const first = bodyRef.current?.querySelector<HTMLElement>(TILE_SELECTOR);
+      if (first) {
+        e.preventDefault();
+        focusTile(first);
+      }
+    }
+  }
+
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     const target = e.target as HTMLElement;
     if (!target.matches(TILE_SELECTOR) || !bodyRef.current) return;
     if (moveByArrow(bodyRef.current, target, e.key)) e.preventDefault();
   }
 
-  // The keyboard's tile order: the favorites card, then the list.
-  const navKeys = [
-    ...favoriteProducts.map((p) => `fav-${p.id}`),
-    ...rest.map((p) => `all-${p.id}`),
-  ];
+  // The keyboard's tile order: the matches while searching, else the favorites card, then the list.
+  const navKeys = searching
+    ? matches.map((p) => `hit-${p.id}`)
+    : [...favoriteProducts.map((p) => `fav-${p.id}`), ...rest.map((p) => `all-${p.id}`)];
   const activeKey = rovingKey && navKeys.includes(rovingKey) ? rovingKey : navKeys[0];
 
   function renderTile(product: FrameProduct, group: string) {
@@ -132,7 +150,7 @@ export function AppGrid({
       tabIndex: key === activeKey ? 0 : -1,
       onFocus: () => navigable && setRovingKey(key),
     };
-    const glyph = <ProductMark product={product} size="grid" filled={look === "C"} />;
+    const glyph = <ProductMark product={product} size="grid" />;
     const label = <span className="mf-grid-name w-full truncate text-center">{product.name}</span>;
     const tileClass = cn(
       "relative flex h-20 min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1",
@@ -210,7 +228,10 @@ export function AppGrid({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) setEditing(false);
+        if (!next) {
+          setEditing(false);
+          setQuery("");
+        }
       }}
     >
       <PopoverTrigger asChild>
@@ -221,11 +242,27 @@ export function AppGrid({
         width="lg"
         padding="none"
         surface="solid"
+        // First Esc clears the search; the next one (empty field) closes.
+        onEscapeKeyDown={(e) => {
+          if (!query) return;
+          e.preventDefault();
+          setQuery("");
+        }}
         onOpenAutoFocus={(e) => {
           e.preventDefault();
-          bodyRef.current?.querySelector<HTMLElement>(`${TILE_SELECTOR}[tabindex="0"]`)?.focus();
+          searchRef.current?.focus();
         }}
       >
+        <div className="px-2 pt-2">
+          <SearchField
+            ref={searchRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={onSearchKeyDown}
+            placeholder="Search products"
+            aria-label="Search products"
+          />
+        </div>
         <div
           ref={bodyRef}
           role="group"
@@ -233,29 +270,28 @@ export function AppGrid({
           onKeyDown={onKeyDown}
           className="mf-grid-scroll overflow-y-auto overscroll-contain p-2"
         >
-          {favoriteProducts.length > 0 ? (
-            <section aria-label={editing ? "Your favorites, in order" : "Your favorites"} className="mf-grid-card grid grid-cols-3 p-1">
-              {favoriteProducts.map((p) => renderTile(p, "fav"))}
-            </section>
-          ) : null}
-          <section aria-label={editing ? "Add favorites" : "All products"} className="pt-1">
-            {look === "B" && !editing ? (
-              families.map((family) => {
-                const members = rest.filter((p) => p.family === family.id);
-                if (members.length === 0) return null;
-                return (
-                  <div key={family.id}>
-                    <div className="mf-grid-divider" aria-hidden>
-                      <span>{family.label}</span>
-                    </div>
-                    <div className="grid grid-cols-3">{members.map((p) => renderTile(p, "all"))}</div>
-                  </div>
-                );
-              })
+          {searching ? (
+            matches.length > 0 ? (
+              <section aria-label="Matching products" className="grid grid-cols-3">
+                {matches.map((p) => renderTile(p, "hit"))}
+              </section>
             ) : (
-              <div className="grid grid-cols-3">{rest.map((p) => renderTile(p, "all"))}</div>
-            )}
-          </section>
+              <p role="status" className="type-secondary px-2 py-6 text-center text-muted-foreground">
+                No product matches
+              </p>
+            )
+          ) : (
+            <>
+              {favoriteProducts.length > 0 ? (
+                <section aria-label={editing ? "Your favorites, in order" : "Your favorites"} className="mf-grid-card grid grid-cols-3 p-1">
+                  {favoriteProducts.map((p) => renderTile(p, "fav"))}
+                </section>
+              ) : null}
+              <section aria-label={editing ? "Add favorites" : "All products"} className="pt-1">
+                <div className="grid grid-cols-3">{rest.map((p) => renderTile(p, "all"))}</div>
+              </section>
+            </>
+          )}
           <div className="flex justify-center pt-1">
             <Button variant="quiet" icon={editing ? <Check /> : <Pencil />} onClick={() => setEditing((v) => !v)}>
               {editing ? "Done" : "Edit favorites"}
@@ -265,4 +301,22 @@ export function AppGrid({
       </PopoverContent>
     </Popover>
   );
+}
+
+/** The products matching `query` — by name, family, section or page — best first. */
+function matchProducts(
+  products: readonly FrameProduct[],
+  families: readonly { id: ProductFamily; label: string }[],
+  query: string,
+): FrameProduct[] {
+  const familyLabel = new Map(families.map((f) => [f.id, f.label]));
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const entries = products.map((p) => ({
+    id: p.id,
+    label: p.name,
+    trail: [],
+    href: p.homeHref,
+    keywords: [familyLabel.get(p.family) ?? "", ...p.menu.flatMap((s) => [s.label ?? "", ...s.items.map((i) => i.label)])].filter(Boolean),
+  }));
+  return rankMenuSearch(entries, query, products.length).map((e) => byId.get(e.id)!);
 }

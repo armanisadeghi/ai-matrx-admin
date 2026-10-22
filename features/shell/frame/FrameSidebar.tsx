@@ -9,6 +9,8 @@ import type { MouseEvent, ReactNode } from "react";
 import { ExternalLink, PanelLeftClose } from "lucide-react";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
 import { AppGrid } from "./AppGrid";
+import { GoToSearch } from "./GoToSearch";
+import type { GoToSearchProps } from "./GoToSearch";
 import { ProductMark } from "./ProductMark";
 import type { AppGridProps } from "./AppGrid";
 import type { FrameMenuItem, FrameProduct } from "./types";
@@ -16,6 +18,8 @@ import type { FrameMenuItem, FrameProduct } from "./types";
 export interface FrameSidebarProps {
   product: FrameProduct;
   grid: AppGridProps;
+  /** The "Go to" search icon in the top row. */
+  goTo: GoToSearchProps;
   activeItemId?: string;
   onSelectItem?: (item: FrameMenuItem) => void;
   /** Desktop: collapse the sidebar. Drawer: close it. */
@@ -33,6 +37,7 @@ export function isPlainClick(e: MouseEvent) {
 export function FrameSidebar({
   product,
   grid,
+  goTo,
   activeItemId,
   onSelectItem,
   onHide,
@@ -45,6 +50,7 @@ export function FrameSidebar({
         <AppGrid {...grid} currentProductId={product.id} />
         <ProductMark product={product} size="inline" />
         <span className="type-title min-w-0 flex-1 truncate pl-1">{product.name}</span>
+        <GoToSearch {...goTo} />
         <Button variant="quiet" icon={<PanelLeftClose />} aria-label={hideLabel} onClick={onHide} />
       </div>
       <div className="mf-noscrollbar min-h-0 flex-1 overflow-y-auto px-2 pt-2 pb-4">
