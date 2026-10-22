@@ -38,7 +38,7 @@ import {
   selectFavoriteCount,
 } from "@/lib/redux/preferences/userPreferenceSelectors";
 import { favoritesService } from "@/features/scopes/service/favoritesService";
-import { type FavoriteKind } from "@/features/scopes/types";
+import { type EntityType, type FavoriteKind } from "@/features/scopes/types";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 /** Everything a callsite must supply to pin something. `pinnedAt` is stamped here. */
@@ -154,6 +154,35 @@ export function usePinned(): UsePinnedResult {
     // (user_entity_state has no order column) — it stays in the prefs cache.
     reorder: (orderedIds: string[]) => dispatch(reorderFavorites(orderedIds)),
   };
+}
+
+// Every favoritable record token, checked against `EntityType` by the compiler (a token added there
+// fails to compile here until listed) — the runtime half of `FavoriteKind` for a token read as text.
+const FAVORITABLE_RECORD_KINDS: Record<EntityType, true> = {
+  agent: true,
+  note: true,
+  file: true,
+  conversation: true,
+  scope: true,
+  scope_type: true,
+  context_item: true,
+  project: true,
+  task: true,
+  category: true,
+  thread: true,
+  war_room: true,
+  studio_session: true,
+  transcript: true,
+  app: true,
+  agent_surface_binding: true,
+  page_extraction_job: true,
+  party: true,
+  crm_deal: true,
+};
+
+/** A record type token (e.g. the current record's) that can be a favorite's `kind`. */
+export function isFavoritableRecordKind(token: string | null | undefined): token is EntityType {
+  return token != null && Object.prototype.hasOwnProperty.call(FAVORITABLE_RECORD_KINDS, token);
 }
 
 /**

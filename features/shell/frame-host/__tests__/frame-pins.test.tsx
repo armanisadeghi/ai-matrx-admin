@@ -11,6 +11,7 @@ import { Provider } from "react-redux";
 import userPreferences from "@/lib/redux/preferences/userPreferencesSlice";
 import { buildRemoteFetchStatusAction } from "@/lib/sync/engine/remoteFetchStatus";
 import { useFramePins, pageFavorite } from "../useFramePins";
+import { declareCurrentRecord } from "@/features/shell/current-record/currentRecord";
 
 jest.mock("@/features/scopes/service/favoritesService", () => ({
   favoritesService: { setFavorite: jest.fn(() => Promise.resolve({ ok: true })) },
@@ -86,5 +87,41 @@ it("while preferences have not loaded the star is neutral and a press toggles no
     markLoaded(store);
   });
   expect(star().getAttribute("data-known")).toBe("true");
+  unmount();
+});
+
+function PathHost({ path, label }: { path: string; label: string }) {
+  const { favorite } = useFramePins(path, label);
+  return favorite ? <button data-testid="star" aria-pressed={favorite.starred} onClick={favorite.onToggle} /> : <i data-testid="no-star" />;
+}
+const mountPath = (store: Store, path: string, label: string) => {
+  host = document.createElement("div");
+  document.body.appendChild(host);
+  root = createRoot(host);
+  act(() => root.render(<Provider store={store}><PathHost path={path} label={label} /></Provider>));
+};
+
+it("on a record page the star favorites the RECORD itself, not the address", () => {
+  const store = makeStore();
+  markLoaded(store);
+  const id = "4c9a3f8e-2b1d-4e6a-9f00-1a2b3c4d5e6f";
+  let release = () => {};
+  act(() => {
+    release = declareCurrentRecord({ token: "agent", id, label: "Writer" });
+  });
+  mountPath(store, `/agents/${id}/build`, "Build");
+  act(() => star().click());
+  const saved = store.getState().userPreferences.favorites.items;
+  expect(saved.map((f) => [f.id, f.kind, f.label])).toEqual([[`agent:${id}`, "agent", "Writer"]]);
+  expect(star().getAttribute("aria-pressed")).toBe("true");
+  unmount();
+  act(() => release());
+});
+
+it("an unsaved page (/chat/new) has no star: favoritable means a real, saved thing", () => {
+  const store = makeStore();
+  markLoaded(store);
+  mountPath(store, "/chat/new", "New chat");
+  expect(host.querySelector('[data-testid="no-star"]')).not.toBeNull();
   unmount();
 });
