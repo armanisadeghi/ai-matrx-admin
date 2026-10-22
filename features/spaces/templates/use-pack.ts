@@ -75,13 +75,34 @@ const door = () => createClient().schema("custom") as unknown as Door;
  * that carry a board, `card.space.board`). One catalog, two doors.
  */
 export async function listSpaceTemplates(installedIn: string | null, makes: "any" | "board" | "reference" = "any"): Promise<SpaceTemplateCard[]> {
-  const { data, error } = await door().rpc("space_templates", { p_filter: installedIn ? { installed_in: installedIn } : {} });
-  if (error) throw new Error(`We couldn't list the templates: ${error.message}`);
-  const cards = (data?.cards ?? []) as SpaceTemplateCard[];
+  const cards = await readCatalog(installedIn);
   // "reference": the board packs published reference-only (`board.listed: false`, the design starters): read by
   // agents and "Start from a style", never a gallery entry. Every gallery door filters them out.
   if (makes === "reference") return cards.filter((c) => !!c.space?.board && !isListedTemplate(c.space));
   return cards.filter((c) => isListedTemplate(c.space) && (makes === "board" ? !!c.space?.board : spaceTemplateMakes(c.space) !== null));
+}
+
+/**
+ * ONE catalog read per tab. The board start dialog asked `space_templates` ~13 times on one open (every gallery,
+ * style list and starter read listed the catalog again, 2026-10-22). The plain catalog (no `installedIn`) is the
+ * same for the whole tab, so it is read once and kept (a failed read is forgotten so the next caller retries); an
+ * `installedIn` read carries live install state, so concurrent callers share one request and nothing is kept.
+ */
+const catalog = new Map<string, Promise<SpaceTemplateCard[]>>();
+
+function readCatalog(installedIn: string | null): Promise<SpaceTemplateCard[]> {
+  const key = installedIn ?? "";
+  const pending = catalog.get(key);
+  if (pending) return pending;
+  const p = (async () => {
+    const { data, error } = await door().rpc("space_templates", { p_filter: installedIn ? { installed_in: installedIn } : {} });
+    if (error) throw new Error(`We couldn't list the templates: ${error.message}`);
+    return (data?.cards ?? []) as SpaceTemplateCard[];
+  })();
+  catalog.set(key, p);
+  const forget = () => catalog.delete(key);
+  p.then(() => { if (installedIn) forget(); }, forget);
+  return p;
 }
 
 const full = new Map<string, Promise<SpaceTemplateFull>>();

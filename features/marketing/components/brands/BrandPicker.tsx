@@ -23,6 +23,7 @@ export function BrandPicker({
   allowAll = false,
   allLabel = "All brands",
   label = "Brand",
+  labelHidden = false,
 }: {
   organizationId: string | null;
   value: string | null;
@@ -31,6 +32,8 @@ export function BrandPicker({
   /** The text of the "no brand chosen" row when allowAll is on. */
   allLabel?: string;
   label?: string;
+  /** Toolbar placement: the label is read by assistive tech only (the trigger shows the brand). */
+  labelHidden?: boolean;
 }) {
   // access-errors: ok — picker options; a failed read leaves the select empty and the host surface owns its own record errors
   const options = useBrandOptions(organizationId);
@@ -38,8 +41,8 @@ export function BrandPicker({
   const orgName = new Map(organizations.map((o) => [o.id, o.name]));
   const labelOrg = !organizationId && organizations.length > 1;
   return (
-    <div className="space-y-1">
-      <Label className="text-xs">{label}</Label>
+    <div className={labelHidden ? undefined : "space-y-1"}>
+      <Label className={labelHidden ? "sr-only" : "text-xs"}>{label}</Label>
       <Select
         value={value ?? (allowAll ? "__all__" : "")}
         onValueChange={(v) => onChange(v === "__all__" ? null : v)}

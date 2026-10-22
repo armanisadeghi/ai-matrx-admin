@@ -175,9 +175,6 @@ export function InterviewClient({
         setInterviewError(row ? null : "This interview does not exist, or it is not yours to read.");
         if (row) {
           void markInterviewOpened(row);
-          void userEmails([row.respondent_user_id]).then((map) => {
-            if (live) setRespondentEmail(map.get(row.respondent_user_id) ?? null);
-          });
         }
       } catch (loadError) {
         if (!live) return;
@@ -275,6 +272,21 @@ export function InterviewClient({
     // component-created-by-ok: the interview row is an entity — its created_by is the person who opened the interview
     userId !== interview.created_by;
   const adminSeat = browserAdminLaneOpen();
+  // The respondent's email is only ever shown in the mismatch sentence, and its
+  // lookup (get_user_emails_by_ids) is platform-admin only: a person answering
+  // their own sitting never calls it (it answered every story load with a 403).
+  const respondentId = interview?.respondent_user_id ?? null;
+  const lookUpRespondent = identityMismatch && adminSeat && !!respondentId;
+  useEffect(() => {
+    if (!lookUpRespondent || !respondentId) return;
+    let live = true;
+    void userEmails([respondentId]).then((map) => {
+      if (live) setRespondentEmail(map.get(respondentId) ?? null);
+    });
+    return () => {
+      live = false;
+    };
+  }, [lookUpRespondent, respondentId]);
   const identitySentence = interview
     ? `Signed in as ${userEmail ?? userId ?? "nobody"}; this interview is addressed to ${respondentEmail ?? interview.respondent_user_id}.`
     : "";
