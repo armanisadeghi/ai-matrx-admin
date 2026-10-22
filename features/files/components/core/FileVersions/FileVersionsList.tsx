@@ -49,6 +49,11 @@ import {
 } from "@/features/files/utils/version-copy";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
+/** A versions read that has not answered by now says so (the RLS read has taken 12 s+ cold). */
+export const VERSIONS_LOAD_DEADLINE_MS = 30_000;
+export const VERSIONS_TIMEOUT_MESSAGE =
+  "Loading the version history took too long and was stopped.";
+
 export interface FileVersionsListProps {
   fileId: string;
   className?: string;
@@ -66,20 +71,34 @@ export function FileVersionsList({ fileId, className }: FileVersionsListProps) {
   const isVirtual =
     fileId.startsWith("vfs:") || file?.source.kind === "virtual";
 
-  const [loading, setLoading] = useState(false);
+  // Starts loading: the first paint is never the empty state before the read has begun.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<number | null>(null);
   const [restoring, setRestoring] = useState<number | null>(null);
 
   const fetchVersions = useCallback(async () => {
-    if (isVirtual) return;
+    if (isVirtual) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      await dispatch(loadFileVersions({ fileId })).unwrap();
+      await Promise.race([
+        dispatch(loadFileVersions({ fileId })).unwrap(),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error(VERSIONS_TIMEOUT_MESSAGE)),
+            VERSIONS_LOAD_DEADLINE_MS,
+          );
+        }),
+      ]);
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {
+      if (timer) clearTimeout(timer);
       setLoading(false);
     }
   }, [dispatch, fileId, isVirtual]);
