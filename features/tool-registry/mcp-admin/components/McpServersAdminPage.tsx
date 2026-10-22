@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint, Badge as StatusBadge, EmptyState, Input, PropertyRow, RegionSkeleton, SearchField, Select, Tile, type BadgeTone } from "@ai-matrx/design-system/controls";
+import { InfoHint, Badge as StatusBadge, EmptyState, Input, PropertyRow, RegionSkeleton, SearchField, Select, Tile, type BadgeTone, KpiTile } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
@@ -21,7 +21,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";

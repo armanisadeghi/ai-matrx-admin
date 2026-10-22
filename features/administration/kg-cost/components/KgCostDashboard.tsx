@@ -41,7 +41,7 @@ import {
 import { toast } from "@/lib/toast";
 
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
+import { KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

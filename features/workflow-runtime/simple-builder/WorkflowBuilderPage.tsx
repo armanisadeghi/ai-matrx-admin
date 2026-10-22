@@ -41,7 +41,7 @@ import {
 import { BasicInput, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
-import { StatusBadge } from "@/components/official/status-badge/StatusBadge";
+import { StatusBadge } from "@ai-matrx/design-system/controls";
 import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useIsMobile } from "@ai-matrx/kit/media-query";

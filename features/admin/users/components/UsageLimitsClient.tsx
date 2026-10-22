@@ -28,7 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
+import { KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
 import AppLink from "@/components/navigation/AppLink";

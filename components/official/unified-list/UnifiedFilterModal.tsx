@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MobileOverlayWrapper } from "@/components/official/MobileOverlayWrapper";
+import { BottomSheet, BottomSheetBody, BottomSheetHeader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import {
   BaseListItem,
@@ -46,7 +46,7 @@ interface UnifiedFilterModalProps<T extends BaseListItem> {
  * - Toggle filters (switch)
  * - Custom filter components
  * - Clear all functionality
- * - Uses MobileOverlayWrapper for safe mobile rendering
+ * - Uses the design-system BottomSheet for safe mobile rendering
  *
  * Preserves all features from the prompts FilterModal.
  */
@@ -280,13 +280,9 @@ export function UnifiedFilterModal<T extends BaseListItem>({
   };
 
   return (
-    <MobileOverlayWrapper
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Filters & Sorting"
-      description="Customize how your items are organized"
-      maxHeight="lg"
-    >
+    <BottomSheet open={isOpen} onOpenChange={(open) => !open && onClose()} title="Filters & Sorting">
+      <BottomSheetHeader title="Filters & Sorting" />
+      <BottomSheetBody>
       {/* Content */}
       <div className="p-6 space-y-6">
         {/* Sort Section */}
@@ -347,6 +343,7 @@ export function UnifiedFilterModal<T extends BaseListItem>({
           Apply Filters
         </Button>
       </div>
-    </MobileOverlayWrapper>
+      </BottomSheetBody>
+    </BottomSheet>
   );
 }

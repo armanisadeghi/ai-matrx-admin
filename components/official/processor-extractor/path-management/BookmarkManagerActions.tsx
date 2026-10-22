@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { SettingsIcon } from 'lucide-react';
-import { IconButton } from "@/components/official/TextIconButton";
+import { IconButton } from "@ai-matrx/design-system";
 import UnifiedBookmarkManager from './UnifiedBookmarkManager';
 
 interface BookmarkManagerActionsProps {
@@ -14,14 +14,7 @@ const BookmarkManagerActions: React.FC<BookmarkManagerActionsProps> = ({ jsonStr
 
   return (
     <div className="flex">
-      <IconButton
-        size="sm"
-        variant="ghost"
-        onClick={() => setIsManagerOpen(true)}
-        tooltip="Manage Bookmarks"
-        icon={<SettingsIcon className="w-4 h-4" />}
-        className="h-8 w-8"
-      />
+      <IconButton variant="ghost" onClick={() => setIsManagerOpen(true)} tooltip="Manage Bookmarks" icon={SettingsIcon} />
       <UnifiedBookmarkManager 
         open={isManagerOpen} 
         onOpenChange={setIsManagerOpen}

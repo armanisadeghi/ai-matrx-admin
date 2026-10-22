@@ -22,9 +22,8 @@ import { NotesAPI } from "@/features/notes/service/notesApi";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import type { Note } from "@/features/notes/types";
-import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
+import { ActionFeedbackButton, Button, Select } from "@ai-matrx/design-system/controls";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { Button, Select } from "@ai-matrx/design-system/controls";
 export const CONTEXT_TAG = "Transcription Contexts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -306,7 +305,7 @@ export function TranscriptionCleanupContextPanel({
                   void handleSave(block.id);
                 }}
                 disabled={savingId === block.id}
-                className="h-5 w-5 text-primary/80"
+                className="text-primary/80"
               />
             )}
 
@@ -316,7 +315,7 @@ export function TranscriptionCleanupContextPanel({
                 icon={<Unlink className="h-3 w-3" />}
                 tooltip="Unlink — keep text but stop syncing to note"
                 onClick={() => handleUnlink(block.id)}
-                className="h-5 w-5 text-muted-foreground/60"
+                className="text-muted-foreground/60"
               />
             )}
 
@@ -326,7 +325,7 @@ export function TranscriptionCleanupContextPanel({
                 icon={<X className="h-3 w-3" />}
                 tooltip="Remove this context block"
                 onClick={() => handleRemove(block.id)}
-                className="h-5 w-5 text-muted-foreground/60 hover:text-destructive"
+                className="text-muted-foreground/60 hover:text-destructive"
               />
             )}
           </div>

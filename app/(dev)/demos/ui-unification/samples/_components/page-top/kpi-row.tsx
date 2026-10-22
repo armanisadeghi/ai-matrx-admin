@@ -15,7 +15,7 @@
  * - Every number that names a set of records is a door (`href`).
  */
 
-import { KpiTile, type KpiTileProps } from "@/components/official/kpi/KpiTile";
+import { KpiTile, type KpiTileProps } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 
 export type KpiRowItem = KpiTileProps & { id: string };

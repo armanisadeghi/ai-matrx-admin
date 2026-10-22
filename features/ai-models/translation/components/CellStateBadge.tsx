@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, Bot, Check, CircleDashed, Clock, History } from "lucide-react";
-import { StatusBadge, type StatusTone } from "@/components/official/status-badge/StatusBadge";
+import { StatusBadge, type StatusTone } from "@ai-matrx/design-system/controls";
 import type { CellStatus } from "../model";
 
 const LOOK: Record<CellStatus, { label: string; tone: StatusTone; icon: typeof Check; title: string }> = {

@@ -2,7 +2,7 @@
 
 import React, { useRef, useCallback, useState } from "react";
 import { Mic, Plus, Minus, Type, X } from "lucide-react";
-import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
+import { ActionFeedbackButton } from "@ai-matrx/design-system/controls";
 import { RichDocumentActions } from "@ai-matrx/rich-content/rich-document/RichDocumentActions";
 import { clearContentAction } from "@ai-matrx/rich-content/rich-document/actions/hostActions";
 import { cn } from "@/lib/utils";

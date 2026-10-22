@@ -27,8 +27,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PropertyRow } from "@ai-matrx/design-system/controls";
-import { KpiGrid, KpiTile, type KpiTone } from "@/components/official/kpi/KpiTile";
+import { PropertyRow, KpiGrid, KpiTile, type KpiTone } from "@ai-matrx/design-system/controls";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { DurableRunFailure } from "@/lib/durable-run/DurableRunFailure";

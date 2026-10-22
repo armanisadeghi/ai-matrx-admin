@@ -20,7 +20,7 @@ import {
 import {
   StatusBadge,
   type StatusTone,
-} from "@/components/official/status-badge/StatusBadge";
+} from "@ai-matrx/design-system/controls";
 import { runHref } from "@/features/workflow-runtime/run-doors";
 import type { BuilderRun, RunStepStatus } from "./builderApi";
 

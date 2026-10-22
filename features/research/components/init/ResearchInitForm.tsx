@@ -75,7 +75,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 // Durable draft state: the generic persisted wizard-draft primitive.
 import { useWizardDraft } from "@/lib/wizard-draft/useWizardDraft";
 import { WizardDraftRestored } from "@/lib/wizard-draft/WizardDraftRestored";
-import TextArrayInput from "@/components/official/TextArrayInput";
+import { TextArrayInput, Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";
 import {
   buildResearchContextData,
@@ -93,7 +93,6 @@ import { SubjectFields } from "./SubjectFields";
 // MenuContent lazy-loads on first open.
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 // context-menu-exempt: entity — the form that runs BEFORE the research exists — no row has been created yet, so there is no record to name
 

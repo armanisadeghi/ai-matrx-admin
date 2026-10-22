@@ -8,10 +8,9 @@
 //   BigPicture — every family → product → section, with page counts, on one screen.
 import { Fragment, useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { Badge, Button, Tabs } from "@ai-matrx/design-system/controls";
+import { Badge, Button, Tabs, KpiTile } from "@ai-matrx/design-system/controls";
 import type { BadgeTone } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
 import { ProductMark } from "@/features/shell/frame/ProductMark";
 import { FLOWS, FLOWS_OUTSIDE_THE_GRID, flowCounts, flowForTile } from "@/features/shell/frame/flows";
 import type { FlowPage, FlowProduct, FlowRole } from "@/features/shell/frame/flows";

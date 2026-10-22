@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import StructuredSectionCard from "@/components/official/StructuredSectionCard";
+import { StructuredSectionCard } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, 

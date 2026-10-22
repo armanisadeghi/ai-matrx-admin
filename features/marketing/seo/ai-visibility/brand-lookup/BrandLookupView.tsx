@@ -26,19 +26,12 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { MessageSquareQuote, Search, Swords } from "lucide-react";
-import {
-  Badge,
-  Button,
-  EmptyState,
-  Field,
-  RegionSkeleton,
-} from "@ai-matrx/design-system/controls";
+import { Badge, Button, EmptyState, Field, RegionSkeleton, KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatAbsoluteDate, formatCount } from "@ai-matrx/kit/format";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import type { MarketingSite } from "@/features/marketing/types";

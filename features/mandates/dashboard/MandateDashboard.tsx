@@ -25,7 +25,7 @@ import {
 import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 
 import { Button } from "@/components/ui/button";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
+import { KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { MANDATE_STATUS_META } from "@/features/mandates/status/mandate-status";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { SYSTEM_HOME } from "@/features/mandates/list-door";

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { ComponentEntry } from "../parts/component-list";
 import { ComponentDisplayWrapper } from "../component-usage";
-import TextArrayInput from "@/components/official/TextArrayInput";
+import { TextArrayInput } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Check, Lightbulb } from "lucide-react";
 
@@ -20,7 +20,7 @@ export default function TextArrayInputDisplay({
   const [allowDuplicates, setAllowDuplicates] = useState(["item1", "item2"]);
 
   // Example code with all available props
-  const code = `import TextArrayInput from '@/components/official/TextArrayInput';
+  const code = `import { TextArrayInput } from "@ai-matrx/design-system/controls";
 
 // Basic Usage - Controlled
 <TextArrayInput
