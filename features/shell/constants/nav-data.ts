@@ -1278,7 +1278,7 @@ export const primaryNavItems: ShellNavItem[] = [
     section: "primary",
     profileMenu: true,
     dashboard: true,
-    description: "Everything you and your agents remember, searchable",
+    description: "What you and your agents remember",
     color: "amber",
     children: [
       {
