@@ -12,14 +12,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Wand2, X } from "lucide-react";
+import { Plus, X, Lightbulb } from "lucide-react";
 import { useHeadlessAgentJson } from "@ai-matrx/chat/agents/hooks/useHeadlessAgentJson";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { Button } from "@ai-matrx/design-system/controls";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { createSeatJob, SEAT_JOB_SURFACE, seatJobScope, type DefinedSeatJob } from "../seatJob";
+import { createSeatJob, linkSeatJob, SeatJobNotLinkedError, SEAT_JOB_SURFACE, seatJobScope, type DefinedSeatJob } from "../seatJob";
 import type { OrgPosition } from "../positionsService";
 
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -120,11 +120,20 @@ function Body({
     !output.trim() && "what it hands back",
   ].filter(Boolean) as string[];
 
+  // A job made but not linked to the seat: the next press only links it — never a second job.
+  const [unlinked, setUnlinked] = useState<DefinedSeatJob | null>(null);
+
   const create = async () => {
-    if (!goal.trim()) return;
+    if (!goal.trim() && !unlinked) return;
     setSaving(true);
     setError(null);
     try {
+      if (unlinked) {
+        await linkSeatJob(dispatch, position.id, unlinked);
+        setUnlinked(null);
+        onDefined(unlinked);
+        return;
+      }
       const made = await createSeatJob(dispatch, position, {
         goal,
         output,
@@ -132,6 +141,7 @@ function Body({
       });
       onDefined(made);
     } catch (e) {
+      if (e instanceof SeatJobNotLinkedError) setUnlinked(e.job);
       setError(e instanceof Error ? e.message : "The job could not be created.");
     } finally {
       setSaving(false);
@@ -147,7 +157,7 @@ function Body({
 
       <div className="flex flex-col gap-4">
         <div>
-          <Button variant="outline" icon={<Wand2 />} disabled={suggester.isRunning || saving} onClick={() => void suggest()}>
+          <Button variant="outline" icon={<Lightbulb />} disabled={suggester.isRunning || saving} onClick={() => void suggest()}>
             {suggester.isRunning ? "Suggesting…" : "Suggest"}
           </Button>
         </div>
@@ -231,8 +241,8 @@ function Body({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="primary" disabled={!goal.trim() || saving} onClick={() => void create()}>
-            {saving ? "Creating…" : "Create job"}
+          <Button variant="primary" disabled={(!goal.trim() && !unlinked) || saving} onClick={() => void create()}>
+            {saving ? "Saving…" : unlinked ? "Link the job" : "Create job"}
           </Button>
         </div>
       </div>

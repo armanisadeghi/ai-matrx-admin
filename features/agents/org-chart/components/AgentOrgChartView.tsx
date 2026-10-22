@@ -1311,9 +1311,10 @@ export function AgentOrgChartView({
           setMaking(null);
           if (!warnings.length) toast.success("Orchestra made.");
           setSelection([]);
+          // Only ?focus= changes, which the chart reads on the client: no server round trip.
           const params = new URLSearchParams(searchParams.toString());
           params.set("focus", boxId("agent", conductorId));
-          router.replace(`${pathname}?${params.toString()}`);
+          replaceAddressWithoutNavigating(`${pathname}?${params.toString()}`);
         }}
       />
 
