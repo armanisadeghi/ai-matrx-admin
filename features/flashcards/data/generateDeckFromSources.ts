@@ -48,7 +48,7 @@ import { foldDepthIntoRequest } from "./enhanceCard";
 import { fcService } from "./fcService";
 import { FC_MANDATES } from "./mandates";
 import type { NewCardInput } from "./types";
-import { resolveKitTitle, NAMER_SAMPLE_CHARS } from "@/features/education/onboard/kitTitle";
+import { nameFromSources } from "@/features/education/onboard/kitTitle";
 import { sectionRunTitle } from "@/features/education/convert/coverage";
 import { foldSteer, type GenerationSteer } from "@/features/education/convert/steering";
 import type { OutlineGroups } from "@/features/education/kits/outline/outlineService";
@@ -234,6 +234,18 @@ export function lineageSourceOf(source: ResolvedSource): ConvertSource {
       entityId: source.ref.resource_id,
     },
   };
+}
+
+/**
+ * The lineage anchors of every included Source — what "Made from" links. A
+ * table or pick list lives in the record store, which no lineage edge can point
+ * at, so it is left out here (the artifact's own `source_set` records it).
+ * Shared by every Education tool that makes something from Sources.
+ */
+export function lineageSourcesOf(resolved: ResolvedSourceSet): ConvertSource[] {
+  return resolved.sources
+    .filter((s) => !RECORD_STORE_TYPES.has(s.ref.resource_type))
+    .map(lineageSourceOf);
 }
 
 export interface DeckFromSourcesInput {
@@ -526,17 +538,8 @@ export function deckLineageResult(
 }
 
 /** A deck of several Sources is titled by THE kit namer, from all of them. */
-async function nameFromSources(live: ResolvedSource[], ctx: ConvertContext): Promise<string> {
-  const floor = defaultDeckName(live);
-  if (live.length < 2) return floor;
-  const named = await resolveKitTitle(ctx.dispatch, ctx.store, {
-    text: live.map((s) => s.text).join("\n\n"),
-    rawTitle: floor,
-    sourceTitles: live.map((s) => s.label),
-    sourceSamples: live.map((s) => s.text.slice(0, NAMER_SAMPLE_CHARS)),
-    orgId: ctx.orgId,
-  });
-  return named.title;
+async function nameFromResolved(live: ResolvedSource[], ctx: ConvertContext): Promise<string> {
+  return nameFromSources(live, ctx, defaultDeckName(live));
 }
 
 export async function generateDeckFromSources({
@@ -552,7 +555,7 @@ export async function generateDeckFromSources({
   continues,
 }: DeckFromSourcesInput): Promise<DeckFromSourcesOutcome> {
   const live = resolved.sources.filter((s) => s.text.trim().length > 0);
-  const baseTitle = name?.trim() || (await nameFromSources(live, ctx));
+  const baseTitle = name?.trim() || (await nameFromResolved(live, ctx));
   const covered = await generateCardsFromSources({
     resolved,
     count,
@@ -616,9 +619,7 @@ export async function generateDeckFromSources({
   // A table or pick list lives in the record store, which no lineage edge can
   // point at (its old tokens are retired); the deck's own `source_set` records
   // it, and "Made from" reads that list.
-  const linkSources = resolved.sources
-    .filter((s) => !RECORD_STORE_TYPES.has(s.ref.resource_type))
-    .map(lineageSourceOf);
+  const linkSources = lineageSourcesOf(resolved);
   announceLineage(
     await recordLineageForSources(result, linkSources, ctx.orgId),
     () => recordLineageForSources(result, linkSources, ctx.orgId),
