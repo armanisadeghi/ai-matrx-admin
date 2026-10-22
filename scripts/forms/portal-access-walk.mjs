@@ -7,6 +7,7 @@
 // persona factory (an undeliverable fixtures.aimatrx.com address, tagged and removed after). Every table and the
 // portal are archived after.
 //   ORIGIN=http://<session>.localhost:3001 SHOTS=<dir> node scripts/forms/portal-access-walk.mjs
+//   ORIGIN=https://www.aimatrx.com ADMIN_ORIGIN=http://<session>.localhost:3001 … (the stranger on the live site)
 import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
@@ -24,6 +25,9 @@ for (const f of [path.join(root, ".env.local"), path.join(root, "../aidream/.env
   }
 }
 const ORIGIN = process.env.ORIGIN ?? "http://close-page.localhost:3001";
+// The owner's builder needs a signed-in browser (dev-login on a preview host); the stranger's half can run on the
+// live site. ADMIN_ORIGIN defaults to ORIGIN.
+const ADMIN_ORIGIN = process.env.ADMIN_ORIGIN ?? ORIGIN;
 const SHOTS = process.env.SHOTS ?? "/tmp/cd-page-12";
 fs.mkdirSync(SHOTS, { recursive: true });
 // admin@admin.com's own Workspace (the persona is in no organization, so she is an outsider to it).
@@ -76,8 +80,8 @@ try {
     const ctx = await browser.newContext({ viewport: { width: 1400, height: 1000 } });
     ctx.setDefaultNavigationTimeout(300000);
     const page = await ctx.newPage();
-    say("admin:", await walkSignIn(page, ORIGIN));
-    await page.goto(`${ORIGIN}/make?make=portal&org=${ORG}&id=${portal}`, { waitUntil: "domcontentloaded" });
+    say("admin:", await walkSignIn(page, ADMIN_ORIGIN));
+    await page.goto(`${ADMIN_ORIGIN}/make?make=portal&org=${ORG}&id=${portal}`, { waitUntil: "domcontentloaded" });
     const editor = page.locator("[data-portal-access-editor]");
     await editor.waitFor({ timeout: 300000 });
     for (const key of ["self_signup", "password", "google", "notify_comments"]) {
