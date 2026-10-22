@@ -2,6 +2,7 @@
 name: shape-authoring
 subject: architecture/content-ir
 description: "The complete rules for writing or editing a shape's component (kind component). Use when creating, editing, patching or fixing a kind component, calling any kindcomp_* tool, or when a shape renders empty, broken, cropped, cramped or ugly."
+allowed_tools: [kindcomp_preview]
 attach_with_tools: [kindcomp_get_context, kindcomp_create_component, kindcomp_update_code, kindcomp_patch_code, kindcomp_get_code, kindcomp_update_settings, kindcomp_resolve_incident, kindcomp_preview, kind_create]
 ---
 
@@ -255,6 +256,7 @@ Platform image shortcuts: `c70e1694-9b84-4843-9999-cb5471478bb4` (idea → image
   It shows the whole image at its real proportions (never cropped), with expand (and share for a saved file).
   Never a bare `<img>` for either, and never build a URL from a `file_id`.
 - Images inside `data` as `data:` URIs and inline `<svg>` render normally.
+- A bare `<img>`/`<video>`/`<audio>`/`<iframe>` is converted to the kit piece automatically, but write the kit piece yourself.
 - Any other saved file (PDF, document, sheet, archive…): `<KindFile file={{ file_id, name, mime_type, size }} runAction={runAction} />`
   — a compact card with its type (an image shows a thumbnail), name, size, Open / Download / Share. `hide={["share"]}` drops buttons.
 - A file the shape builds (CSV, Markdown, JSON): `runAction("download", { filename: "rows.csv", content })`, or a

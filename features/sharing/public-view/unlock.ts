@@ -1,4 +1,4 @@
-// features/sharing/public-view/unlock.ts — THE SIGNED "I KNOW THE PASSWORD" COOKIE OF ONE PASSWORD-PROTECTED VIEW LINK.
+// features/sharing/public-view/unlock.ts — THE SIGNED "I KNOW THE PASSWORD" COOKIE OF ONE PASSWORD-PROTECTED VIEW LINK OR PUBLIC FORM.
 //
 // SERVER ONLY. The password is checked by the store (`custom.shared_view_read`); on success the store hands back `unlock`, a
 // fingerprint of the stored password hash. The cookie carries that fingerprint, signed with the server's own secret so a
@@ -12,6 +12,14 @@ export const UNLOCK_SECONDS = 12 * 60 * 60;
 
 export function unlockCookieName(token: string): string {
   return `viewlink_${token.slice(0, 16)}`;
+}
+
+/**
+ * CD-PAGE-08: the same signed cookie for ONE password-protected public form (`custom.form_unlock`), path-scoped to its
+ * page `/f/<form id>`. The form id is the token the signature binds, so a cookie for one form opens no other.
+ */
+export function formUnlockCookieName(formId: string): string {
+  return `formlock_${formId.replace(/-/g, "").slice(0, 16)}`;
 }
 
 function sign(token: string, fingerprint: string): string {

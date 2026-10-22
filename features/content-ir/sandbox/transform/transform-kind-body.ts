@@ -30,7 +30,9 @@ export function transformKindComponentBody(
     allowedImports: string[],
 ): TransformKindBodyResult {
     if (!code || !code.trim()) return { payload: null, error: null };
-    const result = transformFiles({ [FILE]: code }, FILE);
+    // mediaKit: bare <img>/<video>/<audio>/<iframe> compile to the kit pieces, exactly as the
+    // in-page compile does (kindComponentCompiler), so the frame and the page draw the same media.
+    const result = transformFiles({ [FILE]: code }, FILE, { mediaKit: true });
     return result.ok
         ? { payload: { graph: result.graph, allowedImports }, error: null }
         : { payload: null, error: result.error.message };

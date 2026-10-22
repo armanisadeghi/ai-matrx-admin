@@ -5,7 +5,6 @@
  */
 
 import type { FactoryBuildState } from "@/features/agents/factory/types";
-import { toast } from "@/lib/toast";
 
 export interface StudioState {
   mode: string | null;
@@ -100,15 +99,26 @@ export interface StudioCase {
 export const EXAMPLES_CASE_SOURCE = "studio.examples";
 
 /**
- * The build's `sample_inputs` is JSON the Studio itself wrote; text that does not parse means the
- * saved cases are gone from view. Say so (one toast, same id on every render) instead of showing
- * "no cases" as if there were none.
+ * The build's `sample_inputs` is JSON the Studio itself wrote. This is the ONE parse: it returns the
+ * cases AND the parse error (never throws, never swallows), so a caller can say "the saved cases
+ * could not be read" from an effect instead of showing "no cases" as if there were none.
+ * Pure: no toast here, because the case readers run during render.
  */
-function sayCasesUnreadable(e: unknown): void {
-  toast.error("The saved example cases could not be read", {
-    id: "studio-sample-inputs-unreadable",
-    description: e instanceof Error ? e.message : String(e),
-  });
+export function parseSampleInputs(
+  state: FactoryBuildState | null | undefined,
+): { cases: unknown; error: string | null } {
+  const raw = state?.request?.spec?.["sample_inputs"];
+  if (typeof raw !== "string" || !raw.trim()) return { cases: null, error: null };
+  try {
+    return { cases: JSON.parse(raw), error: null };
+  } catch (e) {
+    return { cases: null, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/** The parse error of the build's saved cases, or null. Raise it in an effect, never in render. */
+export function sampleInputsError(state: FactoryBuildState | null | undefined): string | null {
+  return parseSampleInputs(state).error;
 }
 
 /**
@@ -121,15 +131,7 @@ export function studioCaseFromBuild(
   state: FactoryBuildState | null | undefined,
   source: string = CHAT_CASE_SOURCE,
 ): StudioCase | null {
-  const raw = state?.request?.spec?.["sample_inputs"];
-  if (typeof raw !== "string" || !raw.trim()) return null;
-  let cases: unknown;
-  try {
-    cases = JSON.parse(raw);
-  } catch (e) {
-    sayCasesUnreadable(e);
-    return null;
-  }
+  const { cases } = parseSampleInputs(state);
   if (!Array.isArray(cases)) return null;
   const mine = cases.filter(
     (c): c is Record<string, unknown> =>
@@ -156,15 +158,7 @@ export function studioCaseFromBuild(
 
 /** Every case the Studio sent with `source` (each example of "From examples"), in order. */
 export function studioCasesFromBuild(state: FactoryBuildState | null | undefined, source: string): StudioCase[] {
-  const raw = state?.request?.spec?.["sample_inputs"];
-  if (typeof raw !== "string" || !raw.trim()) return [];
-  let cases: unknown;
-  try {
-    cases = JSON.parse(raw);
-  } catch (e) {
-    sayCasesUnreadable(e);
-    return [];
-  }
+  const { cases } = parseSampleInputs(state);
   if (!Array.isArray(cases)) return [];
   return cases
     .filter((c): c is Record<string, unknown> => typeof c === "object" && c !== null && (c as Record<string, unknown>).source === source)

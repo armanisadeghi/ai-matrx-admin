@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@ai-matrx/design-system";
 import { Button, RegionSkeleton, StageSteps } from "@ai-matrx/design-system/controls";
-import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 
@@ -98,7 +98,8 @@ export function DesignBoardStartDialog({
     return (
       // The work cannot be canceled half way: the dialog stays until the board opens.
       <Dialog open={open} onOpenChange={() => undefined}>
-        <DialogContent className="max-w-lg" data-testid="design-board-start" data-building="">
+        {/* While it builds there is nothing to close: no close control (it did nothing). */}
+        <DialogContent className="max-w-lg" showCloseButton={false} data-testid="design-board-start" data-building="">
           <DialogHeader>
             <DialogTitle>{named || defaultName}</DialogTitle>
             <DialogDescription className="sr-only">Your board is being made.</DialogDescription>
