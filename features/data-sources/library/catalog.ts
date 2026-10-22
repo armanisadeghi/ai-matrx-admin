@@ -11,7 +11,7 @@
 
 import { usdToPoints } from "@ai-matrx/kit/format";
 
-import { discoverOptionsOf, resolvePrice, urlPatternOf, type DataLimit, type DataSource, type DataSourceField, type DataSourceInputKind } from "../contract";
+import { discoverOptionsOf, resolvePrice, searchFiltersOf, urlPatternOf, type DataLimit, type DataSource, type DataSourceField, type DataSourceInputKind } from "../contract";
 
 export interface LibrarySource extends DataSource {
   subgroup: string | null;
@@ -164,6 +164,7 @@ export function parseLibrary(raw: unknown): Library {
       knownIssue: knownIssueOf(s.known_issue),
       pointsPerRecord: price.points,
       ownPrice: hasOwnPrice(s, o),
+      search_filters: searchFiltersOf(s.search_filters),
     });
   }
   // No featured flags from the server yet: the confirmed sources are the shelf.
