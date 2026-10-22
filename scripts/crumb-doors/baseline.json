@@ -1,9 +1,6 @@
 {
   "note": "Shrink-only census of routes not yet on the crumb-door contract. Remove a key by fixing it; never add one (scripts/crumb-doors/check-crumb-doors.mjs).",
   "keys": [
-    "button-outside-actions|app/(core)/organizations/[orgId]/shortcuts/categories/page.tsx",
-    "button-outside-actions|app/(core)/organizations/[orgId]/shortcuts/page.tsx",
-    "button-outside-actions|features/mandates/record-next/MandateRecordPage.tsx",
     "button-outside-actions|features/marketing/content-plan/components/ContentPlanHeader.tsx",
     "no-declared-trail|app/(core)/acquisition/page.tsx",
     "no-declared-trail|app/(core)/acquisition/speed-test/page.tsx",
@@ -229,12 +226,6 @@
     "no-declared-trail|app/(core)/hr/time/timesheets/page.tsx",
     "no-declared-trail|app/(core)/intelligence/[feature]/page.tsx",
     "no-declared-trail|app/(core)/intelligence/go/[...slug]/page.tsx",
-    "no-declared-trail|app/(core)/invitations/class/accept/[token]/page.tsx",
-    "no-declared-trail|app/(core)/invitations/employee/accept/[token]/page.tsx",
-    "no-declared-trail|app/(core)/invitations/organization/accept/[token]/page.tsx",
-    "no-declared-trail|app/(core)/invitations/portal/accept/[token]/page.tsx",
-    "no-declared-trail|app/(core)/invitations/project/accept/[token]/page.tsx",
-    "no-declared-trail|app/(core)/invitations/share/accept/[token]/page.tsx",
     "no-declared-trail|app/(core)/knowledge-graph/speed-test/page.tsx",
     "no-declared-trail|app/(core)/knowledge/about/page.tsx",
     "no-declared-trail|app/(core)/knowledge/admin/page.tsx",
