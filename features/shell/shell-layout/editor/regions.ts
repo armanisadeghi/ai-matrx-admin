@@ -65,7 +65,7 @@ export function withAccent(body: ShellLayoutBody, accent: ShellAccentRef | null)
 export function startingBody(own: ShellLayoutBody | null, organization: ShellLayoutBody | null, target: "person" | "organization"): ShellLayoutBody {
   if (own) return own;
   if (target === "person" && organization) {
-    const { dismissedNew: _d, landing: _l, accent: _a, ...regions } = organization;
+    const { dismissedNew: _d, landing: _l, accent: _a, reviewedOrgLayouts: _r, ...regions } = organization;
     return { ...regions, schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION };
   }
   return { schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: SHELL_CATALOG_VERSION };
