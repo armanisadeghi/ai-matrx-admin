@@ -1986,10 +1986,22 @@ def locked_versions(text):
 
 
 
-def _trial_files(d):
-    """Every file folder d's checkout holds (tracked + untracked-not-ignored), relative to d."""
-    r = subprocess.run(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-                       cwd=d, capture_output=True)
+def _trial_files(d, ignored_out=None):
+    """Every file folder d's checkout holds (tracked + untracked-not-ignored), relative to d.
+    ignored_out (a list) also receives what git IGNORES there, whole ignored folders collapsed to one
+    `dir/` entry: the folders NOT in that list's ancestry hold only trial files, so each is cloned in
+    one call (clone_plan). Both listings run at once — each is a full stat walk of the checkout."""
+    cmd = ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
+    ign = None
+    if ignored_out is not None:
+        ign = subprocess.Popen(["git", "ls-files", "-z", "--others", "--ignored", "--exclude-standard",
+                                "--directory"], cwd=d, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    r = subprocess.run(cmd, cwd=d, capture_output=True)
+    if ign is not None:
+        out, _ = ign.communicate()
+        if ign.returncode != 0:
+            return None
+        ignored_out.extend(e for e in out.decode("utf-8", "replace").split("\0") if e)
     if r.returncode != 0:
         return None
     rels = []
@@ -2012,8 +2024,7 @@ _HANDLERS_ON = False
 
 def _remove_trials():
     for t in list(_TRIALS):
-        shutil.rmtree(t, ignore_errors=True)
-        _TRIALS.discard(t)
+        drop_trial_tree(t)
 
 
 def _on_signal(signum, _frame):
@@ -2036,8 +2047,20 @@ def _arm_trial_cleanup():
 
 
 def drop_trial_tree(path):
-    shutil.rmtree(path, ignore_errors=True)
+    """Remove a trial tree WITHOUT waiting for it (2026-10-22: removing one ~38k-file tree took 877 s at
+    load average ~175, all of it inside the single-flight lock). The tree is renamed aside at once — the
+    name keeps TRIAL_PREFIX, so sweep_old_trials() finishes any removal that dies — and a detached
+    `rm -rf` deletes it after this process has moved on. Where that cannot start, it is removed here."""
     _TRIALS.discard(path)
+    if not os.path.lexists(path):
+        return
+    aside = path + ".removing"
+    try:
+        os.rename(path, aside)
+        subprocess.Popen(["rm", "-rf", aside], start_new_session=True, stdin=subprocess.DEVNULL,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError:
+        shutil.rmtree(aside if os.path.lexists(aside) else path, ignore_errors=True)
 
 
 def _cwds_of_live_processes():
@@ -2084,14 +2107,19 @@ def sweep_old_trials(now=time.time, tmp_root=None, max_age=TRIAL_MAX_AGE):
     return removed
 
 
-_CLONE_STATS = {"cloned": 0, "fallback": 0}
+_CLONE_STATS = {"cloned": 0, "fallback": 0, "calls": 0}
+
+
+CLONE_THREADS = 8   # 2026-10-22, at load average ~175: 1,791 folder/file clones took 51.6 s on one thread, 11.3 s on 8
 
 
 def clone_files(src_dir, dst_dir, rels):
-    """Clone each rel from src_dir into dst_dir with clonefile(2) (macOS/APFS). Returns the rels it could
-    NOT clone (all of them off macOS), for the caller to copy the slow way."""
+    """Clone each rel (a file, or a whole folder) from src_dir into dst_dir with clonefile(2)
+    (macOS/APFS), CLONE_THREADS at a time. Returns the rels it could NOT clone (all of them off macOS),
+    for the caller to copy the slow way."""
     import ctypes
     import ctypes.util
+    from concurrent.futures import ThreadPoolExecutor
     try:
         libc = ctypes.CDLL(ctypes.util.find_library("c") or "libc.dylib", use_errno=True)
         clonefile = libc.clonefile
@@ -2099,25 +2127,57 @@ def clone_files(src_dir, dst_dir, rels):
     except (OSError, AttributeError):
         _CLONE_STATS["fallback"] += len(rels)
         return list(rels)
-    left, made = [], set()
-    for rel in rels:
-        dst = os.path.join(dst_dir, rel)
-        parent = os.path.dirname(dst)
-        if parent not in made:
-            os.makedirs(parent, exist_ok=True)
-            made.add(parent)
+    rels = list(rels)
+    for parent in sorted({os.path.dirname(os.path.join(dst_dir, rel)) for rel in rels}):
+        os.makedirs(parent, exist_ok=True)
+
+    def one(rel):
         # CLONE_NOFOLLOW (1): a symlink is cloned as a symlink
-        if clonefile(os.path.join(src_dir, rel).encode(), dst.encode(), 1) == 0:
-            _CLONE_STATS["cloned"] += 1
-        else:
-            left.append(rel)
-            _CLONE_STATS["fallback"] += 1
+        return clonefile(os.path.join(src_dir, rel).encode(), os.path.join(dst_dir, rel).encode(), 1) == 0
+
+    _CLONE_STATS["calls"] += len(rels)
+    if len(rels) > 1:
+        with ThreadPoolExecutor(CLONE_THREADS) as ex:
+            done = list(ex.map(one, rels))
+    else:
+        done = [one(rel) for rel in rels]
+    left = [rel for rel, ok in zip(rels, done) if not ok]
+    _CLONE_STATS["cloned"] += len(rels) - len(left)
+    _CLONE_STATS["fallback"] += len(left)
     return left
+
+
+def clone_plan(rels, ignored):
+    """The fewest clone units that make exactly rels: a folder whose every entry on disk is a trial file
+    (nothing git ignores lies inside it) is ONE unit — clonefile(2) clones a whole folder in one call —
+    and a file is a unit only where an ignored entry shares its folder. Returns (units, rels_of): units
+    sorted, rels_of[unit] = the rels it carries (the per-file fallback when a folder clone is refused)."""
+    impure = set()
+    for e in ignored:
+        p = e.rstrip("/")
+        if e.endswith("/"):
+            impure.add(p)   # never cloned whole, even if git listed it beside trial files
+        while "/" in p:
+            p = p.rsplit("/", 1)[0]
+            if p in impure:
+                break
+            impure.add(p)
+    rels_of = {}
+    for rel in rels:
+        unit, i = rel, rel.find("/")
+        while i != -1:
+            if rel[:i] not in impure:
+                unit = rel[:i]
+                break
+            i = rel.find("/", i + 1)
+        rels_of.setdefault(unit, []).append(rel)
+    return sorted(rels_of), rels_of
 
 
 def make_trial_tree(d):
     """(tmp, rels): a scratch copy of folder d OUTSIDE the checkout, or (None, why)."""
-    rels = _trial_files(d)
+    ignored = []
+    rels = _trial_files(d, ignored)
     if rels is None:
         return None, "git ls-files failed in %s/" % d
     # The REAL path (macOS: /var -> /private/var): a node script judging "am I the main module"
@@ -2130,7 +2190,15 @@ def make_trial_tree(d):
     # APFS CLONE FIRST (2026-10-21): one tar copy took 29+ minutes for 455 MB on a saturated disk; a
     # clonefile() is instant and costs no space. Any file the clone refuses (not APFS, cross-volume) goes
     # through the old tar copy, so the tree is always complete.
-    left = clone_files(d, tmp, rels)
+    # ONE CLONE PER FOLDER, NOT PER FILE (2026-10-22): one clonefile() per file ran ~43 files/s over
+    # ~38k files at load average 90-125 — 16 minutes holding the single-flight lock, so every other
+    # sync gave up after its 15-minute wait. clone_plan() clones each folder that holds no ignored
+    # entry (node_modules, .next, .env…) in one call; files are cloned singly only beside an ignored
+    # entry. A refused folder clone falls back to its files, then to tar.
+    units, rels_of = clone_plan(rels, ignored)
+    left = clone_files(d, tmp, units)
+    if left:
+        left = clone_files(d, tmp, [r for u in left for r in rels_of[u]])
     if left:
         r = subprocess.run("tar --null -T - -cf - | tar -xf - -C %s" % _shq(tmp), shell=True, cwd=d,
                            input=("\0".join(left) + "\0").encode(), capture_output=True)
