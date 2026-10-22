@@ -132,7 +132,7 @@ const surfaceSpecific: SurfaceValue[] = [
 export const educationFlashcardDeckManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-flashcard-set",
   situation:
-    "They have the flashcard deck \"{set_details.name|(not loaded yet)}\" open, on the topic {set_details.topic|(no topic set)}, with {card_count|an unknown number of} cards; every card and how well they know each one are in your context.",
+    "They have the flashcard deck \"{set_details.name|(not loaded yet)}\" open (topic: {set_details.topic|none set}), with {card_count|an unknown number of} cards; every card and how well they know each one are in your context.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

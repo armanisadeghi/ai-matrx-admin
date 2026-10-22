@@ -848,7 +848,7 @@ const clientTools: SurfaceClientTool[] = [
 export const filesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/files",
   situation:
-    "They are in their cloud files, in the {files_section} section ({view_mode} view), folder \"{active_folder_name|top level}\": {visible_folder_count} folders and {visible_file_count} files shown, {selected_count|none} selected, active file \"{active_file_name|none}\". They can rename, search, filter, sort, change the view and open a folder or file.",
+    "They are in their cloud files, in the {files_section} section ({view_mode} view), folder \"{active_folder_name|top level}\": {visible_folder_count} folders and {visible_file_count} files shown, {selected_count|none} selected, file in focus: {active_file_name|none}. They can rename, search, filter, sort, change the view and open a folder or file.",
   inheritsFrom: "matrx-default/files",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

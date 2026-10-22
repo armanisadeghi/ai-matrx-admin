@@ -37,7 +37,7 @@ export const EDUCATION_FLASHCARD_STUDY_SURFACE = "matrx-user/education-flashcard
  * the Education area" is said once by the Education module's situation, rendered before this one.
  */
 export const EDUCATION_FLASHCARD_STUDY_SITUATION =
-  "{user.name|The person} is studying flashcards in {study_mode} mode. " +
+  "They are studying it in {study_mode} mode. " +
   "They are on card {card_number} of {cards_in_round}, a {card_kind} card, looking at the {side_shown}. " +
   "The front says: \"{card_front}\". The back says: \"{card_back}\" — {back_status}. " +
   "{card_history} They have been on this page for {time_on_page}. Score this session: {score}.";
