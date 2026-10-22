@@ -1,12 +1,23 @@
 // features/organizations/hooks/useOrgAutoRagPreference.ts
 //
-// Reads / writes the per-org `organization_preferences` row that drives
-// auto-ingest for the knowledge graph (Phase F → Step 3.1 of the KG
-// activation plan). Mirrors `features/kg-suggestions/hooks/useAutoRagPreference`
-// but keyed on `organization_id` instead of `user_id`. React → Supabase
-// directly (CLAUDE.md "no Next.js middle tier" rule); RLS scopes writes to
-// org admins/owners. Every field on the row has a DB default — only
-// `organization_id` is required for upsert, so no JSON-cast escape hatch.
+// The organization's auto-ingest controls for the knowledge graph.
+//
+// 🚨 THE TWO SWITCHES ARE KNOBS; THE BUDGET IS STILL A ROW (2026-10-22).
+// `enabled` and `suggestionSweeps` read and write `knowledge.auto_rag_enabled`
+// and `knowledge.suggestion_sweeps_enabled` at the `organization` rung through
+// `lib/scoped-config` — the platform's one scoped-knob register. Until
+// 2026-10-22 they were boolean COLUMNS on `iam.organization_preferences`,
+// resolved by a second per-tenant precedence chain in aidream
+// (`effective_setting.py`, now deleted). The server reads the register, so a
+// control still writing those columns would move on screen and change nothing.
+//
+// The budget trio stays on the preference row and keeps the
+// `public.org_preferences_set` door, because it is not one value per key: it is
+// a CEILING the admin sets beside a live spend METER aidream writes
+// (`daily_auto_rag_cost_used_usd`, `daily_auto_rag_window_start`), which the
+// door deliberately refuses to let a browser reset. Moving the ceiling into the
+// register is its own piece of work ("every limit is a knob"), filed as a node
+// task — not a line in this hook.
 //
 // Surface budgeting math:
 //   - `usedTodayUsd` / `budgetUsd` come straight from the row (millicents
@@ -18,7 +29,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
+import {
+  AUTO_RAG_DEFAULT,
+  AUTO_RAG_KEY,
+  AUTO_RAG_KNOB,
+  KNOWLEDGE_FEATURE,
+  SUGGESTION_SWEEPS_DEFAULT,
+  SUGGESTION_SWEEPS_KEY,
+  SUGGESTION_SWEEPS_KNOB,
+  asKnobBoolean,
+} from "@/features/kg-suggestions/autoRagKnobs";
 import { describeWriteFailure } from "@/lib/errors/writeFailure";
+import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
+import { knobRefusalSentence, setKnobOverride } from "@/lib/scoped-config/service";
 
 export type OrgAutoRagField = "enabled" | "suggestionSweeps" | "budget";
 
@@ -62,8 +85,13 @@ const DEFAULT_BUDGET_USD = 5.0;
 export function useOrgAutoRagPreference(
   organizationId: string | null,
 ): UseOrgAutoRagPreferenceResult {
-  const [enabled, setEnabledState] = useState(true); // column default is TRUE
-  const [suggestionSweeps, setSuggestionSweepsState] = useState(false); // NULL/false = OFF default
+  // The two switches are resolved from the register at the ORGANIZATION rung.
+  // `userId` is deliberately null: this screen shows what the ORGANIZATION
+  // decided, never what the admin happens to have chosen for themselves.
+  const resolvedEnabled = useEffectiveKnob(organizationId, null, AUTO_RAG_KNOB);
+  const resolvedSweeps = useEffectiveKnob(organizationId, null, SUGGESTION_SWEEPS_KNOB);
+  const enabled = asKnobBoolean(resolvedEnabled, AUTO_RAG_DEFAULT);
+  const suggestionSweeps = asKnobBoolean(resolvedSweeps, SUGGESTION_SWEEPS_DEFAULT);
   const [budgetUsd, setBudgetState] = useState<number>(DEFAULT_BUDGET_USD);
   const [usedTodayUsd, setUsedTodayState] = useState<number>(0);
   const [windowStart, setWindowStart] = useState<string | null>(null);
@@ -83,17 +111,14 @@ export function useOrgAutoRagPreference(
         const { data, error: qErr } = await supabase
           .schema("iam").from("organization_preferences")
           .select(
-            "auto_rag_enabled, suggestion_sweeps_enabled, daily_auto_rag_budget_usd, daily_auto_rag_cost_used_usd, daily_auto_rag_window_start",
+            "daily_auto_rag_budget_usd, daily_auto_rag_cost_used_usd, daily_auto_rag_window_start",
           )
           .eq("organization_id", organizationId)
           .maybeSingle();
         if (cancelled) return;
         if (qErr) throw qErr;
-        // Sensible defaults when the row hasn't been created yet — first
-        // toggle / first auto-ingest charge will materialize it.
-        setEnabledState(data?.auto_rag_enabled ?? true);
-        // NULL/false both mean OFF — the org hasn't opted into suggestion sweeps.
-        setSuggestionSweepsState(data?.suggestion_sweeps_enabled ?? false);
+        // Sensible defaults when the row hasn't been created yet — the first
+        // auto-ingest charge will materialize it.
         setBudgetState(
           data?.daily_auto_rag_budget_usd ?? DEFAULT_BUDGET_USD,
         );
@@ -103,7 +128,7 @@ export function useOrgAutoRagPreference(
       } catch (err) {
         if (!cancelled) {
           const w = describeWriteFailure(err, {
-            action: "read this organization's knowledge-graph settings",
+            action: "read this organization's auto-ingest budget",
             remedy: "Reload the page to try again.",
           });
           setError(`${w.title} ${w.description}`);
@@ -152,14 +177,54 @@ export function useOrgAutoRagPreference(
     [organizationId],
   );
 
+  // THROUGH THE KNOB DOOR. `platform.knob_override_set` decides authority,
+  // refuses in words, records the change in the knob history and audit, and
+  // busts the resolved snapshot — so the displayed value comes back from the
+  // read and there is no local copy to keep in step.
+  const writeKnob = useCallback(
+    async (field: OrgAutoRagField, key: string, next: boolean) => {
+      if (!organizationId) return;
+      setSaving(true);
+      setPendingField(field);
+      try {
+        const result = await setKnobOverride({
+          feature: KNOWLEDGE_FEATURE,
+          key,
+          scopeKind: "organization",
+          scopeId: organizationId,
+          organizationId,
+          value: next,
+        });
+        if (!result.ok) {
+          const sentence = knobRefusalSentence(result);
+          setError(sentence);
+          throw new Error(sentence);
+        }
+        setError(null);
+      } catch (err) {
+        if (!(err instanceof Error) || !err.message) {
+          const words = describeWriteFailure(err, {
+            action: FIELD_ACTION[field],
+            remedy: "Try again.",
+          });
+          setError(`${words.title} ${words.description}`);
+        }
+        throw err;
+      } finally {
+        setSaving(false);
+        setPendingField(null);
+      }
+    },
+    [organizationId],
+  );
+
   const setEnabled = useCallback(
-    (next: boolean) => writePatch("enabled", { auto_rag_enabled: next }, () => setEnabledState(next)),
-    [writePatch],
+    (next: boolean) => writeKnob("enabled", AUTO_RAG_KEY, next),
+    [writeKnob],
   );
   const setSuggestionSweeps = useCallback(
-    (next: boolean) =>
-      writePatch("suggestionSweeps", { suggestion_sweeps_enabled: next }, () => setSuggestionSweepsState(next)),
-    [writePatch],
+    (next: boolean) => writeKnob("suggestionSweeps", SUGGESTION_SWEEPS_KEY, next),
+    [writeKnob],
   );
   const setBudgetUsd = useCallback(
     async (next: number) => {
@@ -174,6 +239,12 @@ export function useOrgAutoRagPreference(
   const percentUsed =
     budgetUsd > 0 ? Math.max(0, (usedTodayUsd / budgetUsd) * 100) : Infinity;
 
+  // The switches are not ready until their snapshot has resolved, or a skeleton
+  // would be replaced by the register DEFAULT for a frame and then by the real
+  // value — a switch that visibly changes state on its own.
+  const knobsPending =
+    Boolean(organizationId) && (resolvedEnabled === undefined || resolvedSweeps === undefined);
+
   return {
     enabled,
     suggestionSweeps,
@@ -181,7 +252,7 @@ export function useOrgAutoRagPreference(
     usedTodayUsd,
     percentUsed,
     windowStart,
-    loading,
+    loading: loading || knobsPending,
     saving,
     pendingField,
     error,
