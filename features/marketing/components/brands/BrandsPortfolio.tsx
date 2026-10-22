@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -90,14 +91,14 @@ function CountPill({
 }) {
   return (
     <span
-      title={`${count.toLocaleString()} ${label}`}
+      title={`${formatCount(count)} ${label}`}
       className={cn(
         "inline-flex items-center gap-1 font-mono text-xs tabular-nums",
         count ? "text-foreground" : "text-disabled-foreground",
       )}
     >
       <Icon className="h-3.5 w-3.5" />
-      {count.toLocaleString()}
+      {formatCount(count)}
     </span>
   );
 }
@@ -439,13 +440,13 @@ export function BrandsPortfolio({
         row.pending_discovered ? (
           <Link
             href={marketingRoutes.brandDiscovery(row.id)}
-            aria-label={`${row.pending_discovered.toLocaleString()} to review for ${row.name}`}
-            title={`${row.pending_discovered.toLocaleString()} to review`}
+            aria-label={`${formatCount(row.pending_discovered)} to review for ${row.name}`}
+            title={`${formatCount(row.pending_discovered)} to review`}
             onClick={(event) => event.stopPropagation()}
           >
             <Badge variant="warning" className="gap-1 text-xs">
               <Inbox className="h-3 w-3" />
-              {row.pending_discovered.toLocaleString()}
+              {formatCount(row.pending_discovered)}
             </Badge>
           </Link>
         ) : (
@@ -934,12 +935,12 @@ function BrandCards({
                 {row.pending_discovered ? (
                   <Link
                     href={marketingRoutes.brandDiscovery(row.id)}
-                    aria-label={`${row.pending_discovered.toLocaleString()} to review for ${row.name}`}
-                    title={`${row.pending_discovered.toLocaleString()} to review`}
+                    aria-label={`${formatCount(row.pending_discovered)} to review for ${row.name}`}
+                    title={`${formatCount(row.pending_discovered)} to review`}
                   >
                     <Badge variant="warning" className="gap-1 text-xs">
                       <Inbox className="h-3 w-3" />
-                      {row.pending_discovered.toLocaleString()}
+                      {formatCount(row.pending_discovered)}
                     </Badge>
                   </Link>
                 ) : null}
@@ -991,7 +992,7 @@ function CardDimension({
     <div className="flex min-w-0 items-center justify-center gap-1 px-1 text-xs text-muted-foreground">
       <Icon className="h-3 w-3 shrink-0" />
       <span className="font-semibold tabular-nums text-foreground">
-        {value.toLocaleString()}
+        {formatCount(value)}
       </span>
       <span className="truncate">{label}</span>
     </div>
