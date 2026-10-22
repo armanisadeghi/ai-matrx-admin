@@ -459,6 +459,8 @@
     "check:org-flag-readers:self-test": "tsx scripts/check-org-flag-readers.ts --self-test",
     "check:one-door": "tsx scripts/check-one-door.ts",
     "check:one-door:self-test": "tsx scripts/check-one-door.ts --self-test",
+    "check:pdf-one-page-reader": "tsx scripts/check-pdf-one-page-reader.ts",
+    "check:pdf-one-page-reader:self-test": "tsx scripts/check-pdf-one-page-reader.ts --self-test",
     "check:single-record-writes": "tsx scripts/check-single-record-writes.ts",
     "check:single-record-writes:write": "tsx scripts/check-single-record-writes.ts --write",
     "check:single-record-writes:self-test": "tsx scripts/check-single-record-writes.ts --self-test",

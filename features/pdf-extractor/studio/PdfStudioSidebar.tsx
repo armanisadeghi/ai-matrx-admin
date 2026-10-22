@@ -53,7 +53,7 @@ import { PdfStudioSidebarToggle } from "./PdfStudioSidebarToggle";
 import { PdfStudioPagesNav } from "./PdfStudioPagesNav";
 import { ReadFailure } from "@ai-matrx/design-system";
 import type { SidebarView } from "../state/types";
-import type { PdfPageRow } from "../hooks/useProcessedDocumentPages";
+import type { PdfPageRow } from "@/features/pdf/data/pdfPages";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
 // `formatRelativeTime` is THE package formatter (`@ai-matrx/kit/format`,
 // census H1 2026-09-07). This surface previously carried a local copy.

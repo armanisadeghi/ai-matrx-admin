@@ -14,7 +14,7 @@ import { useEntityScopes } from "@/features/scopes/hooks/useEntityScopes";
 import { ContextAssignmentPopover } from "@/features/scopes/components/context-assignment/ContextAssignmentPopover";
 import { useSetRowScopes } from "@/features/scopes/hooks/useRowScopes";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
-import type { PdfPageRow } from "../hooks/useProcessedDocumentPages";
+import type { PdfPageRow } from "@/features/pdf/data/pdfPages";
 import { isDocCleaned } from "../service/cleanOutcome";
 // `formatRelativeTime` is THE package formatter (`@ai-matrx/kit/format`,
 // census H1 2026-09-07). This surface previously carried a local copy.

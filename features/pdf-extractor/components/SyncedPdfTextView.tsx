@@ -10,7 +10,7 @@
  *   │ (iframe today)       │ per page             │ per page             │
  *   └──────────────────────┴──────────────────────┴──────────────────────┘
  *
- * Rows come from `processed_document_pages` via `useProcessedDocumentPages`.
+ * Rows come from the PDF page reader (`pdf_unified_pages`) via `useProcessedDocumentPages`.
  * Joined scrolling: an `IntersectionObserver` on per-page anchors in the
  * text columns drives `pdfRef.contentWindow.location.hash = '#page=N'`,
  * which the PDF-rendering iframe honors.
@@ -39,10 +39,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
-import {
-  useProcessedDocumentPages,
-  type PdfPageRow,
-} from "../hooks/useProcessedDocumentPages";
+import { useProcessedDocumentPages } from "../hooks/useProcessedDocumentPages";
+import type { PdfPageRow } from "@/features/pdf/data/pdfPages";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface SyncedPdfTextViewProps {

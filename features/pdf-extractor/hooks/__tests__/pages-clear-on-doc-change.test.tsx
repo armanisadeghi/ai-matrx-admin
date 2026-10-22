@@ -7,7 +7,10 @@ const A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 let releaseB: (() => void) | null = null;
 
-jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
+// Both the parent-doc guard (docproc) and the page read (view pdf_unified_pages) share one chain.
+jest.mock("@/utils/supabase/client", () => ({
+  supabase: { from: () => (globalThis as { mockPdfChain?: unknown }).mockPdfChain },
+}));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "u1" }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: () => "u1" }));
 jest.mock("@/utils/supabase/docprocDb", () => {
@@ -24,10 +27,11 @@ jest.mock("@/utils/supabase/docprocDb", () => {
     const n = docId === "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" ? 48 : 1;
     if (docId.startsWith("b")) await new Promise<void>((r) => { releaseB = r; });
     return {
-      data: Array.from({ length: n }, (_, i) => ({ id: `${docId}-${i}`, page_index: i, page_number: i + 1 })),
+      data: Array.from({ length: n }, (_, i) => ({ page_id: `${docId}-${i}`, page_index: i, page_number: i + 1 })),
       error: null,
     };
   };
+  (globalThis as { mockPdfChain?: unknown }).mockPdfChain = chain;
   return { docprocDb: () => ({ from: () => chain }) };
 });
 
