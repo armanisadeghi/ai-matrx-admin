@@ -374,21 +374,34 @@ export function fetchFromNpm(name, version) {
  * version is fetched (`fetch(name, version)` -> extracted dir). The tree is rebuilt in a scratch dir so
  * the checkout's node_modules is never touched. A finding names file, package, version and the export.
  */
-export function lockAudit(root, { ref = "", fetch = fetchFromNpm } = {}) {
+export function lockAudit(root, { ref = "", fetch = fetchFromNpm, only = null, disk = false } = {}) {
   root = resolve(root);
   const prefix = ref ? `${ref}:` : ":";
   const lockText = indexBlobs(root, ["pnpm-lock.yaml"], prefix).get("pnpm-lock.yaml");
   if (lockText == null) throw new Error(`no pnpm-lock.yaml in ${ref || "the index"}`);
   const locked = lockedDirectVersions(lockText);
-  const rels = (ref ? gitLines(root, ["ls-tree", "-r", "-z", "--name-only", ref]) : gitLines(root, ["ls-files", "-z", "--cached"])).filter((f) => SOURCE_EXT.test(f));
-  const blobs = indexBlobs(root, rels, prefix);
+  // `only` narrows to these repo-relative files (the commit hook, the sweep, the edit hook); a staged
+  // package.json / pnpm-lock.yaml changes what EVERY import resolves to, so it widens to the tree.
+  // `disk` reads those files from the working tree (the edit hook: the file was just written).
+  const widen = !only || only.some((o) => /(^|\/)(package\.json|pnpm-lock\.yaml)$/.test(o));
+  const rels = widen
+    ? (ref ? gitLines(root, ["ls-tree", "-r", "-z", "--name-only", ref]) : gitLines(root, ["ls-files", "-z", "--cached"])).filter((f) => SOURCE_EXT.test(f))
+    : only.filter((f) => SOURCE_EXT.test(f));
+  const blobs = disk && !widen
+    ? new Map(rels.map((r) => { try { return [r, readFileSync(join(root, r), "utf8")]; } catch { return [r, null]; } }))
+    : indexBlobs(root, rels, prefix);
   const t0 = Date.now();
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), "matrx-lock-audit-")));
   try {
     const scope = join(tmp, "node_modules", "@ai-matrx");
     mkdirSync(scope, { recursive: true });
     const swapped = [];
+    // Narrowed: only the packages these files import are judged at their locked version (fetching
+    // every other locked package would cost a minute of npm per call for nothing).
+    const wanted = widen ? null : new Set([...blobs].flatMap(([rel, text]) =>
+      text && text.includes(SCOPE) ? collectImports(join(root, rel), text).map((i) => splitSpecifier(i.specifier).name) : []));
     for (const [name, version] of Object.entries(locked)) {
+      if (wanted && !wanted.has(name)) continue;
       const installed = join(root, "node_modules", name);
       let have = null;
       try {
@@ -422,11 +435,31 @@ export function lockAudit(root, { ref = "", fetch = fetchFromNpm } = {}) {
     runtimeCache.clear();
     // The package-to-package graph is not judged here: installed copies are linked in place, so their
     // siblings are the INSTALLED ones and the report would be noise. `--packages` is that gate.
-    const result = audit(tmp, { files, graph: false });
+    const result = audit(tmp, { files, graph: false, narrowed: !widen });
     T("audit done");
     clearPackageResolution();
     runtimeCache.clear();
-    return { ...result, swapped, locked: Object.keys(locked).length };
+    // Which version WOULD ship each missing name: the copy installed here, when it is a different one
+    // and has it. That is the version the commit must adopt (package.json + pnpm-lock.yaml with it).
+    if (result.findings.length) {
+      const sources = new Map(files.map((f) => [relative(tmp, f).split(sep).join("/"), f]));
+      const back = audit(root, {
+        files: [...sources.keys()].map((r) => join(root, r)),
+        readText: (file) => readFileSync(sources.get(relative(root, file).split(sep).join("/")), "utf8"),
+        graph: false,
+        narrowed: true,
+      });
+      const missingInstalled = new Set(back.findings.map(findingKey));
+      clearPackageResolution();
+      runtimeCache.clear();
+      for (const f of result.findings) {
+        let have = null;
+        try { have = JSON.parse(readFileSync(join(root, "node_modules", f.pkg, "package.json"), "utf8")).version; } catch { /* none */ }
+        f.installed = have;
+        f.installedHasIt = have != null && have !== f.version && !missingInstalled.has(findingKey(f));
+      }
+    }
+    return { ...result, swapped, locked: Object.keys(locked).length, lockMode: true };
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
@@ -844,11 +877,23 @@ function report(result) {
     byPkg.get(key).push(f);
   }
   console.error(
-    `[FAIL] [matrx-imports] ${findings.length} import(s) name something the INSTALLED @ai-matrx package does not ship${scope}:`,
+    `[FAIL] [matrx-imports] ${findings.length} import(s) name something the ${result.lockMode ? "LOCKED (pnpm-lock.yaml — what Vercel installs)" : "INSTALLED"} @ai-matrx package does not ship${scope}:`,
   );
   for (const [key, list] of byPkg) {
-    console.error(`\n  ${key}`);
+    console.error(`\n  ${key}${result.lockMode ? " (locked)" : ""}`);
     for (const f of list) console.error(`    ${f.file}:${f.line}  ${describe(f)}`);
+  }
+  if (result.lockMode) {
+    const need = [...new Map(findings.filter((f) => f.installedHasIt).map((f) => [f.pkg, f.installed])).entries()];
+    for (const [pkg, v] of need) console.error(`\n  NEEDED: ${pkg}@${v} (installed here) has it; pnpm-lock.yaml still locks ${byPkgVersion(findings, pkg)}.`);
+    const none = [...new Set(findings.filter((f) => !f.installedHasIt).map((f) => f.pkg))];
+    if (none.length) console.error(`\n  NO installed version has it: ${none.join(", ")} — the package must publish it first (aidream npm train).`);
+    console.error(
+      `\n  The fix goes in THE SAME COMMIT: run \`pnpm sync:matrx-packages\` (adopts the published versions into\n` +
+        `  package.json + pnpm-lock.yaml), then stage package.json and pnpm-lock.yaml with this change. If the\n` +
+        `  locked version DROPPED the name, fix the importer instead. Never pin; never delete the import to go green.`,
+    );
+    return 1;
   }
   console.error(
     `\n  The consumer shipped before the package (or the install is broken). Never commit app code that\n` +
@@ -858,6 +903,10 @@ function report(result) {
       `  Never pin; never delete the import to go green.`,
   );
   return 1;
+}
+
+function byPkgVersion(findings, pkg) {
+  return `${pkg}@${findings.find((f) => f.pkg === pkg)?.version}`;
 }
 
 /** --packages report: one line per broken importer -> dependency name. */
@@ -1255,7 +1304,8 @@ function selfTest() {
   return 0;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+// realpath: run through a symlinked scripts/ dir, the module URL is the real path (a silent no-op otherwise).
+if (process.argv[1] && realpathSync(resolve(process.argv[1])) === fileURLToPath(import.meta.url)) {
   let code;
   try {
     if (process.argv.includes("--self-test")) code = selfTest();
@@ -1264,9 +1314,18 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       const arg = (flag, dflt) => (argv.includes(flag) ? argv[argv.indexOf(flag) + 1] : dflt);
       const root = arg("--root", join(dirname(fileURLToPath(import.meta.url)), ".."));
       const ref = arg("--ref", "");
-      const result = lockAudit(root, { ref });
-      console.error(`[matrx-imports --lock] ${ref || "index"}: lockfile names ${result.locked} @ai-matrx package(s); judged against ${result.swapped.length ? result.swapped.join(", ") : "the installed versions"}.`);
-      code = report(result);
+      // Positional paths narrow it (repo-relative or absolute): the commit hook, the sweep, the edit hook.
+      const paths = argv.filter((a, j) => !a.startsWith("--") && !["--root", "--ref"].includes(argv[j - 1]))
+        // Relative paths are repo-relative; absolute ones are made so through realpaths (/var vs /private/var).
+        .map((o) => (o.startsWith("/") ? relative(realpathSync(root), existsSync(o) ? realpathSync(o) : o) : o).split(sep).join("/"));
+      const result = lockAudit(root, { ref, only: paths.length ? paths : null, disk: argv.includes("--disk") });
+      if (argv.includes("--json")) {
+        console.log(JSON.stringify({ findings: result.findings.map((f) => ({ file: f.file, line: f.line, pkg: f.pkg, version: f.version, name: f.name, installed: f.installed ?? null, installedHasIt: !!f.installedHasIt, what: describe(f) })) }));
+        code = result.findings.length ? 1 : 0;
+      } else {
+        console.error(`[matrx-imports --lock] ${ref || (argv.includes("--disk") ? "working tree" : "index")}: lockfile names ${result.locked} @ai-matrx package(s); judged against ${result.swapped.length ? result.swapped.join(", ") : "the installed versions"}.`);
+        code = report(result);
+      }
     } else if (process.argv.includes("--packages")) {
       // Package-to-package only (sync:matrx-packages' adoption gate): every @ai-matrx specifier and
       // every named import inside node_modules/@ai-matrx/*/dist must resolve against the installed sibling.

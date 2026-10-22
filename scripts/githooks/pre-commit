@@ -88,12 +88,23 @@ if [ -n "$STAGED" ]; then
         exit 1
     fi
 fi
-# JOB 4 — a staged pnpm-lock.yaml is judged against the versions it NAMES, not the ones installed here
-# (2026-10-21, 689c27aa4d: a lockfile-only adoption installs nothing, so JOB 2 saw the old package).
-if git diff --cached --name-only -- pnpm-lock.yaml | grep -q .; then
-    if ! (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock); then
-        echo "LOCKFILE ADOPTION WARNING (the commit goes ahead; nothing blocks a release): the staged pnpm-lock.yaml adopts @ai-matrx versions that no longer ship an export this code imports (named above)." >&2
-        echo "  Fix the importer, or restore the export in the package. sync-main mails the ship lanes about it." >&2
+# JOB 4 — LOCKFILE-TRUE IMPORTS (2026-10-22): the staged code is judged against the @ai-matrx versions the
+# STAGED pnpm-lock.yaml names — what Vercel installs — not the copies installed here, which can be newer
+# (or a local build). 17 of 20 failed production builds on 2026-10-21/22 imported a name or subpath the
+# LOCKED version lacked while every installed-package check was green. A staged lockfile widens the check
+# to every tracked file (2026-10-21, 689c27aa4d: a lockfile-only adoption that dropped setDebrief).
+# The refusal names the version that has it; the fix (pnpm sync:matrx-packages + package.json and
+# pnpm-lock.yaml staged in the same commit) is in the message. MATRX_RELEASE_PATH=1 reports only.
+LOCK_PATHS=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' pnpm-lock.yaml package.json | xargs grep -l '@ai-matrx/' 2>/dev/null; git diff --cached --name-only -- pnpm-lock.yaml package.json)
+if [ -n "$LOCK_PATHS" ]; then
+    # shellcheck disable=SC2086
+    if ! (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock --root "$ROOT" $(printf '%s\n' "$LOCK_PATHS" | sort -u)); then
+        if [ "${MATRX_RELEASE_PATH:-0}" = "1" ]; then
+            echo "  (MATRX_RELEASE_PATH=1: reported, not refused)" >&2
+        else
+            echo "COMMIT REFUSED: staged code imports an @ai-matrx name the LOCKED version does not ship (above) — the Vercel build fails on it." >&2
+            exit 1
+        fi
     fi
 fi
 # JOB 4b — @ai-matrx TWINS AT WRITE TIME (Arman 2026-10-21: scream when the code is written, never block the

@@ -1097,6 +1097,51 @@ def staged_parse_failures():
     return out
 
 
+IMPORTS_CHECK = os.path.join("scripts", "check-matrx-imports.mjs")
+
+
+def staged_lock_import_failures():
+    """[(path, why)] staged files that import an @ai-matrx name or subpath the version pnpm-lock.yaml
+    LOCKS does not ship (2026-10-22: 17 of 20 failed production builds; check-sweep-resolves judges the
+    INSTALLED copies, which can be newer than the lockfile). `check-matrx-imports.mjs --lock --json`
+    over the staged code files; a staged lockfile/package.json widens it to every tracked file, and a
+    finding in a file this sweep does not carry then holds the lockfile and package.json instead.
+    A checker that cannot run holds nothing and says so: it never stops the sync."""
+    if not os.path.isfile(IMPORTS_CHECK) or not os.path.isfile("pnpm-lock.yaml"):
+        return []
+    _, out, _ = git("diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z", check=False)
+    staged = [p for p in out.split("\0") if p]
+    code = [p for p in staged if re.search(r"\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$", p)]
+    lock = [p for p in staged if p in ("pnpm-lock.yaml", "package.json")]
+    wanted = []
+    for p in code:
+        try:
+            with open(p, "rb") as f:
+                if b"@ai-matrx/" in f.read():
+                    wanted.append(p)
+        except OSError:
+            pass
+    if not wanted and not lock:
+        return []
+    try:
+        r = subprocess.run(["node", IMPORTS_CHECK, "--lock", "--json", "--root", os.getcwd(), *wanted, *lock], capture_output=True,
+                           text=True, timeout=900)
+        data = json.loads((r.stdout.strip().splitlines() or ["{}"])[-1])
+        findings = data["findings"]
+    except (OSError, subprocess.TimeoutExpired, ValueError, KeyError, IndexError) as e:
+        say("sweep lockfile import check could not run (%s); nothing held for it." % e)
+        return []
+    out = {}
+    for f in findings:
+        need = ("; %s@%s has it" % (f["pkg"], f["installed"])) if f.get("installedHasIt") else ""
+        why = "imports %s from %s, which the locked %s@%s does not ship%s" % (
+            f.get("name"), f.get("pkg"), f.get("pkg"), f.get("version"), need)
+        target = f["file"] if f["file"] in staged else None
+        for p in ([target] if target else lock):
+            out.setdefault(p, why if target else "the staged lockfile breaks %s: %s" % (f["file"], why))
+    return list(out.items())
+
+
 def _blob_has_marker(path, sha):
     if not sha:
         return False
@@ -1165,6 +1210,11 @@ def commit_all():
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: it does not parse (%s); Turbopack refuses it and every release build "
             "fails. Fix the file; the next sync commits it." % (p, why))
+    for p, why in staged_lock_import_failures():
+        git("restore", "--staged", "--", ":(literal)" + p, check=False)
+        say("SWEEP SKIPPED %s: %s; the Vercel build installs the LOCKED version and fails. It stays on disk; "
+            "the next sync commits it once pnpm-lock.yaml locks a version that has it (pnpm sync:matrx-packages)."
+            % (p, why))
     for p, reasons in held:
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP HELD %s — it would break the build, so it stays uncommitted on disk and the "
