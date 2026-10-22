@@ -106,7 +106,13 @@ export function usePipelineItem(itemId: string | null): UsePipelineItemResult {
           listItemFiles(itemId),
           listPayloads(itemId),
           listItemQuestions(itemId),
-          listItemProducts(itemId),
+          // The products read must not take the item down with it: a failure
+          // here is said (console + toast) and the rest of the workspace stays.
+          listItemProducts(itemId).catch((err: unknown) => {
+            console.error("[product-pipeline] products load failed", err);
+            toast.error("Products could not load.");
+            return [] as CaptureProduct[];
+          }),
         ]);
       setFiles(loadedFiles);
       payloadsRef.current = loadedPayloads;

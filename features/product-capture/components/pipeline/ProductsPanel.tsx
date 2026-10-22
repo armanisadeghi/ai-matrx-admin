@@ -37,7 +37,7 @@ export function ProductsPanel({ products }: { products: CaptureProduct[] }) {
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 className="min-w-0 flex-1 break-words text-sm font-semibold">
-                {product.name || `Product ${product.productIndex + 1}`}
+                {product.name || `Product ${product.productIndex}`}
               </h4>
               <Badge tone={product.status === "researched" ? "success" : "info"}>
                 {product.status === "researched" ? "Researched" : "Analyzed"}
