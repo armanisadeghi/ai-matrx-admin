@@ -119,7 +119,7 @@ export const FILES_AND_EXPORTS_DEMO: PlaygroundDemo = {
     images: [
       {
         title: "Wide banner",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg/640px-Tour_Eiffel_Wikimedia_Commons.jpg",
+        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Fronalpstock_big.jpg/1280px-Fronalpstock_big.jpg",
       },
       {
         title: "Transparency test",

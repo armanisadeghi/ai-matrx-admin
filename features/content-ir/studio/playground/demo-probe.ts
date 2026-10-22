@@ -15,6 +15,17 @@ export function errorMentions(entry: CapturedError, slug: string): boolean {
   return raw?.kind === slug;
 }
 
+/** The error state every kit media piece renders (`role="alert"` inside its `data-kind-*` root). */
+export const MEDIA_PIECE_ERROR_SELECTOR = [
+  "data-kind-image",
+  "data-kind-video",
+  "data-kind-audio",
+  "data-kind-embed",
+  "data-kind-file",
+]
+  .map((attr) => `[${attr}] [role="alert"]`)
+  .join(", ");
+
 export function probeBox(host: HTMLElement, mode: RenderMode): Omit<DemoProbe, "errors" | "ageMs"> {
   const frame = host.querySelector("iframe");
   // Frame mode with no frame yet (the setting is loading or refused): nothing rendered.
@@ -60,10 +71,12 @@ export function probeBox(host: HTMLElement, mode: RenderMode): Omit<DemoProbe, "
             complete: img.complete,
             vector: /^data:image\/svg|\.svg(?:[?#]|$)/i.test(img.currentSrc || img.src),
           };
+    // A video poster (data-matrx-poster) fills its player's box by design: judged whole or broken, never cropped.
+    const poster = img.hasAttribute("data-matrx-poster");
     const verdict = imageProbe(
       media,
       { width: box.width, height: box.height },
-      getComputedStyle(img).objectFit,
+      poster ? "contain" : getComputedStyle(img).objectFit,
       { width: Math.max(0, right - left), height: Math.max(0, bottom - top) },
     );
     if (verdict === "loading") return;
@@ -72,6 +85,11 @@ export function probeBox(host: HTMLElement, mode: RenderMode): Omit<DemoProbe, "
     if (verdict === "cropped") images.cropped += 1;
     if (verdict === "upscaled") images.upscaled += 1;
   });
+  // A kit media piece that gave up (KindImage/KindVideo/KindAudio/KindEmbed/KindFile) shows its
+  // refusal in a role=alert and draws no <img>, so the loop above never sees it: count it broken.
+  const failedPieces = host.querySelectorAll(MEDIA_PIECE_ERROR_SELECTOR).length;
+  images.total += failedPieces;
+  images.broken += failedPieces;
   return { height, standIns: host.querySelectorAll("[data-unresolved-import]").length, images };
 }
 
