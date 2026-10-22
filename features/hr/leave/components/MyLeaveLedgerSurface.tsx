@@ -27,6 +27,11 @@ import { isHrDenied, type HrResult } from "@/features/hr/types";
 import { fetchLeaveLedger } from "../api/service";
 import type { LeaveLedgerView as LeaveLedger } from "../api/types";
 import { LeaveLedgerView, type LeaveLedgerFilter } from "./LeaveLedgerView";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_LEAVE_LEDGER_SURFACE_NAME,
+  buildHrLeaveLedgerScope,
+} from "@/features/surfaces/manifests/hr-leave-ledger.manifest";
 
 /** The `?show=` a §5 figure's door carries. Anything unrecognised falls back to everything. */
 function readFilter(value: string | null): LeaveLedgerFilter {
@@ -100,7 +105,16 @@ function LedgerBody({
   const data = result?.ok ? result.data : null;
   const timeOffHref = hrMeTimeOffHref(orgRef);
 
+  const getScope = () =>
+    buildHrLeaveLedgerScope({
+      status: loading && result === null ? "loading" : result && !result.ok ? (isHrDenied(result) ? "no_access" : "failed") : "loaded",
+      viewer: "self",
+      ledger: data,
+      filter,
+    });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_LEAVE_LEDGER_SURFACE_NAME} getScope={getScope}>
     <HrPageState
       loading={loading && result === null}
       error={result && !result.ok && !isHrDenied(result) ? result : null}
@@ -149,5 +163,6 @@ function LedgerBody({
         </div>
       ) : null}
     </HrPageState>
+    </SurfaceRuntimeProvider>
   );
 }

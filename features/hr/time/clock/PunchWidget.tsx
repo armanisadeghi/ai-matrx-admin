@@ -30,8 +30,8 @@ import { PunchBlockedCard, PunchErrorCard, PunchOfflineCard } from "./PunchState
 import { PunchStatusPanel } from "./PunchStatusPanel";
 import { PunchWhenControl, type PunchWhenValue } from "./PunchWhenControl";
 import { localWallTimeToInstant, timeNowInZone, todayInZone } from "./wallTime";
-import { usePunchClock } from "./usePunchClock";
-import { useState } from "react";
+import { usePunchClock, type PunchClockView, type PunchConfirmation } from "./usePunchClock";
+import { useEffect, useState } from "react";
 
 export interface PunchWidgetProps {
   /** `null` until a subject is resolved — route 6 resolves it from the session, route 34 by search. */
@@ -67,6 +67,11 @@ export interface PunchWidgetProps {
    * how two surfaces come to disagree about one person.
    */
   clockUsableFooter?: React.ReactNode;
+  /**
+   * Told whenever the clock's view or confirmation changes — how a host page reports the ONE
+   * `hr_clock_state` read this widget owns to its agent surface without a second read.
+   */
+  onClockChange?: (view: PunchClockView, confirmation: PunchConfirmation | null) => void;
 }
 
 export function PunchWidget({
@@ -78,6 +83,7 @@ export function PunchWidget({
   punchMockCase,
   allowBackdating = false,
   clockUsableFooter = null,
+  onClockChange,
 }: PunchWidgetProps) {
   const clock = usePunchClock({
     employmentId,
@@ -87,6 +93,9 @@ export function PunchWidget({
     punchMockCase,
   });
   const { view } = clock;
+  useEffect(() => {
+    onClockChange?.(view, clock.confirmation);
+  }, [onClockChange, view, clock.confirmation]);
   const [when, setWhen] = useState<PunchWhenValue>({ localDate: null, localTime: null });
 
   const zone =

@@ -36,6 +36,11 @@ import { useHrPersona } from "@/features/hr/shared/useHrPersona";
 import { toast } from "@/lib/toast";
 
 import { useHrRelationsCase } from "../hooks/useRelationsCases";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_RELATIONS_CASE_SURFACE_NAME,
+  buildHrRelationsCaseScope,
+} from "@/features/surfaces/manifests/hr-relations-case.manifest";
 import type { HrCaseKind } from "../types";
 import { CorrectiveActionPanel } from "./CorrectiveActionPanel";
 import { IncidentPartiesPanel } from "./IncidentPartiesPanel";
@@ -121,7 +126,20 @@ export function CaseSurface({
     );
   }
 
+  const getScope = () =>
+    buildHrRelationsCaseScope({
+      status: isLoading ? "loading" : denied ? "no_access" : error ? "failed" : "loaded",
+      caseId,
+      caseKind: caseKind ?? null,
+      title:
+        caseKind === "incident"
+          ? (HR_INCIDENT_KIND_LABELS[incident?.incident_kind as HrIncidentKind] ?? "Incident")
+          : "Corrective action",
+      detail: detail ?? null,
+    });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_RELATIONS_CASE_SURFACE_NAME} getScope={getScope}>
     <HrPageState
       loading={isLoading}
       error={error && error.kind === "failed" ? error : null}
@@ -287,5 +305,6 @@ export function CaseSurface({
         ) : null}
       </div>
     </HrPageState>
+    </SurfaceRuntimeProvider>
   );
 }

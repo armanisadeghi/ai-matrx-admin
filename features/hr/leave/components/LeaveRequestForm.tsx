@@ -88,6 +88,19 @@ export interface LeaveRequestFormProps {
    * recreated by the fix for it. So this class of refusal is handed UP to a host that survives.
    */
   onDetachedRefusal: (message: string) => void;
+  /**
+   * Starting values, e.g. an agent's fill of this form (surface `matrx-user/hr-my-time-off`).
+   * The host remounts the form with a new `key` to apply a new fill; nothing is submitted.
+   */
+  initial?: LeaveRequestFormInitial;
+}
+
+export interface LeaveRequestFormInitial {
+  policyId?: string;
+  startsOn?: string;
+  endsOn?: string;
+  reasonCategoryId?: string;
+  note?: string;
 }
 
 export function LeaveRequestForm({
@@ -96,14 +109,15 @@ export function LeaveRequestForm({
   reasonCategories,
   onSubmitted,
   onDetachedRefusal,
+  initial,
 }: LeaveRequestFormProps) {
-  const [policyId, setPolicyId] = useState<string>(policies[0]?.policyId ?? "");
-  const [startsOn, setStartsOn] = useState<string>(todayIso());
-  const [endsOn, setEndsOn] = useState<string>(todayIso());
+  const [policyId, setPolicyId] = useState<string>(initial?.policyId ?? policies[0]?.policyId ?? "");
+  const [startsOn, setStartsOn] = useState<string>(initial?.startsOn ?? todayIso());
+  const [endsOn, setEndsOn] = useState<string>(initial?.endsOn ?? initial?.startsOn ?? todayIso());
   const [partialDay, setPartialDay] = useState(false);
   const [dayHours, setDayHours] = useState<Record<string, string>>({});
-  const [reasonCategoryId, setReasonCategoryId] = useState<string>("");
-  const [note, setNote] = useState("");
+  const [reasonCategoryId, setReasonCategoryId] = useState<string>(initial?.reasonCategoryId ?? "");
+  const [note, setNote] = useState(initial?.note ?? "");
 
   const [preview, setPreview] = useState<LeaveRequestPreview | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);

@@ -93,6 +93,12 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readOf } from "@ai-matrx/design-system";
 import { HrLaneTabs } from "@/features/hr/shared/HrLaneTabs";
 import type { ListScopeKind } from "@/lib/list-scope/types";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  HR_LEAVE_QUEUE_SURFACE_NAME,
+  buildHrLeaveQueueScope,
+} from "@/features/surfaces/manifests/hr-leave-queue.manifest";
 
 /** THE VIEW LAW: every list declares its scope in words. */
 const SCOPES: { key: HrInboxScope; label: string; sentence: string }[] = [
@@ -462,7 +468,58 @@ export function LeaveQueueSurface() {
     },
   ];
 
+  /** Surface `matrx-user/hr-leave-queue`: what this page shows, for the agent. */
+  const getScope = () =>
+    buildHrLeaveQueueScope({
+      status: queue.loading
+        ? "loading"
+        : queue.refusal
+          ? "no_access"
+          : queue.error
+            ? "failed"
+            : "loaded",
+      view: scope,
+      waiting: focused,
+      others: queue.others,
+      focusRequestId: requestParam,
+      focusMissed,
+      selectedStepIds: currentSelectedIds,
+      partiallyLoaded: queue.partiallyHydrated,
+      employerName: (id) => nameOf(id ?? null) ?? null,
+    });
+
+  /** The agent opens the page's own decision dialog; the person confirms. */
+  const DECISION_INTENT = { approve: "approve", deny: "reject", send_back: "return" } as const;
+  const parseDecision = (value: unknown) => {
+    const v = (value ?? {}) as { step_id?: unknown; decision?: unknown };
+    const row = focused.find((r) => r.step_id === v.step_id);
+    if (!row) refuseSurfaceWrite("That step is not waiting on this person's decision. Use a step_id from leave_requests_waiting.");
+    const intent = DECISION_INTENT[v.decision as keyof typeof DECISION_INTENT];
+    if (!intent) refuseSurfaceWrite('decision must be "approve", "deny" or "send_back".');
+    return { row: row as LeaveQueueRow, intent };
+  };
+  const getWriteHandlers = () => ({
+    leave_decision_draft: {
+      validate: (value: unknown) => {
+        parseDecision(value);
+      },
+      apply: (value: unknown) => {
+        const { row, intent } = parseDecision(value);
+        setDecision({ row, intent });
+        return {
+          summary: "The decision dialog is open. Nothing is decided until the person confirms it.",
+          data: { step_id: row.step_id, intent },
+        };
+      },
+    },
+  });
+
   return (
+    <SurfaceRuntimeProvider
+      surfaceName={HR_LEAVE_QUEUE_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
     <LeaveDeskShell
       title="Time off"
       description="Decisions waiting on you, the balances behind them, and who is out."
@@ -750,5 +807,6 @@ export function LeaveQueueSurface() {
         }}
       />
     </LeaveDeskShell>
+    </SurfaceRuntimeProvider>
   );
 }

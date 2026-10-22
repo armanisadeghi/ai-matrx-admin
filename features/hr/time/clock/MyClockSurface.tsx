@@ -33,6 +33,13 @@ import { webPunchSessionSegment } from "@/features/hr/time/api/idempotencyKey";
 
 import { PunchWidget } from "./PunchWidget";
 import { SetKioskPinCard } from "./SetKioskPinCard";
+import { useRef } from "react";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_MY_CLOCK_SURFACE_NAME,
+  buildHrMyClockScope,
+} from "@/features/surfaces/manifests/hr-my-clock.manifest";
+import type { PunchClockView, PunchConfirmation } from "./usePunchClock";
 
 export function MyClockSurface({
   mockCase,
@@ -59,6 +66,18 @@ export function MyClockSurface({
   */
   const myRecordHref = hrMeHref(hr.orgRef);
 
+  /** The widget's clock read, kept for the agent surface (a ref: reporting it re-renders nothing). */
+  const clockRef = useRef<{ view: PunchClockView; confirmation: PunchConfirmation | null } | null>(null);
+  const getScope = () =>
+    buildHrMyClockScope({
+      hasJob: Boolean(employmentId) || hr.isLoading,
+      view: clockRef.current?.view ?? null,
+      confirmation: clockRef.current?.confirmation ?? null,
+    });
+  const onClockChange = (view: PunchClockView, confirmation: PunchConfirmation | null) => {
+    clockRef.current = { view, confirmation };
+  };
+
   return (
     /*
       🚨 **NO IN-BODY TITLE BLOCK** (`core-route-headers`, failure class 3). The route's identity is
@@ -72,6 +91,7 @@ export function MyClockSurface({
       rather than scroll behind it (failure class 4). `pb-safe` keeps the primary punch control off
       the iOS home indicator — clocking out one-handed should not be a fight with the gesture bar.
     */
+    <SurfaceRuntimeProvider surfaceName={HR_MY_CLOCK_SURFACE_NAME} getScope={getScope}>
     <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-4 pb-safe pt-[var(--shell-header-h)] sm:max-w-lg">
       {/*
         `requireEmployer` is false only when a subject is already in hand: the employer picker is
@@ -108,6 +128,7 @@ export function MyClockSurface({
                 knows; deciding it here would need a second read of the same fact.
               */
               clockUsableFooter={<SetKioskPinCard employmentId={employmentId} />}
+              onClockChange={onClockChange}
             />
           </div>
         ) : (
@@ -127,5 +148,6 @@ export function MyClockSurface({
         )}
       </HrPageState>
     </div>
+    </SurfaceRuntimeProvider>
   );
 }

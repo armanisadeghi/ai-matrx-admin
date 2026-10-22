@@ -40,6 +40,11 @@ import { crossZoneNotice } from "../shared/format";
 import { AttestationBar } from "./AttestationBar";
 import { RecomputedBanner } from "./RecomputedBanner";
 import { TimesheetWeeks } from "./WeekBlocks";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_MY_TIMESHEET_SURFACE_NAME,
+  buildHrMyTimesheetScope,
+} from "@/features/surfaces/manifests/hr-my-timesheet.manifest";
 
 export function MyTimesheet({
   employmentId,
@@ -78,7 +83,15 @@ export function MyTimesheet({
     true,
   );
 
+  const getScope = () =>
+    buildHrMyTimesheetScope({
+      status: query.loading ? "loading" : query.error ? "failed" : "loaded",
+      timesheet: query.data ?? null,
+      note: focusNote ?? periodNote,
+    });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_MY_TIMESHEET_SURFACE_NAME} getScope={getScope}>
     <RuleSnapshotProvider>
       <div className="mx-auto w-full max-w-5xl space-y-4 px-3 py-4 sm:px-4">
         <HrTimeReadState loading={query.loading} error={query.error}>
@@ -96,6 +109,7 @@ export function MyTimesheet({
         </HrTimeReadState>
       </div>
     </RuleSnapshotProvider>
+    </SurfaceRuntimeProvider>
   );
 }
 

@@ -46,6 +46,11 @@ import { CustomTab } from "./tabs/CustomTab";
 import { ProfileReviewsSection } from "@/features/employee-performance-reviews/standard/ProfileReviewsSection";
 import { StartReview360Button } from "@/features/employee-performance-reviews/review-360/StartReview360Button";
 import { LinkedRecordsSection } from "@/features/scopes/components/linked-records/LinkedRecordsSection";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_EMPLOYEE_SURFACE_NAME,
+  buildHrEmployeeScope,
+} from "@/features/surfaces/manifests/hr-employee.manifest";
 
 /** The knob that names the tab a profile opens on. Org-overridable (D13). */
 export const HR_PROFILE_DEFAULT_TAB_KEY = "hr.employees.profile_default_tab";
@@ -148,12 +153,15 @@ export function EmployeeProfile({
   tab,
   assignmentParam,
   asOf,
+  surfaceName = HR_EMPLOYEE_SURFACE_NAME,
 }: {
   employeeId: string;
   /** The route segment. `c/<key>` for a custom tab. */
   tab: string;
   assignmentParam?: string | null;
   asOf?: string | null;
+  /** The agent surface this record reports to: `hr-employee`, or `hr-me` on the person's own page. */
+  surfaceName?: string;
 }) {
   const { orgRef } = useHrContext();
   const { profile, isLoading, denied, error, refresh } = useHrProfile({
@@ -161,7 +169,16 @@ export function EmployeeProfile({
     asOf: asOf ?? null,
   });
 
+  const getScope = () =>
+    buildHrEmployeeScope({
+      status: isLoading ? "loading" : denied ? "no_access" : error ? "failed" : "loaded",
+      employeeId,
+      tab,
+      profile: profile ?? null,
+    });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={surfaceName} getScope={getScope}>
     <HrPageState
       loading={isLoading}
       error={error}
@@ -182,6 +199,7 @@ export function EmployeeProfile({
         />
       ) : null}
     </HrPageState>
+    </SurfaceRuntimeProvider>
   );
 }
 

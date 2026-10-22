@@ -27,6 +27,11 @@ import { MyIncidentReports } from "./MyIncidentReports";
 import { MyVerificationConsents } from "@/features/hr/me/MyVerificationConsents";
 import { HrPageState } from "@/features/hr/shared/HrStates";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_ME_SURFACE_NAME,
+  buildHrEmployeeScope,
+} from "@/features/surfaces/manifests/hr-employee.manifest";
 
 export function MyInfoSurface({ tab = "personal" }: { tab?: string }) {
   const { active, isLoading } = useHrContext();
@@ -71,6 +76,12 @@ export function MyInfoSurface({ tab = "personal" }: { tab?: string }) {
         {active && !active.employee_id ? (
           // An org member who is not an employee here — an administrator, a
           // facilities user. A real, legitimate state, and NOT an empty profile.
+          <SurfaceRuntimeProvider
+            surfaceName={HR_ME_SURFACE_NAME}
+            getScope={() =>
+              buildHrEmployeeScope({ status: "not_an_employee", employeeId: null, tab: null, profile: null })
+            }
+          >
           <div className="mx-auto w-full max-w-xl p-4 sm:p-6">
             <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
               <p className="text-sm text-foreground">
@@ -82,8 +93,9 @@ export function MyInfoSurface({ tab = "personal" }: { tab?: string }) {
               </p>
             </div>
           </div>
+          </SurfaceRuntimeProvider>
         ) : active?.employee_id ? (
-          <EmployeeProfile employeeId={active.employee_id} tab={tab} />
+          <EmployeeProfile employeeId={active.employee_id} tab={tab} surfaceName={HR_ME_SURFACE_NAME} />
         ) : null}
       </HrPageState>
     </>

@@ -47,6 +47,11 @@ import { hrPageRefusalProps } from "./refusal";
 import { LeaveDeskShell } from "./LeaveDeskShell";
 import { leaveBalancesHref, leaveLedgerHref, leaveQueueHref } from "./routes";
 import { replaceAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_LEAVE_LEDGER_SURFACE_NAME,
+  buildHrLeaveLedgerScope,
+} from "@/features/surfaces/manifests/hr-leave-ledger.manifest";
 
 function isFilter(value: string | null): value is LeaveLedgerFilter {
   return value === "all" || value === "added" || value === "used";
@@ -111,7 +116,16 @@ export function LeaveLedgerSurface({
     replaceAddressOrNavigate(router, leaveLedgerHref(employmentId, policyId, orgRef, { asOf: asOfParam, show: next }));
   }
 
+  const getScope = () =>
+    buildHrLeaveLedgerScope({
+      status: loading ? "loading" : error ? (error.kind === "denied" ? "no_access" : "failed") : "loaded",
+      viewer: "delegated",
+      ledger,
+      filter,
+    });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_LEAVE_LEDGER_SURFACE_NAME} getScope={getScope}>
     <LeaveDeskShell
       title="Time off"
       description="Decisions waiting on you, the balances behind them, and who is out."
@@ -148,5 +162,6 @@ export function LeaveLedgerSurface({
         </div>
       </HrPageState>
     </LeaveDeskShell>
+    </SurfaceRuntimeProvider>
   );
 }

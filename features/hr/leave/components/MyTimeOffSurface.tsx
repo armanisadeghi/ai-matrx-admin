@@ -33,6 +33,14 @@ import { LeaveBalanceBlock } from "./LeaveBalanceBlock";
 import { LeaveRequestForm } from "./LeaveRequestForm";
 import { LeaveRequestList } from "./LeaveRequestList";
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  HR_MY_TIME_OFF_SURFACE_NAME,
+  buildHrMyTimeOffScope,
+  parseTimeOffRequestDraft,
+} from "@/features/surfaces/manifests/hr-my-time-off.manifest";
+import type { LeaveRequestFormInitial } from "./LeaveRequestForm";
 
 export function MyTimeOffSurface() {
   return (
@@ -101,7 +109,38 @@ function TimeOffBody({ employmentId }: { employmentId: string }) {
 
   const data = result?.ok ? result.data : null;
 
+  /** An agent's fill of the request form; a new `seq` remounts the form with it. */
+  const [draft, setDraft] = useState<{ seq: number; initial: LeaveRequestFormInitial } | null>(null);
+
+  const getScope = () =>
+    buildHrMyTimeOffScope({
+      status: loading && result === null ? "loading" : result && !result.ok ? (isHrDenied(result) ? "no_access" : "failed") : "loaded",
+      data,
+      reasons,
+    });
+
+  const getWriteHandlers = () => ({
+    time_off_request_draft: {
+      validate: (value: unknown) => {
+        parseTimeOffRequestDraft(value, data, reasons, refuseSurfaceWrite);
+      },
+      apply: (value: unknown) => {
+        const fill = parseTimeOffRequestDraft(value, data, reasons, refuseSurfaceWrite);
+        setDraft((current) => ({ seq: (current?.seq ?? 0) + 1, initial: fill }));
+        return {
+          summary: "The request form is filled in. Nothing is submitted until the person presses Submit.",
+          data: fill,
+        };
+      },
+    },
+  });
+
   return (
+    <SurfaceRuntimeProvider
+      surfaceName={HR_MY_TIME_OFF_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
     <HrPageState
       loading={loading && result === null}
       error={result && !result.ok && !isHrDenied(result) ? result : null}
@@ -181,6 +220,8 @@ function TimeOffBody({ employmentId }: { employmentId: string }) {
             ) : null}
 
             <LeaveRequestForm
+              key={draft?.seq ?? 0}
+              initial={draft?.initial}
               employmentId={data.employmentId ?? employmentId}
               policies={data.policies}
               reasonCategories={reasons}
@@ -221,5 +262,6 @@ function TimeOffBody({ employmentId }: { employmentId: string }) {
         </div>
       ) : null}
     </HrPageState>
+    </SurfaceRuntimeProvider>
   );
 }

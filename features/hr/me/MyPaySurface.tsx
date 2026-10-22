@@ -31,6 +31,11 @@ import { fetchHrMyCompensation } from "@/features/hr/service";
 import { HrPageState } from "@/features/hr/shared/HrStates";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
 import type { HrDenied, HrFailed } from "@/features/hr/types";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_MY_PAY_SURFACE_NAME,
+  buildHrMyPayScope,
+} from "@/features/surfaces/manifests/hr-my-pay.manifest";
 
 type CompensationRow = Record<string, unknown>;
 
@@ -140,7 +145,21 @@ export function MyPaySurface() {
   const asOf = data?.as_of ?? new Date().toISOString().slice(0, 10);
   const pending = (data?.history ?? []).filter((row) => isFuture(row, asOf));
 
+  const getScope = () =>
+    buildHrMyPayScope({
+      status:
+        contextLoading || isLoading
+          ? "loading"
+          : !employmentId
+            ? "no_job"
+            : error
+              ? error.kind === "denied" ? "no_access" : "failed"
+              : "loaded",
+      data,
+    });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_MY_PAY_SURFACE_NAME} getScope={getScope}>
     <HrPageState
       loading={contextLoading || isLoading}
       error={error && error.kind === "failed" ? error : null}
@@ -283,5 +302,6 @@ export function MyPaySurface() {
         </p>
       </div>
     </HrPageState>
+    </SurfaceRuntimeProvider>
   );
 }

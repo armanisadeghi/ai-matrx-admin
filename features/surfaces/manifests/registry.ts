@@ -345,6 +345,16 @@ import {
 // W2 page surfaces (surface declarations W2, 2026-10-22). One import per manifest, each under its
 // area marker, so parallel authors never edit the same lines.
 // W2 area: hr-a
+import { hrLeaveQueueManifest } from "./hr-leave-queue.manifest";
+import { hrLeaveLedgerManifest } from "./hr-leave-ledger.manifest";
+import { hrMyTimeOffManifest } from "./hr-my-time-off.manifest";
+import { hrMyPayManifest } from "./hr-my-pay.manifest";
+import { hrMyClockManifest } from "./hr-my-clock.manifest";
+import { hrMyTimesheetManifest } from "./hr-my-timesheet.manifest";
+import { hrEmployeeManifest, hrMeManifest } from "./hr-employee.manifest";
+import { hrNewEmployeeManifest } from "./hr-new-employee.manifest";
+import { hrRelationsCaseManifest } from "./hr-relations-case.manifest";
+import { hrVerificationsManifest } from "./hr-verifications.manifest";
 // W2 area: hr-b
 // W2 area: workflows-commerce
 // W2 area: print-rag-memory
@@ -687,6 +697,17 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   quickDataManifest,
   // W2 page surfaces, one line per manifest under its area marker.
   // W2 area: hr-a
+  hrLeaveQueueManifest,
+  hrLeaveLedgerManifest,
+  hrMyTimeOffManifest,
+  hrMyPayManifest,
+  hrMyClockManifest,
+  hrMyTimesheetManifest,
+  hrEmployeeManifest,
+  hrMeManifest,
+  hrNewEmployeeManifest,
+  hrRelationsCaseManifest,
+  hrVerificationsManifest,
   // W2 area: hr-b
   // W2 area: workflows-commerce
   // W2 area: print-rag-memory

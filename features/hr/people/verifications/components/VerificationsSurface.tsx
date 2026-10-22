@@ -61,6 +61,11 @@ import {
 import { NewVerificationRequestDialog } from "./NewVerificationRequestDialog";
 import { VerificationRowActions } from "./VerificationRowActions";
 import { formatHrDay as formatDay } from "@/features/hr/people/shared/HrStatusChip";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  HR_VERIFICATIONS_SURFACE_NAME,
+  buildHrVerificationsScope,
+} from "@/features/surfaces/manifests/hr-verifications.manifest";
 
 
 type ScopedLetterRow = HrVerificationLetterRow & { employer: HrRowEmployer };
@@ -288,7 +293,16 @@ export function VerificationsSurface() {
     },
   ];
 
+  const getScope = () =>
+    buildHrVerificationsScope({
+      status: isLoading ? "loading" : error ? (error.kind === "denied" ? "no_access" : "failed") : "loaded",
+      rows,
+      unavailable,
+      selectedId: clickedRow?.id ?? null,
+    });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={HR_VERIFICATIONS_SURFACE_NAME} getScope={getScope}>
     <HrPageState
       employerScope="all"
       loading={isLoading}
@@ -402,5 +416,6 @@ export function VerificationsSurface() {
         />
       ) : null}
     </HrPageState>
+    </SurfaceRuntimeProvider>
   );
 }

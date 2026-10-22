@@ -89,6 +89,14 @@ import { DuplicatePanel, type HrDuplicateScan } from "./DuplicatePanel";
 import { RehirePanel, type HrPriorEmployment } from "./RehirePanel";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  HR_NEW_EMPLOYEE_SURFACE_NAME,
+  buildHrNewEmployeeScope,
+  mergeNewEmployeeDraft,
+  type NewEmployeeStructure,
+} from "@/features/surfaces/manifests/hr-new-employee.manifest";
 
 type Mode = "new-person" | "link-member" | "link-party" | "convert-candidate";
 
@@ -525,7 +533,47 @@ export function HrNewEmployee({
   };
 
   // ── States ─────────────────────────────────────────────────────────────
+  /** Surface `matrx-user/hr-new-employee`: the form as typed, and the agent's fill of it. */
+  const surfaceStructure: NewEmployeeStructure = {
+    jobTitles,
+    departments,
+    locations,
+    payGroups,
+    workerClasses: HR_WORKER_CLASSES,
+  };
+  const getScope = () =>
+    buildHrNewEmployeeScope({
+      granted: can("identity.write"),
+      mode,
+      createdEmployeeId: created?.employeeId ?? null,
+      form,
+      problems,
+      structure: surfaceStructure,
+    });
+  const getWriteHandlers = () => ({
+    new_employee_draft: {
+      validate: (value: unknown) => {
+        if (created) refuseSurfaceWrite("This employee has already been created.");
+        mergeNewEmployeeDraft(form, value, surfaceStructure, refuseSurfaceWrite);
+      },
+      apply: (value: unknown) => {
+        const next = mergeNewEmployeeDraft(form, value, surfaceStructure, refuseSurfaceWrite);
+        setForm((current) => ({ ...current, ...next }));
+        if (mode === null) setMode("new-person");
+        return {
+          summary: "The new-employee form is filled in. Nothing is created until the person presses create.",
+          data: next,
+        };
+      },
+    },
+  });
+
   return (
+    <SurfaceRuntimeProvider
+      surfaceName={HR_NEW_EMPLOYEE_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
     <HrPageState
       hasWriteEmployer={active !== null}
       operation="Creating this employee"
@@ -1144,6 +1192,7 @@ export function HrNewEmployee({
         )}
       </div>
     </HrPageState>
+    </SurfaceRuntimeProvider>
   );
 }
 
