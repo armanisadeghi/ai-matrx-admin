@@ -3,8 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { formatPoints } from "@ai-matrx/kit/format";
 
-import { formatAdminUsd } from "@/components/cost/formatAdminCost";
-import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
+import type { CostDoorRow } from "@/components/cost/CostDoor";
+import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 
 import { pointsFor, type LibrarySource } from "./catalog";
@@ -29,20 +29,24 @@ export function useLibrary(organizationId: string | null) {
 }
 
 /**
- * The price of `n` records of a source, as this viewer's SEAT sees it (the one cost rule, `useSeesDollars`):
- * a member reads "150 points"; a seat that may see dollars reads "150 points · $0.01" (points first, then cents). Null when the source is unpriced or the rate has not loaded.
- * Every quote and result in data-sources (library, board tile, table bar, chat card, CRM, Maps) comes here.
+ * The price of `n` records of a source, in points only (dollars belong to `CostDoor`'s admin rows, never a built
+ * string). Null when the source is unpriced or the rate has not loaded. Battles (lab, unlock) read this; every other
+ * surface hands `sourceCostRow` to a `<CostDoor>`.
  */
 export function usePriceText() {
   const { rate } = useCostDisplay();
-  const seesDollars = useSeesDollars();
-  return (source: Pick<LibrarySource, "pointsPerRecord" | "usd_per_record">, n: number, opts?: { short?: boolean; pointsOnly?: boolean }): string | null => {
+  return (source: Pick<LibrarySource, "pointsPerRecord" | "usd_per_record">, n: number, opts?: { short?: boolean }): string | null => {
     const points = pointsFor(source, n, rate);
-    const pointsText = points == null ? null : formatPoints(points, { short: opts?.short });
-    if (!opts?.pointsOnly && seesDollars && source.usd_per_record != null) {
-      const usd = formatAdminUsd(source.usd_per_record * n);
-      return pointsText ? `${pointsText} · ${usd}` : usd;
-    }
-    return pointsText;
+    return points == null ? null : formatPoints(points, { short: opts?.short });
   };
+}
+
+/** One labelled `CostDoor` row for `n` records of a source: its own points price, else its USD price (the door converts). */
+export function sourceCostRow(
+  source: Pick<LibrarySource, "pointsPerRecord" | "usd_per_record">,
+  n: number,
+  label: string,
+): CostDoorRow {
+  const own = source.pointsPerRecord != null && source.pointsPerRecord >= 0 ? Math.ceil(Number((source.pointsPerRecord * n).toFixed(6))) : undefined;
+  return { label, points: own, usd: source.usd_per_record != null ? source.usd_per_record * n : undefined };
 }

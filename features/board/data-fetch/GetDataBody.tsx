@@ -39,7 +39,8 @@ import {
   type DataSource,
   type DataSourceCatalog,
 } from "../../data-sources/contract";
-import { limitSettingHref, useDataSources, useFetchEstimate } from "../../data-sources/hooks";
+import { CostDoor } from "@/components/cost/CostDoor";
+import { limitSettingHref, useDataSources, fetchCostRow } from "../../data-sources/hooks";
 import { clearRun, resumeRun, runState, startRun, useRun } from "../../data-sources/runs";
 import { fetchData, getJob } from "../../data-sources/server";
 import { provenanceOf, readDataFetchMeta, withDataFetchMeta, type DataFetchDraft } from "./tile-meta";
@@ -280,7 +281,7 @@ function SourceForm({
   );
   const [custom, setCustom] = useState(initial);
   const count = capCount(choice === "custom" ? custom : Number(choice), limit?.value);
-  const estimate = useFetchEstimate()(source, count);
+  const estimate = fetchCostRow(source, count);
   const built = buildInput(source, values, modeOf(source, option).option);
   const settingHref = limit ? limitSettingHref(organizationId, limit.setting) : null;
   const saveValues = () => onDraft({ ...draft, sourceKey: source.key, values, option: option ?? undefined, count });
@@ -361,9 +362,7 @@ function SourceForm({
       </div>
 
       <div className="flex items-center justify-end gap-3 border-t border-border pt-3">
-        <span className="text-xs text-muted-foreground" data-estimate="">
-          {estimate ?? "No price yet"}
-        </span>
+        {estimate ? <CostDoor rows={[estimate]} className="mr-auto" /> : null}
         <Button type="submit" variant="primary" icon={<DownloadCloud className="h-4 w-4" />} disabled={!built.input}>
           Fetch {formatCount(count)}
         </Button>

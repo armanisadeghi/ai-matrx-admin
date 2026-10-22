@@ -3,7 +3,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * What a refresh changed — the body of the "Changes" window. A list of every finished refresh of the
- * table (when, counts, points spent), and for the one picked: New / Changed / Gone. Changed rows show
+ * table (when, counts; cost behind a door), and for the one picked: New / Changed / Gone. Changed rows show
  * each field as before → after, numbers with their delta (Rating 4.3 → 4.1 ▼0.2). Reads only; it
  * never edits a row ("gone" is a report, not a delete).
  */
@@ -11,9 +11,9 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
-import { formatPoints, formatRelativeTime, formatCount } from "@ai-matrx/kit/format";
+import { formatRelativeTime, formatCount } from "@ai-matrx/kit/format";
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 
 import {
   fieldDelta,
@@ -56,25 +56,23 @@ export function ChangesPanel({ tableId, organizationId, jobId }: { tableId: stri
 }
 
 function RunList({ runs, selected, onPick }: { runs: RefreshRun[]; selected: string; onPick: (id: string) => void }) {
-  const { toPoints } = useCostDisplay();
   return (
     <ul className="flex max-h-40 shrink-0 flex-col overflow-y-auto border-b border-border" aria-label="Refreshes" data-refresh-history="">
       {runs.map((r) => {
         const parts = summaryParts(r.summary);
-        const points = r.costUsd == null ? null : toPoints(r.costUsd);
         return (
-          <li key={r.jobId}>
+          <li key={r.jobId} className={`flex items-center ${r.jobId === selected ? "bg-muted" : ""}`}>
             <button
               type="button"
               onClick={() => onPick(r.jobId)}
               aria-current={r.jobId === selected}
               data-refresh-run={r.jobId}
-              className={`flex w-full items-center gap-2 px-2 py-1 text-left text-xs hover:bg-muted ${r.jobId === selected ? "bg-muted" : ""}`}
+              className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1 text-left text-xs hover:bg-muted"
             >
               <span className="shrink-0 tabular-nums text-foreground">{when(r.at)}</span>
               <span className="min-w-0 flex-1 truncate text-muted-foreground">{parts ? parts.join(" · ") : r.summary?.firstFetch ? "First fetch" : "Not recorded"}</span>
-              <span className="shrink-0 tabular-nums text-muted-foreground">{points == null ? "—" : formatPoints(points)}</span>
             </button>
+            <CostDoor usd={r.costUsd} iconOnly label="Cost of this refresh" className="shrink-0" />
           </li>
         );
       })}

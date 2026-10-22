@@ -35,9 +35,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";
-import { currentPointsRate } from "@/components/cost/pointsRate";
-import { currentCostUnit } from "@/components/cost/costUnit";
 import { extractErrorMessage } from "@/utils/errors";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Badge } from "@/components/ui/badge";
@@ -57,13 +54,6 @@ import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-
-/**
- * The most one paid lookup is metered at, in USD — the server's fallback unit
- * price in `aidream/services/crm/enrichment/calls.py` (PROVIDER_UNIT_COST_USD;
- * its dearest named provider is 0.019). Shown to people only as points.
- */
-const PAID_LOOKUP_MAX_USD = 0.02;
 
 interface Props {
   partyId: string;
@@ -146,7 +136,7 @@ export function ContactCandidatesCard({
     // title names what happens — there is no free-only choice on this button.
     const ok = await confirm({
       title: "Find contact info?",
-      description: `We check our own sources first, then paid contact providers. Each paid lookup uses up to ${formatCost(PAID_LOOKUP_MAX_USD, { rate: currentPointsRate(), unit: currentCostUnit() })} from this organization's monthly contact-finding budget. Results are reused for two weeks, so searching again soon reuses them.`,
+      description: `We check our own sources first, then paid contact providers. Paid lookups draw on this organization's monthly contact-finding budget. Results are reused for two weeks, so searching again soon reuses them.`,
       confirmLabel: "Find contact info",
     });
     if (!ok) return;
