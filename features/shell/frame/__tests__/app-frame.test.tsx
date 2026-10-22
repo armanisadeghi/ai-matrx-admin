@@ -451,18 +451,18 @@ describe("ours vs the page's", () => {
     const top = nav.querySelector("a[href='/crm']")!;
     expect(top.textContent).toBe("CRM"); // the sr-only name; the face is the icon
     expect(top.querySelector("svg")).not.toBeNull();
-    const switcher = nav.querySelector<HTMLButtonElement>('[aria-label="Switch People"]')!;
+    // EVERY CRUMB IS A DOOR (2026-10-22): the level's chevron opens its searchable door.
+    const switcher = nav.querySelector<HTMLButtonElement>('[aria-label="Go to another in People"]')!;
     expect(switcher.querySelector("svg.lucide-chevron-down")).not.toBeNull();
     // Only the switchable level carries a chevron-down.
     expect(nav.querySelectorAll("svg.lucide-chevron-down")).toHaveLength(1);
     act(() => {
-      switcher.focus();
-      switcher.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+      switcher.click();
     });
     await flush();
-    const items = [...document.querySelectorAll('[role="menuitem"]')].map((el) => el.textContent?.trim());
+    const items = [...document.querySelectorAll("[data-crumb-door-row]")].map((el) => el.textContent?.trim());
     expect(items).toEqual(["Marisol", "Theo"]);
-    expect(document.querySelector('[role="menuitem"][aria-current="page"]')?.textContent?.trim()).toBe("Marisol");
+    expect(document.querySelector('[data-crumb-door-row][aria-current="page"]')?.textContent?.trim()).toBe("Marisol");
   });
 
   it("the top edge: a fade by default, a hairline on request, on the last top band", () => {

@@ -69,7 +69,7 @@ function deadCrumbs(isPageless?: (href: string) => boolean): string[] {
 }
 
 describe("every crumb is a real door", () => {
-  it("RED witness: without the pageless table, 120 trails link a folder that is no page", () => {
+  it("RED witness: without the pageless table, over 100 trails link a folder that is no page", () => {
     const before = deadCrumbs(() => false);
     // eslint-disable-next-line no-console -- the census printed once, for the report
     console.log(`dead crumbs without the table: ${before.length}\n${before.slice(0, 12).join("\n")}`);

@@ -109,16 +109,18 @@ describe("crumb doors — in the header", () => {
     unmount();
   });
 
-  it("opening the record's door shows a search and its siblings", () => {
+  it("opening the record's door shows a search and its siblings", async () => {
     const { el, unmount } = mount(trail());
     const trigger = el.querySelector<HTMLButtonElement>('[data-crumb-door="siblings"]')!;
     act(() => {
-      trigger.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
       trigger.click();
     });
-    const panel = document.querySelector('[data-crumb-door-panel="siblings"]');
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    const panel = document.querySelector("[data-crumb-door-row]")?.closest('[role="group"]')?.parentElement ?? null;
     expect(panel).not.toBeNull();
-    expect(panel!.querySelector('input[aria-label="Search Brands"]')).not.toBeNull();
+    expect(document.querySelector('input[aria-label="Search Brands"]')).not.toBeNull();
     const rows = [...panel!.querySelectorAll("[data-crumb-door-row]")].map((r) => r.textContent);
     expect(rows).toEqual(["Vasaro", "Acme"]);
     unmount();
