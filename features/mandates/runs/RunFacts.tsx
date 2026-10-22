@@ -72,6 +72,8 @@ export function RunFacts({ run, audience }: { run: StoredRun; audience: "admin" 
       <PropertyRow label="When">{run.createdAt ? absoluteWhen(run.createdAt) : "—"}</PropertyRow>
       <PropertyRow label="Cost">{costWords(run.cost, costRate, costDisplay)}</PropertyRow>
       <PropertyRow label="Time">{durationWords(run.durationMs)}</PropertyRow>
+      {run.runRow?.door ? <PropertyRow label="Door">{doorWords(run.runRow.door)}</PropertyRow> : null}
+      {run.runRow?.watching ? <PropertyRow label="AI Watch">On for this run</PropertyRow> : null}
       <PropertyRow label="Conversation">
         <Link
           href={conversationHref(run.conversationId, audience)}
@@ -81,9 +83,21 @@ export function RunFacts({ run, audience }: { run: StoredRun; audience: "admin" 
           <ArrowUpRight className="h-3 w-3" />
         </Link>
       </PropertyRow>
+      {run.runRow?.refusal ? (
+        <div className="col-span-2 text-[12px] text-destructive">
+          {run.runRow.refusal.sentence || run.runRow.refusal.code}
+          <ErrorAlchemyMenu error={run.runRow.refusal.sentence || run.runRow.refusal.code} />
+        </div>
+      ) : null}
       {run.error ? <div className="col-span-2 text-[12px] text-destructive">{run.error}<ErrorAlchemyMenu error={run.error} /></div> : null}
     </div>
   );
+}
+
+/** A run row's door label as words: `chat_start` → "Chat start". */
+export function doorWords(door: string): string {
+  const words = door.replace(/_/g, " ").trim();
+  return words ? words[0].toUpperCase() + words.slice(1) : door;
 }
 
 /** A streamed run's live output, then its cost and time beside the original's. */
