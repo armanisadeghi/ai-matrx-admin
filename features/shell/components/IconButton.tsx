@@ -53,8 +53,6 @@ interface IconButtonProps {
   className?: string;
   /** Extra classes on the glass pill */
   glassClassName?: string;
-  /** `transparent` for a page/solid surface (glass only floats). Default `glass`. */
-  variant?: "glass" | "transparent";
   disabled?: boolean;
 }
 
@@ -67,13 +65,11 @@ export default function IconButton({
   active,
   className,
   glassClassName,
-  variant = "glass",
   disabled,
 }: IconButtonProps) {
   const glassClass = cn(
     GLASS,
-    "shell-tactile",
-    variant === "glass" && "matrx-glass-thin-border",
+    "matrx-glass-thin-border shell-tactile",
     active && "bg-[var(--matrx-glass-bg-active)]!",
     glassClassName,
   );

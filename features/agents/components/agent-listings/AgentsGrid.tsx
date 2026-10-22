@@ -660,7 +660,7 @@ export function AgentsGrid() {
 
             {/* Search */}
             <div className="flex-1 relative">
-              <div className="flex items-center gap-3 p-1 rounded-md border border-border bg-card">
+              <div className="flex items-center gap-3 p-1 rounded-full matrx-glass-thin-border hover:shadow-xl transition-shadow">
                 <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 <input
                   type="text"
@@ -682,7 +682,7 @@ export function AgentsGrid() {
                     }
                     aria-pressed={deepSearch}
                     className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors flex-shrink-0",
+                      "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors flex-shrink-0",
                       deepSearch
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-muted/50",
