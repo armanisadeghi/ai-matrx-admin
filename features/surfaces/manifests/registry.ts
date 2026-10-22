@@ -295,6 +295,7 @@ import { adminReportingManifest } from "./admin-reporting.manifest";
 import { adminUtilitiesManifest } from "./admin-utilities.manifest";
 import { adminDocumentationManifest } from "./admin-documentation.manifest";
 import { quickDataManifest } from "./quick-data.manifest";
+import { visualMapLabManifest } from "./visual-map-lab.manifest";
 // @ai-matrx/chat's own manifests, with their module parent (surface declarations W1).
 import {
   agentBuilderManifest,
@@ -676,6 +677,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   adminUtilitiesManifest,
   adminDocumentationManifest,
   quickDataManifest,
+  visualMapLabManifest,
 ];
 
 // ---------------------------------------------------------------------------
