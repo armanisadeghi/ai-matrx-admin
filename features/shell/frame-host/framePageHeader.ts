@@ -167,8 +167,17 @@ export function useFramePageHeaderHost(): {
   return {
     host,
     pageCrumbs: pickPageCrumbs(declarations),
-    pageActions: actionDeclarations.flatMap((d) => d.actions),
+    pageActions: uniqueActions(actionDeclarations.flatMap((d) => d.actions)),
   };
+}
+
+/**
+ * One row per action id, in first-declared order. A header mounted twice (a compact and a full
+ * layout switched by CSS, both live) declares the same list twice; "…" lists each action once.
+ */
+export function uniqueActions(actions: readonly FrameAction[]): FrameAction[] {
+  const seen = new Set<string>();
+  return actions.filter((a) => (seen.has(a.id) ? false : (seen.add(a.id), true)));
 }
 
 /** A template crumb (`Crumb` from the derived trail) as the frame's crumb data; classic-only drawing hints stay behind. */

@@ -28,28 +28,36 @@ interface FileReferenceCopyMenuItemProps extends ReferenceCopyMenuItemBase {
 export type ReferenceCopyMenuItemProps =
   RecordReferenceCopyMenuItemProps | FileReferenceCopyMenuItemProps;
 
+/**
+ * Copy a matrx reference fence and say so — the ONE copy the menu item and a frame "…" action
+ * (`useDeclareFrameActions`) both run. Answers whether it was copied.
+ */
+export async function copyReferenceWithToast(props: ReferenceCopyMenuItemProps): Promise<boolean> {
+  const fence =
+    props.kind === "file"
+      ? buildFileReferenceFence({
+          fileId: props.fileId,
+          label: props.label,
+        })
+      : buildRecordReferenceFence({
+          type: props.referenceType,
+          id: props.id,
+          label: props.label,
+        });
+  if (!(await copyReferenceFence(fence))) return false;
+  toast.success("Reference copied to clipboard", {
+    description: props.toastLabel,
+    duration: 2500,
+  });
+  props.onCopied?.();
+  return true;
+}
+
 /** Dropdown / action-sheet item — copies a matrx reference fence to clipboard. */
 export function ReferenceCopyMenuItem(props: ReferenceCopyMenuItemProps) {
   const handleSelect = async (e: Event) => {
     e.preventDefault();
-    const fence =
-      props.kind === "file"
-        ? buildFileReferenceFence({
-            fileId: props.fileId,
-            label: props.label,
-          })
-        : buildRecordReferenceFence({
-            type: props.referenceType,
-            id: props.id,
-            label: props.label,
-          });
-    if (await copyReferenceFence(fence)) {
-      toast.success("Reference copied to clipboard", {
-        description: props.toastLabel,
-        duration: 2500,
-      });
-      props.onCopied?.();
-    }
+    await copyReferenceWithToast(props);
   };
 
   return (

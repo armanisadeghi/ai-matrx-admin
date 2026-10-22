@@ -235,6 +235,15 @@ describe("pages add their own \"…\" items in the frame (adversarial review, 20
     expect(el.querySelector('[data-testid="page-header"] [aria-label="More"]')).toBeNull();
   });
 
+  it("a header mounted twice (compact + full layout, both live) lists each action ONCE in \"…\"", () => {
+    function Twice() {
+      page.useDeclareFrameActions([{ id: "agent:delete", label: "Delete", onSelect: () => {} }]);
+      return null;
+    }
+    mount(<ActionsHarness><Twice /><Twice /></ActionsHarness>);
+    expect(menuLabels()).toEqual(["Delete"]);
+  });
+
   it("classic: nothing is declared and the Actions menu stays on the line", () => {
     mount(<WithMenu />);
     const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;

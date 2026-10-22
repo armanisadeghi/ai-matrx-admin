@@ -52,6 +52,8 @@ import {
   Trash2,
   PackagePlus,
   Coins,
+  Bookmark,
+  type LucideIcon,
 } from "lucide-react";
 import { toast } from "@ai-matrx/chat/host/notify";
 import { cn } from "@ai-matrx/design-system";
@@ -72,7 +74,11 @@ import { Drawer, DrawerContent, DrawerTitle } from "@ai-matrx/design-system";
 import { MenuTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { ConversationCostMenuRow } from "@/features/admin/agent-spend/ConversationCost";
 import { useAgentDuplicateFlow } from "../../hooks/useAgentDuplicateFlow";
-import { ReferenceCopyMenuItem } from "@/features/matrx-envelope/components/ReferenceCopyMenuItem";
+import { ReferenceCopyMenuItem, copyReferenceWithToast } from "@/features/matrx-envelope/components/ReferenceCopyMenuItem";
+import { useDeclareFrameActions } from "@/features/shell/frame-host/framePageHeader";
+import type { FrameAction } from "@/features/shell/frame/types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
+import { useRouter } from "next/navigation";
 import { useAgentLifecycleActions } from "../../lifecycle/useAgentLifecycleActions";
 import { selectIsSuperAdmin } from "@ai-matrx/chat/host/identity";
 import { selectOrganizationId } from "@ai-matrx/chat/host/org";
@@ -92,7 +98,7 @@ const INTERFACE_VARIATIONS = [
 
 interface MenuItem {
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   soon?: boolean;
 }
 
@@ -435,6 +441,80 @@ export function AgentOptionsMenu({
     }
   };
 
+  // "…" HOLDS EVERY ACTION OF ITS LEVEL (Arman, 2026-10-22): in the new app frame this menu's
+  // items ARE the frame's "…" for the agent — one list, so the header never draws a second "…".
+  // Classic (no frame): nothing is declared and the menu below renders as before.
+  const router = useRouter();
+  const versionsHref = `${basePath}/${agentId}/latest?tab=history`;
+  const frameActions: FrameAction[] = [
+    {
+      id: "agent:copy-reference",
+      label: "Copy reference",
+      icon: Bookmark,
+      onSelect: () =>
+        void copyReferenceWithToast({
+          referenceType: "agent",
+          id: agentId,
+          label: agent?.name ?? undefined,
+          toastLabel: agent?.name ?? "Agent",
+        }),
+    },
+    ...THIS_AGENT_ITEMS.filter((item) => !item.soon).map(({ label, icon }) => ({
+      id: `agent:${label}`,
+      label,
+      icon,
+      disabled: label === "Refresh Server Cache" && isRefreshingCache,
+      onSelect: () => {
+        if (label === "View All Versions") router.push(versionsHref);
+        else if (label === "Drift Report") router.push("/reports/agent-drift");
+        else void handleDesktopItemClick(label);
+      },
+    })),
+    {
+      id: "agent:interface-variations",
+      label: "Interface variations",
+      icon: Layers,
+      onSelect: () => openInterfaceVariations({ agentId }),
+    },
+    ...NEW_TAB_ITEMS.map(({ label, icon, getHref }) => ({
+      id: `agent:new-tab:${label}`,
+      label: `${label} in new tab`,
+      icon,
+      onSelect: () => openOutbound(getHref(agentId, basePath), "_blank", "noopener"),
+    })),
+    ...[...managementItems, ...GLOBAL_AGENT_ITEMS, ...adminItems]
+      .filter((item) => !item.soon)
+      .map(({ label, icon }) => ({
+        id: `agent:${label}`,
+        label,
+        icon,
+        disabled:
+          (label === "Convert to Template" && isConverting) ||
+          (label === "Duplicate" && duplicateFlow.isDuplicating),
+        onSelect: () => void handleDesktopItemClick(label),
+      })),
+    ...(lifecycle.available
+      ? [
+          {
+            id: "agent:archive",
+            label: lifecycle.archiveLabel,
+            icon: lifecycle.isArchived ? ArchiveRestore : Archive,
+            disabled: lifecycle.isBusy,
+            onSelect: () => void lifecycle.toggleArchived(),
+          },
+          {
+            id: "agent:delete",
+            label: "Delete",
+            icon: Trash2,
+            destructive: true,
+            disabled: lifecycle.isBusy,
+            onSelect: () => void lifecycle.remove(),
+          },
+        ]
+      : []),
+  ];
+  const inFrame = useDeclareFrameActions(frameActions);
+
   const handleInterfaceVariationClick = () => {
     console.log(
       "[AGENT OPTIONS MENU] Handling interface variation click, Agent ID:",
@@ -450,6 +530,19 @@ export function AgentOptionsMenu({
   // the parent level so the dropdown / drawer that triggered the duplicate
   // can close cleanly without unmounting the in-flight dialog.
   const duplicateDialog = duplicateFlow.dialog;
+
+  if (inFrame) {
+    return (
+      <>
+        {isSuperAdmin && (
+          <ConversationCostMenuRow>
+            {({ label, open: openCost }) => <DeclareFrameAction id="agent:conversation-cost" label={label} icon={Coins} onSelect={openCost} />}
+          </ConversationCostMenuRow>
+        )}
+        {duplicateDialog}
+      </>
+    );
+  }
 
   if (isMobile) {
     return (
@@ -684,6 +777,12 @@ export function AgentOptionsMenu({
       {duplicateDialog}
     </>
   );
+}
+
+/** One "…" item that only exists while its render-prop host shows it (the admin conversation cost). */
+function DeclareFrameAction(action: FrameAction) {
+  useDeclareFrameActions([action]);
+  return null;
 }
 
 function MobileMenuContent({
