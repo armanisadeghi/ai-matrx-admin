@@ -833,15 +833,13 @@ function CreateCategoryRow({
         className="flex-1 min-w-0"
         autoFocus
       />
-      <Input mono
+      <Input mono data-identifier placeholder="category_key"
         value={key}
         onChange={(e) => {
           keyTouchedRef.current = true;
           setKey(e.target.value);
         }}
-        className="w-40 font-mono"
-        data-identifier
-        placeholder="category_key"
+        className="w-40"
       />
       {isAdmin && (
         <label className="inline-flex items-center gap-1 text-xs text-muted-foreground">

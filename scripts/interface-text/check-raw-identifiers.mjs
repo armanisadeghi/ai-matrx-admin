@@ -70,7 +70,7 @@ const CODE_VIEW = /<code\b|<kbd\b|<pre\b/;
  * input/textarea, a `{{token}}`, or an element that declares `data-identifier` (the `{{key}}` under
  * a variable's Name field).
  */
-const MONO = /font-mono/;
+const MONO = /font-mono|<\w+\s+mono\b/; // the design-system Input's `mono` prop is the same monospace
 const EDIT_CONTEXT = /<(?:input|Input|textarea|Textarea)\b|contentEditable|\{\{|\{"\{\{"\}|data-identifier/;
 
 /** Every rendered raw identifier in `src`, as `line-text` snippets (stable across line moves). */
@@ -140,6 +140,8 @@ function selfTest() {
     ["<li key={v.name}>Normal Text</li>", 0],
     ['<span className="truncate" title={x}>\n  {variable.name}\n</span>', 1],
     ['<Row label="Normal Text" />', 0],
+    ['<Input mono data-identifier placeholder="category_key" />', 0],
+    ['<Input placeholder="category_key" />', 1],
     ['<span className="x" >huge_context</span>', 1],
     ["<b>a; huge_context</b>", 1],
     ["<b>{items.map((x) => x.a_b)}</b>", 0],
