@@ -3,6 +3,7 @@ import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { notFound } from "next/navigation";
+import { NOT_EMBEDDED_FILTER } from "@/features/notes/service/embeddedNotes";
 import type { Note, NoteListItem } from "@/features/notes/types";
 
 // ── List seed (sidebar) ──────────────────────────────────────────────────────
@@ -24,6 +25,7 @@ export const getNoteListSeed = cache(async (): Promise<NoteListItem[]> => {
         )
         .eq("created_by", user.id)
         .is("deleted_at", null)
+        .or(NOT_EMBEDDED_FILTER)
         .order("updated_at", { ascending: false })
         .limit(100);
 

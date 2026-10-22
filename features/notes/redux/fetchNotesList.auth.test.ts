@@ -27,6 +27,7 @@ function notesQuery(result: { data: unknown[] | null; error: unknown }) {
     select: jest.fn(),
     eq: jest.fn(),
     is: jest.fn(),
+    or: jest.fn(),
     order: jest.fn(),
     range: jest.fn(async () => paged),
     // The list's one "Shown to" read (`platform.shown_to_context`) — no
@@ -37,6 +38,7 @@ function notesQuery(result: { data: unknown[] | null; error: unknown }) {
   chain.select.mockReturnValue(chain);
   chain.eq.mockReturnValue(chain);
   chain.is.mockReturnValue(chain);
+  chain.or.mockReturnValue(chain);
   chain.order.mockReturnValue(chain);
   return chain;
 }

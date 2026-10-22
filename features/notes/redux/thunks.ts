@@ -81,6 +81,7 @@ import {
   setNoteField,
 } from "./slice";
 import { defaultListFilter } from "@/lib/list-scope";
+import { excludeEmbeddedNotes } from "../service/embeddedNotes";
 import {
   assertCurrentNotesUser,
   dispatchNoteEvent,
@@ -205,7 +206,7 @@ export const fetchNotesList = createAsyncThunk<
                   { count: "exact" },
                 )
                 .is("deleted_at", null);
-              q = listScope.apply(q);
+              q = excludeEmbeddedNotes(listScope.apply(q));
               return q
                 .order("updated_at", { ascending: false })
                 .order("id", { ascending: true })

@@ -11,6 +11,7 @@
  */
 
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { withEmbeddedMarker } from "@/features/notes/service/embeddedNotes";
 import { createNote, fetchNotesByIds, updateNote } from "@/features/notes/service/notesService";
 import { STICKY_NOTES_TAG, type StickyNoteStore, stickyNoteLabel } from "../board/sticky-notes";
 
@@ -23,6 +24,7 @@ export function stickyNoteStore(boardOrganizationId: string | null): StickyNoteS
         content: text,
         tags: [STICKY_NOTES_TAG],
         organization_id,
+        metadata: withEmbeddedMarker(null, "board") as never,
       });
       return note.id;
     },
