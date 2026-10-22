@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0417",
-  "version": 6,
+  "version": 7,
   "title": "Interior Design Studio",
   "description": "For interior designers: projects by phase, furnishings orders, client approvals and fees.",
   "forWho": "Interior designers and design studios",
@@ -2995,7 +2995,7 @@
         "Wexcombe Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3516,14 +3516,53 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "phase"
+                "groupField": "phase",
+                "hiddenFields": [
+                  "markup",
+                  "designer",
+                  "client_total",
+                  "approved_total",
+                  "trade_total",
+                  "fees_billed",
+                  "fees_due",
+                  "open_approvals",
+                  "late_items",
+                  "item_btn",
+                  "approval_btn",
+                  "inv_btn",
+                  "concept_btn",
+                  "procure_btn",
+                  "done_btn",
+                  "budget",
+                  "design_fee"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "install_on"
+                "dateField": "install_on",
+                "hiddenFields": [
+                  "fee_type",
+                  "markup",
+                  "designer",
+                  "client_total",
+                  "approved_total",
+                  "trade_total",
+                  "fees_billed",
+                  "fees_due",
+                  "open_approvals",
+                  "late_items",
+                  "item_btn",
+                  "approval_btn",
+                  "inv_btn",
+                  "concept_btn",
+                  "procure_btn",
+                  "done_btn",
+                  "budget",
+                  "design_fee"
+                ]
               },
               {
                 "id": "vall",

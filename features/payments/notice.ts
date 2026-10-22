@@ -6,9 +6,9 @@ import "server-only";
 
 import { checkoutRefusal, verifiedReturn } from "./server";
 import type { PaymentNoticeProps } from "./PaymentNotice";
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : undefined);
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function paymentNoticeFor(
   subjectId: string,
@@ -20,7 +20,7 @@ export async function paymentNoticeFor(
   try {
     if (word === "refused") {
       const rec = one(query.rec);
-      if (!rec || !UUID.test(rec)) return { outcome: "refused", reason: "Try again later." };
+      if (!rec || !isUuidShape(rec)) return { outcome: "refused", reason: "Try again later." };
       const reason = await checkoutRefusal("form", subjectId, rec);
       if (reason === "This is already paid.") return { outcome: "paid" };
       return { outcome: "refused", reason, retry: { subjectId, recordId: rec, back } };

@@ -126,7 +126,11 @@ function FileTreeRowImpl(
           onToggle={() => {
             if (!row.empty) onChevronClick();
           }}
-          className={cn(row.empty && "opacity-30 cursor-default")}
+          // The 16px visual slot stays; an invisible 24x28 box around it is the click target.
+          className={cn(
+            "relative before:absolute before:-inset-x-1 before:-inset-y-1.5 before:content-['']",
+            row.empty && "opacity-30 cursor-default",
+          )}
         />
       ) : (
         <TreeDisclosure expandable={false} />

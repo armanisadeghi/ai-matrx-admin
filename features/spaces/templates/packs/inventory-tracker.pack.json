@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0307",
-  "version": 9,
+  "version": 10,
   "title": "Inventory Tracker",
   "description": "Small shops and makers: track stock, suppliers and orders so you reorder in time.",
   "forWho": "Small retailers, online shops and makers",
@@ -1853,7 +1853,7 @@
         "Brindle Lane"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1980,7 +1980,9 @@
                   "stock_status",
                   "stock_value",
                   "supplier",
-                  "updated_at"
+                  "updated_at",
+                  "unit_cost",
+                  "price"
                 ]
               }
             ],
@@ -2022,7 +2024,8 @@
                   "qty",
                   "total",
                   "created_at",
-                  "recv_btn"
+                  "recv_btn",
+                  "cost_each"
                 ]
               },
               {
@@ -2037,7 +2040,8 @@
                   "total",
                   "supplier",
                   "created_at",
-                  "recv_btn"
+                  "recv_btn",
+                  "cost_each"
                 ]
               },
               {
@@ -2143,7 +2147,8 @@
                   "revenue",
                   "ship_btn",
                   "deliv_btn",
-                  "created_at"
+                  "created_at",
+                  "unit_price"
                 ]
               },
               {
@@ -2157,7 +2162,8 @@
                   "revenue",
                   "ship_btn",
                   "deliv_btn",
-                  "created_at"
+                  "created_at",
+                  "unit_price"
                 ]
               },
               {

@@ -5,7 +5,7 @@
 // "Use template" makes a new board (duplicateBoard / the built-in's document) and opens it.
 
 import { Bookmark, LayoutTemplate } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { TemplateGalleryShell, type TemplateEntry } from "@/features/spaces/sidebar/TemplateGalleryShell";
@@ -19,8 +19,8 @@ import { isPackKey } from "./board-packs";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
-import { DesignBoardStartDialog } from "./design-start";
-import { stashBoardStart, type BoardStartChoice } from "./open-design-build";
+import { DesignBoardStartDialog, type DesignBoardProgress } from "./design-start";
+import { stashBoardStart, type BoardStartChoice } from "./board-start";
 
 export function BoardTemplateGallery({
   open,
@@ -67,6 +67,13 @@ export function BoardTemplateGallery({
   const [naming, setNaming] = useState(false);
   // A board that starts EMPTY opens on its two starts instead: Build with AI (default) or Start from a style.
   const [starting, setStarting] = useState(false);
+  // From the press until the new board is on screen, the start dialog shows the work in place.
+  const [building, setBuilding] = useState<(DesignBoardProgress & { href?: string }) | null>(null);
+  const pathname = usePathname();
+  if (building?.href && pathname === building.href.split("?")[0]) {
+    setBuilding(null);
+    setStarting(false);
+  }
   const use = async (name?: string, start?: BoardStartChoice) => {
     if (!current) return;
     if (name === undefined && isPackKey(current.key)) {
@@ -75,23 +82,33 @@ export function BoardTemplateGallery({
       return;
     }
     setUsing(true);
-    // The gallery may close under the start dialog: the work in progress stays said until the board opens.
-    const progress = start ? toast.loading(start.mode === "style" ? `Making ${name} from ${start.styleName}…` : `Making ${name}…`) : null;
+    if (start) setBuilding({ mode: start.mode, step: "board" });
     try {
       const styleTemplateId = start?.mode === "style" ? start.styleTemplateId : undefined;
-      const board = await makeBoardFromTemplate(current.key, organizationId, name?.trim() || templateBoardTitle(current.title), undefined, undefined, { dispatch, onStage: setStage, styleTemplateId });
-      if (start) stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai", brief: start.brief } : { mode: "style", styleName: start.styleName });
+      const onStage = (line: string | null) => {
+        setStage(line);
+        if (start) setBuilding((b) => (b && b.step === "board" ? { ...b, detail: line } : b));
+      };
+      const board = await makeBoardFromTemplate(current.key, organizationId, name?.trim() || templateBoardTitle(current.title), undefined, undefined, { dispatch, onStage, styleTemplateId });
+      const href = boardHref(board);
+      if (start) {
+        stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai", brief: start.brief } : { mode: "style", styleName: start.styleName });
+        setBuilding({ mode: start.mode, step: "start", href });
+        toast.dismiss();
+        onOpenChange(false);
+        router.push(href);
+        return;
+      }
       // A stale toast ("Saved as a template") must not sit over the new board; the new one carries Open
       // in case the navigation is slow or blocked.
       toast.dismiss();
       onOpenChange(false);
-      const href = boardHref(board);
       toast.success(`Made "${board.title}"`, { action: { label: "Open", onClick: () => openFromNotice(href) } });
       router.push(href);
     } catch (e) {
+      setBuilding(null);
       toast.error(isBoardError(e) ? e.message : e instanceof Error ? e.message : "The template could not be used. Try again.");
     } finally {
-      if (progress !== null) toast.dismiss(progress);
       setUsing(false);
       setStage(null);
     }
@@ -120,10 +137,8 @@ export function BoardTemplateGallery({
       onOpenChange={setStarting}
       packKey={current?.key ?? null}
       defaultName={current?.title ?? ""}
-      onStart={(choice) => {
-        setStarting(false);
-        void use(choice.name, choice);
-      }}
+      progress={building}
+      onStart={(choice) => void use(choice.name, choice)}
     />
     <TextInputDialog
       open={naming}

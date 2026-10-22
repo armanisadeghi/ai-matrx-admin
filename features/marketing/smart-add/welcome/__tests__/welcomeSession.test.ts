@@ -54,6 +54,15 @@ describe("sign-up welcome session", () => {
     expect(narrowAs("KGW-TV")).toEqual({ company: "KGW-TV" });
     expect(narrowAs("Smile Brands Inc.")).toEqual({ company: "Smile Brands Inc." });
     expect(narrowAs("acme.io")).toEqual({ company: "acme.io" });
+    // A state after a comma is a place, never the "Co" company word (Fort Collins, CO).
+    expect(narrowAs("Fort Collins, CO")).toEqual({ city: "Fort Collins, CO" });
+    expect(narrowAs("Flagstaff, AZ")).toEqual({ city: "Flagstaff, AZ" });
+    expect(narrowAs("Portland, Oregon")).toEqual({ city: "Portland, Oregon" });
+    expect(narrowAs("Denver")).toEqual({ city: "Denver" });
+    expect(narrowAs("Acme Co.")).toEqual({ company: "Acme Co." });
+    expect(narrowAs("Smith & Co")).toEqual({ company: "Smith & Co" });
+    expect(narrowAs("Smith and Co")).toEqual({ company: "Smith and Co" });
+    expect(narrowAs("Acme Inc, CO")).toEqual({ company: "Acme Inc, CO" });
   });
 
   it("paid cards never run for a free host, nor without the registry", () => {

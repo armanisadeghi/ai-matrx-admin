@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0574",
-  "version": 1,
+  "version": 2,
   "title": "Family Law Practice Desk",
   "description": "Divorce, custody and support matters with disclosures, court dates and retainers.",
   "forWho": "Family law firms and solo family lawyers",
@@ -495,7 +495,6 @@
             "agg": "sum",
             "filter": {
               "category": [
-                "Income",
                 "Bank and investment",
                 "Retirement",
                 "Real estate",
@@ -527,6 +526,21 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "{Assets disclosed (USD)} - {Debts disclosed (USD)}"
+          },
+          {
+            "key": "income",
+            "label": "Income disclosed (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "disclosures",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "category": "Income"
+            },
+            "unit": "USD",
+            "format": "currency"
           },
           {
             "key": "docs_out",
@@ -2477,7 +2491,7 @@
         "Juniper Ridge Avenue"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2574,6 +2588,39 @@
           ]
         },
         {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:court-calendar"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:parenting-plan"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "type": "heading",
           "text": [
             {
@@ -2635,7 +2682,8 @@
                   "take_btn",
                   "add_event",
                   "add_doc",
-                  "added_at"
+                  "added_at",
+                  "income"
                 ]
               },
               {
@@ -2703,7 +2751,8 @@
                   "client_billed",
                   "new_matter",
                   "mail_btn",
-                  "added_at"
+                  "added_at",
+                  "client_trust"
                 ]
               },
               {
@@ -3016,7 +3065,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The four tables"
+              "text": "How a matter moves"
             }
           ],
           "props": {
@@ -3075,7 +3124,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A normal week"
+              "text": "The firm's week"
             }
           ],
           "props": {
@@ -3126,7 +3175,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Who owns what"
+              "text": "Attorney, paralegal, front desk"
             }
           ],
           "props": {
@@ -3599,7 +3648,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How to read the numbers"
+              "text": "Reading the estate and the trust"
             }
           ],
           "props": {
@@ -3996,6 +4045,25 @@
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Income is for support, not the estate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pay stubs, tax returns and business profit are disclosed under Income. They never count toward the net marital estate, which is assets less debts. Income disclosed adds them up separately, for the child support and spousal support worksheets."
+            }
+          ]
         }
       ]
     },
@@ -4191,6 +4259,395 @@
           "text": [
             {
               "text": "The Brennan matter has 1,900 in trust and a 3,500 floor before a half-day mediation. Billing sends the letter on Friday asking for 3,000; the client pays Tuesday, the balance is updated, and Retainer check returns to OK."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "court-calendar",
+      "parent": "family-law-practice-desk",
+      "title": "Court calendar",
+      "icon": {
+        "emoji": "📅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every hearing, filing deadline and response date across the firm, in one place. A date is not calendared until it has an owner and the way it was counted."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event"
+            },
+            "inline": true,
+            "title": "Court dates and deadlines",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Calendar",
+                "layout": "calendar",
+                "dateField": "due_on",
+                "id": "event-calendar",
+                "icon": "Calendar",
+                "hiddenFields": [
+                  "status",
+                  "due_on",
+                  "done_on",
+                  "counted",
+                  "owner",
+                  "ev_done",
+                  "ev_take",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Next 30 days",
+                "layout": "grid",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To calendar",
+                    "Calendared",
+                    "Prepared"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "event-next-30-days",
+                "icon": "Table"
+              },
+              {
+                "name": "Hearings",
+                "layout": "list",
+                "anyOf": {
+                  "kind": [
+                    "Hearing",
+                    "Mediation session"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "event-hearings",
+                "icon": "List"
+              },
+              {
+                "name": "Not yet calendared",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "To calendar"
+                  ]
+                },
+                "id": "event-not-yet-calendared",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "event-calendar"
+          }
+        }
+      ]
+    },
+    {
+      "key": "parenting-plan",
+      "parent": "family-law-practice-desk",
+      "title": "Custody and the parenting plan",
+      "icon": {
+        "emoji": "🧸"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The parenting plan is the part of a divorce the client lives with longest. This is how we build one with the client, before mediation, so the schedule is the family's and not the court's default."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "Users"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First meeting about the children"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask how the week actually runs today: school, pick-ups, activities, who stays home when a child is sick."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask about safety first. If there is any history of violence or a protective order, the plan starts from safe exchanges, and the client's safety flag is set on the Clients table."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Children appear here only as a count on the matter; their names and details stay in the file."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pattern"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fits"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Alternating weeks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Older children, parents living close, low conflict"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2-2-3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Young children who should not go a week without either parent"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Every other weekend plus a midweek evening"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One parent's work or distance limits weekdays"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Long-distance: school year with one parent, summers with the other"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Parents in different cities"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What every plan answers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Regular schedule, and where and when exchanges happen."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Holidays, birthdays and school breaks, alternating by odd and even years."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Decision-making: school, health care, religion, activities."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Travel and relocation: notice needed and passports."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "How parents talk: one written channel, response times, no messages through the children."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "How disputes are settled before anyone goes back to court."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before mediation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client has written their preferred schedule and one fallback"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "School calendar for the next year attached to the matter"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Child expenses disclosed (child care, health insurance, activities)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Income disclosed for both sides, so the support figure is ready beside the schedule"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add a Court date for the first review if the order sets one, and a reminder at six months to ask the client how the schedule is holding up. A modification starts as its own matter."
             }
           ]
         }

@@ -7,6 +7,8 @@
  */
 
 import type { ItemBasicValues } from "./types";
+import { formatFileSize } from "@ai-matrx/kit/format";
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 export interface CardLine {
   /** Muted lead ("Due", "Priority"); null for an excerpt. */
@@ -22,7 +24,6 @@ const ENTITY_WORD = new Set([
   "task", "note", "meeting", "run", "chat", "conversation", "table", "record", "file", "doc", "document",
   "project", "post", "profile", "research", "room", "deck", "kit", "scope", "workflow", "page", "ad", "item",
 ]);
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ][\d:.]+(?:Z|[+-]\d{2}:?\d{2})?)?$/;
 const PROSE_CHARS = 48;
 const LINE_CHARS = 120;
@@ -41,18 +42,6 @@ function shortDate(iso: string): string | null {
   if (Number.isNaN(d.getTime())) return null;
   const sameYear = d.getFullYear() === new Date().getFullYear();
   return d.toLocaleDateString(undefined, sameYear ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" });
-}
-
-function bytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  const units = ["KB", "MB", "GB", "TB"];
-  let v = n / 1024;
-  let i = 0;
-  while (v >= 1024 && i < units.length - 1) {
-    v /= 1024;
-    i += 1;
-  }
-  return `${v < 10 ? v.toFixed(1) : Math.round(v)} ${units[i]}`;
 }
 
 /** The first readable line of prose: headings, markdown marks and blank lines dropped (a heading usually repeats the title). */
@@ -78,7 +67,7 @@ export function cardLinesFromBasics(values: ItemBasicValues | null | undefined, 
     if (!label) continue;
     if (typeof raw === "string") {
       const v = raw.trim();
-      if (!v || UUID.test(v) || /^https?:\/\//.test(v) || v.toLowerCase() === title) continue;
+      if (!v || isUuidShape(v) || /^https?:\/\//.test(v) || v.toLowerCase() === title) continue;
       if (ISO_DATE.test(v)) {
         const d = shortDate(v);
         if (d) facts.push({ label, value: d });
@@ -91,7 +80,7 @@ export function cardLinesFromBasics(values: ItemBasicValues | null | undefined, 
       }
       facts.push({ label, value: v });
     } else if (typeof raw === "number" && Number.isFinite(raw)) {
-      facts.push({ label, value: /_bytes$/i.test(key) ? bytes(raw) : raw.toLocaleString() });
+      facts.push({ label, value: /_bytes$/i.test(key) ? formatFileSize(raw) : raw.toLocaleString() });
     } else if (Array.isArray(raw) && raw.length > 0) {
       facts.push({ label, value: raw.length.toLocaleString() });
     }

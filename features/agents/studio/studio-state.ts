@@ -5,6 +5,7 @@
  */
 
 import type { FactoryBuildState } from "@/features/agents/factory/types";
+import { toast } from "@/lib/toast";
 
 export interface StudioState {
   mode: string | null;
@@ -99,6 +100,18 @@ export interface StudioCase {
 export const EXAMPLES_CASE_SOURCE = "studio.examples";
 
 /**
+ * The build's `sample_inputs` is JSON the Studio itself wrote; text that does not parse means the
+ * saved cases are gone from view. Say so (one toast, same id on every render) instead of showing
+ * "no cases" as if there were none.
+ */
+function sayCasesUnreadable(e: unknown): void {
+  toast.error("The saved example cases could not be read", {
+    id: "studio-sample-inputs-unreadable",
+    description: e instanceof Error ? e.message : String(e),
+  });
+}
+
+/**
  * The case the Studio sent the factory with the person's own answer as its baseline, read back
  * from the build's own record (`request.spec.sample_inputs`), never kept anywhere else:
  * mode 2's original request + approved answer (`CHAT_CASE_SOURCE`), or "From examples"'s first
@@ -113,7 +126,8 @@ export function studioCaseFromBuild(
   let cases: unknown;
   try {
     cases = JSON.parse(raw);
-  } catch {
+  } catch (e) {
+    sayCasesUnreadable(e);
     return null;
   }
   if (!Array.isArray(cases)) return null;
@@ -147,7 +161,8 @@ export function studioCasesFromBuild(state: FactoryBuildState | null | undefined
   let cases: unknown;
   try {
     cases = JSON.parse(raw);
-  } catch {
+  } catch (e) {
+    sayCasesUnreadable(e);
     return [];
   }
   if (!Array.isArray(cases)) return [];

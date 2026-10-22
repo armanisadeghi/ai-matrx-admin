@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0579",
-  "version": 1,
+  "version": 2,
   "title": "Data and AI Consultancy Desk",
   "description": "Data and AI engagements from discovery to handover, with deliverables, evals and margin.",
   "forWho": "Data, analytics and AI consultancies",
@@ -2054,7 +2054,7 @@
         "Foundry Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2144,6 +2144,39 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:handover-and-evals"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:delivery-board"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:scoping-a-proposal"
                   }
                 }
               ]
@@ -2273,7 +2306,8 @@
                   "live",
                   "new_eng",
                   "mail_btn",
-                  "added_at"
+                  "added_at",
+                  "lifetime"
                 ]
               },
               {
@@ -2509,7 +2543,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The four tables"
+              "text": "From first call to handover"
             }
           ],
           "props": {
@@ -2568,7 +2602,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A normal week"
+              "text": "A delivery week"
             }
           ],
           "props": {
@@ -2619,7 +2653,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Who owns what"
+              "text": "Partner, lead, consultants"
             }
           ],
           "props": {
@@ -3086,7 +3120,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How to read the numbers"
+              "text": "Reading delivery margin"
             }
           ],
           "props": {
@@ -3735,6 +3769,456 @@
               "text": "The service desk assistant pilot scored 78 percent against an 85 percent bar. Grouping failures showed most came from three outdated policy pages; once the client replaced them, the score rose to 84 and the next round targets the remaining phrasing gaps."
             }
           ]
+        }
+      ]
+    },
+    {
+      "key": "delivery-board",
+      "parent": "data-ai-consultancy-desk",
+      "title": "Delivery board",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "What each client is waiting for, and what they owe us a decision on. Review it on Monday before client calls."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deliverable"
+            },
+            "inline": true,
+            "title": "Deliverables",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Board",
+                "layout": "kanban",
+                "groupField": "status",
+                "id": "delive-board",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "due_on",
+                  "accepted_on",
+                  "eval_score",
+                  "acceptance",
+                  "owner",
+                  "ok_btn",
+                  "dlv_take",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Due in 14 days",
+                "layout": "grid",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "In progress",
+                    "Client review",
+                    "Rework"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "delive-due-in-14-days",
+                "icon": "Table"
+              },
+              {
+                "name": "With the client",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Client review"
+                  ]
+                },
+                "id": "delive-with-the-client",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "delive-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Time not yet billed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "time_entry"
+            },
+            "inline": true,
+            "title": "Time entries",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Unbilled",
+                "layout": "grid",
+                "anyOf": {
+                  "billing": [
+                    "Unbilled"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "worked_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "time_e-unbilled",
+                "icon": "Table"
+              },
+              {
+                "name": "Hours by billing",
+                "layout": "chart",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "billing",
+                  "op": "sum",
+                  "field": "hours"
+                },
+                "id": "time_e-hours-by-billing",
+                "icon": "ChartPie"
+              }
+            ],
+            "activeViewId": "time_e-unbilled"
+          }
+        }
+      ]
+    },
+    {
+      "key": "scoping-a-proposal",
+      "parent": "data-ai-consultancy-desk",
+      "title": "Scoping and pricing a proposal",
+      "icon": {
+        "emoji": "🧮"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most bad AI projects were badly scoped. A proposal names the decision the client wants to make better, the data that decision needs, and what done looks like before anyone writes a price."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Target"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions on the discovery call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What decision or task should get better, and who makes it today?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "How will you know it worked? A number, with today's value."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Where does the data live, who owns it, and can we see a sample this week?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Is there personal data? Who signs off on us touching it?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Who will run this after we leave?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shape of the proposal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Phase"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ends with"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Data audit, 2 to 3 weeks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fixed fee"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Audit report and gap map"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pilot, 4 to 8 weeks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fixed fee"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Evaluation score against the agreed number"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Go or no-go"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Included"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A written decision"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Production"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Time and materials or retainer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Runbook and handover"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Price each fixed phase from the hours you expect at cost rate, then add 40% to 60% for margin and risk. Write the hours down; the Time entries table will tell you later if you were right."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never price production before the pilot. Offer a range, and say the pilot sets it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the client has spreadsheets and exports only, add a week to the audit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Red flags"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "No named owner for the data, or no person who will run it afterwards."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Success described as we want AI."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A deadline set by a board meeting rather than by the work."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before it goes out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Accepted when written for every deliverable"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Data access and personal data questions answered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Second partner has read the price"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     }

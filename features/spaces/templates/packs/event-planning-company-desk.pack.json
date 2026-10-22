@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0462",
-  "version": 9,
+  "version": 10,
   "title": "Event Planning Company Desk",
   "description": "For event planners: clients, events, vendor contracts, deposits, budgets and timelines.",
   "forWho": "Event planners and event production companies",
@@ -2542,7 +2542,7 @@
         "Harbor Lantern Road"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2778,7 +2778,9 @@
                   "added_at",
                   "btn_wrap_up",
                   "add_booking",
-                  "add_task"
+                  "add_task",
+                  "budget",
+                  "planning_fee"
                 ]
               },
               {
@@ -2806,7 +2808,8 @@
                   "added_at",
                   "btn_wrap_up",
                   "add_booking",
-                  "add_task"
+                  "add_task",
+                  "budget"
                 ]
               },
               {
@@ -2983,7 +2986,9 @@
                   "event",
                   "vendor",
                   "btn_lock_in",
-                  "added_at"
+                  "added_at",
+                  "cost",
+                  "deposit"
                 ]
               },
               {
@@ -2998,7 +3003,9 @@
                   "event",
                   "vendor",
                   "btn_lock_in",
-                  "added_at"
+                  "added_at",
+                  "cost",
+                  "deposit"
                 ]
               },
               {

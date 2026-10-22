@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0572",
-  "version": 2,
+  "version": 3,
   "title": "Independent Pharmacy Desk",
   "description": "Run the fill queue, will-call bins, prior auths, med sync and drug stock for one store.",
   "forWho": "Independent and community pharmacies",
@@ -469,12 +469,21 @@
             "formula": "IF(OR({Status} = \"Returned to stock\", {Status} = \"Transferred out\"), \"\", IF({Patient copay (USD)} + {Plan paid (USD)} > 0, ROUND({Gross profit (USD)} / ({Patient copay (USD)} + {Plan paid (USD)}) * 100, 0), 0))"
           },
           {
+            "key": "drug_kind",
+            "label": "Drug type",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "drug",
+            "pick": "kind"
+          },
+          {
             "key": "margin_check",
             "label": "Margin check",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF(OR({Status} = \"Returned to stock\", {Status} = \"Transferred out\"), \"\", IF({Margin (%)} < 0, \"Below cost\", IF({Margin (%)} < 10, \"Thin, brand\", \"Healthy\")))"
+            "formula": "IF(OR({Status} = \"Returned to stock\", {Status} = \"Transferred out\"), \"\", IF({Margin (%)} < 0, \"Below cost\", IF({Drug type} = \"Brand\", IF({Margin (%)} < 10, \"Thin, brand\", \"Healthy\"), IF({Drug type} = \"Generic\", IF({Margin (%)} < 25, \"Thin, generic\", \"Healthy\"), IF({Margin (%)} < 15, \"Thin\", \"Healthy\")))))"
           },
           {
             "key": "assigned_to",
@@ -2721,7 +2730,7 @@
         "Quarry Hollow Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2811,6 +2820,39 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:rejects-and-prior-auths"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dispensing-line"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:controlled-counts"
                   }
                 }
               ]
@@ -3038,7 +3080,8 @@
                   "fills",
                   "add_rx",
                   "call_btn",
-                  "added_at"
+                  "added_at",
+                  "pt_gross"
                 ]
               },
               {
@@ -3100,7 +3143,8 @@
                   "fills_open",
                   "fills_done",
                   "order_btn",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
@@ -3263,7 +3307,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The four tables"
+              "text": "From script to bag"
             }
           ],
           "props": {
@@ -3322,7 +3366,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A normal day"
+              "text": "The counter's day"
             }
           ],
           "props": {
@@ -3373,7 +3417,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Who owns what"
+              "text": "Technician, pharmacist, buyer"
             }
           ],
           "props": {
@@ -3474,7 +3518,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Gross profit on a fill is the copay plus what the plan paid, less your acquisition cost. Generics usually earn most of the store's margin; brand fills often earn only a few dollars, which is why Thin, brand is a normal label and not an alarm. Below cost is the alarm: write down the plan and drug and raise it at the next contract review."
+              "text": "Gross profit on a fill is the copay plus what the plan paid, less your acquisition cost. Generics usually earn most of the store's margin; brand fills often earn only a few dollars, so a brand fill reads Thin, brand under 10% and that is normal, while a generic under 25% reads Thin, generic and is worth a look at the acquisition cost. Below cost is the alarm: write down the plan and drug and raise it at the next contract review."
             }
           ]
         }
@@ -3841,7 +3885,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How to read the numbers"
+              "text": "Reading the margin labels"
             }
           ],
           "props": {
@@ -4483,6 +4527,474 @@
               "text": "A semaglutide new start rejects with 75. The technician starts a prior auth, faxes the form with a note that the plan wants the latest A1c and weight, and sets Follow up on to tomorrow. The office sends notes that afternoon; the plan approves the next morning; Mark approved stamps the day and the pen is ordered for next-day delivery."
             }
           ]
+        }
+      ]
+    },
+    {
+      "key": "dispensing-line",
+      "parent": "independent-pharmacy-desk",
+      "title": "Dispensing line and tonight's order",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One screen per station. Intake works the New list, the technician works Filling, the pharmacist verifies before anything reaches will-call, and the buyer closes the day on the order list."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "rx"
+            },
+            "inline": true,
+            "title": "Prescriptions by station",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Intake",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "New"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "promised_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "rx-intake",
+                "icon": "List"
+              },
+              {
+                "name": "Waiting on a prior auth",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Needs prior auth"
+                  ]
+                },
+                "id": "rx-waiting-on-a-prior-auth",
+                "icon": "List"
+              },
+              {
+                "name": "Filling and verify",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Filling"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "promised_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "rx-filling-and-verify",
+                "icon": "List"
+              },
+              {
+                "name": "Will-call",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Ready for pickup"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "promised_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "rx-will-call",
+                "icon": "Table"
+              },
+              {
+                "name": "Controlled fills",
+                "layout": "grid",
+                "anyOf": {
+                  "schedule": [
+                    "C-II",
+                    "C-III to C-V"
+                  ]
+                },
+                "id": "rx-controlled-fills",
+                "icon": "Table"
+              },
+              {
+                "name": "Line by station",
+                "layout": "chart",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "status",
+                  "op": "count"
+                },
+                "id": "rx-line-by-station",
+                "icon": "ChartPie"
+              }
+            ],
+            "activeViewId": "rx-intake"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tonight's order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The wholesaler cutoff is the clock. Everything on this list is either at or under its reorder point, out, or short-dated and needing a swap."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "drug"
+            },
+            "inline": true,
+            "title": "Order list",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Order now",
+                "layout": "grid",
+                "anyOf": {
+                  "stock": [
+                    "Low",
+                    "Out of stock"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "on_hand",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "drug-order-now",
+                "icon": "Table"
+              },
+              {
+                "name": "Short-dated",
+                "layout": "grid",
+                "anyOf": {
+                  "stock": [
+                    "Short-dated"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "expires_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "drug-short-dated",
+                "icon": "Table"
+              },
+              {
+                "name": "Already ordered",
+                "layout": "list",
+                "anyOf": {
+                  "stock": [
+                    "On order"
+                  ]
+                },
+                "id": "drug-already-ordered",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "drug-order-now"
+          }
+        }
+      ]
+    },
+    {
+      "key": "controlled-counts",
+      "parent": "independent-pharmacy-desk",
+      "title": "Controlled-substance counts",
+      "icon": {
+        "emoji": "🔐"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Schedule II stock is counted, not estimated. This is the house routine for the perpetual count, the biennial inventory and what to do when the count is off. Your state board's rules win wherever they are stricter."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "ShieldAlert"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every C-II fill"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count twice, on a clean tray, and write the remaining count on the bottle's running log before the bottle goes back to the safe."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The pharmacist checks the count and initials it. Mark the prescription Controlled fills before it moves to Ready for pickup."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A partial fill is written as a partial, never rounded up; the patient gets a date for the rest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly spot count (Friday, 15 minutes)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick five C-II items, always including the two fastest movers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count on-hand and compare with the running log and with On hand in Drug inventory."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Any difference stops the count: recount with a second person, then check this week's fills, returns to stock and wholesaler receipts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the result on the drug's page: date, items, who counted, and the result."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The biennial inventory"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every two years, on one day, everything scheduled is counted: C-II exactly, C-III to C-V by estimate unless the bottle holds more than 1,000 units. Do it at opening or close, write which, and keep it with the store's records."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the count is off"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What you find"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Short by a few tablets"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Recount, check partial fills and returns; if still short, report to the pharmacist in charge the same day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "A pattern of small losses"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Treat it as theft until proven otherwise; review who had safe access"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "A lost or stolen order"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Report to the wholesaler and the authorities within the required window"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Over count"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Look for a fill entered but not dispensed; never just adjust the log"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "C-II receipts checked against the order the same day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Spot count written on each item's page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Safe keys signed for at open and close"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     }

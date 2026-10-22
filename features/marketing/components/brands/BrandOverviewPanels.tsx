@@ -49,7 +49,7 @@ import {
 import { Badge, Button, PropertyRow } from "@ai-matrx/design-system/controls";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ReadFailure, Skeleton } from "@ai-matrx/design-system";
-import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { InfoHint } from "@/components/official/InfoHint";
@@ -339,7 +339,7 @@ export function BrandOverviewKpis({
         title="Every Google Search click to the brand's websites over 28 days, as Search Console counts it. Google reports 2-3 days late."
         loading={trends.clicksLoading}
         read={trends.clicksError ? { status: "error", error: trends.clicksError } : null}
-        value={clicks?.hasData ? clicks.total.toLocaleString() : null}
+        value={clicks?.hasData ? formatCount(clicks.total) : null}
         trend={clicks?.trend}
         href={tabHref("web")}
         hint={settled(
@@ -379,7 +379,7 @@ export function BrandOverviewKpis({
         title="Rivals tracked for this brand: websites, social accounts and the brand's own list."
         loading={competitors.isLoading}
         read={competitors.isError ? { status: "error", error: competitors.error } : null}
-        value={rivals && rivals.length ? rivals.length.toLocaleString() : null}
+        value={rivals && rivals.length ? formatCount(rivals.length) : null}
         href={marketingRoutes.brandCompetitors(brandSeg)}
         hint={settled(
           competitors.isLoading,
@@ -396,12 +396,12 @@ export function BrandOverviewKpis({
         title="Products and services found for this brand."
         loading={offerings.isLoading}
         read={offerings.isError ? { status: "error", error: offerings.error } : null}
-        value={items && items.length ? items.length.toLocaleString() : null}
+        value={items && items.length ? formatCount(items.length) : null}
         href={marketingRoutes.brandOfferings(brandSeg)}
         hint={settled(
           offerings.isLoading,
           items && items.length ? (
-            `${confirmed.toLocaleString()} confirmed`
+            `${formatCount(confirmed)} confirmed`
           ) : (
             <HintDoor href={marketingRoutes.brandOfferings(brandSeg)}>Find them</HintDoor>
           ),

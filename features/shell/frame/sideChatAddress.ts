@@ -7,20 +7,20 @@
 // package's own answers. Everything else in the link (which conversation, agent, mode) is the
 // side chat's to read once it has loaded.
 
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 export const SIDE_CHAT_PARAM = "side_chat";
 export const SIDE_CHAT_AGENT_PARAM = "side_chat_agent";
 export const SIDE_CHAT_MODE_PARAM = "side_chat_mode";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** What the address says about the side chat: true open, false closed, null nothing. */
 export function sideChatOpenFromAddress(search: string): boolean | null {
   const params = new URLSearchParams(search);
   const agent = params.get(SIDE_CHAT_AGENT_PARAM);
   // A named agent opens the chat (the package warns and ignores a malformed one).
-  if (agent !== null && (UUID.test(agent) || /^mandate:[a-z0-9][a-z0-9_.:-]*$/i.test(agent))) return true;
+  if (agent !== null && (isUuidShape(agent) || /^mandate:[a-z0-9][a-z0-9_.:-]*$/i.test(agent))) return true;
   const chat = params.get(SIDE_CHAT_PARAM);
-  if (chat === "open" || chat === "new" || (chat !== null && UUID.test(chat))) return true;
+  if (chat === "open" || chat === "new" || (chat !== null && isUuidShape(chat))) return true;
   if (chat === "closed") return false;
   return null;
 }

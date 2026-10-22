@@ -1,3 +1,4 @@
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -164,7 +165,7 @@ export async function PATCH(request: Request) {
       // the tenant, so a person whose preferences already exist is never held
       // for a question that would not change anything.
       const actingOrganizationId =
-        request.headers.get("X-Organization-Id")?.trim() || undefined;
+        request.headers.get(MATRX_HEADERS.organization)?.trim() || undefined;
       const organizationId = await ensureOrgIdServer(
         supabase,
         actingOrganizationId,

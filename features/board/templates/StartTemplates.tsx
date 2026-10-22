@@ -5,7 +5,7 @@
 // and opens it (Use = duplicateBoard / the built-in's document), the same door as the gallery.
 
 import { LayoutTemplate } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -17,8 +17,8 @@ import { makeBoardFromTemplate, templateBoardTitle } from "./board-templates";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
 import { isPackKey, listBoardPacks } from "./board-packs";
 import { TextInputDialog } from "@ai-matrx/design-system";
-import { DesignBoardStartDialog } from "./design-start";
-import { stashBoardStart, type BoardStartChoice } from "./open-design-build";
+import { DesignBoardStartDialog, type DesignBoardProgress } from "./design-start";
+import { stashBoardStart, type BoardStartChoice } from "./board-start";
 
 /** Built-ins with the starter (when it names one) first. Exported for the test. */
 export function orderedStarters(starterKey: string | undefined) {
@@ -48,6 +48,13 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
   const [naming, setNaming] = useState<{ key: string; title: string } | null>(null);
   // A board that starts EMPTY opens on its two starts instead: Build with AI (default) or Start from a style.
   const [starting, setStarting] = useState<{ key: string; title: string } | null>(null);
+  // From the press until the new board is on screen, the start dialog shows the work in place.
+  const [building, setBuilding] = useState<(DesignBoardProgress & { href?: string }) | null>(null);
+  const pathname = usePathname();
+  if (building?.href && pathname === building.href.split("?")[0]) {
+    setBuilding(null);
+    setStarting(null);
+  }
   const use = async (key: string, title: string, name?: string, start?: BoardStartChoice) => {
     if (name === undefined && isPackKey(key)) {
       if (packs.find((p) => p.key === key)?.startsEmpty) setStarting({ key, title });
@@ -55,12 +62,19 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
       return;
     }
     setBusy(key);
+    if (start) setBuilding({ mode: start.mode, step: "board" });
     try {
       const styleTemplateId = start?.mode === "style" ? start.styleTemplateId : undefined;
-      const board = await makeBoardFromTemplate(key, organizationId, name?.trim() || templateBoardTitle(title), undefined, undefined, { dispatch, styleTemplateId });
-      if (start) stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai", brief: start.brief } : { mode: "style", styleName: start.styleName });
-      router.push(boardHref(board));
+      const onStage = start ? (line: string) => setBuilding((b) => (b && b.step === "board" ? { ...b, detail: line } : b)) : undefined;
+      const board = await makeBoardFromTemplate(key, organizationId, name?.trim() || templateBoardTitle(title), undefined, undefined, { dispatch, onStage, styleTemplateId });
+      const href = boardHref(board);
+      if (start) {
+        stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai", brief: start.brief } : { mode: "style", styleName: start.styleName });
+        setBuilding({ mode: start.mode, step: "start", href });
+      }
+      router.push(href);
     } catch (e) {
+      setBuilding(null);
       toast.error(isBoardError(e) ? e.message : e instanceof Error ? e.message : "The template could not be used. Try again.");
       setBusy(null);
     }
@@ -75,10 +89,9 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
         }}
         packKey={starting?.key ?? null}
         defaultName={starting?.title ?? ""}
+        progress={building}
         onStart={(choice) => {
-          const picked = starting;
-          setStarting(null);
-          if (picked) void use(picked.key, picked.title, choice.name, choice);
+          if (starting) void use(starting.key, starting.title, choice.name, choice);
         }}
       />
       <TextInputDialog

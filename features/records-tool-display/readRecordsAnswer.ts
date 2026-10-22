@@ -17,6 +17,7 @@
  * approval card for every tool before any renderer is asked (`heldWriteOf`).
  */
 
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 export interface AnswerRow {
   recordId: string | null;
   values: Record<string, unknown>;
@@ -98,7 +99,6 @@ function rowsOf(list: unknown, idKey: string, valuesKey: string): AnswerRow[] | 
   return rows;
 }
 
-const RUN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * A `notion_sync` / `data_sync` answer that names a background run: the start
@@ -111,7 +111,7 @@ function backgroundRunOf(result: Record<string, unknown>): Extract<RecordsAnswer
   if (action && action !== "notion_sync" && action !== "data_sync") return null;
   const report = obj(result.report) ?? (action ? null : result);
   const runId = str(report?.run_id);
-  if (!report || !runId || !RUN_ID.test(runId) || "error" in report) return null;
+  if (!report || !runId || !isUuidShape(runId) || "error" in report) return null;
   const started = report.background === true;
   const statusRead = typeof report.status === "string" && !started;
   if (!started && !statusRead) return null;

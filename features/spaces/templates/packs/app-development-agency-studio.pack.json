@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0563",
-  "version": 6,
+  "version": 7,
   "title": "App Development Agency Studio",
   "description": "App agency: projects, sprints, change requests, store releases, retainers and bugs.",
   "forWho": "App and software development agencies",
@@ -4064,7 +4064,7 @@
         "Cobbler Way"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -4363,7 +4363,8 @@
                   "add_milestone",
                   "add_bug",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "budget"
                 ]
               },
               {
@@ -4394,7 +4395,8 @@
                   "add_milestone",
                   "add_bug",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "budget"
                 ]
               },
               {

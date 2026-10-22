@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0500",
-  "version": 8,
+  "version": 9,
   "title": "HVAC Company HQ",
   "description": "For HVAC contractors: service calls, equipment at each home, maintenance plans, parts.",
   "forWho": "HVAC companies and heating and cooling contractors",
@@ -3089,7 +3089,7 @@
       ],
       "notes": "Equipment makes (Arcton, Polarline, Kestrel, Brightwater, Sorrel, Holbeck, Vireo, Wrenfield) are invented."
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3448,7 +3448,8 @@
                   "on_hand",
                   "reorder_at",
                   "stock_value",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
@@ -3665,7 +3666,8 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "visits_left",
-                  "added_at"
+                  "added_at",
+                  "price"
                 ]
               },
               {

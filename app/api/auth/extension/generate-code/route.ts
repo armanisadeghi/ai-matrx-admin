@@ -1,5 +1,6 @@
 // app/api/auth/extension/generate-code/route.ts
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json().catch(() => null)) as { organization_id?: unknown } | null;
     const bodyOrganizationId =
       typeof body?.organization_id === 'string' ? body.organization_id.trim() || undefined : undefined;
-    const headerOrganizationId = request.headers.get('X-Organization-Id')?.trim() || undefined;
+    const headerOrganizationId = request.headers.get(MATRX_HEADERS.organization)?.trim() || undefined;
     if (bodyOrganizationId && headerOrganizationId && bodyOrganizationId !== headerOrganizationId) {
       return NextResponse.json(
         { error: 'This request names two different organizations. Choose the one you are working in and try again.' },

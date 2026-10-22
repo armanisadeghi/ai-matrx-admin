@@ -37,3 +37,7 @@ export function formatEditorSurroundContext(
   const after = escapeXmlText(content.slice(end, Math.min(length, end + width))).replace(/^\n/, "");
   return `<TEXT_BEFORE>\n${before}\n</TEXT_BEFORE>\n<TEXT_AFTER>\n${after}\n</TEXT_AFTER>`;
 }
+
+export function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

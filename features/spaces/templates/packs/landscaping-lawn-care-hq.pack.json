@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0502",
-  "version": 8,
+  "version": 9,
   "title": "Landscaping and Lawn Care HQ",
   "description": "For lawn care and landscaping companies: weekly routes, projects, crews and billing.",
   "forWho": "Landscaping and lawn care companies",
@@ -2758,7 +2758,7 @@
         "Orchard Gate"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3118,7 +3118,8 @@
                   "on_hand",
                   "reorder_at",
                   "stock_value",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
@@ -3279,7 +3280,8 @@
                 "groupField": "route_day",
                 "hiddenFields": [
                   "status",
-                  "added_at"
+                  "added_at",
+                  "price_per_visit"
                 ]
               },
               {

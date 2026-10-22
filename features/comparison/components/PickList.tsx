@@ -7,6 +7,7 @@
  * the person adds the ones they mean, one tap each; "Add top N" is there when the search ranked them.
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { ExternalLink, Plus, Check, Star, X } from "lucide-react";
 import { Badge, Button, Chip, FieldHelp } from "@ai-matrx/design-system/controls";
 
@@ -88,7 +89,7 @@ export function PickList({ result, rows, onAdd, onClose }: {
                       <span className="type-meta inline-flex items-center gap-1 text-muted-foreground">
                         <Star className="h-3 w-3 fill-current text-warning" aria-hidden />
                         <span className="font-medium tabular-nums text-foreground">{m.rating.toFixed(1)}</span>
-                        {m.reviews_count !== null ? <span className="tabular-nums">({m.reviews_count.toLocaleString()})</span> : null}
+                        {m.reviews_count !== null ? <span className="tabular-nums">({formatCount(m.reviews_count)})</span> : null}
                         <span>· {RATING_SOURCE[result.kind] ?? "source"}</span>
                       </span>
                     ) : null}

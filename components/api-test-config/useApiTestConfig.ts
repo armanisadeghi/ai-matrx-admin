@@ -1,3 +1,4 @@
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "@/lib/toast";
@@ -184,7 +185,7 @@ export function useApiTestConfig(
   const authHeaders: Record<string, string> = {
     ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
     ...(authToken && organizationId
-      ? { "X-Organization-Id": organizationId }
+      ? { [MATRX_HEADERS.organization]: organizationId }
       : {}),
   };
 

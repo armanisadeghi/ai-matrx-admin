@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0573",
-  "version": 1,
+  "version": 2,
   "title": "Pediatric Practice Desk",
   "description": "Well-child visits, shot schedules, vaccine stock and families in one pediatric workspace.",
   "forWho": "Pediatric and family medicine practices caring for children",
@@ -2508,7 +2508,7 @@
         "Pecan Mill Drive"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2598,6 +2598,39 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:vaccine-fridge-and-catch-up"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:todays-clinic"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sick-visit-triage"
                   }
                 }
               ]
@@ -3050,7 +3083,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The four tables"
+              "text": "Front desk to fridge"
             }
           ],
           "props": {
@@ -3109,7 +3142,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A normal day"
+              "text": "A clinic day"
             }
           ],
           "props": {
@@ -3160,7 +3193,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Who owns what"
+              "text": "Front desk, nurses, providers"
             }
           ],
           "props": {
@@ -3639,7 +3672,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How to read the numbers"
+              "text": "What the numbers say about the panel"
             }
           ],
           "props": {
@@ -4312,6 +4345,438 @@
               "text": "Amira H. missed her flu shot and is behind on MMR. The nurse books a vaccine-only visit, uses state-supplied MMR because Amira is on CHIP, and gives the flu shot from private stock only because the state flu lot ran out, noting the swap for the monthly count."
             }
           ]
+        }
+      ]
+    },
+    {
+      "key": "todays-clinic",
+      "parent": "pediatric-practice-desk",
+      "title": "Today's clinic",
+      "icon": {
+        "emoji": "🩺"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The huddle screen. Open it at 7:45: who is coming, which children are owed a dose, which sick slots are still open."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "visit"
+            },
+            "inline": true,
+            "title": "Today",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Today",
+                "layout": "grid",
+                "within": {
+                  "visit_on": {
+                    "relative": "today"
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "visit_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "visit-today",
+                "icon": "Table"
+              },
+              {
+                "name": "By type",
+                "layout": "kanban",
+                "groupField": "visit_type",
+                "within": {
+                  "visit_on": {
+                    "relative": "today"
+                  }
+                },
+                "id": "visit-by-type",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "status",
+                  "visit_on",
+                  "completed_on",
+                  "screenings",
+                  "shots",
+                  "allowed",
+                  "copay",
+                  "ins_paid",
+                  "balance",
+                  "assigned_to",
+                  "in_btn",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Tomorrow",
+                "layout": "list",
+                "within": {
+                  "visit_on": {
+                    "relative": "tomorrow"
+                  }
+                },
+                "id": "visit-tomorrow",
+                "icon": "List"
+              },
+              {
+                "name": "Sick visits this week",
+                "layout": "list",
+                "within": {
+                  "visit_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "visit_type": [
+                    "Sick visit"
+                  ]
+                },
+                "id": "visit-sick-visits-this-week",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "visit-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Doses owed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "dose"
+            },
+            "inline": true,
+            "title": "Doses to give or chase",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Overdue",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Overdue"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "dose-overdue",
+                "icon": "Table"
+              },
+              {
+                "name": "Due",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Scheduled"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "dose-due",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "dose-overdue"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sick-visit-triage",
+      "parent": "pediatric-practice-desk",
+      "title": "Sick-visit phone triage",
+      "icon": {
+        "emoji": "☎️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most sick calls come before 9 am. The nurse on triage decides who comes in today, who can wait, and who goes to the emergency room now. These are our house rules, written with the medical director; the nurse's judgment always wins over this page."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "Phone"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Send to the emergency room or call 911"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Struggling to breathe, blue lips, or a long pause in breathing."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Any fever in a baby under three months."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Will not wake, will not stop crying, or a seizure."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "No wet diaper in eight hours with vomiting, or a stiff neck with fever."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Book today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fever over three days, ear pain with fever, a sore throat with no cough, a rash with fever, or a parent who says the child is not acting right."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Book in the sick slots first (two per provider each morning and afternoon). Book the visit as Sick visit so the Today screen shows it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Home care with a call back"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A cold without fever, mild vomiting with good drinking, a fever under three days in a child who is playing."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell the parent exactly what would change the plan, and when to call back. Write it on the child's page with the time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The call itself"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm the child, date of birth and the guardian on the chart before any advice."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask age, temperature and how it was taken, how long, drinking and wet diapers, breathing, and behavior."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Decide, say the plan back, and ask the parent to repeat it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the note before the next call: who called, what was said, what you advised."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After hours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The answering service takes the call and pages the on-call provider. Every after-hours call is reviewed at the morning huddle, and any child told to come in gets a Sick visit row before 8 am."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Call"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Usual answer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fever 101 F, age 2, playing, drinking"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Home care, call back if over 3 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fever 100.6 F, age 6 weeks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Emergency room now"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ear pain and fever, age 4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Book today"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rash that does not fade when pressed, with fever"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Emergency room now"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         }
       ]
     }

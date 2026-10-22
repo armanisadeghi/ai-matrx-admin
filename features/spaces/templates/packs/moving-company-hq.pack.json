@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0508",
-  "version": 8,
+  "version": 9,
   "title": "Moving Company HQ",
   "description": "For local movers: surveys, hourly quotes, crews and trucks, move day, damage claims.",
   "forWho": "Local moving companies",
@@ -2738,7 +2738,7 @@
         "Depot Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3104,7 +3104,8 @@
                   "on_hand",
                   "reorder_at",
                   "stock_value",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
@@ -3265,7 +3266,9 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "note",
-                  "added_at"
+                  "added_at",
+                  "claimed",
+                  "settled"
                 ]
               },
               {

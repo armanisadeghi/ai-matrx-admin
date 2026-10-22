@@ -16,6 +16,7 @@
 //
 // Plain erasable TypeScript with no imports, so Node scripts can import it directly.
 
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 export const MATRX_TEST_RUN = {
   /** Request header PostgREST and the Python server read. */
   header: "X-Matrx-Test-Run",
@@ -27,11 +28,10 @@ export const MATRX_TEST_RUN = {
   cookieMaxAgeSeconds: 60 * 60 * 24,
 } as const;
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** True for a well-formed run id (a uuid). Anything else is ignored, never sent. */
 export function isTestRunId(value: string | null | undefined): value is string {
-  return typeof value === "string" && UUID.test(value.trim());
+  return typeof value === "string" && isUuidShape(value.trim());
 }
 
 /** Reads the run id from a `Cookie` header string (no framework needed). */

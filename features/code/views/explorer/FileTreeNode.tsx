@@ -624,8 +624,8 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
        *  expect. */}
       {isDir && expanded && pendingCreate && (
         <div
-          className="flex items-center gap-1 text-[13px]"
-          style={childIndentStyle}
+          className="flex items-center gap-1 text-[13px] max-lg:h-11"
+          style={{ ...childIndentStyle, minHeight: TREE_ROW_HEIGHT.compact }}
         >
           <TreeDisclosure expandable={false} />
           {pendingCreate.kind === "directory" ? (

@@ -65,6 +65,17 @@ export function PlatformDirectiveSubscriber() {
             `no web consumer of app_config is registered in this client.`,
         );
       }),
+      registerDirectiveHandler("catalog_changed", (payload) => {
+        // The web's model lists read through their own loaders on open; the
+        // desktop client (Matrx 2) is this directive's consumer. Logged so it
+        // is visibly received, never silently dropped.
+        console.info(
+          `[client-directives] catalog_changed (${payload.catalog}` +
+            `${payload.change ? ` ${payload.change}` : ""}` +
+            `${payload.model_id ? ` ${payload.model_id}` : ""}) received; ` +
+            `no web consumer of the model catalog is registered in this client.`,
+        );
+      }),
       registerDirectiveHandler("refresh_required", (payload) => {
         // ASK, never act. The consent toast owns the decision.
         notifyRefreshRequired({

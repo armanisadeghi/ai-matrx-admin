@@ -58,13 +58,14 @@
 // exercising these paths. Requiring the organization is a change to code nobody has
 // run, not an outage.
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 
 /** The column that carries a billing row's owner, on whichever side of REC-62 we are. */
 export type BillingOwnerColumn = "organization_id" | "user_id";
 
 /** The header a client sends the organization it is acting in. */
-export const ORGANIZATION_HEADER = "X-Organization-Id";
+export const ORGANIZATION_HEADER = MATRX_HEADERS.organization;
 
 /**
  * How long a shape answer is trusted. Short because the shape changes exactly once,

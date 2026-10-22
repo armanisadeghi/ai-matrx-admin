@@ -32,6 +32,7 @@ import { postNdjson } from "@/lib/python-client";
 import { createClient } from "@/utils/supabase/client";
 
 import { useSpaces } from "../state/SpacesProvider";
+import { countedKind } from "./countedKind";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { openOutbound } from "@ai-matrx/kit/outbound";
@@ -313,9 +314,7 @@ function Report({ report, onOpen, onOpenTable }: { report: Finished; onOpen: (sp
         <h3 className="type-label">Came over</h3>
         <ul className="type-secondary">
           {came.map(([kind, n]) => (
-            <li key={kind}>
-              {n} {kind}
-            </li>
+            <li key={kind}>{countedKind(n, kind)}</li>
           ))}
         </ul>
       </section>

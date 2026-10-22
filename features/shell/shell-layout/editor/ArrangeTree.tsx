@@ -41,7 +41,7 @@ import {
   cn,
 } from "@ai-matrx/design-system";
 import { Button, Field } from "@ai-matrx/design-system/controls";
-import { TREE_INDENT_PX, TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
+import { TREE_INDENT_PX, TreeDisclosure } from "@/components/official/topic-tree/geometry";
 import ShellIcon from "@/features/shell/components/ShellIcon";
 import { getCatalogEntry } from "../catalog";
 import type { ShellNode } from "../contract";
@@ -197,10 +197,9 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
           drag.setNodeRef(el);
         }}
         className={cn(
-          "group relative flex min-h-9 items-center gap-1 rounded-md pr-1 hover:bg-accent",
+          "group relative flex min-h-9 items-center gap-1 rounded-md pl-1 pr-1 hover:bg-accent",
           mark === "inside" && "bg-accent ring-1 ring-primary",
         )}
-        style={treeIndentStyle(depth - 1)}
         data-layout-row={node.id}
       >
         {mark === "before" ? <span className="pointer-events-none absolute inset-x-1 top-0 h-0.5 rounded bg-primary" /> : null}
@@ -214,6 +213,8 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
         >
           <GripVertical className="h-4 w-4" aria-hidden />
         </span>
+        {/* The grip is a fixed left gutter (one column down the tree); depth indents everything after it. */}
+        <span aria-hidden="true" className="shrink-0" style={{ width: (depth - 1) * TREE_INDENT_PX }} />
         <TreeDisclosure expandable={hasChildren} expanded={open} onToggle={() => onToggle(node.id)} label={label} />
         <IconPicker value={icon} onChange={(next) => onChange(updateNode(all, node.id, { icon: next }))} />
         {renaming ? (
@@ -300,8 +301,10 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
         </ul>
       ) : null}
       {node.kind === "group" && children?.length === 0 ? (
-        <p className="type-body flex items-center gap-1 py-1 text-muted-foreground" style={treeIndentStyle(depth)}>
+        // Mirrors a child row's slots (pl-1, grip gutter, depth spacer, disclosure) so the text sits where a child's would.
+        <p className="type-body flex items-center gap-1 py-1 pl-1 text-muted-foreground">
           <span aria-hidden="true" className="w-5 shrink-0" />
+          <span aria-hidden="true" className="shrink-0" style={{ width: depth * TREE_INDENT_PX }} />
           <TreeDisclosure expandable={false} />
           Drop rows here
         </p>

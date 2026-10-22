@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0453",
-  "version": 8,
+  "version": 9,
   "title": "PR Agency Desk",
   "description": "For PR agencies: client retainers, campaigns, a media list, pitches and earned coverage.",
   "forWho": "Public relations and communications agencies",
@@ -2545,7 +2545,7 @@
         "Candlewick Court"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2701,7 +2701,8 @@
                   "owner_me",
                   "added_at",
                   "add_campaign",
-                  "btn_mail"
+                  "btn_mail",
+                  "retainer"
                 ]
               },
               {

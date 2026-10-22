@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0402",
-  "version": 7,
+  "version": 8,
   "title": "Chiropractic Office",
   "description": "For chiropractors: new-patient calls, care plans, prepaid visits, re-exams and the desk.",
   "forWho": "Chiropractors and chiropractic front desks",
@@ -2179,7 +2179,7 @@
         "Pecan Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2700,7 +2700,9 @@
                   "visits_left",
                   "owed",
                   "pkg_visit_btn",
-                  "used_btn"
+                  "used_btn",
+                  "price",
+                  "paid"
                 ]
               },
               {
@@ -2715,7 +2717,9 @@
                   "visits_left",
                   "owed",
                   "pkg_visit_btn",
-                  "used_btn"
+                  "used_btn",
+                  "price",
+                  "paid"
                 ]
               },
               {

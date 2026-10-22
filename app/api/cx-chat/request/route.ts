@@ -1,3 +1,4 @@
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import {
@@ -85,7 +86,7 @@ export async function POST(request: Request) {
         // 🚨 THE CONVERSATION IS FILED IN THE ORGANIZATION THE CALLER IS
         // ACTING IN — `createCxConversation` used to resolve the session's
         // PERSONAL organization when nobody named one.
-        const organizationId = request.headers.get('X-Organization-Id')?.trim() ?? '';
+        const organizationId = request.headers.get(MATRX_HEADERS.organization)?.trim() ?? '';
         if (organizationId.length === 0) {
             return NextResponse.json(
                 {

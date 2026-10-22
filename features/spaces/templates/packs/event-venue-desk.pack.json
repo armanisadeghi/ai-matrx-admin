@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0466",
-  "version": 8,
+  "version": 9,
   "title": "Event Venue Desk",
   "description": "For venue managers: tours, date holds, contracts, deposits, floor plans and event days.",
   "forWho": "Event venues, halls and barn and loft rental spaces",
@@ -2587,7 +2587,7 @@
         "Weir Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2746,7 +2746,9 @@
                   "bookings_count",
                   "nights_held",
                   "upcoming",
-                  "added_at"
+                  "added_at",
+                  "day_rate",
+                  "booked_revenue"
                 ]
               },
               {

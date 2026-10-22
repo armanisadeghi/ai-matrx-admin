@@ -1,5 +1,6 @@
 "use client";
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SubscriptionControls } from "@/features/pricing/components/SubscriptionControls";
@@ -158,7 +159,7 @@ export function BillingSummary({ scope, effectivePlan }: { scope: BillingScope; 
       return;
     let live = true;
     const headers = new Headers({ "Content-Type": "application/json" });
-    if (organizationId) headers.set("X-Organization-Id", organizationId);
+    if (organizationId) headers.set(MATRX_HEADERS.organization, organizationId);
     void fetch("/api/stripe/billing-summary", {
       method: "POST",
       headers,

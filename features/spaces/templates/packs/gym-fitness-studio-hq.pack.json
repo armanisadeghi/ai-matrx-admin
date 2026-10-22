@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0509",
-  "version": 9,
+  "version": 10,
   "title": "Gym and Fitness Studio HQ",
   "description": "For gyms: memberships, freezes, class capacity, PT packages, failed dues.",
   "forWho": "Gyms and boutique fitness studios",
@@ -1981,7 +1981,8 @@
               "staff": "tm-3",
               "when_on": "@today-12d",
               "completed_on": "@today-12d",
-              "visit_type": "PT session"
+              "visit_type": "PT session",
+              "mine": "@installer"
             }
           },
           {
@@ -1994,7 +1995,8 @@
               "staff": "tm-3",
               "when_on": "@today-9d",
               "completed_on": "@today-9d",
-              "visit_type": "PT session"
+              "visit_type": "PT session",
+              "mine": "@installer"
             }
           },
           {
@@ -2006,7 +2008,8 @@
               "staff": "tm-6",
               "when_on": "@today-7w",
               "completed_on": "@today-7w",
-              "visit_type": "Orientation"
+              "visit_type": "Orientation",
+              "mine": "@installer"
             }
           },
           {
@@ -3617,7 +3620,7 @@
         "Mercer Street"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -4294,7 +4297,9 @@
                   "includes",
                   "on_plan",
                   "frozen_n",
-                  "added_at"
+                  "added_at",
+                  "price",
+                  "joining_fee"
                 ]
               },
               {

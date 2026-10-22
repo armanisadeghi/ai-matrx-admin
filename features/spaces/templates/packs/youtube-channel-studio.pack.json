@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0580",
-  "version": 1,
+  "version": 2,
   "title": "YouTube Channel Studio",
   "description": "Run a channel like a studio: videos from idea to upload, sponsors, shoots and payouts.",
   "forWho": "YouTube creators and small channel teams",
@@ -286,7 +286,7 @@
         "Fernhollow Road"
       ]
     },
-    "version": 1,
+    "version": 2,
     "tables": [
       {
         "token": "sponsor",
@@ -1465,7 +1465,8 @@
               "editor": "tm-2",
               "publish_on": "@today+1d",
               "length_min": 22,
-              "thumb_ok": true
+              "thumb_ok": true,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1479,7 +1480,8 @@
               "editor": "tm-2",
               "publish_on": "@today",
               "length_min": 19,
-              "thumb_ok": false
+              "thumb_ok": false,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1494,7 +1496,8 @@
               "editor": "tm-2",
               "publish_on": "@today+6d",
               "length_min": 21,
-              "thumb_ok": false
+              "thumb_ok": false,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2588,6 +2591,39 @@
           ]
         },
         {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:publishing-calendar"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:shoot-day"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "type": "page",
           "props": {
             "spaceId": "page:sponsor-reads"
@@ -2643,7 +2679,8 @@
                   "paid_btn",
                   "mail_btn",
                   "add_video_btn",
-                  "added_at"
+                  "added_at",
+                  "fee"
                 ]
               },
               {
@@ -3469,7 +3506,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Past their publish date"
+              "text": "Late uploads"
             }
           ],
           "props": {
@@ -3518,7 +3555,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Going live this week"
+              "text": "Publishing this week"
             }
           ],
           "props": {
@@ -3567,7 +3604,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "My videos"
+              "text": "On my desk"
             }
           ],
           "props": {
@@ -4219,6 +4256,462 @@
           "text": [
             {
               "text": "A dedicated video usually shows a lower CPM than a read, because the whole video is theirs; price it at two to three times a read."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "publishing-calendar",
+      "parent": "youtube-channel-studio",
+      "title": "Publishing calendar",
+      "icon": {
+        "emoji": "📆"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The upload plan for the next eight weeks, with every video placed on its publish date and the pipeline beside it. A gap on the calendar is a gap in the channel."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "video"
+            },
+            "inline": true,
+            "title": "Videos",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Calendar",
+                "layout": "calendar",
+                "dateField": "publish_on",
+                "id": "video-calendar",
+                "icon": "Calendar",
+                "hiddenFields": [
+                  "status",
+                  "shoot",
+                  "sponsor",
+                  "editor",
+                  "publish_on",
+                  "published_on",
+                  "length_min",
+                  "views_28d",
+                  "ctr",
+                  "avg_view_pct",
+                  "ad_revenue",
+                  "video_url",
+                  "thumb_ok",
+                  "rpm",
+                  "packaging",
+                  "assigned_to",
+                  "pub_btn",
+                  "take_btn",
+                  "watch_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Pipeline",
+                "layout": "kanban",
+                "groupField": "status",
+                "id": "video-pipeline",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "shoot",
+                  "sponsor",
+                  "editor",
+                  "publish_on",
+                  "published_on",
+                  "length_min",
+                  "views_28d",
+                  "ctr",
+                  "avg_view_pct",
+                  "ad_revenue",
+                  "video_url",
+                  "thumb_ok",
+                  "rpm",
+                  "packaging",
+                  "assigned_to",
+                  "pub_btn",
+                  "take_btn",
+                  "watch_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Next 30 days",
+                "layout": "grid",
+                "within": {
+                  "publish_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "publish_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "video-next-30-days",
+                "icon": "Table"
+              },
+              {
+                "name": "By series",
+                "layout": "chart",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "series",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "video-by-series",
+                "icon": "ChartPie"
+              }
+            ],
+            "activeViewId": "video-calendar"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shoot days ahead"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shoot_day"
+            },
+            "inline": true,
+            "title": "Shoot days",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Coming up",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "shoot_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "shoot_-coming-up",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "shoot_-coming-up"
+          }
+        }
+      ]
+    },
+    {
+      "key": "shoot-day",
+      "parent": "youtube-channel-studio",
+      "title": "Running a shoot day",
+      "icon": {
+        "emoji": "🎬"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A shoot day is the most expensive day of the month. Batch two or three videos per day, plan the shot list the week before, and wrap with every card backed up twice."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Clapperboard"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every video on the day has a finished script or a beat sheet, and is linked to the shoot day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write the shot list per video: the A-roll talking parts, the B-roll close-ups, and the one hero shot for the thumbnail."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Build materials and tools are bought and on the bench. A missing part stops a shop build cold."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Order of the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Light and sound check first, 20 minutes, with a test clip played back on a laptop, not the camera screen."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Shoot the thumbnail hero shot while the set is clean."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A-roll for every video while your energy is up; B-roll after lunch."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Slate every take with the video's title; the editor will thank you."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Shorts last: pull two vertical moments from the day's best work."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Wrap"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cards copied to the editing drive and to the backup drive before they are formatted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Footage folder named with the shoot date and video titles"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Shoot day marked Wrapped; videos moved to Editing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Receipts for materials attached to the shoot day's page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Planning numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Video"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shoot time"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Edit time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Long-form shop build"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4 to 6 hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "10 to 14 hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tool test"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "5 hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Beginner basics"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 to 2 hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4 hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Short"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "15 minutes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 hour"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If the edit queue is more than two weeks long, skip the next shoot and help the editor catch up. Footage nobody can publish is not a buffer."
             }
           ]
         }

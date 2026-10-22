@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0415",
-  "version": 7,
+  "version": 8,
   "title": "Short-Term Rental Host",
   "description": "For vacation rental hosts: bookings, cleanings, guest messages, repairs and payouts.",
   "forWho": "Vacation rental hosts and co-hosts with a few homes",
@@ -2332,7 +2332,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2896,7 +2896,18 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "min_nights",
+                  "cleaner",
+                  "stays",
+                  "revenue",
+                  "booking_btn",
+                  "issue_btn",
+                  "pause_btn",
+                  "live_btn",
+                  "nightly"
+                ]
               },
               {
                 "id": "vall",

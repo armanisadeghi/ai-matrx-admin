@@ -310,12 +310,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
+  height: 28px;
   margin: 0 8px;
   padding-right: 4px;
   border-radius: 6px;
   color: var(--spaces-ink-soft);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   outline: none;
 }
@@ -355,56 +355,6 @@
 .spaces-root-drop[data-drop]::after {
   top: 2px;
 }
-.spaces-row-icon {
-  position: relative;
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-}
-.spaces-row-glyph {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 100ms ease;
-}
-/* Notion's tree disclosure: the chevron takes the page icon's own 22px slot while the row is
-   hovered or focused, so every title starts on the same line and nothing shifts. */
-.spaces-row-chevron {
-  position: absolute;
-  inset: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  color: var(--spaces-ink-soft);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 100ms ease, background-color 100ms ease;
-}
-.spaces-row-chevron > svg {
-  transition: transform 150ms ease;
-}
-.spaces-row-chevron[data-open] > svg {
-  transform: rotate(90deg);
-}
-.spaces-row-chevron:hover {
-  background: var(--spaces-hover-strong);
-  color: var(--spaces-ink);
-}
-.spaces-row:hover .spaces-row-chevron,
-.spaces-row:focus-visible .spaces-row-chevron,
-.spaces-row-chevron:focus-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-.spaces-row:hover .spaces-row-glyph,
-.spaces-row:focus-visible .spaces-row-glyph,
-.spaces-row:has(.spaces-row-chevron:focus-visible) .spaces-row-glyph {
-  opacity: 0;
-}
 /* The row's real link: it fills the row under the icon, title and buttons, which let the pointer through
    except the buttons (the chevron and the actions stay pressable). */
 .spaces-row-link {
@@ -412,7 +362,6 @@
   inset: 0;
   border-radius: 6px;
 }
-.spaces-row-icon,
 .spaces-row-title {
   position: relative;
   z-index: 1;
@@ -459,7 +408,7 @@
   height: 28px;
   margin: 0 8px;
   color: hsl(var(--muted-foreground) / 0.8);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 28px;
 }
 .spaces-trash-row {

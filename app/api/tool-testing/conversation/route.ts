@@ -18,6 +18,7 @@
  * `created_by` + the org).
  */
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireEnv } from "@/utils/supabase/env";
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
     // the insert runs on their own RLS-scoped client, so a header naming an
     // organization they are not in fails the policy.
     // common-docs/policies/context-is-carried-never-rebuilt.md rule 4.
-    const organizationId = request.headers.get("X-Organization-Id")?.trim() ?? "";
+    const organizationId = request.headers.get(MATRX_HEADERS.organization)?.trim() ?? "";
     if (organizationId.length === 0) {
       return NextResponse.json(
         {

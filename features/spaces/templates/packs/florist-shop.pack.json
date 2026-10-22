@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0584",
-  "version": 1,
+  "version": 2,
   "title": "Florist Shop",
   "description": "Daily orders and deliveries, wedding and event proposals, and the stem cooler.",
   "forWho": "Flower shops and event florists",
@@ -248,7 +248,7 @@
         "Bellwether Lane"
       ]
     },
-    "version": 1,
+    "version": 2,
     "tables": [
       {
         "token": "client",
@@ -1105,7 +1105,8 @@
               "deliver_on": "@today 16:30",
               "price": 65,
               "flower_cost": 20,
-              "delivery_fee": 0
+              "delivery_fee": 0,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1123,7 +1124,8 @@
               "price": 120,
               "flower_cost": 37,
               "delivery_fee": 12,
-              "driver": "tm-4"
+              "driver": "tm-4",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1140,7 +1142,8 @@
               "price": 95,
               "flower_cost": 29,
               "delivery_fee": 18,
-              "driver": "tm-4"
+              "driver": "tm-4",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2424,6 +2427,39 @@
           ]
         },
         {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:delivery-run"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sympathy-orders"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "type": "page",
           "props": {
             "spaceId": "page:wedding-flow"
@@ -2687,7 +2723,8 @@
                   "balance",
                   "cost_pct",
                   "book_btn",
-                  "added_at"
+                  "added_at",
+                  "proposal_total"
                 ]
               },
               {
@@ -2709,7 +2746,8 @@
                   "balance",
                   "cost_pct",
                   "book_btn",
-                  "added_at"
+                  "added_at",
+                  "proposal_total"
                 ]
               },
               {
@@ -2793,7 +2831,8 @@
                   "vase_life",
                   "retail_each",
                   "reorder",
-                  "added_at"
+                  "added_at",
+                  "stem_cost"
                 ]
               },
               {
@@ -3232,7 +3271,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "My designs"
+              "text": "On my bench"
             }
           ],
           "props": {
@@ -3962,6 +4001,445 @@
                 ]
               }
             ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "delivery-run",
+      "parent": "florist-shop",
+      "title": "Delivery run",
+      "icon": {
+        "emoji": "🚐"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Load the van by zone. Zone 1 goes out first at 10 am, Zone 3 after lunch; sympathy work for a service goes on whatever run reaches the chapel an hour early."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order"
+            },
+            "inline": true,
+            "title": "Orders out today",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "By zone",
+                "layout": "kanban",
+                "groupField": "zone",
+                "within": {
+                  "deliver_on": {
+                    "relative": "today"
+                  }
+                },
+                "id": "order-by-zone",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "client",
+                  "occasion",
+                  "fulfilment",
+                  "card",
+                  "deliver_on",
+                  "delivered_on",
+                  "price",
+                  "flower_cost",
+                  "delivery_fee",
+                  "driver",
+                  "cost_pct",
+                  "cost_check",
+                  "assigned_to",
+                  "del_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Today",
+                "layout": "grid",
+                "within": {
+                  "deliver_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "fulfilment": [
+                    "Delivery"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "deliver_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "order-today",
+                "icon": "Table"
+              },
+              {
+                "name": "Pickups today",
+                "layout": "list",
+                "within": {
+                  "deliver_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "fulfilment": [
+                    "Pickup"
+                  ]
+                },
+                "id": "order-pickups-today",
+                "icon": "List"
+              },
+              {
+                "name": "Tomorrow",
+                "layout": "list",
+                "within": {
+                  "deliver_on": {
+                    "relative": "tomorrow"
+                  }
+                },
+                "id": "order-tomorrow",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "order-by-zone"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cooler check before the market order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stem"
+            },
+            "inline": true,
+            "title": "Stems",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "By role",
+                "layout": "kanban",
+                "groupField": "role",
+                "id": "stem-by-role",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "stem_cost",
+                  "on_hand",
+                  "reorder_at",
+                  "vase_life",
+                  "retail_each",
+                  "reorder",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "All stems",
+                "layout": "grid",
+                "sorts": [
+                  {
+                    "field": "on_hand",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "stem-all-stems",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "stem-by-role"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sympathy-orders",
+      "parent": "florist-shop",
+      "title": "Sympathy and funeral work",
+      "icon": {
+        "emoji": "🕊️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Sympathy work is a third of a neighborhood shop's year, and it runs on someone else's clock: the service time. Take these calls slowly and get the details right the first time."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Flower"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Taking the order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The name of the person who died, the funeral home or church, and the service date and time."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Who it is from, exactly as the card should read, and whether it goes to the service or to the family's home."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Budget, and any colors or flowers the family asked for."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask whether the family has asked for donations instead; if so, suggest a smaller piece to the home."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What goes where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Piece"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Goes to"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Typical price"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Casket spray"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Funeral home, ordered by the family"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "350 to 650 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Standing spray"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The service"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "175 to 325 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vase arrangement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The family's home"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "75 to 150 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Plant"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The home; lasts beyond the week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "60 to 120 USD"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivery"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Deliver at least an hour before the service starts; the funeral home sets up early."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Card attached and readable from the front. Write the sender's name on the back of the stand as well."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark the order Delivered with the time. Families sometimes ask, months later, who sent what."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Working with funeral homes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep each funeral home as a client with its delivery door and the director's name. Ask them for the week's services every Monday; it lets you buy the white flowers before the market runs short."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Afterwards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Card list sent to the family if they ask for it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Any repeat order for the anniversary noted on the client"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         }
       ]

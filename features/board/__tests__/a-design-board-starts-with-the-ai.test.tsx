@@ -24,6 +24,15 @@ jest.mock("@ai-matrx/design-system/controls", () => ({
     </button>
   ),
   RegionSkeleton: () => <div aria-busy="true" />,
+  StageSteps: ({ steps, current }: { steps: { id: string; label: string }[]; current: number }) => (
+    <ol>
+      {steps.map((st, i) => (
+        <li key={st.id} data-state={i < current ? "done" : i === current ? "current" : "upcoming"}>
+          {st.label}
+        </li>
+      ))}
+    </ol>
+  ),
 }));
 jest.mock("@/components/official/ProInput", () => ({
   ProInput: (p: { value: string; onChange: (e: { target: { value: string } }) => void }) => <input data-testid="name" value={p.value} onChange={p.onChange} />,
@@ -33,15 +42,18 @@ jest.mock("@/components/official/ProTextarea", () => ({
 }));
 const listBoardStyles = jest.fn(async () => [{ templateId: "tpl-calm", name: "Calm neutral", forWho: "Software products and SaaS teams" }]);
 jest.mock("../templates/board-packs", () => ({ listBoardStyles: (...a: unknown[]) => listBoardStyles(...(a as [])) }));
-jest.mock("../templates/open-design-build", () => ({}));
+jest.mock("../templates/board-start", () => ({}));
+jest.mock("@/components/loaders/ShimmerText", () => ({ ShimmerText: ({ text }: { text: string }) => <span data-shimmer="">{text}</span> }));
 
-import { DesignBoardStartDialog } from "../templates/design-start";
+import { DesignBoardStartDialog, type DesignBoardProgress } from "../templates/design-start";
 
-async function mount(onStart: jest.Mock) {
+async function mount(onStart: jest.Mock, progress: DesignBoardProgress | null = null) {
   const host = document.createElement("div");
   document.body.append(host);
   const root = createRoot(host);
-  await act(async () => root.render(<DesignBoardStartDialog open onOpenChange={() => undefined} packKey="pack:t1" defaultName="Acme design system" onStart={onStart} />));
+  await act(async () =>
+    root.render(<DesignBoardStartDialog open onOpenChange={() => undefined} packKey="pack:t1" defaultName="Acme design system" onStart={onStart} progress={progress} />),
+  );
   return host;
 }
 const buttons = (host: HTMLElement) => Array.from(host.querySelectorAll("button"));
@@ -74,5 +86,20 @@ describe("a new design system board starts with the AI", () => {
     await act(async () => style.click());
     await act(async () => buttons(host).find((b) => b.textContent === "Use style")!.click());
     expect(onStart).toHaveBeenCalledWith({ name: "Acme design system", mode: "style", styleTemplateId: "tpl-calm", styleName: "Calm neutral" });
+  });
+
+  it("after the press the dialog shows the work in place, never a frozen form", async () => {
+    const host = await mount(jest.fn(), { mode: "ai", step: "board", detail: null });
+    expect(buttons(host)).toEqual([]);
+    expect(host.querySelector("textarea")).toBeNull();
+    const stages = Array.from(host.querySelectorAll("li")).map((li) => [li.textContent, li.dataset.state]);
+    expect(stages).toEqual([
+      ["Making the board", "current"],
+      ["Starting the design agent", "upcoming"],
+    ]);
+    expect(host.querySelector("[data-shimmer]")!.textContent).toBe("Making the board…");
+    const next = await mount(jest.fn(), { mode: "ai", step: "start" });
+    expect(next.querySelector("[data-shimmer]")!.textContent).toBe("Starting the design agent…");
+    expect(Array.from(next.querySelectorAll("li")).map((li) => li.dataset.state)).toEqual(["done", "current"]);
   });
 });

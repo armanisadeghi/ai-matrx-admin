@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0357",
-  "version": 8,
+  "version": 9,
   "title": "Fundraising CRM",
   "description": "Startup founders: run an investor pipeline with rounds, updates and a cap table.",
   "forWho": "Startup founders",
@@ -2046,7 +2046,7 @@
         "Hollin Wharf"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2314,7 +2314,9 @@
                   "email",
                   "passed_btn",
                   "add_interaction_btn",
-                  "updated_at"
+                  "updated_at",
+                  "check_min",
+                  "check_max"
                 ]
               },
               {
@@ -2347,7 +2349,9 @@
                   "email",
                   "passed_btn",
                   "add_interaction_btn",
-                  "updated_at"
+                  "updated_at",
+                  "check_min",
+                  "check_max"
                 ]
               },
               {
@@ -2367,7 +2371,9 @@
                   "email",
                   "passed_btn",
                   "add_interaction_btn",
-                  "updated_at"
+                  "updated_at",
+                  "check_min",
+                  "check_max"
                 ]
               }
             ],

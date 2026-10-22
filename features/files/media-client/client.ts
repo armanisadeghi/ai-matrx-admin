@@ -29,6 +29,7 @@
  * session tracker and byte cache can never split across construction sites.
  */
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { ORGANIZATION_REQUIRED_CODE } from "@ai-matrx/auth/organizations";
 import type { DurableSrc, MediaClient, MediaRef } from "@ai-matrx/media";
 import type { CredentialsPort, MatrxCredential } from "@ai-matrx/data";
@@ -173,7 +174,7 @@ async function filesFetch(
   }
 
   resetUnresolvedOrganizationReport();
-  headers.set("X-Organization-Id", organizationId);
+  headers.set(MATRX_HEADERS.organization, organizationId);
   return globalThis.fetch(input, { ...init, headers });
 }
 

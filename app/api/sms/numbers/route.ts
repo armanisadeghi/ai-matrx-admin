@@ -6,6 +6,7 @@
  * Admin-only operations (purchase, assign, release).
  */
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/adminClient';
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
         // retry. Refusing BEFORE the Twilio call is deliberate: a refusal
         // after it would have spent money on a number with no home.
         const actingOrganizationId =
-          request.headers.get('X-Organization-Id')?.trim() || undefined;
+          request.headers.get(MATRX_HEADERS.organization)?.trim() || undefined;
         const organizationId = await ensureOrgIdServer(supabase, actingOrganizationId);
 
         const result = await purchasePhoneNumber(

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0468",
-  "version": 8,
+  "version": 9,
   "title": "Food Truck Operations",
   "description": "For food truck owners: stops, sales, menu food cost, permits, commissary prep, bookings.",
   "forWho": "Food trucks, mobile kitchens and pop-up vendors",
@@ -2424,7 +2424,7 @@
         "Depot Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2592,7 +2592,9 @@
                   "lead",
                   "btn_close_out_the_day",
                   "add_prep_item",
-                  "added_at"
+                  "added_at",
+                  "target",
+                  "sales"
                 ]
               },
               {
@@ -2983,7 +2985,10 @@
                   "phone",
                   "owner",
                   "added_at",
-                  "btn_lock_it_in"
+                  "btn_lock_it_in",
+                  "quote",
+                  "minimum",
+                  "deposit"
                 ]
               },
               {
@@ -2999,7 +3004,10 @@
                   "phone",
                   "owner",
                   "added_at",
-                  "btn_lock_it_in"
+                  "btn_lock_it_in",
+                  "quote",
+                  "minimum",
+                  "deposit"
                 ]
               },
               {
@@ -3105,7 +3113,9 @@
                 "hiddenFields": [
                   "food_pct",
                   "per_stop",
-                  "added_at"
+                  "added_at",
+                  "price",
+                  "cost"
                 ]
               },
               {

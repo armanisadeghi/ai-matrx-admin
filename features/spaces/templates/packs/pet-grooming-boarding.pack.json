@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0585",
-  "version": 1,
+  "version": 2,
   "title": "Pet Grooming and Boarding",
   "description": "Grooming table, boarding runs, vaccine records and incident notes for every pet.",
   "forWho": "Pet groomers, kennels and pet lodges",
@@ -277,7 +277,7 @@
         "Quarry Bend Road"
       ]
     },
-    "version": 1,
+    "version": 2,
     "tables": [
       {
         "token": "pet",
@@ -1341,7 +1341,8 @@
               "service": "Full groom",
               "appt_at": "@today 08:30",
               "price": 140,
-              "matting_fee": 30
+              "matting_fee": 30,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1355,7 +1356,8 @@
               "appt_at": "@today 09:00",
               "price": 20,
               "matting_fee": 0,
-              "minutes": 20
+              "minutes": 20,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1368,7 +1370,8 @@
               "service": "Bath and brush",
               "appt_at": "@today 10:00",
               "price": 85,
-              "matting_fee": 0
+              "matting_fee": 0,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2354,6 +2357,39 @@
           ]
         },
         {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:todays-floor"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:holiday-peak"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "type": "page",
           "props": {
             "spaceId": "page:boarding-routine"
@@ -3110,7 +3146,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "My grooms"
+              "text": "On my table"
             }
           ],
           "props": {
@@ -3872,6 +3908,415 @@
                 ]
               }
             ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "todays-floor",
+      "parent": "pet-grooming-boarding",
+      "title": "Today's floor",
+      "icon": {
+        "emoji": "🐾"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Who is on the table, who is waiting to be picked up, and who is sleeping over tonight. The front desk keeps this open all day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "groom"
+            },
+            "inline": true,
+            "title": "Grooms today",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Today by status",
+                "layout": "kanban",
+                "groupField": "status",
+                "within": {
+                  "appt_at": {
+                    "relative": "today"
+                  }
+                },
+                "id": "groom-today-by-status",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "appt_at",
+                  "picked_up_on",
+                  "price",
+                  "matting_fee",
+                  "minutes",
+                  "per_hour",
+                  "assigned_to",
+                  "pick_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Today",
+                "layout": "grid",
+                "within": {
+                  "appt_at": {
+                    "relative": "today"
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "appt_at",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "groom-today",
+                "icon": "Table"
+              },
+              {
+                "name": "Tomorrow",
+                "layout": "list",
+                "within": {
+                  "appt_at": {
+                    "relative": "tomorrow"
+                  }
+                },
+                "id": "groom-tomorrow",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "groom-today-by-status"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Boarding tonight"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stay"
+            },
+            "inline": true,
+            "title": "Stays",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "In the building",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Checked in"
+                  ]
+                },
+                "id": "stay-in-the-building",
+                "icon": "Table"
+              },
+              {
+                "name": "By run",
+                "layout": "kanban",
+                "groupField": "run",
+                "anyOf": {
+                  "status": [
+                    "Checked in",
+                    "Reserved"
+                  ]
+                },
+                "id": "stay-by-run",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "check_in",
+                  "check_out",
+                  "nights",
+                  "nightly_rate",
+                  "extras",
+                  "meds",
+                  "feeding",
+                  "left_on",
+                  "total",
+                  "out_btn",
+                  "added_at"
+                ]
+              }
+            ],
+            "activeViewId": "stay-in-the-building"
+          }
+        }
+      ]
+    },
+    {
+      "key": "holiday-peak",
+      "parent": "pet-grooming-boarding",
+      "title": "Holiday boarding peaks",
+      "icon": {
+        "emoji": "🎄"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Thanksgiving, the winter holidays and summer weeks fill every run months ahead. Book them on rules set in advance, not on the phone with a pleading owner."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "CalendarRange"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Set the rules in September"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Peak dates: the Wednesday before Thanksgiving to the Monday after, and December 20 to January 3."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Minimum stay of three nights on peak dates; a non-refundable deposit of one night when booking."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Peak nightly rate: standard rate plus 10 USD. Write it on the booking page before anyone calls."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Regulars first: message every pet that boarded in the last year, two weeks before booking opens to everyone."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check vaccines at booking, not at check-in. Rabies, distemper combination and Bordetella must run past the check-out date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the Stay as Reserved with check-in and check-out; the deposit is written on the stay's page."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When every run is full, start a waiting list on the stay's page and call it in order."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Staffing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dogs in the building"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Staff on each shift"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Up to 15"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "16 to 30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Three, one on cleaning only"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Over 30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Four, and no grooming on that day"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During the peak"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stop taking full grooms; offer a bath before pickup to boarders instead."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Medicines are given and initialled on the stay's page at each shift."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Any incident is entered the same day and the owner told by text, even when they are away."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every deposit applied to the final bill"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No-shows charged the deposit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Next year's dates written on the booking page"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         }
       ]

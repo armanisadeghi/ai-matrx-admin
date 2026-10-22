@@ -23,6 +23,7 @@
 // two errors. FOLLOW-UP: regenerate the python types once the endpoint ships,
 // then move this to `callApi` and delete this note.
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import {
   fetchHrConfidential,
   fetchHrConfidentialList,
@@ -165,7 +166,7 @@ export async function generateHrVerificationLetter(args: {
         // service compares the two and answers 409 on a disagreement (§1.2).
         headers: {
           "Content-Type": "application/json",
-          "X-Organization-Id": args.organizationId,
+          [MATRX_HEADERS.organization]: args.organizationId,
         },
         body: JSON.stringify({
           organization_id: args.organizationId,

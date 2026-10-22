@@ -1,3 +1,4 @@
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
@@ -19,7 +20,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const organizationId = request.headers.get("X-Organization-Id")?.trim() ?? "";
+    const organizationId = request.headers.get(MATRX_HEADERS.organization)?.trim() ?? "";
     if (organizationId.length === 0) {
       return NextResponse.json(
         {

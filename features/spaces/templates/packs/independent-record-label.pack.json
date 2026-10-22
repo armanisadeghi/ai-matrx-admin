@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0581",
-  "version": 1,
+  "version": 2,
   "title": "Independent Record Label",
   "description": "Releases from demo to street date, artist deals, recoupment and royalty statements.",
   "forWho": "Independent labels and artist-run imprints",
@@ -267,7 +267,7 @@
         "Alder Mill Way"
       ]
     },
-    "version": 1,
+    "version": 2,
     "tables": [
       {
         "token": "artist",
@@ -1314,7 +1314,8 @@
               "physical": "Vinyl, 300",
               "budget": 3000,
               "playlist_adds": 6,
-              "smartlink": "https://listen.lowtiderecords.net/lowland-hymns"
+              "smartlink": "https://listen.lowtiderecords.net/lowland-hymns",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1332,7 +1333,8 @@
               "physical": "Digital only",
               "budget": 1600,
               "playlist_adds": 2,
-              "smartlink": "https://listen.lowtiderecords.net/glasshouse"
+              "smartlink": "https://listen.lowtiderecords.net/glasshouse",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1348,7 +1350,8 @@
               "release_on": "@today+12d",
               "tracks": 4,
               "physical": "Cassette, 100",
-              "budget": 4200
+              "budget": 4200,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2463,6 +2466,39 @@
           ]
         },
         {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:release-calendar"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:signing-an-artist"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "type": "page",
           "props": {
             "spaceId": "page:royalties"
@@ -2518,7 +2554,8 @@
                   "recoup",
                   "add_release_btn",
                   "mail_btn",
-                  "added_at"
+                  "added_at",
+                  "advance"
                 ]
               },
               {
@@ -2806,7 +2843,8 @@
                   "receipts",
                   "paid_on",
                   "paid_btn",
-                  "added_at"
+                  "added_at",
+                  "artist_share"
                 ]
               },
               {
@@ -3216,7 +3254,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Past their release date"
+              "text": "Slipped releases"
             }
           ],
           "props": {
@@ -3265,7 +3303,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Out this week"
+              "text": "Release week"
             }
           ],
           "props": {
@@ -3314,7 +3352,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "My releases"
+              "text": "Releases I am running"
             }
           ],
           "props": {
@@ -4032,6 +4070,436 @@
           "text": [
             {
               "text": "When an artist leaves the roster, keep paying statements for their releases for as long as the label sells them."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "release-calendar",
+      "parent": "independent-record-label",
+      "title": "Release calendar",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The label's year at a glance. Space releases at least two weeks apart so each one gets its own press and playlist push."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Calendar",
+                "layout": "calendar",
+                "dateField": "release_on",
+                "id": "releas-calendar",
+                "icon": "Calendar",
+                "hiddenFields": [
+                  "status",
+                  "catalog_no",
+                  "manager",
+                  "upc",
+                  "release_on",
+                  "released_on",
+                  "tracks",
+                  "physical",
+                  "budget",
+                  "committed",
+                  "budget_left",
+                  "streams_28d",
+                  "playlist_adds",
+                  "smartlink",
+                  "assigned_to",
+                  "rel_btn",
+                  "take_btn",
+                  "link_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Next 90 days",
+                "layout": "grid",
+                "within": {
+                  "release_on": {
+                    "relative": "next_days",
+                    "n": 90
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "releas-next-90-days",
+                "icon": "Table"
+              },
+              {
+                "name": "In production",
+                "layout": "kanban",
+                "groupField": "status",
+                "id": "releas-in-production",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "catalog_no",
+                  "manager",
+                  "upc",
+                  "release_on",
+                  "released_on",
+                  "tracks",
+                  "physical",
+                  "budget",
+                  "committed",
+                  "budget_left",
+                  "streams_28d",
+                  "playlist_adds",
+                  "smartlink",
+                  "assigned_to",
+                  "rel_btn",
+                  "take_btn",
+                  "link_btn",
+                  "added_at"
+                ]
+              }
+            ],
+            "activeViewId": "releas-calendar"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Costs waiting on a decision"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cost"
+            },
+            "inline": true,
+            "title": "Release costs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Quoted",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Quoted"
+                  ]
+                },
+                "id": "cost-quoted",
+                "icon": "Table"
+              },
+              {
+                "name": "Approved, not paid",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Approved"
+                  ]
+                },
+                "id": "cost-approved-not-paid",
+                "icon": "List"
+              },
+              {
+                "name": "Spend by category",
+                "layout": "chart",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "category",
+                  "op": "sum",
+                  "field": "amount"
+                },
+                "id": "cost-spend-by-category",
+                "icon": "ChartPie"
+              }
+            ],
+            "activeViewId": "cost-quoted"
+          }
+        }
+      ]
+    },
+    {
+      "key": "signing-an-artist",
+      "parent": "independent-record-label",
+      "title": "Signing a new artist",
+      "icon": {
+        "emoji": "✍️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A small label signs few artists and keeps them. This is how we go from a demo we love to a signed deal both sides understand, in our own plain-words deal memo."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "PenLine"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before an offer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "See them play live at least once, and ask how they would feel touring for three weeks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check what they already own: masters of earlier releases, any existing distribution deal, and who wrote the songs."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Talk to their manager, if they have one, before talking money."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Choosing the deal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "When it fits"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Single deal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A first release to see how we work together"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Licensing deal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The artist keeps the masters; we release for a set number of years"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Net profit split"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "An album with real spend; we recoup costs, then split profit"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Distribution only"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The artist runs their own campaign; we deliver and collect"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What the memo says"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What we release: the songs or the record, and the format."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The split, as the artist's percentage, and what is recoupable (we list mastering, pressing, PR and video)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The advance, if any, and that it is recouped from the artist's share only."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Term, and the option for the next record."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Statements twice a year, sent even when unrecouped."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What happens if we stop working: rights revert after a set time if a record is never released."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After signing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Artist added with the deal, split and advance"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "First release added and costs quoted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Signed memo saved on the artist's page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tell them, in writing, the one thing we will never do: net one artist's costs against another's earnings."
             }
           ]
         }

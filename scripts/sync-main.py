@@ -2352,6 +2352,132 @@ def report(fixed, docs, held, headline):
         say("Listed in %s." % LOG_REL)
 
 
+# ── an orphaned merge (2026-10-21: a sync cut off mid-merge left MERGE_HEAD; 2.5 h of silent stops) ──
+# A MERGE_HEAD with no live sync behind it must not stop every later round in silence. This sync's
+# own merge (marker .git/sync-main-merging.json, written just before `git merge`, or the merge
+# message sync-main's merge makes) whose only conflicts are ones sync-main settles on its own is
+# FINISHED here. Anything else is announced by urgent agent mail (once an hour per merge) naming the
+# files and the merge's age. NEVER `git merge --abort` or reset: other sessions' work may be in it.
+MERGE_MARKER = "sync-main-merging.json"
+ORPHAN_ALERT = "sync-main-orphan-alert.json"
+ORPHAN_ALERT_EVERY_S = 3600
+ORPHAN_ALERT_TO = os.environ.get("MATRX_SYNC_ALERT_TO") or "6bda811a-6b18-5ef3-a1c1-67f81ae6b2c4"
+
+
+def mark_merging(gd):
+    rc, t, _ = git("rev-parse", "%s/%s" % (REMOTE, BRANCH), check=False)
+    if rc == 0:
+        with open(os.path.join(gd, MERGE_MARKER), "w") as fh:
+            json.dump({"target": t.strip(), "pid": os.getpid(), "started": time.time()}, fh)
+
+
+def _merge_owner_alive():
+    if globals().get("_LOCK_FD") is not None:
+        return False   # we hold the checkout's sync lock, so whoever began this merge is gone
+    r = subprocess.run(["pgrep", "-f", "sync-main.py"], capture_output=True, text=True)
+    mine = {str(os.getpid()), str(os.getppid())}
+    return any(p and p not in mine for p in r.stdout.split())
+
+
+def _merge_is_ours(gd, head):
+    try:
+        with open(os.path.join(gd, MERGE_MARKER)) as fh:
+            if json.load(fh).get("target") == head:
+                return True
+    except (OSError, ValueError):
+        pass
+    try:
+        with open(os.path.join(gd, "MERGE_MSG")) as fh:
+            first = fh.readline()
+    except OSError:
+        return False
+    return bool(re.match(r"Merge (remote-tracking )?branch '(%s/)?%s'" % (REMOTE, BRANCH), first))
+
+
+def _settles_alone(path, mb):
+    """True when sync-main settles this conflicted file by itself (no hold, no both-versions file)."""
+    st = stages(path)
+    ours_mode, ours = st.get(2, (None, None))
+    theirs_mode, theirs = st.get(3, (None, None))
+    if not ours and not theirs:
+        return False
+    sup = globals().get("superseding_side")
+    if sup and sup(path, ours, theirs, mb):
+        return True
+    if not ours or not theirs:
+        return False
+    if (ours_mode or theirs_mode) == "120000" or is_binary(content(ours)) or is_binary(content(theirs)):
+        return False
+    return resolve_fake(path, ours, theirs, mb)[0] is not None
+
+
+def _announce_orphan(gd, head, files, age_s, why):
+    msg = ("sync-main: an ORPHANED merge is blocking the release in %s. MERGE_HEAD %s is %d min old, "
+           "its sync-main is gone, and %s. Unmerged files (%d): %s. Finish it: resolve those files, "
+           "`git add` them, `git commit --no-edit`. Do NOT `git merge --abort` or reset: other "
+           "sessions' staged work may be in it." % (os.getcwd(), head[:10], age_s // 60, why, len(files),
+                                                     ", ".join(files[:12]) or "none"))
+    print("SYNC STOPPED (orphan merge): " + msg, file=sys.stderr, flush=True)
+    path = os.path.join(gd, ORPHAN_ALERT)
+    try:
+        with open(path) as fh:
+            last = json.load(fh)
+        if last.get("head") == head and time.time() - last.get("sent", 0) < ORPHAN_ALERT_EVERY_S:
+            return
+    except (OSError, ValueError):
+        pass
+    cmd = os.environ.get("MATRX_SYNC_ALERT_CMD") or os.path.join(os.path.dirname(os.getcwd()), "scripts", "board.py")
+    if not os.path.exists(cmd):
+        print("sync: no agent-mail tool at %s; the alarm above is the only announcement." % cmd,
+              file=sys.stderr, flush=True)
+        return
+    argv = [sys.executable, cmd, "post", ORPHAN_ALERT_TO, msg, "--urgent", "--from", "sync-main"]
+    r = subprocess.run(argv, capture_output=True, text=True)
+    if r.returncode == 0:
+        with open(path, "w") as fh:
+            json.dump({"head": head, "sent": time.time()}, fh)
+    else:
+        print("sync: the agent mail failed: " + (r.stderr or r.stdout).strip(), file=sys.stderr, flush=True)
+
+
+def handle_orphan_merge(gd):
+    """Called with a MERGE_HEAD present. Returns True when it was finished here (go on with the
+    sync); otherwise announces and returns False (the caller stops, touching nothing)."""
+    if _merge_owner_alive():
+        return False
+    _, head, _ = git("rev-parse", "MERGE_HEAD")
+    head = head.strip()
+    try:
+        age_s = int(time.time() - os.path.getmtime(os.path.join(gd, "MERGE_HEAD")))
+    except OSError:
+        age_s = 0
+    _, out, _ = git("diff", "--name-only", "--diff-filter=U", "-z")
+    files = [f for f in out.split("\0") if f]
+    if not _merge_is_ours(gd, head):
+        _announce_orphan(gd, head, files, age_s, "it is not a merge sync-main began")
+        return False
+    _, mb, _ = git("merge-base", "HEAD", "MERGE_HEAD")
+    _, o, _ = git("rev-parse", "HEAD")
+    CTX.update(ours=o.strip(), theirs=head, mb=mb.strip())
+    _CHANGED.clear()
+    stuck = [f for f in files if not _settles_alone(f, mb.strip())]
+    if stuck:
+        _announce_orphan(gd, head, files, age_s,
+                         "%d file(s) need a person (sync-main does not settle them alone): %s"
+                         % (len(stuck), ", ".join(stuck[:12])))
+        return False
+    f, d, h = resolve_all(time.strftime("%Y-%m-%d-%H%M%S"))
+    _, left, _ = git("diff", "--name-only", "--diff-filter=U")
+    if d or h or left.strip():
+        _announce_orphan(gd, head, left.split() or files, age_s,
+                         "finishing it left conflicts (this is a bug in sync-main)")
+        return False
+    git("commit", "--no-verify", "-q", "-m",
+        "Merge %s/%s (sync-main): finished an orphaned merge, %d auto-fixed" % (REMOTE, BRANCH, len(f)))
+    say("sync: finished an orphaned merge of %s (%d min old, %d auto-fixed); going on." % (head[:10], age_s // 60, len(f)))
+    return True
+
+
 def main():
     if sys.argv[1:2] == ["--replay"]:
         _, top, _ = git("rev-parse", "--show-toplevel")
@@ -2409,6 +2535,8 @@ def main():
     gd = gd.strip()
     for leftover in ("MERGE_HEAD", "rebase-merge", "rebase-apply", "CHERRY_PICK_HEAD"):
         if os.path.exists(os.path.join(gd, leftover)):
+            if leftover == "MERGE_HEAD" and handle_orphan_merge(gd):
+                continue
             die("a %s is already in progress here. Finish it, or undo it with `git merge --abort` "
                 "/ `git rebase --abort`, then run this again. BEFORE undoing, run "
                 "`git diff --cached --name-only`: undoing resets every STAGED edit (unstaged edits "
@@ -2441,6 +2569,7 @@ def main():
             die("could not reach GitHub:\n" + err)
         _, n, _ = git("rev-list", "--count", "HEAD..%s/%s" % (REMOTE, BRANCH))
         pulled += int(n.strip())
+        mark_merging(gd)
         rc, out, err = git("merge", "--no-edit", "--no-verify", "-q", "%s/%s" % (REMOTE, BRANCH),
                            check=False)
         parked = []
