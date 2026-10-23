@@ -239,7 +239,11 @@ BUMP_TYPE="patch"
 CUSTOM_MESSAGE=""
 DRY_RUN=false
 FORCE_RELEASE=false
-NO_MIGRATE=false
+# MIGRATIONS ARE OFF FOR THE FRONTEND RELEASE (Arman, 2026-10-22). The pending-migration sweep
+# (aidream db/apply_migrations.py over ~3,500 files against production) made every release take
+# 40-70 s. NO ONE turns this back on without Arman's explicit approval. Apply a migration with
+# `pnpm db:apply migrations/<file>.sql` (CLAUDE.md § Migrations), never through the release.
+NO_MIGRATE=true
 NO_GATES=false
 NO_WATCH=false
 RUN_CHECKS=false
