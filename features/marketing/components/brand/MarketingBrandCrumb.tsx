@@ -31,7 +31,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Archive, Check, ChevronDown, ChevronRight, Fingerprint, Landmark, MoreHorizontal, Pencil, ScanSearch, Swords } from "lucide-react";
+import { Archive, Check, ChevronDown, ChevronRight, Copy, Fingerprint, Landmark, MoreHorizontal, Pencil, ScanSearch, Swords } from "lucide-react";
+import { openAlchemySession } from "@/components/agent-copy/alchemy-session";
+import { normalizeTransferJson } from "@ai-matrx/alchemy/operate";
+import { getBrand } from "@/features/marketing/data/service";
+import { toast } from "@/lib/toast";
+import { extractErrorMessage } from "@/utils/errors";
 import { useDeclareFrameActions, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 import { useDeclareTrailLevel } from "@/features/shell/breadcrumbs/trailLevels";
 import { MARKETING_BRANDS_PATH } from "@/features/marketing/lib/keys";
@@ -478,6 +483,27 @@ export function MarketingBrandCrumb() {
   // "…" HOLDS EVERY ACTION OF THE BRAND LEVEL (Arman, 2026-10-22): the verbs the brands list offers
   // for a brand row (useBrandRowActions), as doors from the brand itself.
   const [archiving, setArchiving] = useState(false);
+  // Copy or export: THE Alchemy session (the one preparation workspace every Alchemy menu opens —
+  // copy, For AI, download, send to a chat or a note) on the brand's stored record, read fresh.
+  const copyOrExportBrand = async () => {
+    try {
+      const record = await getBrand(brand.id);
+      const opened = openAlchemySession({
+        key: `brand-export:${brand.id}:${Date.now()}`,
+        label: brand.name,
+        source: { kind: "json", value: normalizeTransferJson(record) },
+        envelope: {
+          kind: "brand",
+          location: `Marketing › Brands › ${brand.name}`,
+          description: `The brand record for ${brand.name}`,
+        },
+        intent: { kind: "prepare" },
+      });
+      if (!opened) toast.error("Copy or export did not open", { description: "Reload the page and try again." });
+    } catch (error) {
+      toast.error("Copy or export did not open", { description: extractErrorMessage(error, "The brand could not be read.") });
+    }
+  };
   useDeclareFrameActions(
     inFrame
       ? [
@@ -486,6 +512,7 @@ export function MarketingBrandCrumb() {
           { id: "brand:competitors", label: "Discover competitors", icon: Swords, onSelect: () => router.push(marketingRoutes.brandCompetitors(brand.seg)) },
           { id: "brand:identity", label: "Brand identity", icon: Fingerprint, onSelect: () => router.push(marketingRoutes.brandIdentity(brand.seg)) },
           { id: "brand:all", label: "All brands", icon: Landmark, onSelect: () => router.push(marketingRoutes.brandsAll()) },
+          { id: "brand:export", label: "Copy or export", icon: Copy, onSelect: () => void copyOrExportBrand() },
           { id: "brand:archive", label: "Archive brand", icon: Archive, destructive: true, onSelect: () => setArchiving(true) },
         ]
       : null,
