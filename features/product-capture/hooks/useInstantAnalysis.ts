@@ -1,15 +1,19 @@
 "use client";
 
 /**
- * useInstantAnalysis — the INSTANT lane of product capture (the client-side
- * A/B test of the process modes):
+ * useInstantAnalysis — the INSTANT entry point of product capture. ONE
+ * lifecycle, TWO entry points (Arman, 2026-10-23):
  *
- * - SERVER lane: `closeItem()` flips status `capturing → captured` and the
- *   DB workflow trigger runs the pipeline server-side (`service.ts`).
- * - INSTANT lane (this hook): "Process" runs the intake-analysis agent from
+ * - STANDARD entry: `closeItem()` flips status `capturing → captured` and the
+ *   DB workflow trigger runs the whole pipeline server-side (`service.ts`).
+ * - INSTANT entry (this hook): "Process" runs the intake-analysis agent from
  *   the browser through the MANDATE `product_capture.instant_analysis` — the
- *   agent identity lives in the DATABASE, never here — and streams the
- *   `electronics_intake_analysis` kind straight back into the capture UI.
+ *   agent identity lives in the DATABASE, never here — streams the
+ *   `electronics_intake_analysis` kind straight back into the capture UI,
+ *   saves it, and THEN hands the item over through the same `closeItem()`.
+ *   The server pipeline finds the stored analysis, skips its own analyzer,
+ *   and researches the products it declares; its settle lands the item on
+ *   `processed` + stage `review`.
  *
  * Built on the canonical primitives, nothing hand-rolled:
  * - `useLiveAgentRun` (headless-JSON runner in live posture) launches the
@@ -29,17 +33,19 @@
  *     destroyed the local instance, and a paid run became unreachable.
  *  2. THE RESULT SEAM (`onResult`) — saves the structured record as the item's
  *     `instant_analysis` payload and marks the item `processed` the instant
- *     the run settles, on every exit path.
+ *     the run settles, on every exit path, then hands the item to the server
+ *     pipeline (`capturing → captured`) for research.
  *  3. THE RECOVERY (`attach`, on returning to an item) — rehydrates the
  *     transcript from the DB (`loadConversation`), rejoins a turn still
  *     running on the server (`reconnectServerOperation`; streams run
  *     `detach_on_disconnect=True`, so leaving never stopped the work), and
  *     when the run finished while nobody was watching — seam 2 never got to
  *     run — extracts its JSON from the rehydrated conversation and persists it
- *     after the fact.
+ *     after the fact — and hands the item over the same way.
  *
- * `capturing → processed` skips `captured`, so the server-side workflow
- * trigger never double-processes an instant item (`markProcessed`).
+ * The record is ALWAYS saved before the handoff write: the `→ captured`
+ * transition fires the server run, which reads the record to decide whether
+ * to skip its analyzer. `closeItem` never walks a `processed` item back.
  */
 
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
@@ -67,7 +73,7 @@ import type { RootState } from "@/lib/redux/store";
 import { extractFirstJson } from "@ai-matrx/content-ir/json-extract";
 
 import type { CaptureItem } from "../types";
-import { listItemFiles, markProcessed } from "../service";
+import { closeItem, listItemFiles } from "../service";
 import { instantAnalysisOfferedValues } from "../instantAnalysisOfferedValues";
 import {
   listPayloads,
@@ -252,7 +258,8 @@ export function useInstantAnalysis({
       const existing = await listPayloads(targetItemId);
       if (existing.instant_analysis) return; // seam 2 won the race
       await savePayload(pipelineItem, "instant_analysis", record);
-      await markProcessed(pipelineItem);
+      // Saved FIRST, handed over SECOND — the server run reads the record.
+      await closeItem(pipelineItem);
       console.warn(
         `[product-capture] recovered an orphaned instant run for item ${targetItemId} ` +
           `(conversation ${conversationId}) — the result was saved after the fact.`,
@@ -429,7 +436,10 @@ export function useInstantAnalysis({
           if (!pipelineItem) return;
           const record = result.data as Record<string, unknown>;
           await savePayload(pipelineItem, "instant_analysis", record);
-          await markProcessed(pipelineItem);
+          // Saved FIRST, handed over SECOND: `capturing → captured` fires the
+          // server run, which skips its analyzer because this record exists
+          // and goes straight to research.
+          await closeItem(pipelineItem);
           patchRestored(target.id, { result: record });
         },
       });

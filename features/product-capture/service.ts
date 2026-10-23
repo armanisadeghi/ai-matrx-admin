@@ -236,16 +236,19 @@ type ItemPatch = Partial<
 /**
  * One CAS attempt of `mutate(current)` onto the item, retried once on a
  * version conflict against the row that actually landed. Returns the saved
- * item; throws after a second conflict rather than looping.
+ * item; throws after a second conflict rather than looping. `mutate` returning
+ * `null` means "the row that landed needs no write" — the decision is re-made
+ * against the CURRENT row on a conflict, never the caller's stale copy.
  */
 async function guardedItemWrite(
   item: CaptureItem,
-  mutate: (current: CaptureItem) => ItemPatch,
+  mutate: (current: CaptureItem) => ItemPatch | null,
 ): Promise<CaptureItem> {
   const attempt = async (
     current: CaptureItem,
   ): Promise<{ saved: CaptureItem } | { conflict: CaptureItem }> => {
     const patch = mutate(current);
+    if (patch === null) return { saved: current };
     const result = await guardedUpdate<ItemRow & { version: number }>({
       expectedVersion: current.version,
       applyUpdate: ({ expectedVersion, nextVersion }) =>
@@ -311,22 +314,31 @@ export async function appendToItemNotes(
 }
 
 /**
- * Close the item — the photographer moved on (Next / QR-advance / "mark
- * ready"). The DB transition `capturing → captured` is what fires the
- * product-capture workflow event trigger (the table is instrumented with
- * `workflow.watch_table`), so this write IS the handoff. Also the reprocess
- * action: flipping a `processed` item back to `captured` fires the
- * transition again.
+ * Close the item — hand it to the server pipeline. ONE lifecycle, TWO entry
+ * points (Arman, 2026-10-23), and this is the one handoff both use:
+ *
+ * - STANDARD lane: the photographer moved on (Next / QR-advance / "mark
+ *   ready").
+ * - INSTANT lane: the phone's analysis record was just saved as the item's
+ *   `instant_analysis` payload (`useInstantAnalysis`, live result seam and
+ *   after-the-fact recovery seam alike) — the server pipeline reads it and
+ *   SKIPS its own analyzer, then researches the products it declares.
+ *
+ * The DB transition `capturing → captured` is what fires the product-capture
+ * workflow event trigger (the table is instrumented with
+ * `workflow.watch_table`), so this write IS the handoff. The server settle
+ * (`product_capture.mark_processed`) lands it on `processed` + stage `review`.
  */
 export async function closeItem(item: CaptureItem): Promise<CaptureItem> {
-  if (item.status === "captured") return item;
   // 🚨 `processed` is TERMINAL — never walk it backwards to `captured`. That
   // write is the server workflow's trigger, so a close landing on an item the
-  // INSTANT lane already analyzed re-runs the whole pipeline on it (and loses
-  // the processed status on the way). A legitimate re-capture goes through
-  // `reopenItem` first, which puts the row back at `capturing`.
-  if (item.status === "processed") return item;
-  return guardedItemWrite(item, () => ({ status: "captured" }));
+  // pipeline already settled re-runs the whole pipeline on it (and loses the
+  // processed status on the way). A legitimate re-capture goes through
+  // `reopenItem` first, which puts the row back at `capturing`. Decided
+  // against the row that LANDS on a conflict too, never a stale copy.
+  return guardedItemWrite(item, (current) =>
+    current.status === "capturing" ? { status: "captured" } : null,
+  );
 }
 
 /**
@@ -337,18 +349,6 @@ export async function closeItem(item: CaptureItem): Promise<CaptureItem> {
 export async function reopenItem(item: CaptureItem): Promise<CaptureItem> {
   if (item.status === "capturing") return item;
   return guardedItemWrite(item, () => ({ status: "capturing" }));
-}
-
-/**
- * INSTANT-lane terminal write: `capturing → processed` DIRECTLY. The item
- * never enters `captured`, so the server-side workflow trigger (which fires
- * on the capturing → captured transition — see `closeItem`) can never
- * double-process an item the client lane already analyzed. The lane
- * distinction is which transition the item took, not a new status value.
- */
-export async function markProcessed(item: CaptureItem): Promise<CaptureItem> {
-  if (item.status === "processed") return item;
-  return guardedItemWrite(item, () => ({ status: "processed" }));
 }
 
 /** Soft-delete an item. Its uploaded files stay in the org's file tree. */
