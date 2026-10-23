@@ -8,7 +8,8 @@
  * a value — a step's readout, Watch AI, the Builder, the provision window, step
  * detail — resolves it here, when it opens: `useRunValue(runId, value)`.
  *
- * Values are content-addressed, so a resolved hash never changes; the cache keeps
+ * A reference never changes what it names (a large value's is its content hash, a held
+ * value's an opaque id), so a resolved one is cached; the cache keeps
  * the most recent ones and drops the oldest past `CACHE_MAX_BYTES`.
  */
 
@@ -20,6 +21,8 @@ export const RUN_VALUE_REF_KEY = "__matrx_checkpoint_value__";
 /**
  * Must equal matrx_graph.checkpoint.value_store.HELD_KEY: a value a step holds on the
  * server (a provision). Only an admin in debug mode ever receives one (MKT-167 part 2).
+ * Its reference is OPAQUE (random, never a digest of the value — a small snapshot's hash
+ * would reveal it); it resolves only through `GET /runs/{id}/values`, like any ref here.
  */
 export const RUN_VALUE_HELD_KEY = "__matrx_held_value__";
 
