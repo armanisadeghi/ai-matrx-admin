@@ -9,20 +9,24 @@
  * original is never touched) and offers "Open"; the image ZIP downloads; OCR text shows in the panel.
  */
 import { useCallback, useState } from "react";
+import { ENDPOINTS } from "@ai-matrx/api";
 import { Button, Field, Select } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@host/lib/toast";
 import { streamPdfExtractTextRemote } from "@/features/pdf-extractor/service/streamPdf";
+import { drainPdfStream } from "../../api/streamDrain";
+import type { StripRepeatedRegionsResultSchema } from "@/features/pdf-extractor/types";
 import { usePdfClient } from "../../api/client";
-import { cleanupCallFor, fileIdOf, type CleanupOp, type RedactRegion } from "../pdfOps";
+import { cleanupCallFor, stripRepeatedCallFor, fileIdOf, type CleanupOp, type RedactRegion } from "../pdfOps";
 
-export const CLEANUP_OPS = ["redact-regions", "render-all", "ocr-text"] as const;
+export const CLEANUP_OPS = ["redact-regions", "render-all", "ocr-text", "strip-repeated"] as const;
 export type CleanupOpId = (typeof CLEANUP_OPS)[number];
 
 const LABELS: Record<CleanupOpId, string> = {
   "redact-regions": "Redact regions",
   "render-all": "Pages to images (ZIP)",
   "ocr-text": "Recognize text (OCR)",
+  "strip-repeated": "Strip repeated headers and footers",
 };
 
 const FORMATS = ["png", "jpg", "jpeg", "webp", "tiff"] as const;
@@ -59,8 +63,10 @@ export function CleanupTool({ fileId, fileName, onOpenFile }: { fileId: string; 
   const [fmt, setFmt] = useState<(typeof FORMATS)[number]>("png");
   const [pagesText, setPagesText] = useState("");
   const [threshold, setThreshold] = useState("100");
+  const [minRatio, setMinRatio] = useState("");
+  const [minConf, setMinConf] = useState("");
 
-  const request = useCallback((): CleanupOp => {
+  const request = useCallback((): CleanupOp | { op: "strip-repeated" } => {
     switch (op) {
       case "redact-regions": return { op, regions, reason, scrubMetadata: scrubMeta };
       case "render-all": {
@@ -68,6 +74,7 @@ export function CleanupTool({ fileId, fileName, onOpenFile }: { fileId: string; 
         return { op, dpi: Math.min(600, Math.max(36, Number(dpi) || 150)), fmt, jpegQuality: 85, pages };
       }
       case "ocr-text": return { op, threshold: Number(threshold) || 100 };
+      case "strip-repeated": return { op };
     }
   }, [op, reason, regions, scrubMeta, dpi, fmt, pagesText, threshold]);
 
@@ -77,7 +84,15 @@ export function CleanupTool({ fileId, fileName, onOpenFile }: { fileId: string; 
     setMadeFile(null);
     setText(null);
     try {
-      const call = cleanupCallFor(fileId, request());
+      if (op === "strip-repeated") {
+        const num = (v: string) => (v.trim() && Number.isFinite(Number(v)) ? Number(v) : null);
+        const { body } = stripRepeatedCallFor(fileId, { minPagesRatio: num(minRatio), minConfidence: num(minConf), acceptedRegionIds: null });
+        const report = await drainPdfStream<StripRepeatedRegionsResultSchema>(ENDPOINTS.pdf.stripRepeatedRegions, body, "pdf_repeated_regions_strip_complete");
+        const pagesText = report.pages_text ?? [];
+        setText(pagesText.length ? pagesText.map((t, i) => `--- Page ${i + 1} ---\n${t}`).join("\n\n") : "");
+        return;
+      }
+      const call = cleanupCallFor(fileId, request() as CleanupOp);
       if (call.kind === "file") {
         const response = await client.postJson<unknown>(call.endpoint, call.body);
         const id = fileIdOf(response);
@@ -155,16 +170,22 @@ export function CleanupTool({ fileId, fileName, onOpenFile }: { fileId: string; 
           <Row label="Pages (blank = all)"><Field value={pagesText} onChange={(e) => setPagesText(e.target.value)} aria-label="Pages" placeholder="1, 3, 5" /></Row>
         </div>
       ) : null}
+      {op === "strip-repeated" ? (
+        <div className="flex flex-col gap-2">
+          <Row label="Appears on at least this share of pages (0 to 1, blank: server default)"><Field type="number" min={0} max={1} step={0.05} value={minRatio} onChange={(e) => setMinRatio(e.target.value)} aria-label="Minimum page share" /></Row>
+          <Row label="Minimum confidence (0 to 1, blank: server default)"><Field type="number" min={0} max={1} step={0.05} value={minConf} onChange={(e) => setMinConf(e.target.value)} aria-label="Minimum confidence" /></Row>
+        </div>
+      ) : null}
       {op === "ocr-text" ? (
         <Row label="Use OCR on pages with fewer characters than">
           <Field type="number" min={0} value={threshold} onChange={(e) => setThreshold(e.target.value)} aria-label="OCR threshold" />
         </Row>
       ) : null}
-      <Button variant="primary" disabled={busy} onClick={() => void run()}>{busy ? "Working" : op === "ocr-text" ? "Recognize text" : op === "render-all" ? "Download images" : "Make a clean copy"}</Button>
+      <Button variant="primary" disabled={busy} onClick={() => void run()}>{busy ? "Working" : op === "strip-repeated" ? "Strip and show the text" : op === "ocr-text" ? "Recognize text" : op === "render-all" ? "Download images" : "Make a clean copy"}</Button>
       {error ? <div role="alert" className="text-xs text-destructive">{error}</div> : null}
       {madeFile ? <Button variant="outline" onClick={() => onOpenFile(madeFile)}>Open the new file</Button> : null}
       {text !== null ? (
-        <textarea readOnly aria-label="Recognized text" value={text || "No text was found."} className="min-h-40 w-full flex-1 resize-none rounded-md border border-border bg-background p-2 text-xs" />
+        <textarea readOnly aria-label="Resulting text" value={text || "No text came back."} className="min-h-40 w-full flex-1 resize-none rounded-md border border-border bg-background p-2 text-xs" />
       ) : null}
     </div>
   );

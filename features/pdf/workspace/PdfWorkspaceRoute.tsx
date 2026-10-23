@@ -6,6 +6,7 @@ import { RecordPageHeader } from "@/features/shell/components/header/templates/R
 import { cn } from "@/lib/utils";
 import { usePdfWorkspaceHost } from "./usePdfWorkspaceHost";
 import { PDF_WORKSPACE_SURFACE_NAME, WorkspaceSurface } from "./WorkspaceSurface";
+import { ExtractorSurface } from "./extractor/ExtractorSurface";
 
 export { PDF_WORKSPACE_SURFACE_NAME };
 
@@ -29,7 +30,7 @@ export function PdfWorkspaceBody({
 }) {
   // Every per-file request carries the file's own organization (the Analysis panels read it).
   rememberFileOrganization(fileId, organizationId);
-  const { host, studio } = usePdfWorkspaceHost(fileId);
+  const { host, studio, extractorBridge, getPage } = usePdfWorkspaceHost(fileId);
   const body = (
     <>
       {header ? (
@@ -41,9 +42,11 @@ export function PdfWorkspaceBody({
     </>
   );
   return surface ? (
-    <WorkspaceSurface fileId={fileId} fileName={host.file.name} studio={studio}>
-      {body}
-    </WorkspaceSurface>
+    <ExtractorSurface fileId={fileId} getPage={getPage} bridge={extractorBridge}>
+      <WorkspaceSurface fileId={fileId} fileName={host.file.name} studio={studio}>
+        {body}
+      </WorkspaceSurface>
+    </ExtractorSurface>
   ) : (
     body
   );

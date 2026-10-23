@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { FileText } from "lucide-react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { PdfDocumentList } from "./PdfDocumentList";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 
 const FilePickerWindow = dynamic(
@@ -23,7 +24,7 @@ export function PdfFrontDoor() {
   return (
     <SurfaceRuntimeProvider surfaceName={PDF_FRONT_DOOR_SURFACE_NAME} getScope={() => ({})} isEditable={false}>
       <RouteHeader left={<span className="px-2 text-sm font-medium">PDF</span>} />
-      <div className="flex h-dvh w-full items-center justify-center pt-[var(--shell-header-h)]">
+      <div className="flex h-dvh w-full flex-col items-center justify-center gap-6 overflow-y-auto pt-[var(--shell-header-h)]">
         <EmptyState
           icon={<FileText />}
           title="Open a PDF"
@@ -37,6 +38,7 @@ export function PdfFrontDoor() {
             </span>
           }
         />
+        <PdfDocumentList />
       </div>
       <FilePickerWindow
         open={open}

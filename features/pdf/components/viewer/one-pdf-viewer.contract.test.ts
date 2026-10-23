@@ -79,8 +79,6 @@ describe("one PDF viewer", () => {
   it("only PdfPreview resolves cld-file bytes for PDF.js", () => {
     const offenders = files
       .filter((f) => f.path !== PREVIEW && !f.path.startsWith("features/pdf/hooks/"))
-      // The workspace host hands the same resolved URL to its page thumbnails and its download/print.
-      .filter((f) => f.path !== "features/pdf/workspace/usePdfWorkspaceHost.tsx")
       .filter((f) => /\busePdfRemoteSource\s*\(/.test(f.src))
       .map((f) => f.path);
     expect(offenders).toEqual([]);

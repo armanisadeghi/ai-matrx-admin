@@ -2,18 +2,18 @@
  "generatedBy": "scripts/record-pages/generate.ts",
  "counts": {
   "list.sourceWithoutCustomFields": 2,
-  "route.pending": 927,
-  "route.none": 596,
-  "route.tokens": 52,
+  "route.pending": 935,
+  "route.none": 602,
+  "route.tokens": 53,
   "route.host": 1,
-  "window.pending": 191,
+  "window.pending": 195,
   "window.none": 1,
   "window.host": 1,
   "window.tokens": 2,
   "peek.tokens": 19,
   "peek.none": 5,
   "peek.any": 1,
-  "table.pending": 368,
+  "table.pending": 374,
   "table.noncanonical": 8,
   "table.none": 7,
   "table.set": 1
@@ -266,6 +266,10 @@
   "route:/administration/agents/system-agents/agents/[id]/test": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/test/page.tsx",
    "none": "a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/administration/agents/system-agents/agents/[id]/test/agreement": {
+   "file": "app/(admin)/administration/agents/system-agents/agents/[id]/test/agreement/page.tsx",
+   "none": "a sub-view (judge agreement) inside a record's test section, not the record page"
   },
   "route:/administration/agents/system-agents/agents/[id]/v/[version]": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/v/[version]/page.tsx",
@@ -585,6 +589,10 @@
   },
   "route:/administration/billing/build-waste": {
    "file": "app/(admin)/administration/billing/build-waste/page.tsx",
+   "pending": true
+  },
+  "route:/administration/billing/free-allowance": {
+   "file": "app/(admin)/administration/billing/free-allowance/page.tsx",
    "pending": true
   },
   "route:/administration/billing/held-runs/[id]": {
@@ -1489,6 +1497,10 @@
    "file": "app/(core)/agents/[id]/test/page.tsx",
    "none": "a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section"
   },
+  "route:/agents/[id]/test/agreement": {
+   "file": "app/(core)/agents/[id]/test/agreement/page.tsx",
+   "none": "a sub-view (judge agreement) inside a record's test section, not the record page"
+  },
   "route:/agents/[id]/v/[version]": {
    "file": "app/(core)/agents/[id]/v/[version]/page.tsx",
    "none": "addressed by a catalog key (version), not a record id"
@@ -1809,6 +1821,10 @@
    "file": "app/(core)/assists/page.tsx",
    "pending": true
   },
+  "route:/auth/admin-verify": {
+   "file": "app/auth/admin-verify/page.tsx",
+   "pending": true
+  },
   "route:/auth/auth-code-error": {
    "file": "app/auth/auth-code-error/page.tsx",
    "pending": true
@@ -1885,6 +1901,10 @@
    "file": "app/(core)/capture/needs-you/page.tsx",
    "pending": true
   },
+  "route:/chart/[slug]": {
+   "file": "app/(link)/chart/[slug]/page.tsx",
+   "none": "addressed by a slug, not a record id"
+  },
   "route:/chat": {
    "file": "app/(core)/chat/page.tsx",
    "pending": true
@@ -1917,6 +1937,10 @@
   },
   "route:/chat/new": {
    "file": "app/(core)/chat/new/page.tsx",
+   "pending": true
+  },
+  "route:/chat/on-device": {
+   "file": "app/(core)/chat/on-device/page.tsx",
    "pending": true
   },
   "route:/chat/speed-test": {
@@ -2909,10 +2933,6 @@
     "file"
    ]
   },
-  "route:/files/f/[fileId]/studio": {
-   "file": "app/(core)/files/f/[fileId]/studio/page.tsx",
-   "none": "a sub-view (studio) inside a record or scope, not the record page; the record's own page carries the section"
-  },
   "route:/files/folders": {
    "file": "app/(core)/files/folders/page.tsx",
    "pending": true
@@ -3733,11 +3753,57 @@
    "file": "app/(core)/marketing/page.tsx",
    "pending": true
   },
+  "route:/marketing/admin": {
+   "file": "app/(core)/marketing/admin/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/admin/keyword-data-quality": {
+   "file": "app/(core)/marketing/admin/keyword-data-quality/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/ads": {
+   "file": "app/(core)/marketing/ads/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/ai-visibility": {
+   "file": "app/(core)/marketing/ai-visibility/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/ai-visibility/runs/[runId]": {
+   "file": "app/(core)/marketing/ai-visibility/runs/[runId]/page.tsx",
+   "tokens": [
+    "seo_collection_run"
+   ]
+  },
+  "route:/marketing/approvals": {
+   "file": "app/(core)/marketing/approvals/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/audience": {
+   "file": "app/(core)/marketing/audience/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/automations": {
+   "file": "app/(core)/marketing/automations/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/backlink-valuation": {
+   "file": "app/(core)/marketing/backlink-valuation/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/brands": {
+   "file": "app/(core)/marketing/brands/page.tsx",
+   "pending": true
+  },
   "route:/marketing/brands/[brandId]": {
    "file": "app/(core)/marketing/brands/[brandId]/page.tsx",
    "tokens": [
     "web_brand"
    ]
+  },
+  "route:/marketing/brands/[brandId]/[...legacy]": {
+   "file": "app/(core)/marketing/brands/[brandId]/[...legacy]/page.tsx",
+   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/marketing/brands/[brandId]/ads": {
    "file": "app/(core)/marketing/brands/[brandId]/ads/page.tsx",
@@ -3749,7 +3815,7 @@
   },
   "route:/marketing/brands/[brandId]/content": {
    "file": "app/(core)/marketing/brands/[brandId]/content/page.tsx",
-   "none": "a sub-view (content) inside a record or scope, not the record page; the record's own page carries the section"
+   "none": "a forward, not a page: the Content home is the topical maps at content/map"
   },
   "route:/marketing/brands/[brandId]/content/map": {
    "file": "app/(core)/marketing/brands/[brandId]/content/map/page.tsx",
@@ -3863,6 +3929,14 @@
    "file": "app/(core)/marketing/brands/[brandId]/identity/offerings/page.tsx",
    "none": "a sub-view (offerings) inside a record or scope, not the record page; the record's own page carries the section"
   },
+  "route:/marketing/brands/[brandId]/identity/session": {
+   "file": "app/(core)/marketing/brands/[brandId]/identity/session/page.tsx",
+   "none": "a sub-view (the brand session) inside a record, not the record page; the brand page links to it"
+  },
+  "route:/marketing/brands/[brandId]/identity/story": {
+   "file": "app/(core)/marketing/brands/[brandId]/identity/story/page.tsx",
+   "none": "a sub-view (the owner's story sitting) inside a brand, not the record page; the brand's own page carries the section"
+  },
   "route:/marketing/brands/[brandId]/identity/strategy": {
    "file": "app/(core)/marketing/brands/[brandId]/identity/strategy/page.tsx",
    "none": "a sub-view (strategy) inside a record or scope, not the record page; the record's own page carries the section"
@@ -3961,7 +4035,7 @@
   },
   "route:/marketing/brands/[brandId]/offerings": {
    "file": "app/(core)/marketing/brands/[brandId]/offerings/page.tsx",
-   "none": "a sub-view (offerings) inside a record or scope, not the record page; the record's own page carries the section"
+   "none": "a forward, not a page: Products & services lives under Identity (Arman, 2026-10-21)"
   },
   "route:/marketing/brands/[brandId]/planning": {
    "file": "app/(core)/marketing/brands/[brandId]/planning/page.tsx",
@@ -4383,51 +4457,13 @@
    "file": "app/(core)/marketing/brands/[brandId]/websites/[siteId]/structure/columns/page.tsx",
    "none": "a sub-view (columns) inside a record or scope, not the record page; the record's own page carries the section"
   },
-  "route:/marketing/admin": {
-   "file": "app/(core)/marketing/admin/page.tsx",
+  "route:/marketing/brands/all": {
+   "file": "app/(core)/marketing/brands/all/page.tsx",
    "pending": true
   },
-  "route:/marketing/admin/keyword-data-quality": {
-   "file": "app/(core)/marketing/admin/keyword-data-quality/page.tsx",
+  "route:/marketing/brands/new": {
+   "file": "app/(core)/marketing/brands/new/page.tsx",
    "pending": true
-  },
-  "route:/marketing/ads": {
-   "file": "app/(core)/marketing/ads/page.tsx",
-   "pending": true
-  },
-  "route:/marketing/ai-visibility": {
-   "file": "app/(core)/marketing/ai-visibility/page.tsx",
-   "pending": true
-  },
-  "route:/marketing/ai-visibility/runs/[runId]": {
-   "file": "app/(core)/marketing/ai-visibility/runs/[runId]/page.tsx",
-   "tokens": [
-    "seo_collection_run"
-   ]
-  },
-  "route:/marketing/approvals": {
-   "file": "app/(core)/marketing/approvals/page.tsx",
-   "pending": true
-  },
-  "route:/marketing/audience": {
-   "file": "app/(core)/marketing/audience/page.tsx",
-   "pending": true
-  },
-  "route:/marketing/automations": {
-   "file": "app/(core)/marketing/automations/page.tsx",
-   "pending": true
-  },
-  "route:/marketing/backlink-valuation": {
-   "file": "app/(core)/marketing/backlink-valuation/page.tsx",
-   "pending": true
-  },
-  "route:/marketing/brands": {
-   "file": "app/(core)/marketing/brands/page.tsx",
-   "pending": true
-  },
-  "route:/marketing/brands/[brandId]/[...legacy]": {
-   "file": "app/(core)/marketing/brands/[brandId]/[...legacy]/page.tsx",
-   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/marketing/brands/new-website": {
    "file": "app/(core)/marketing/brands/new-website/page.tsx",
@@ -4435,10 +4471,6 @@
   },
   "route:/marketing/brands/offerings": {
    "file": "app/(core)/marketing/brands/offerings/page.tsx",
-   "pending": true
-  },
-  "route:/marketing/brands/smart-add": {
-   "file": "app/(core)/marketing/brands/smart-add/page.tsx",
    "pending": true
   },
   "route:/marketing/brands/smart-add/company": {
@@ -4685,11 +4717,15 @@
   },
   "route:/marketing/snapshots/[snapshotId]": {
    "file": "app/(core)/marketing/snapshots/[snapshotId]/page.tsx",
-   "none": "an immutable web snapshot (a ledger record) that takes no custom fields"
+   "none": "an immutable page capture (a ledger record) that takes no custom fields"
   },
   "route:/marketing/social": {
    "file": "app/(core)/marketing/social/page.tsx",
    "pending": true
+  },
+  "route:/marketing/social/videos": {
+   "file": "app/(core)/marketing/social/videos/page.tsx",
+   "none": "a cross-brand list; each card opens its brand's own project page"
   },
   "route:/marketing/speed-test": {
    "file": "app/(core)/marketing/speed-test/page.tsx",
@@ -5250,6 +5286,16 @@
   "route:/p/e/[resourceType]/[id]": {
    "file": "app/(public)/p/e/[resourceType]/[id]/page.tsx",
    "none": "a public share link addressed by resource type, not a record page"
+  },
+  "route:/pdf": {
+   "file": "app/(core)/pdf/page.tsx",
+   "pending": true
+  },
+  "route:/pdf/[fileId]": {
+   "file": "app/(core)/pdf/[fileId]/page.tsx",
+   "tokens": [
+    "file"
+   ]
   },
   "route:/pick-lists": {
    "file": "app/(core)/pick-lists/page.tsx",
@@ -5853,11 +5899,11 @@
   },
   "route:/search": {
    "file": "app/(core)/search/page.tsx",
-   "pending": true
+   "none": "the search tool, not a record page"
   },
   "route:/search/experience": {
    "file": "app/(core)/search/experience/page.tsx",
-   "none": "the search tool, not a record page"
+   "pending": true
   },
   "route:/search/speed-test": {
    "file": "app/(core)/search/speed-test/page.tsx",
@@ -5898,6 +5944,10 @@
   "route:/settings/data": {
    "file": "app/(core)/settings/data/page.tsx",
    "pending": true
+  },
+  "route:/shape-preview": {
+   "file": "app/(link)/shape-preview/page.tsx",
+   "none": "a render surface for the screenshot browser, addressed by a signed link"
   },
   "route:/shapes": {
    "file": "app/(core)/shapes/page.tsx",
@@ -6139,10 +6189,6 @@
    "file": "app/(core)/tools/pdf-extractor/[id]/page.tsx",
    "none": "a redirect to the page that shows the record"
   },
-  "route:/tools/pdf-extractor/admin": {
-   "file": "app/(core)/tools/pdf-extractor/admin/page.tsx",
-   "pending": true
-  },
   "route:/tools/product-capture": {
    "file": "app/(core)/tools/product-capture/page.tsx",
    "pending": true
@@ -6261,6 +6307,22 @@
   },
   "route:/vault/speed-test": {
    "file": "app/(core)/vault/speed-test/page.tsx",
+   "pending": true
+  },
+  "route:/visual-maps": {
+   "file": "app/(core)/visual-maps/page.tsx",
+   "pending": true
+  },
+  "route:/visual-maps/lab": {
+   "file": "app/(core)/visual-maps/lab/page.tsx",
+   "pending": true
+  },
+  "route:/visual-maps/lab/[sampleId]": {
+   "file": "app/(core)/visual-maps/lab/[sampleId]/page.tsx",
+   "pending": true
+  },
+  "route:/visual-maps/lab/all": {
+   "file": "app/(core)/visual-maps/lab/all/page.tsx",
    "pending": true
   },
   "route:/voice": {
@@ -6493,6 +6555,10 @@
    "file": "components/admin/state-analyzer/StateViewerWindow.tsx",
    "pending": true
   },
+  "window:components/agent-copy/alchemyWindowPort.ts": {
+   "file": "components/agent-copy/alchemyWindowPort.ts",
+   "pending": true
+  },
   "window:components/agent-copy/copy-subset/CopySubsetWindow.tsx": {
    "file": "components/agent-copy/copy-subset/CopySubsetWindow.tsx",
    "pending": true
@@ -6513,12 +6579,8 @@
    "file": "components/debug/ResourceDebugIndicator.tsx",
    "pending": true
   },
-  "window:components/dialogs/AuthGateDialog.tsx": {
-   "file": "components/dialogs/AuthGateDialog.tsx",
-   "pending": true
-  },
-  "window:components/dialogs/EmailDialogBridge.tsx": {
-   "file": "components/dialogs/EmailDialogBridge.tsx",
+  "window:components/errors/ErrorAlchemyMenu.tsx": {
+   "file": "components/errors/ErrorAlchemyMenu.tsx",
    "pending": true
   },
   "window:components/guest/SignupConversionModal.tsx": {
@@ -6537,6 +6599,10 @@
    "file": "components/mardown-display/markdown-classification/FullscreenMarkdownEditor.tsx",
    "pending": true
   },
+  "window:components/navigation/AppLink.tsx": {
+   "file": "components/navigation/AppLink.tsx",
+   "pending": true
+  },
   "window:components/official-candidate/json-truncator/JsonTruncatorDialog.tsx": {
    "file": "components/official-candidate/json-truncator/JsonTruncatorDialog.tsx",
    "pending": true
@@ -6553,6 +6619,10 @@
    "file": "components/official-candidate/voice-pad/components/VoicePadAdvanced.tsx",
    "pending": true
   },
+  "window:components/ui/dialog.tsx": {
+   "file": "components/ui/dialog.tsx",
+   "pending": true
+  },
   "window:features/admin/error-inspector/ErrorInspectorWindow.tsx": {
    "file": "features/admin/error-inspector/ErrorInspectorWindow.tsx",
    "pending": true
@@ -6563,6 +6633,10 @@
   },
   "window:features/agents/import/AgentImportWindow.tsx": {
    "file": "features/agents/import/AgentImportWindow.tsx",
+   "pending": true
+  },
+  "window:features/ai-models/components/ProviderReferenceModal.tsx": {
+   "file": "features/ai-models/components/ProviderReferenceModal.tsx",
    "pending": true
   },
   "window:features/approvals/windows/ApprovalsWindow.tsx": {
@@ -6589,8 +6663,8 @@
    "file": "features/connectors/ConnectorConsentDialog.tsx",
    "pending": true
   },
-  "window:features/crm/components/SaveContactFromSelectionDialog.tsx": {
-   "file": "features/crm/components/SaveContactFromSelectionDialog.tsx",
+  "window:features/data-tables/records-ui-host/recordsUiLazy.tsx": {
+   "file": "features/data-tables/records-ui-host/recordsUiLazy.tsx",
    "pending": true
   },
   "window:features/dictionary/components/DictionarySelectorWindow.tsx": {
@@ -6607,6 +6681,10 @@
   },
   "window:features/knowledge/command-bar/KnowledgeCommandBar.tsx": {
    "file": "features/knowledge/command-bar/KnowledgeCommandBar.tsx",
+   "pending": true
+  },
+  "window:features/knowledge/hub/tags/TagPickerHostDialog.tsx": {
+   "file": "features/knowledge/hub/tags/TagPickerHostDialog.tsx",
    "pending": true
   },
   "window:features/marketing/search-console/windows/GscDrilldownWindow.tsx": {
@@ -6677,16 +6755,20 @@
    "file": "features/rich-document/hosts/ApplyToSourceReview.tsx",
    "pending": true
   },
-  "window:features/save-to-table/SaveToTableOverlay.tsx": {
-   "file": "features/save-to-table/SaveToTableOverlay.tsx",
-   "pending": true
-  },
   "window:features/scopes/components/context-assignment/ContextAssignmentWindow.tsx": {
    "file": "features/scopes/components/context-assignment/ContextAssignmentWindow.tsx",
    "pending": true
   },
+  "window:features/scopes/homes/HomePickerHostDialog.tsx": {
+   "file": "features/scopes/homes/HomePickerHostDialog.tsx",
+   "pending": true
+  },
   "window:features/settings/components/SettingsShellOverlay.tsx": {
    "file": "features/settings/components/SettingsShellOverlay.tsx",
+   "pending": true
+  },
+  "window:features/sharing/bulk/ShareWithPeopleHostDialog.tsx": {
+   "file": "features/sharing/bulk/ShareWithPeopleHostDialog.tsx",
    "pending": true
   },
   "window:features/templates/components/SaveTemplateDialog.tsx": {
@@ -6695,6 +6777,10 @@
   },
   "window:features/trash/review/ChangeReviewOverlay.tsx": {
    "file": "features/trash/review/ChangeReviewOverlay.tsx",
+   "pending": true
+  },
+  "window:features/unified-data/recordsNotify.ts": {
+   "file": "features/unified-data/recordsNotify.ts",
    "pending": true
   },
   "window:features/unified-data/windows/WorkInboxWindow.tsx": {
@@ -6905,10 +6991,6 @@
    "file": "features/window-panels/windows/cloud-files/FilePreviewWindow.tsx",
    "pending": true
   },
-  "window:features/window-panels/windows/code/CodeEditorWindow.tsx": {
-   "file": "features/window-panels/windows/code/CodeEditorWindow.tsx",
-   "pending": true
-  },
   "window:features/window-panels/windows/code/CodeFileManagerWindow.tsx": {
    "file": "features/window-panels/windows/code/CodeFileManagerWindow.tsx",
    "pending": true
@@ -7071,6 +7153,10 @@
   },
   "window:features/window-panels/windows/marketing/BrandChannelWindow.tsx": {
    "file": "features/window-panels/windows/marketing/BrandChannelWindow.tsx",
+   "pending": true
+  },
+  "window:features/window-panels/windows/marketing/CreateBrandWindow.tsx": {
+   "file": "features/window-panels/windows/marketing/CreateBrandWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/marketing/KeywordQuickAnswersWindow.tsx": {
@@ -7456,6 +7542,7 @@
   "features/admin/converters/ConvertersConsole.tsx": "pending",
   "features/admin/converters/DefinitionsPanel.tsx": "pending",
   "features/admin/dead-ends/DeadEndsConsole.tsx": "pending",
+  "features/admin/free-allowance/FreeAllowanceBoard.tsx": "pending",
   "features/admin/hard-cost-reconciliation/HardCostReconciliationTable.tsx": "pending",
   "features/admin/hr/jurisdiction-rules/components/JurisdictionRulesLibraryClient.tsx": "pending",
   "features/admin/hr/jurisdiction-rules/components/JurisdictionVerificationClient.tsx": "pending",
@@ -7505,6 +7592,7 @@
   "features/admin/users/record/UserHistoryTab.tsx": "pending",
   "features/admin/users/record/UserOrganizationsTab.tsx": "pending",
   "features/admin/users/record/UserSecurityTab.tsx": "pending",
+  "features/admin/users/record/UserSignInHistory.tsx": "pending",
   "features/admin/users/record/UserSupportTab.tsx": "pending",
   "features/admin/users/support-sessions/SupportSessionsTableClient.tsx": "pending",
   "features/admin/watchtower/WatchtowerPage.tsx": "none — rows are canary scorecards and run results of the monitor itself, keyed by feature_key and run id; they are not records of any registry table.",
@@ -7528,6 +7616,8 @@
   "features/agent-shortcuts/components/ShortcutList.tsx": "pending",
   "features/agent-tests/components/AgentTestTables.tsx": "pending",
   "features/agent-tests/components/AgentTestsPlatformPage.tsx": "pending",
+  "features/agent-tests/components/CaseVersionGrid.tsx": "pending",
+  "features/agent-tests/components/JudgeAgreementPage.tsx": "pending",
   "features/agents/components/scope-batch-import/ScopeBatchImportBody.tsx": "noncanonical",
   "features/agents/components/usages/AgentUsagesEngine.tsx": "pending",
   "features/agents/decision-review/components/CalibrationView.tsx": "pending",
@@ -7584,6 +7674,7 @@
   "features/crm/outcomes/OutcomesPanel.tsx": "pending",
   "features/cx-dashboard/explorer/ConversationExplorer.tsx": "pending",
   "features/data-sources/lab/DataToModelLab.tsx": "pending",
+  "features/data-sources/library/PastRuns.tsx": "pending",
   "features/directive-catalog/components/DirectiveCatalogGrid.tsx": "pending",
   "features/education/classes/components/ClassProgressPanel.tsx": "pending",
   "features/education/home/blocks/RecentBlock.tsx": "pending",
@@ -7663,7 +7754,6 @@
   "features/marketing/components/brands/BrandSocialProfilesCard.tsx": "pending",
   "features/marketing/components/brands/BrandTempHomes.tsx": "pending",
   "features/marketing/components/brands/BrandWebDecisionsSection.tsx": "pending",
-  "features/marketing/components/brands/BrandsPortfolio.tsx": "pending",
   "features/marketing/components/crawls/CrawlLogsTable.tsx": "pending",
   "features/marketing/components/crawls/CrawlReportWorkspace.tsx": "pending",
   "features/marketing/components/crawls/CrawlUrlsTable.tsx": "pending",
@@ -7732,6 +7822,7 @@
   "features/product-capture/components/AllItemsTable.tsx": "pending",
   "features/projects/components/ProjectTaskList.tsx": "pending",
   "features/projects/components/ProjectsHub.tsx": "pending",
+  "features/prompt-blocks/components/PromptBlockLibrary.tsx": "pending",
   "features/proof-runs/components/ProofRunsClient.tsx": "pending",
   "features/question-desk/components/AskTable.tsx": "pending",
   "features/question-desk/components/InterviewListClient.tsx": "pending",
@@ -7762,6 +7853,7 @@
   "features/sources/components/SourcesPage.tsx": "pending",
   "features/spaces/data/EntityDatabase.tsx": "pending",
   "features/surfaces/admin-detail/SurfaceAdminDetailPage.tsx": "pending",
+  "features/surfaces/admin-detail/SurfaceDeclarationSections.tsx": "pending",
   "features/surfaces/components/SurfacesTable.tsx": "pending",
   "features/system-processes/SystemProcessesBoard.tsx": "pending",
   "features/tasks/components/TasksTableView.tsx": "pending",
@@ -7779,6 +7871,7 @@
   "features/workflow-runtime/discovery/components/RunsList.tsx": "pending",
   "features/workflow-runtime/review/components/ReviewIssuesTable.tsx": "pending",
   "lib/entity-list/components/EntityListTable.tsx": "none — EntityListPage adds the custom-field columns to the list config itself, so its one picker offers them",
+  "lib/entity-list/rowVerbs.ts": "pending",
   "lib/entity-list/useTableBulkSelection.tsx": "pending"
  }
 }

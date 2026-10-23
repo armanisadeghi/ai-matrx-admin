@@ -102,7 +102,7 @@ export default function PdfExtractorLanding() {
       description="Layout-aware extraction, OCR when needed, tables as tables, every chunk anchored to its page. Drop a PDF in; get out a corpus your agents can search, cite, and analyze."
       primaryCtaHref="/sign-up?source=pdf-extractor-landing"
       primaryCtaLabel="Extract Your First PDF Free"
-      workspaceHref="/tools/pdf-extractor"
+      workspaceHref="/pdf"
       workspaceLabel="PDF Studio"
       capabilitiesHeading="Beyond pdf-to-text"
       capabilitiesDescription="Five capabilities turn PDFs from blobs of text into structured, cited, queryable content."

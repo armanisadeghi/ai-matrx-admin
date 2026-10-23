@@ -20,7 +20,13 @@ import type { StudioInspectorTab } from "@/features/file-analysis/studio/Inspect
 export type CapabilityHome =
   | { kind: "rail"; tool: PdfToolId }
   | { kind: "analysis-tab"; tab: StudioInspectorTab }
-  | { kind: "host-tool"; tool: "analysis" | "annotate" | "more" }
+  | { kind: "host-tool"; tool: "analysis" | "annotate" | "more" | "combine" | "document" }
+  /** The /pdf front door (PdfFrontDoor): the document list and the picker with its upload. */
+  | { kind: "front-door" }
+  /** A surface the workspace page declares for agents. */
+  | { kind: "page-surface"; surface: string }
+  /** A badge in the corner of each page thumbnail (PdfWorkspaceHost.renderPageBadge). */
+  | { kind: "thumbnail-badge" }
   | { kind: "mode"; tool: "annotate"; mode: "view" | "select" | "draw" }
   | { kind: "deferred"; stillAt: string; why: string };
 
@@ -77,14 +83,16 @@ export const PDF_CAPABILITIES: readonly Capability[] = [
   { id: "ocr-text", label: "OCR as text", was: "/demos/pdf-processing/extract-text (force OCR)", home: { kind: "host-tool", tool: "more" }, endpoints: ["extractTextRemote"] },
   { id: "agent-surface-analysis-studio", label: "Agent surface matrx-user/analysis-studio: scope and annotation write handlers", was: "StudioShell", home: { kind: "host-tool", tool: "annotate" } },
   // Not in the workspace yet: each names where it lives and why. The list may only shrink.
-  { id: "merge", label: "Merge two PDFs", was: "ManipulationPanel, /demos/pdf-processing/merge", home: deferred(EXTRACTOR, "needs a multi-file picker tool (PDF-PLAN U9)"), endpoints: ["merge"] },
-  { id: "insert-pages", label: "Insert pages from another PDF", was: "ManipulationPanel, /demos/pdf-processing/insert-pages", home: deferred(EXTRACTOR, "needs a second-file picker"), endpoints: ["insertPages"] },
-  { id: "strip-repeated", label: "Strip repeated regions (headers/footers)", was: "/demos/pdf-processing/strip-repeated-regions", home: deferred("features/file-analysis redact tab covers redact, not strip", "no strip button yet"), endpoints: ["stripRepeatedRegions"] },
+  { id: "merge", label: "Merge PDFs (files picked from Files, ordered, page ranges)", was: "ManipulationPanel, /demos/pdf-processing/merge", home: { kind: "host-tool", tool: "combine" }, endpoints: ["merge"] },
+  { id: "insert-pages", label: "Insert pages from another PDF (picked from Files)", was: "ManipulationPanel, /demos/pdf-processing/insert-pages", home: { kind: "host-tool", tool: "combine" }, endpoints: ["insertPages"] },
+  { id: "strip-repeated", label: "Strip repeated regions (headers/footers) from the text", was: "/demos/pdf-processing/strip-repeated-regions", home: { kind: "host-tool", tool: "more" }, endpoints: ["stripRepeatedRegions"] },
   { id: "studio-presets", label: "Render studio presets", was: "PdfPresetPicker, /demos/pdf-processing/studio", home: deferred("features/pdf/components/PdfPresetPicker", "used by Doc Ops compress; presets render has no tool"), endpoints: ["studioPresets", "studioRender"] },
-  { id: "ai-clean", label: "AI clean, process with AI, full pipeline, batch extract", was: "extractor studio", home: deferred(EXTRACTOR, "document-pipeline studio"), endpoints: ["processWithAi", "fullPipeline", "cleanContent", "batchExtract", "documents", "document"] },
-  { id: "extractor-sections", label: "Extractor inspector: AI widgets, Chunker, Stores, Manipulate, Lineage", was: "PdfStudioInspector", home: deferred(EXTRACTOR, "bound to the processed-document record") },
-  { id: "extractor-docs", label: "Document list, upload drawer, clean-run progress, text and chunks panes, copy-pages overlay, batch debug window", was: "PdfStudioShell and its parts", home: deferred(EXTRACTOR, "bound to the processed-document record") },
-  { id: "agent-surface-pdf-extractor", label: "Agent surface matrx-user/pdf-extractor (scope and write handlers)", was: "PdfStudioShell", home: deferred(EXTRACTOR, "mounted by the extractor studio") },
+  { id: "ai-clean", label: "AI clean, process with AI, full pipeline, batch extract", was: "extractor studio, floating window cleanup button", home: { kind: "host-tool", tool: "document" }, endpoints: ["processWithAi", "fullPipeline", "cleanContent", "batchExtract", "documents", "document"] },
+  { id: "extractor-sections", label: "Extractor inspector: AI widgets, Chunker, Stores, Lineage", was: "PdfStudioInspector", home: { kind: "host-tool", tool: "document" } },
+  { id: "extractor-panes", label: "Run progress, text and chunks panes, copy-pages overlay, batch debug window", was: "PdfStudioShell and its parts", home: { kind: "host-tool", tool: "document" } },
+  { id: "extractor-docs", label: "Document list and upload", was: "PdfStudioSidebar, PdfStudioUpload", home: { kind: "front-door" } },
+  { id: "agent-surface-pdf-extractor", label: "Agent surface matrx-user/pdf-extractor (scope and write handlers)", was: "PdfStudioShell", home: { kind: "page-surface", surface: "matrx-user/pdf-extractor" } },
+  { id: "thumbnail-annotation-badges", label: "Annotation count on each page thumbnail", was: "ThumbnailStrip", home: { kind: "thumbnail-badge" } },
   { id: "server-internal", label: "extract-text (non-streaming), render-page, render-thumbnail", was: "viewer and thumbnails", home: deferred("viewer internals", "no user-facing tool"), endpoints: ["extractText", "renderPage", "renderThumbnail"] },
 ];
 

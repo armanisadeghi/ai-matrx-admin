@@ -2179,6 +2179,11 @@
       "source": "app/(core)/assists/page.tsx"
     },
     {
+      "pattern": "/auth/admin-verify",
+      "status": "live",
+      "source": "app/auth/admin-verify/page.tsx"
+    },
+    {
       "pattern": "/auth/auth-code-error",
       "status": "live",
       "source": "app/auth/auth-code-error/page.tsx"
@@ -3522,11 +3527,6 @@
       "pattern": "/files/f/[fileId]",
       "status": "live",
       "source": "app/(core)/files/f/[fileId]/page.tsx"
-    },
-    {
-      "pattern": "/files/f/[fileId]/studio",
-      "status": "live",
-      "source": "app/(core)/files/f/[fileId]/studio/page.tsx"
     },
     {
       "pattern": "/files/folders",
@@ -5435,11 +5435,6 @@
       "source": "app/(core)/marketing/brands/offerings/page.tsx"
     },
     {
-      "pattern": "/marketing/brands/smart-add",
-      "status": "live",
-      "source": "app/(core)/marketing/brands/smart-add/page.tsx"
-    },
-    {
       "pattern": "/marketing/brands/smart-add/company",
       "status": "live",
       "source": "app/(core)/marketing/brands/smart-add/company/page.tsx"
@@ -6438,6 +6433,16 @@
       "pattern": "/p/e/[resourceType]/[id]",
       "status": "live",
       "source": "app/(public)/p/e/[resourceType]/[id]/page.tsx"
+    },
+    {
+      "pattern": "/pdf",
+      "status": "live",
+      "source": "app/(core)/pdf/page.tsx"
+    },
+    {
+      "pattern": "/pdf/[fileId]",
+      "status": "live",
+      "source": "app/(core)/pdf/[fileId]/page.tsx"
     },
     {
       "pattern": "/pick-lists",
@@ -7533,11 +7538,6 @@
       "pattern": "/tools/pdf-extractor/[id]",
       "status": "live",
       "source": "app/(core)/tools/pdf-extractor/[id]/page.tsx"
-    },
-    {
-      "pattern": "/tools/pdf-extractor/admin",
-      "status": "live",
-      "source": "app/(core)/tools/pdf-extractor/admin/page.tsx"
     },
     {
       "pattern": "/tools/product-capture",

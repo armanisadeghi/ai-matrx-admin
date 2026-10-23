@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * PdfStudioInspector — right rail of the desktop studio.
+ * ExtractorInspector — right rail of the desktop studio.
  *
  * Composes the existing per-document panels (lineage, AI actions, data
  * stores, manipulation, AI clean) into a vertically scrolling inspector
@@ -16,7 +16,6 @@ import {
   GitBranch,
   Zap,
   Database,
-  Wrench,
   FileText,
   BookOpen,
   Layers,
@@ -28,12 +27,10 @@ import {
 } from "lucide-react";
 import { ChunkingConfigForm } from "@/features/page-extraction/components/ChunkingConfigForm";
 import { cn } from "@/lib/utils";
-import type { PdfDocument } from "../hooks/usePdfExtractor";
+import type { PdfDocument } from "@/features/pdf-extractor/hooks/usePdfExtractor";
 import type { PdfPageRow } from "@/features/pdf/data/pdfPages";
-import type { PdfPaneEditMode } from "./PdfStudioReader";
 import { parsePagesInput } from "@/features/pdf/utils/pages";
-import { LineageTreeView } from "../components/LineageTreeView";
-import { ManipulationPanel } from "../components/ManipulationPanel";
+import { LineageTreeView } from "@/features/pdf-extractor/components/LineageTreeView";
 import { DataStoreBindPanel } from "@/features/rag/components/data-stores/DataStoreBindPanel";
 import { buildPdfExtractorScope } from "@/features/pdf-extractor/lib/pdf-extractor-scope";
 import { SurfaceBoundAgentsList } from "@/features/surfaces/components/bind/SurfaceBoundAgentsList";
@@ -47,7 +44,7 @@ import { PDF_EXTRACTOR_SURFACE_NAME as PDF_EXTRACTOR_SURFACE } from "@/features/
 // narrow right rail (no horizontal scroll). The studio header's action opens
 // it as a canvas tab beside the reader (kind `knowledge-assets`).
 export type SectionKey =
-  "widgets" | "chunked" | "stores" | "manipulate" | "lineage";
+  "widgets" | "chunked" | "stores" | "lineage";
 
 const SECTIONS: {
   key: SectionKey;
@@ -57,40 +54,27 @@ const SECTIONS: {
   { key: "widgets", label: "Widgets", icon: Zap },
   { key: "chunked", label: "Chunker", icon: Repeat },
   { key: "stores", label: "Stores", icon: Database },
-  { key: "manipulate", label: "Manipulate", icon: Wrench },
   { key: "lineage", label: "Lineage", icon: GitBranch },
 ];
 
-interface PdfStudioInspectorProps {
+interface ExtractorInspectorProps {
   doc: PdfDocument;
   pages: PdfPageRow[];
   activePage: number | null;
   onRunShortcut: (shortcutId: string) => void | Promise<void>;
-  onRunPipeline: () => void | Promise<unknown>;
-  pipelineRunning: boolean;
-  pdfPaneEditMode: PdfPaneEditMode;
-  onStartCrop: (pagesInput: string) => void;
-  onStartReorder: () => void;
-  onEditModeCancel: () => void;
   /** When this changes (e.g. from the Chunks pane CTA), jump to that section. */
   requestedSection?: SectionKey | null;
   onSectionConsumed?: () => void;
 }
 
-export function PdfStudioInspector({
+export function ExtractorInspector({
   doc,
   pages,
   activePage,
   onRunShortcut,
-  onRunPipeline,
-  pipelineRunning,
-  pdfPaneEditMode,
-  onStartCrop,
-  onStartReorder,
-  onEditModeCancel,
   requestedSection,
   onSectionConsumed,
-}: PdfStudioInspectorProps) {
+}: ExtractorInspectorProps) {
   const [section, setSection] = useState<SectionKey>("widgets");
 
   useEffect(() => {
@@ -188,17 +172,6 @@ export function PdfStudioInspector({
               <DataStoreBindPanel
                 processedDocumentId={doc.id}
                 documentName={doc.name}
-              />
-            )}
-            {section === "manipulate" && (
-              <ManipulationPanel
-                doc={doc}
-                onRunPipeline={onRunPipeline}
-                running={pipelineRunning}
-                pdfPaneEditMode={pdfPaneEditMode}
-                onStartCrop={onStartCrop}
-                onStartReorder={onStartReorder}
-                onEditModeCancel={onEditModeCancel}
               />
             )}
             {section === "lineage" && <LineageTreeView doc={doc} />}
