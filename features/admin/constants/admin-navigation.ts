@@ -805,6 +805,7 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
             "/administration/compute/server-logs/[app]",
           ]),
           destination("/administration/compute/resilience-lab"),
+          destination("/administration/compute/repair-runs"),
         ],
       },
       {
