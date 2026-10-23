@@ -328,7 +328,6 @@ export default function TaskContentNew() {
                     <TaskSortControl
                       currentSort={sortBy}
                       onSortChange={(s) => dispatch(setSortBy(s))}
-                      compact={false}
                     />
                   </div>
 

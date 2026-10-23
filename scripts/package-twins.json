@@ -29,7 +29,7 @@
     { "pair": "lib/diagnostics/captureReactError.ts|rich-content/src/host/captureReactError.ts", "reason": "Host-wired: the package function reports through rich-content's own capture hook (captureRichContentRenderError) while the app reports to its errorCaptureStore; collapse by injecting the app store as the package's capture host, then re-export. Owner: Packages - Shared UI parts lane (rich-content host). DEBT: delete this line then." },
     { "pair": "lib/media/durability.ts|rich-content/src/host/durability.ts", "reason": "Host-wired: same body as rich-content/src/host/durability.ts except it reports violations to the app errorCaptureStore instead of the package capture hook; inject the app store as the capture host, then re-export (13 importers). Owner: Files and media lane (media durability). DEBT: delete this line then." }
   ],
-  "$catalogFloor": 203,
+  "$catalogFloor": 215,
   "twins": [
     {
       "name": "isUuidShape",
@@ -3347,6 +3347,184 @@
       "name": "instanceKey",
       "package": "@ai-matrx/summon",
       "why": "summon's one `overlayId:instanceId` key (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon.",
+      "allow": []
+    },
+    {
+      "name": "StatusBadge",
+      "package": "@ai-matrx/design-system/controls",
+      "why": "The one status capsule (tone names over role tokens, icon aria-hidden, title as meaning). Moved from matrx-frontend components/official/status-badge on 2026-10-22 (wave 2). Import it from @ai-matrx/design-system/controls.",
+      "allow": [],
+      "census": [
+        {
+          "file": "app/(admin)/administration/database/data-integrity/page.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "components/admin/state-analyzer/execution-inspector/ExecutionInstanceInspector.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "components/debug/AgentExecutionDebugPanel.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/admin/hard-cost-reconciliation/HardCostReconciliationTable.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/admin/users/record/UserSecurityTab.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/administration/batch/components/presentation.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/administration/kg-cost/components/KgCostDashboard.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/ai-models/audit/AuditTableShell.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/ai-models/components/ProviderSyncDashboard.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/code/views/source-control/SourceControlPanel.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/content-ir/admin/KindAssetsTab.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/crm/components/sending-identities/SendingIdentitiesPage.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/crm/outcomes/OutcomesPanel.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/file-analysis/tab/AnalysisTab.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/marketing/components/integrations/SiteIntegrationsWorkspace.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/marketing/components/shared/MarketingUi.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/marketing/components/structure/StructureWorkspace.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/marketing/seo/run-console/RunHistoryPanel.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/rag/components/library/StatusBadge.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/research/components/shared/StatusBadge.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "features/scraper/batch/BatchScrapePage.tsx",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        },
+        {
+          "file": "scripts/applets-templates/templates.mjs",
+          "reason": "IS a status capsule (a local status-to-colour pill); the package StatusBadge takes a tone NAME over role tokens and an optional icon. It cannot collapse honestly in this session: each site maps its own status vocabulary to colours and needs a tone mapping plus a visual pass on its page. Listed here, loud and ratcheted, so the first collapse deletes the entry and a new local StatusBadge fails."
+        }
+      ]
+    },
+    {
+      "name": "KpiTile",
+      "package": "@ai-matrx/design-system/controls",
+      "why": "The one KPI number tile (value, label, hint, drill-in link, sparkline; null is a dash). Moved from components/official/kpi on 2026-10-22 (wave 2). Import it from @ai-matrx/design-system/controls.",
+      "allow": [],
+      "census": [
+        {
+          "file": "features/administration/canonicalization/components/CanonicalizationOverview.tsx",
+          "reason": "IS a KPI number tile; the package KpiTile (controls) carries value, label, hint, drill-in link, sparkline and a dash for null. It cannot collapse honestly in this session: the local tile has its own props and layout that need a visual pass on its page. Listed here, loud and ratcheted."
+        },
+        {
+          "file": "features/marketing/local/LocalListingsWorkspace.tsx",
+          "reason": "IS a KPI number tile; the package KpiTile (controls) carries value, label, hint, drill-in link, sparkline and a dash for null. It cannot collapse honestly in this session: the local tile has its own props and layout that need a visual pass on its page. Listed here, loud and ratcheted."
+        }
+      ]
+    },
+    {
+      "name": "KpiGrid",
+      "package": "@ai-matrx/design-system/controls",
+      "why": "The one KPI tile grid, with KpiTile. Moved from components/official/kpi on 2026-10-22 (wave 2). Import it from @ai-matrx/design-system/controls.",
+      "allow": [],
+      "census": [
+        {
+          "file": "features/marketing/components/site/SiteOverview.tsx",
+          "reason": "IS a KPI tile grid; the package KpiGrid (controls) is its home. It cannot collapse honestly in this session: the local grid is bound to the page's own tile and layout. Listed here, loud and ratcheted."
+        }
+      ]
+    },
+    {
+      "name": "TextArrayInput",
+      "package": "@ai-matrx/design-system/controls",
+      "why": "The one chip list input for text arrays (with cleanUrl and the copy-all notice). Moved from components/official/TextArrayInput on 2026-10-22 (wave 2). Import it from @ai-matrx/design-system/controls.",
+      "allow": []
+    },
+    {
+      "name": "HelpIcon",
+      "package": "@ai-matrx/design-system/controls",
+      "why": "The one help icon card (copy, ask Matrx AI). Moved from components/official/HelpIcon on 2026-10-22 (wave 2). Import it from @ai-matrx/design-system/controls.",
+      "allow": []
+    },
+    {
+      "name": "LabeledField",
+      "package": "@ai-matrx/design-system/controls",
+      "why": "The one above-label form wrapper (label, required star, help, empty-looks-empty, error with the host's error actions, counter). Moved from components/official/Field on 2026-10-22 (wave 2). Import it from @ai-matrx/design-system/controls.",
+      "allow": []
+    },
+    {
+      "name": "AccessGate",
+      "package": "@ai-matrx/sharing/access/react",
+      "why": "The one access gate screen family (AccessGate, AccessDenied, RequestAccessPanel, ForbiddenSurfaceView), moved from matrx-frontend features/access-gate on 2026-10-22. Import it from @ai-matrx/sharing/access/react.",
+      "allow": []
+    },
+    {
+      "name": "AccessDenied",
+      "package": "@ai-matrx/sharing/access/react",
+      "why": "The one access-denied screen, part of the access screen family moved from features/access-gate on 2026-10-22. Import it from @ai-matrx/sharing/access/react.",
+      "allow": []
+    },
+    {
+      "name": "RequestAccessPanel",
+      "package": "@ai-matrx/sharing/access/react",
+      "why": "The one request-access panel, part of the access screen family moved from features/access-gate on 2026-10-22. Import it from @ai-matrx/sharing/access/react.",
+      "allow": []
+    },
+    {
+      "name": "ForbiddenSurfaceView",
+      "package": "@ai-matrx/sharing/access/react",
+      "why": "The one forbidden-surface view, part of the access screen family moved from features/access-gate on 2026-10-22. The app keeps only its route seam (features/access-gate/components/ForbiddenSurface.tsx). Import it from @ai-matrx/sharing/access/react.",
+      "allow": []
+    },
+    {
+      "name": "openClipboardFallback",
+      "package": "@ai-matrx/kit/clipboard-fallback-opener",
+      "why": "The one way to open the manual-copy dialog after the clipboard refuses (drawn by design-system's ClipboardFallbackHost). Import it from @ai-matrx/kit/clipboard-fallback-opener.",
+      "allow": []
+    },
+    {
+      "name": "showManualCopy",
+      "package": "@ai-matrx/kit/clipboard-fallback-opener",
+      "why": "The retired per-host manual-copy function (2026-10-22). A refused copy calls openClipboardFallback; a re-grown showManualCopy is a second dialog. Import openClipboardFallback from @ai-matrx/kit/clipboard-fallback-opener.",
       "allow": []
     }
   ]

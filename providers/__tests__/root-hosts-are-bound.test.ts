@@ -78,8 +78,24 @@ describe("root hosts are bound for every route", () => {
   });
 
   it("every route tree that draws an access screen takes a Providers tree that mounts the sharing host", () => {
-    expect(read("components/public-link/LinkProviders.tsx")).toMatch(/\bProviders\b/);
+    // LinkProviders must import the app Providers and render it as a JSX wrapper: a comment or an unrelated
+    // identifier containing the word does not count.
+    const link = read("components/public-link/LinkProviders.tsx");
+    expect(link).toMatch(/^import \{ Providers \} from "@\/app\/Providers";/m);
+    expect(link).toMatch(/<Providers>[\s\S]*<\/Providers>/);
     expect(read("app/Providers.tsx")).toMatch(/<SharingHost \/>/);
+  });
+
+  // 2026-10-22: AppletProviders mounted ConfirmDialogHost but not ClipboardFallbackHost, so on /applets/<slug> a blocked
+  // clipboard queued its manual-copy request forever. Any provider tree (a *Providers.tsx file) that mounts the confirm host mounts the clipboard host.
+  it("every provider tree that mounts ConfirmDialogHost also mounts ClipboardFallbackHost", () => {
+    const trees = ["app", "providers", "features", "components", "lib"]
+      .flatMap((dir) => (existsSync(join(ROOT, dir)) ? sourceFiles(dir) : []))
+      .filter((rel) => /Providers\.tsx$/.test(rel) && /^\s*<ConfirmDialogHost\s*\/>/m.test(read(rel)));
+    // The two trees that exist today; a new one is picked up by the scan and must satisfy the same rule.
+    expect(trees).toEqual(expect.arrayContaining(["app/Providers.tsx", "features/applets-host/AppletProviders.tsx"]));
+    const missing = trees.filter((rel) => !/^\s*<ClipboardFallbackHost\s*\/>/m.test(read(rel)));
+    expect(missing).toEqual([]);
   });
 
   it("each host module binds at load and exports the mountable component", () => {

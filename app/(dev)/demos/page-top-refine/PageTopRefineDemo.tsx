@@ -431,9 +431,9 @@ export function PageTopRefineDemo() {
             { value: "record", label: "One brand", disabled: rows.length === 0 },
           ]}
         />
-        <Toggle label="Intro" checked={showIntro} onChange={setShowIntro} />
-        <Toggle label="Summary" checked={showSummary} onChange={setShowSummary} />
-        <Toggle label="Tabs" checked={showTabs} onChange={setShowTabs} />
+        <ShowSwitch label="Intro" checked={showIntro} onChange={setShowIntro} />
+        <ShowSwitch label="Summary" checked={showSummary} onChange={setShowSummary} />
+        <ShowSwitch label="Tabs" checked={showTabs} onChange={setShowTabs} />
         <SegmentedControl
           aria-label="Width"
           value={widthMode}
@@ -484,7 +484,7 @@ export function PageTopRefineDemo() {
   );
 }
 
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (next: boolean) => void }) {
+function ShowSwitch({ label, checked, onChange }: { label: string; checked: boolean; onChange: (next: boolean) => void }) {
   return (
     <label className="type-body flex items-center gap-2">
       <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />
