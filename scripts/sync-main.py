@@ -1014,6 +1014,52 @@ def sweep_holds():
 
 SWEEP_HELD = []   # what the last commit_all held back (main() re-sweeps once after a package update)
 
+# THE PNPM CONFIG UNIT (2026-10-22). pnpm-lock.yaml records a hash for every entry of
+# pnpm-workspace.yaml `patchedDependencies`, whose files live under patches/. Commit 0bc5076445 took
+# the lockfile (four patch hashes) without the workspace file, and `pnpm install --frozen-lockfile`
+# (Vercel) refused the tree: ERR_PNPM_LOCKFILE_CONFIG_MISMATCH. The three travel as ONE commit unit:
+# when a commit takes any of them, it takes every other one that differs; when one cannot go (a live
+# plant, conflict markers, a sweep hold), the others wait on disk with it. No check, no stop.
+# The same rule at `git commit` time: scripts/githooks/pnpm-config-unit.sh.
+# Test: scripts/test_sync_main_pnpm_config_unit.py.
+PNPM_UNIT_FILES = ("pnpm-lock.yaml", "pnpm-workspace.yaml")
+PNPM_UNIT_DIRS = ("patches/",)
+
+
+def in_pnpm_unit(path):
+    return path in PNPM_UNIT_FILES or path.startswith(PNPM_UNIT_DIRS)
+
+
+def pnpm_unit_plan(staged, changed, blocked):
+    """(to_add, to_unstage) so the pnpm config unit is committed whole or not at all.
+    staged: paths in the index for this commit; changed: unit paths whose disk differs from HEAD;
+    blocked: paths this commit must not take."""
+    staged_unit = sorted(p for p in staged if in_pnpm_unit(p))
+    if not staged_unit:
+        return [], []
+    members = set(staged_unit) | {p for p in changed if in_pnpm_unit(p)}
+    if any(p in blocked for p in members):
+        return [], staged_unit
+    return sorted(members - set(staged_unit)), []
+
+
+def keep_pnpm_unit_whole(blocked):
+    """Apply pnpm_unit_plan to the sweep's index. Announces what it moved; never fails the sync."""
+    _, names, _ = git("diff", "--cached", "--name-only", "-z")
+    staged = [x for x in names.split("\0") if x]
+    _, st, _ = git("status", "--porcelain", "-z", "-uall", "--", *PNPM_UNIT_FILES, *PNPM_UNIT_DIRS, check=False)
+    changed = [e[3:] for e in st.split("\0") if len(e) > 3]
+    add, drop = pnpm_unit_plan(staged, changed, set(blocked))
+    if add:
+        git("add", "-A", "--", *[":(literal)" + p for p in add], check=False)
+        say("SWEEP took %s with pnpm-lock.yaml: the lockfile, pnpm-workspace.yaml and patches/ travel together."
+            % ", ".join(add))
+    if drop:
+        for p in drop:
+            git("restore", "--staged", "--", ":(literal)" + p, check=False)
+        say("SWEEP left %s on disk: part of the pnpm config unit could not go this sync, and the lockfile, "
+            "pnpm-workspace.yaml and patches/ only travel together. The next sync takes them." % ", ".join(drop))
+
 
 def repair_skill_copies():
     """LAW 15 (2026-10-18): the sweep below commits with --no-verify, so no hook ever sees what it
