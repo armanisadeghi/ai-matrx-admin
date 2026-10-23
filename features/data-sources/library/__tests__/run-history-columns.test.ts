@@ -10,7 +10,8 @@ jest.mock("../hooks", () => ({ useLibraryOrganizationId: () => "org-1" }));
 test("the list columns never select the whole metadata document", () => {
   const cols = JOB_COLUMNS.split(",").map((c) => c.trim());
   expect(cols).not.toContain("metadata");
-  expect(cols).toContain("row_key_field:metadata->>row_key_field");
+  expect(cols).toContain("row_key_field");
+  expect(JOB_COLUMNS).not.toMatch(/metadata|cost_usd|\bresult\b/);
 });
 
 test("a run is narrowed only when its key field and keys are known", () => {

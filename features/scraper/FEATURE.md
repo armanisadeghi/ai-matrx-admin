@@ -21,7 +21,7 @@ This doc covers four features as a single ingestion tier:
 | Feature       | Directory                 | Role                                                                    |
 | ------------- | ------------------------- | ----------------------------------------------------------------------- |
 | Scraper       | `features/scraper/`       | Web scraping + keyword search + search-and-scrape                       |
-| PDF Extractor | `features/pdf-extractor/` | Multipart upload → text extraction → optional AI cleanup                |
+| PDF Extractor (extract API; UI is the PDF workspace, `/pdf`, `features/pdf/workspace`) | `features/pdf-extractor/` | Multipart upload → text extraction → optional AI cleanup                |
 | Research      | `features/research/`      | Multi-stage pipeline: search → scrape → analyze → synthesize → document |
 | Transcripts   | `features/transcripts/`   | Audio/video upload → Whisper transcription → segmented persistence      |
 
@@ -76,7 +76,7 @@ They are grouped here because they share invariants (NDJSON streaming, Python-ba
 **Entry points**
 
 - Hook: `usePdfExtractor()` — `features/pdf-extractor/hooks/usePdfExtractor.ts`. Manages tabs, batch upload, NDJSON consumption, history, AI cleanup.
-- Component: `features/pdf-extractor/components/PdfExtractorWorkspace.tsx`
+- Component: deleted; the UI is the PDF workspace (`/pdf`, `features/pdf/workspace`)
 - Demo route: `app/(public)/demos/api-tests/pdf-extract`
 - Endpoints (Python backend — see **`features/pdf-extractor/API.md`**):
   - `POST /utilities/pdf/extract-text` — single file, synchronous, no persistence

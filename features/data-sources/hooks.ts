@@ -54,7 +54,7 @@ export function useFetchSpec(tableId: string) {
       const { data, error } = await createClient()
         .schema("scraper")
         .from("data_fetch_job")
-        .select("id,source_key,inputs,max_records,status,rows_created,rows_updated,finished_at,created_at,result")
+        .select("id,source_key,inputs,max_records,status,rows_created,rows_updated,finished_at,created_at,result:member_result")
         .eq("table_id", tableId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
@@ -118,7 +118,7 @@ export function useFetchedTables() {
 
 export const refreshHistoryKey = (tableId: string) => ["data-sources", "refresh-history", tableId] as const;
 
-/** Every finished refresh of this table, newest first: when, what it changed (counts), what it cost. Client-direct under RLS. */
+/** Every finished refresh of this table, newest first: when and what it changed (counts); cost never reaches the client. Client-direct under RLS. */
 export function useRefreshHistory(tableId: string) {
   return useQuery({
     queryKey: refreshHistoryKey(tableId),
@@ -126,7 +126,7 @@ export function useRefreshHistory(tableId: string) {
       const { data, error } = await createClient()
         .schema("scraper")
         .from("data_fetch_job")
-        .select("id,status,records_billed,cost_usd,finished_at,created_at,result")
+        .select("id,status,records_billed,finished_at,created_at,result:member_result")
         .eq("table_id", tableId)
         .eq("status", "done")
         .is("deleted_at", null)

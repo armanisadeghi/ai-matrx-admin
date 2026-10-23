@@ -17,7 +17,7 @@ Run an AI integration page-by-page (or in small chunks) across a document and pe
 ## Entry points
 
 **Routes**
-- `/tools/pdf-extractor/[id]` — primary *setup* surface. The PDF Extractor declares the variable mapping ([features/pdf-extractor/integrations/surface-variables.ts](../pdf-extractor/integrations/surface-variables.ts)) and exposes the `chunked` scope option that runs a Job. The inline Extractions pane has a "Full view" link out to the workspace below.
+- `/tools/pdf-extractor/[id]` — primary *setup* surface. The PDF workspace (`/pdf`, `features/pdf/workspace`) replaced the extractor studio; the mapping is declared by the extractor pieces ([features/pdf-extractor/integrations/surface-variables.ts](../pdf-extractor/integrations/surface-variables.ts)) and exposes the `chunked` scope option that runs a Job. The inline Extractions pane has a "Full view" link out to the workspace below.
 - `/knowledge/extractions` — **Extraction Data workspace catalog.** Global list of every dataset across all source documents — search, sort, context-filter, per-row context status, per-row Export / Send to, "Open" into the grid. The savior list entry (you're not trapped in a single PDF's tab). Client: [data-review/ExtractionCatalogClient.tsx](data-review/ExtractionCatalogClient.tsx).
 - `/knowledge/extractions/[id]` — **single-dataset management grid.** Search, sort, column visibility, pagination, merge duplicates, inline-edit of agent/validation/manual columns (page anchor read-only), per-row + bulk delete, run history (retry/cancel), context tagging, export (CSV/XLSX/JSON/copy), push to workbook / data table (with open-here / new-tab / window chooser), jump back to the source PDF. Client: [data-review/ExtractionDatasetClient.tsx](data-review/ExtractionDatasetClient.tsx).
 - `/knowledge/extractions/admin` — per-feature admin map ([app/(core)/knowledge/extractions/admin/page.tsx](../../app/(core)/knowledge/extractions/admin/page.tsx)).
@@ -66,7 +66,7 @@ Realtime publication enabled on `page_extraction_jobs`, `page_extraction_runs`, 
 
 ## Key flows
 
-### 1. User clicks "Run extraction" in PDF Extractor
+### 1. User clicks "Run extraction" in the PDF workspace (`/pdf`)
 
 1. `AiActionsPanel` ([features/pdf-extractor/studio/PdfStudioInspector.tsx](../pdf-extractor/studio/PdfStudioInspector.tsx)) — scope set to `chunked`, Job picked.
 2. `runExtractionStream(jobId, opts)` ([api/stream.ts](api/stream.ts)) opens `POST /page-extraction/runs/stream` with the user's JWT.
@@ -112,7 +112,7 @@ Realtime publication enabled on `page_extraction_jobs`, `page_extraction_runs`, 
 ## Related features
 
 - Depends on: [features/agents/](../agents/) (shortcut execution path), [features/files/](../files/) (`cld_files` and the auth + base-URL plumbing in `api/client.ts`), [features/pdf-extractor/](../pdf-extractor/) (the primary surface today)
-- Depended on by: future Analysis Studio integration ([features/file-analysis/](../file-analysis/)), future RAG viewer badges
+- Depended on by: future PDF workspace (`/pdf`) integration ([features/file-analysis/](../file-analysis/)), future RAG viewer badges
 - Cross-links: [features/agents/FEATURE.md](../agents/FEATURE.md), [features/rag/FEATURE.md](../rag/FEATURE.md), [features/file-analysis/FEATURE.md](../file-analysis/FEATURE.md), [features/pdf-extractor/FEATURE.md](../pdf-extractor/FEATURE.md)
 
 ---
