@@ -28,6 +28,8 @@ export type CapabilityHome =
   /** A badge in the corner of each page thumbnail (PdfWorkspaceHost.renderPageBadge). */
   | { kind: "thumbnail-badge" }
   | { kind: "mode"; tool: "annotate"; mode: "view" | "select" | "draw" }
+  /** Source files (relative to the repo root) that must contain these markers: the restored folded-away features. */
+  | { kind: "source-has"; checks: readonly { file: string; has: readonly string[] }[] }
   | { kind: "deferred"; stillAt: string; why: string };
 
 export interface Capability {
@@ -93,6 +95,11 @@ export const PDF_CAPABILITIES: readonly Capability[] = [
   { id: "extractor-docs", label: "Document list and upload", was: "PdfStudioSidebar, PdfStudioUpload", home: { kind: "front-door" } },
   { id: "agent-surface-pdf-extractor", label: "Agent surface matrx-user/pdf-extractor (scope and write handlers)", was: "PdfStudioShell", home: { kind: "page-surface", surface: "matrx-user/pdf-extractor" } },
   { id: "thumbnail-annotation-badges", label: "Annotation count on each page thumbnail", was: "ThumbnailStrip", home: { kind: "thumbnail-badge" } },
+  // Restored after the extractor studio fold-in dropped them (PDF U7c).
+  { id: "batch-upload", label: "Multi-file batch upload with per-file progress", was: "PdfStudioUpload, PdfStudioUploadDrawer", home: { kind: "source-has", checks: [{ file: "features/pdf/workspace/PdfFrontDoor.tsx", has: ["<FileUploadDropzone", "application/pdf", "onUploaded", "DropzoneAcquisitionActions"] }] } },
+  { id: "list-rename-archive", label: "Rename and archive (and restore) from the PDF list, row and bulk", was: "PdfStudioSidebar, pdfDocMenu, StudioDocRenameDialog", home: { kind: "source-has", checks: [{ file: "features/pdf/workspace/PdfDocumentList.tsx", has: ["defineRowVerbs", 'id: "rename"', 'id: "archive"', 'id: "restore"', "useTableBulkSelection", "ArchivedDisclosure", "renamePdfDocument"] }] } },
+  { id: "mobile-layout", label: "Workspace at phone width: tools as a bottom sheet, thumbnails as a drawer, the viewer fills the screen", was: "PdfStudioMobile", home: { kind: "source-has", checks: [{ file: "node_modules/@ai-matrx/office/dist/", has: ["data-compact", "Page thumbnails"] }, { file: "features/pdf/workspace/PdfWorkspaceRoute.tsx", has: ["h-dvh", "<PdfWorkspace "] }] } },
+  { id: "auto-clean-on-open", label: "AI clean on open, as the Feature Knob pdf.workspace.auto_clean_on_open (default off, cost behind the Cost door)", was: "useAutoCleanOnOpen in PdfStudioShell and PdfStudioMobile", home: { kind: "source-has", checks: [{ file: "features/pdf/workspace/extractor/autoClean.ts", has: ["auto_clean_on_open"] }, { file: "features/pdf/workspace/extractor/AutoCleanOnOpen.tsx", has: ["useEffectiveKnob", "useAutoCleanOnOpen", "force: false", "<CostDoor"] }, { file: "features/pdf/workspace/PdfWorkspaceRoute.tsx", has: ["<AutoCleanOnOpen"] }, { file: "features/pdf/workspace/extractor/ExtractorTool.tsx", has: ["<AutoCleanSetting"] }, { file: "lib/scoped-config/knob-keys.snapshot.json", has: ['"pdf.workspace","auto_clean_on_open"'] }] } },
   { id: "server-internal", label: "extract-text (non-streaming), render-page, render-thumbnail", was: "viewer and thumbnails", home: deferred("viewer internals", "no user-facing tool"), endpoints: ["extractText", "renderPage", "renderThumbnail"] },
 ];
 

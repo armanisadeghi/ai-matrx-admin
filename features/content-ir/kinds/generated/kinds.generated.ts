@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1748 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1749 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "5a34ff989900";
+export const KIND_REGISTRY_FINGERPRINT = "437dc8da4c28";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -248,9 +248,34 @@ export interface AgentDefinitionMessageFlags {
  * FIRST and the answer second — the birth floor reconciles a ceiling too small
  * to hold both (``agent_factory.guards.enforce_reasoning_output_budget``).
  *  *
- *  * Shared by 2 kinds (agent_definition, agent_factory_build).
+ *  * From kind `agent_definition`.
  */
-export interface AgentDefinitionSettings {
+export interface AgentDefinitionSettings_AgentDefinition {
+  top_p?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  stream?: boolean;
+  offering_id?: string | null;
+  temperature?: number | null;
+  reasoning_effort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | null;
+  internal_x_search?: boolean | null;
+  max_output_tokens?: number | null;
+  reasoning_summary?: "concise" | "detailed" | "never" | "auto" | "always" | null;
+  internal_web_search?: boolean | null;
+  internal_url_context?: boolean | null;
+  extended_prompt_cache?: boolean | null;
+}
+
+/**
+ * Run settings. A reasoning agent spends ``max_output_tokens`` on reasoning
+ * FIRST and the answer second — the birth floor reconciles a ceiling too small
+ * to hold both (``agent_factory.guards.enforce_reasoning_output_budget``).
+ *  *
+ *  * From kind `agent_factory_build`.
+ */
+export interface AgentDefinitionSettings_AgentFactoryBuild {
   top_p?: number | null;
   /**
    * The registered kind this payload is an instance of, when it is one.
@@ -13342,6 +13367,73 @@ export interface WechatAccount {
 }
 
 /**
+ * One X account that may belong to a named person, and why it matched.
+ *  *
+ *  * From kind `x_search_answer`.
+ */
+export interface XSearchAccount {
+  bio?: string | null;
+  why?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  handle: string;
+  location?: string | null;
+  verified?: boolean | null;
+  followers?: number | null;
+  avatar_url?: string | null;
+  display_name?: string | null;
+}
+
+/**
+ * One X post exactly as the tool showed it.
+ *  *
+ *  * From kind `x_search_answer`.
+ */
+export interface XSearchPost {
+  id: string;
+  text?: string | null;
+  likes?: number | null;
+  views?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  quotes?: number | null;
+  replies?: number | null;
+  reposts?: number | null;
+  is_reply?: boolean | null;
+  bookmarks?: number | null;
+  has_media?: boolean | null;
+  posted_at?: string | null;
+  author_name?: string | null;
+  author_handle?: string | null;
+}
+
+/**
+ * One X account's profile; ``found=false`` when no such account exists.
+ *  *
+ *  * From kind `x_search_answer`.
+ */
+export interface XSearchProfile {
+  bio?: string | null;
+  found?: boolean;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  handle?: string | null;
+  user_id?: string | null;
+  verified?: boolean | null;
+  followers?: number | null;
+  following?: number | null;
+  avatar_url?: string | null;
+  post_count?: number | null;
+  display_name?: string | null;
+}
+
+/**
  * * Shared by 2 kinds (agent_definition, agent_factory_build).
  */
 export interface YouTubeMediaPart {
@@ -13778,7 +13870,7 @@ export interface AgentDebrief {
  * live ``agent.definition`` row (with its v1 snapshot); rendered, it is the
  * agent a person is watching being built.
  *  *
- *  * Kind `agent_definition` (registry v12).
+ *  * Kind `agent_definition` (registry v13).
  */
 export interface AgentDefinition {
   name: string;
@@ -13791,7 +13883,7 @@ export interface AgentDefinition {
   category: string;
   messages: AgentDefinitionMessage[];
   model_id: string;
-  settings: AgentDefinitionSettings;
+  settings: AgentDefinitionSettings_AgentDefinition;
   description?: string;
   custom_tools?: string[];
   context_policies?: AgentDefinitionContextPolicy_AgentDefinition[];
@@ -67936,6 +68028,21 @@ export interface WorkflowStepHolding {
   filled_by_holder?: string[];
 }
 
+/**
+ * The Holder's answer: the part the operation asked for, the rest empty.
+ *  *
+ *  * Kind `x_search_answer` (registry v1).
+ */
+export interface XSearchAnswer {
+  posts?: XSearchPost[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "x_search_answer";
+  profile?: XSearchProfile | null;
+  accounts?: XSearchAccount[];
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // The registry as a type-level index.
 // ─────────────────────────────────────────────────────────────────────────
@@ -69689,7 +69796,8 @@ export type GeneratedKindSlug =
   | "workflow_plan_result"
   | "workflow_run_result"
   | "workflow_run_status"
-  | "workflow_step_holding";
+  | "workflow_step_holding"
+  | "x_search_answer";
 
 /** Slug → the complete-instance payload type for that kind. */
 export interface KindPayloadBySlug {
@@ -71441,6 +71549,7 @@ export interface KindPayloadBySlug {
   "workflow_run_result": WorkflowRunResult;
   "workflow_run_status": WorkflowRunStatus;
   "workflow_step_holding": WorkflowStepHolding;
+  "x_search_answer": XSearchAnswer;
 }
 
 /** `KindPayload<"web_result">` → `WebResult`. */
@@ -73196,6 +73305,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "workflow_run_result",
   "workflow_run_status",
   "workflow_step_holding",
+  "x_search_answer",
 ];
 
 const GENERATED_KIND_SLUG_SET: ReadonlySet<string> = new Set(GENERATED_KIND_SLUGS);

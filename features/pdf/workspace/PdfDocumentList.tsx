@@ -1,45 +1,147 @@
 "use client";
 
 /**
- * features/pdf/workspace/PdfDocumentList.tsx — the front door's list of the person's extracted PDF documents
- * (what the extractor studio's sidebar listed). Each row opens its source file in the workspace; a row whose
- * original file was removed says so. Upload is the picker's own (Choose a PDF offers local upload).
+ * features/pdf/workspace/PdfDocumentList.tsx — the front door's "Your PDFs": the person's extracted PDF documents
+ * (what the extractor studio's sidebar listed), as the platform's one table.
+ *
+ * Row actions are the shared row verbs (`defineRowVerbs`, lib/entity-list): Open, Rename (the document and its
+ * cloud file together), and Archive / Restore, which are also bulk actions on the table's selection (the bulk twin
+ * rule: one declaration, row and bar). Archived rows are hidden by default and one click away through the shared
+ * `ArchivedDisclosure` (the archived-items law). A row whose original file was removed is not listed (nothing to open).
  */
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { FileText } from "lucide-react";
-import { ReadFailure } from "@ai-matrx/design-system";
-import { usePdfStudioDocs } from "@/features/pdf-extractor/studio/hooks/usePdfStudioDocs";
+import { useRouter } from "next/navigation";
+import { Archive, ArchiveRestore, ExternalLink, FileText, Pencil } from "lucide-react";
+import { ArchivedDisclosure, readOf } from "@ai-matrx/design-system";
+import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { toast } from "@/lib/toast";
+import { usePdfStudioDocs, type StudioDocSummary } from "@/features/pdf-extractor/studio/hooks/usePdfStudioDocs";
+import { PdfDocRenameDialog } from "./PdfDocRenameDialog";
+import { renamePdfDocument } from "./renamePdfDocument";
+
+/** Rows the list can show: a root document whose original file is still there. */
+export function listablePdfDocs(docs: readonly StudioDocSummary[]): StudioDocSummary[] {
+  return docs.filter((d) => d.sourceKind === "cld_file" && !!d.sourceId && !d.sourceMissing);
+}
 
 export function PdfDocumentList() {
-  const { visible, loading, error, refresh, search, setSearch } = usePdfStudioDocs();
-  const rows = visible.filter((d) => d.sourceKind === "cld_file" && d.sourceId && !d.sourceMissing);
-  if (error) return <ReadFailure error={error} what="your documents" onRetry={refresh} />;
-  if (!loading && !rows.length && !search) return null;
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { visible, visibleArchived, loading, error, refresh, deleteDoc, restoreDoc, setDocName } = usePdfStudioDocs();
+  const [showArchived, setShowArchived] = useState(false);
+  const [renaming, setRenaming] = useState<StudioDocSummary | null>(null);
+
+  const active = useMemo(() => listablePdfDocs(visible), [visible]);
+  const archived = useMemo(() => listablePdfDocs(visibleArchived), [visibleArchived]);
+  const rows = showArchived ? [...active, ...archived] : active;
+
+  const { rowActionDefs, bulkActions } = defineRowVerbs<StudioDocSummary>(
+    [
+      {
+        id: "open", icon: ExternalLink, label: "Open",
+        onClick: (r, e) => { e.stopPropagation(); router.push(`/pdf/${r.sourceId}`); },
+        bulk: false, noBulk: "open",
+      },
+      {
+        id: "rename", icon: Pencil, label: "Rename",
+        onClick: (r, e) => { e.stopPropagation(); setRenaming(r); },
+        bulk: false, noBulk: "single",
+      },
+      {
+        id: "archive", icon: Archive, label: "Archive",
+        appliesTo: (r) => !r.archived,
+        unavailableTooltip: "Already archived",
+        onClick: (r, e) => {
+          e.stopPropagation();
+          deleteDoc(r.id).then(() => toast.success("Archived"), (err: unknown) => toast.error(err instanceof Error ? err.message : "Archive failed"));
+        },
+        bulk: {
+          done: "Archived",
+          runOne: async (id) => { await deleteDoc(id); },
+        },
+      },
+      {
+        id: "restore", icon: ArchiveRestore, label: "Restore",
+        appliesTo: (r) => r.archived,
+        unavailableTooltip: "Not archived",
+        onClick: (r, e) => {
+          e.stopPropagation();
+          restoreDoc(r.id).then(() => toast.success("Restored"), (err: unknown) => toast.error(err instanceof Error ? err.message : "Restore failed"));
+        },
+        bulk: {
+          done: "Restored",
+          runOne: async (id) => { await restoreDoc(id); },
+        },
+      },
+    ],
+    { noun: "PDF", getRowId: (r) => r.id, getRowName: (r) => r.name },
+  );
+  const bulk = useTableBulkSelection<StudioDocSummary>({
+    noun: "PDF",
+    rows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.name,
+    actions: bulkActions,
+    onRefresh: refresh,
+  });
+
+  const columns = useMemo((): MatrxColumnDef<StudioDocSummary>[] => [
+    {
+      id: "name", accessorKey: "name", header: "Name", width: 320,
+      cell: (r) => (
+        <Link href={`/pdf/${r.sourceId}`} className="flex min-w-0 items-center gap-2 hover:underline">
+          <FileText className="size-3.5 shrink-0 text-muted-foreground" />
+          <span className="truncate">{r.name}</span>
+          {r.archived ? <span className="shrink-0 text-xs text-muted-foreground">Archived</span> : null}
+        </Link>
+      ),
+    },
+    { id: "totalPages", accessorKey: "totalPages", header: "Pages", width: 90, cell: (r) => <span className="text-xs">{r.totalPages ?? ""}</span> },
+    { id: "createdAt", accessorKey: "createdAt", header: "Added", filter: "date", width: 140, cell: (r) => <span className="text-xs">{new Date(r.createdAt).toLocaleDateString()}</span> },
+  ], []);
+
+  if (!loading && !error && !active.length && !archived.length) return null;
   return (
-    <section className="flex w-full max-w-xl flex-col gap-2" data-pdf-document-list="">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-medium">Your PDFs</h2>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          aria-label="Search your PDFs"
-          placeholder="Search"
-          className="h-7 w-40 rounded-md border border-border bg-background px-2 text-xs"
+    <section className="flex w-full max-w-3xl flex-col gap-2 px-4" data-pdf-document-list="">
+      <h2 className="text-sm font-medium">Your PDFs</h2>
+      <div className="h-80 min-h-0">
+        <MatrxDataTable
+          urlState={{ id: "pdf-front-door-docs" }}
+          data={rows}
+          columns={columns}
+          getRowId={(r) => r.id}
+          isLoading={loading}
+          pageSize={25}
+          read={readOf({ loading, error }, { what: "your PDFs", onRetry: refresh })}
+          emptyState={{ title: "No PDFs match", description: "Upload one above." }}
+          toolbar={{ search: true, searchPlaceholder: "Search your PDFs", refresh: { onRefresh: refresh } }}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
         />
       </div>
-      <ul className="max-h-72 overflow-y-auto rounded-md border border-border">
-        {rows.map((d) => (
-          <li key={d.id} className="border-b border-border last:border-b-0">
-            <Link href={`/pdf/${d.sourceId}`} className="flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-accent">
-              <FileText className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 flex-1 truncate">{d.name}</span>
-              <span className="shrink-0 text-muted-foreground">{d.totalPages ? `${d.totalPages} pages` : ""}</span>
-            </Link>
-          </li>
-        ))}
-        {loading && !rows.length ? <li className="px-2 py-2 text-xs text-muted-foreground" aria-busy="true">Loading</li> : null}
-        {!loading && !rows.length ? <li className="px-2 py-2 text-xs text-muted-foreground">No PDFs match.</li> : null}
-      </ul>
+      <ArchivedDisclosure count={archived.length} open={showArchived} onOpenChange={setShowArchived} />
+      <PdfDocRenameDialog
+        open={renaming !== null}
+        onOpenChange={(o) => { if (!o) setRenaming(null); }}
+        currentName={renaming?.name ?? ""}
+        onCommit={async (name) => {
+          if (!renaming) return;
+          const previous = renaming.name;
+          setDocName(renaming.id, name);
+          try {
+            await renamePdfDocument({ docId: renaming.id, sourceKind: renaming.sourceKind, sourceId: renaming.sourceId, newName: name, dispatch });
+            refresh();
+          } catch (err) {
+            setDocName(renaming.id, previous);
+            throw err;
+          }
+        }}
+      />
     </section>
   );
 }

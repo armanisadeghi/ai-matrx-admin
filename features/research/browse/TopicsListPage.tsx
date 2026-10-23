@@ -17,6 +17,7 @@ import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { MandateDoorLink } from "@/features/mandates/components/MandateDoorLink";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import type { EntityListController } from "@/lib/entity-list/config";
 import { RESEARCH_TOPIC_LIST_CONFIG } from "./listConfig";
 import { useResearchTopicsSurface } from "./surface";
@@ -40,6 +41,11 @@ function NewTopicButton({ name }: { name?: string }) {
   );
 }
 
+/** The list's verbs, one list: the header draws them, the frame's "…" carries them. */
+const TOPIC_LIST_ACTIONS: ListPageAction[] = [
+  { id: "new", label: "New topic", icon: Plus, href: newTopicHref(undefined), primary: true },
+];
+
 export function TopicsListPage() {
   const surface = useResearchTopicsSurface();
   return (
@@ -49,7 +55,7 @@ export function TopicsListPage() {
       <EntityListPage
         config={RESEARCH_TOPIC_LIST_CONFIG}
         surface={surface}
-        headerActions={<NewTopicButton />}
+        actions={TOPIC_LIST_ACTIONS}
         emptyAction={(list: EntityListController<ResearchTopicListRow>) => (
           // A search that found nothing offers to start that topic.
           <NewTopicButton name={list.query.search} />

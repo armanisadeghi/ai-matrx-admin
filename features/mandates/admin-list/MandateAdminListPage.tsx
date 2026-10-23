@@ -23,7 +23,7 @@ import { useEffect, useRef } from "react";
 import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { ArrowUpCircle, BrainCircuit, Loader2, Trash2 } from "lucide-react";
-import { Button as ControlButton, Select } from "@ai-matrx/design-system/controls";
+import { Select } from "@ai-matrx/design-system/controls";
 import { commitUrlParams } from "@ai-matrx/kit/url-state";
 import { useListSearchParams } from "@/lib/entity-list/useListSearchParams";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
@@ -415,6 +415,21 @@ export function MandateAdminListPage({
             )}
           </>
         }
+        // The page's verb (Advance all safe) is one action: the header draws it, the frame's "…"
+        // carries it. Spend, legend and the pages nav are the header's read-outs, not verbs.
+        actions={
+          !support && safeDefaults.length > 0
+            ? [
+                {
+                  id: "advance-safe",
+                  label: writes.busy === "advance" ? "Advancing…" : `Advance all safe (${safeDefaults.length})`,
+                  icon: writes.busy === "advance" ? Loader2 : ArrowUpCircle,
+                  disabled: writes.busy !== null,
+                  onPress: () => void writes.advance(safeDefaults, "Mandate list: all safe"),
+                },
+              ]
+            : undefined
+        }
         headerActions={
           support ? (
             <MandateSupportLookupLabel />
@@ -426,18 +441,6 @@ export function MandateAdminListPage({
                 pending={!listState.spend.settled}
                 folded={listState.spend.folded}
               />
-              {safeDefaults.length > 0 ? (
-                <ControlButton variant="outline"
-                  disabled={writes.busy !== null}
-                  title="Move every mandate whose own pin is behind its Mandate Holder's newest version and graded safe"
-                  onClick={() => void writes.advance(safeDefaults, "Mandate list: all safe")}
-                >
-                  {writes.busy === "advance" ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : null}
-                  Advance all safe ({safeDefaults.length})
-                </ControlButton>
-              ) : null}
               <ImpactLegend />
               <MandateAdminPagesNav />
             </>

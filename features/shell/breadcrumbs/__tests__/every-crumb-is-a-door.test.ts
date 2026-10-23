@@ -14,6 +14,7 @@ import { routeEntryFor } from "@/lib/route-manifest/match";
 import { deriveTrail, type TrailNavNode } from "../derive-trail";
 import { isPagelessLevel, pagelessLevelsOf, renderPagelessLevelsModule } from "../pageless-levels";
 import { PAGELESS_LEVELS } from "../pageless-levels.generated";
+import { isRedirectedAddress, redirectedPatternsOf } from "../redirect-levels";
 import { ownAddressOf } from "../useOwnAddress";
 import { resolvePageTrail } from "@/features/shell/frame-host/framePageHeader";
 
@@ -22,6 +23,8 @@ const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "lib/route-manifest/
   routes: { pattern: string; status: string }[];
 };
 const PATTERNS = manifest.routes.map((r) => r.pattern);
+/** Addresses next.config.js redirects on to a page (redirect-levels.ts): real doors. */
+const REDIRECTED = redirectedPatternsOf(fs.readFileSync(path.join(ROOT, "next.config.js"), "utf8"));
 const NAV = [...primaryNavItems, ...adminNavItems] as unknown as TrailNavNode[];
 const ID = "b640e26f-50c7-420d-aff0-6c3541a8df6b";
 
@@ -41,6 +44,7 @@ const concrete = (pattern: string) =>
 const answers = (href: string) => {
   const bare = href.split(/[?#]/, 1)[0]!;
   if (/^https?:/.test(bare)) return true;
+  if (isRedirectedAddress(bare, REDIRECTED)) return true;
   const entry = routeEntryFor(bare);
   if (!entry) return false;
   const segs = bare.split("/").filter(Boolean);
@@ -82,10 +86,31 @@ describe("every crumb is a real door", () => {
   });
 
   it("the generated pageless table is the manifest's (pnpm route-manifest:generate)", () => {
-    const table = pagelessLevelsOf(PATTERNS);
+    const table = pagelessLevelsOf(PATTERNS, REDIRECTED);
     expect(PAGELESS_LEVELS).toEqual(table);
     const file = fs.readFileSync(path.join(__dirname, "../pageless-levels.generated.ts"), "utf8");
     expect(file).toBe(renderPagelessLevelsModule(table));
+  });
+
+  it("a level a next.config redirect sends on stays a link (Smart Add → its company page)", () => {
+    const config = `module.exports = { async redirects() { return [
+      { source: "/lib/smart-add", destination: "/lib/smart-add/company", permanent: false },
+      { source: "/lib/old", has: [{ type: "query", key: "k" }], destination: "/lib", permanent: true },
+      { source: "/lib/many/:path*", destination: "/lib/:path*", permanent: true },
+    ]; } };`;
+    const redirected = redirectedPatternsOf(config);
+    expect(redirected).toEqual(["/lib/smart-add"]);
+    const pages = ["/lib", "/lib/smart-add/company", "/lib/smart-add/validate/[id]", "/lib/old/x", "/lib/many/x"];
+    // RED witness: without the redirect the bare Smart Add level is a pageless folder (text, no door).
+    expect(pagelessLevelsOf(pages).levels).toContain("/lib/smart-add");
+    const table = pagelessLevelsOf(pages, redirected);
+    expect(table.levels).not.toContain("/lib/smart-add");
+    expect(table.levels).toEqual(["/lib/many", "/lib/old", "/lib/smart-add/validate"]);
+    // On the live config the real one holds.
+    expect(REDIRECTED).toContain("/marketing/brands/smart-add");
+    expect(isPagelessLevel("/marketing/brands/smart-add", PAGELESS_LEVELS)).toBe(false);
+    const trail = deriveTrail({ pathname: `/marketing/brands/smart-add/validate/${ID}`, nav: NAV });
+    expect(trail.find((c) => c.href === "/marketing/brands/smart-add")).toBeTruthy();
   });
 
   it("a static sibling with a page is never taken for a pageless [param] level", () => {

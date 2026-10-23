@@ -23,7 +23,7 @@
  * which is precisely the wall.
  *
  * The primitives themselves are guarded in
- * `components/official/__tests__/no-silent-disabled-action.test.tsx`.
+ * `@ai-matrx/design-system` (src/controls/labeled-field.test.tsx).
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";

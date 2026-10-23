@@ -176,10 +176,12 @@ export function ContentPlanHeader() {
             ? "Loading sites…"
             : "Pick a site"
       }
-      // NOT `entityStatus`: that renders INSIDE the entity dropdown's trigger
-      // button, and the lens chip is itself a button — React reported the
-      // nested-button hydration error immediately. `right` is a sibling slot.
-      right={<ActiveContextLensChip className="shrink-0" />}
+      // The scope this page's agents act within reads beside the name (a status
+      // that opens its own picker, like RecordPageHeader `indicator`). The name
+      // is no longer a dropdown trigger — the sibling door is its own control —
+      // so the chip no longer nests inside a button. Never `right=`: a header
+      // control outside `actions` is one "…" cannot carry (check:crumb-doors).
+      entityStatus={<ActiveContextLensChip className="shrink-0" />}
       entityOptions={entityOptions}
       modes={modes}
       // On the legacy address the views differ ONLY by `?view=`, which pathname

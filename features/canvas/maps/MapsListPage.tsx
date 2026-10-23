@@ -7,9 +7,9 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAccessToken,
@@ -34,11 +34,10 @@ export function MapsListPage() {
   const accessToken = useAppSelector(selectAccessToken);
   const mayLoad = canLoadMaps({ authReady, userId, accessToken });
 
-  const newButton = (
-    <ControlButton variant="primary" onClick={() => setCreating(true)} icon={<Plus className="h-4 w-4" />} collapse="container">
-      New map
-    </ControlButton>
-  );
+  // The list's one verb: the header draws it, the frame's "…" carries it, the empty state offers it.
+  const actions: ListPageAction[] = [
+    { id: "new", label: "New map", icon: Plus, primary: true, onPress: () => setCreating(true) },
+  ];
 
   return (
     <>
@@ -47,8 +46,7 @@ export function MapsListPage() {
         <>
           <EntityListPage
             config={mapListConfig}
-            headerActions={newButton}
-            emptyAction={newButton}
+            actions={actions}
           />
           <NewMapDialog open={creating} onOpenChange={setCreating} />
         </>

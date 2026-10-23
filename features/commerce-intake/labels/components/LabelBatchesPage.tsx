@@ -9,9 +9,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { BadgeCheck, FileUp, Plus } from "lucide-react";
 
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import { ListPageActionButton, type ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 
@@ -29,32 +29,23 @@ export function LabelBatchesPage() {
 
   const config = useMemo(() => buildLabelBatchListConfig(), []);
 
-  const actions = (
-    <div className="flex gap-2">
-      <ControlButton variant="outline" asChild icon={<BadgeCheck className="h-4 w-4" />} collapse="container">
-        <Link href="/commerce/labels/printers">
-          Printers
-        </Link>
-      </ControlButton>
-      {organizationId && (
-        <>
-          <ControlButton variant="outline"
-            onClick={() => setImporting(true)}
-            icon={<FileUp className="h-4 w-4" />}
-            collapse="container"
-          >
-            Import IDs
-          </ControlButton>
-          <ControlButton variant="primary"
-            onClick={() => setCreating(true)}
-            icon={<Plus className="h-4 w-4" />}
-            collapse="container"
-          >
-            New batch
-          </ControlButton>
-        </>
-      )}
-    </div>
+  // One action list: the list header draws each verb, the frame's "…" carries every one. Import and
+  // New need a destination organization, so they are offered only when one is selected.
+  const actions: ListPageAction[] = [
+    { id: "printers", label: "Printers", icon: BadgeCheck, href: "/commerce/labels/printers" },
+    ...(organizationId
+      ? [
+          { id: "import", label: "Import IDs", icon: FileUp, onPress: () => setImporting(true) },
+          { id: "new", label: "New batch", icon: Plus, primary: true, onPress: () => setCreating(true) },
+        ]
+      : []),
+  ];
+  const emptyActions = (
+    <span className="flex flex-wrap items-center justify-center gap-2">
+      {actions.map((action) => (
+        <ListPageActionButton key={action.id} action={action} />
+      ))}
+    </span>
   );
 
   return (
@@ -80,8 +71,8 @@ export function LabelBatchesPage() {
         <EntityListPage
           config={config}
           defaultScope={{ kind: "orgs" }}
-          headerActions={actions}
-          emptyAction={actions}
+          actions={actions}
+          emptyAction={emptyActions}
         />
       )}
       {organizationId && (

@@ -8,7 +8,6 @@ import { ArrowRight, Plus, SearchCheck } from "lucide-react";
 
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { Button } from "@/components/ui/button";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { GovernedActionDialog } from "@ai-matrx/sharing/access/react";
 import { isGovernedActionDenial } from "@ai-matrx/data/access";
@@ -51,6 +50,7 @@ import {
   EntityListPage,
   type EntityListSurface,
 } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { toast } from "@/lib/toast";
 import { RefreshCwTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 
@@ -296,15 +296,11 @@ export function SitesPortfolio({
     getWriteHandlers: buildWriteHandlers,
   };
 
-  const addSiteButton = (
-    <ControlButton variant="primary"
-      onClick={() => router.push(marketingRoutes.newSite())}
-      icon={<Plus className="h-3.5 w-3.5" />}
-      collapse="container"
-    >
-      Add site
-    </ControlButton>
-  );
+  // The list's verb: the header draws it, the frame's "…" carries it, the empty state offers it.
+  // Refresh and copy stay beside it as the list's own tools (they read the live list).
+  const siteActions: ListPageAction[] = [
+    { id: "add-site", label: "Add site", icon: Plus, href: marketingRoutes.newSite(), primary: true },
+  ];
 
   return (
     <>
@@ -366,11 +362,10 @@ export function SitesPortfolio({
                   disabled={list.isFetching}
                   className={list.isFetching ? "animate-spin" : undefined}
                 />
-                {addSiteButton}
               </>
             );
           }}
-          emptyAction={addSiteButton}
+          actions={siteActions}
         />
       </main>
 

@@ -8,7 +8,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -102,22 +101,5 @@ export function NewInterviewDialog({
       busy={busy}
       onConfirm={() => void create()}
     />
-  );
-}
-
-/** The list page's New button — routes to the full-page opening experience
- *  (/vision-interview/new). The dialog above stays for embedded callers but
- *  is no longer the front door (Arman, 2026-08-18: a vision deserves a page,
- *  not a cramped dialog). */
-export function NewInterviewButton() {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
-  return (
-    <Button
-      variant="primary"
-      onClick={() => startTransition(() => router.push("/masterwork/vision-interview/new"))}
-    >
-      New
-    </Button>
   );
 }

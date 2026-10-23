@@ -5,7 +5,7 @@
 // Reads the address, the menu and the page's declared record, and answers the trail. A record page
 // declares its record once (token + id, or a name) — `useDeclareCurrentRecord` / `RecordPageHeader` /
 // `<DeclareAgentRecord>` already do — and the crumb resolves, in this order:
-//   key or slug in the address → the declared name → the entity's name column
+//   a layout's declared level (trailLevels.ts) → key or slug in the address → the declared name → the entity's name column
 //   (`public.entity_titles` → `platform.entity_types.title_column`) → the id via <RecordId>.
 
 import { useMemo } from "react";
@@ -18,6 +18,7 @@ import type { Crumb } from "@/features/shell/components/header/templates/CrumbTr
 import { deriveTrail, type TrailRecord } from "./derive-trail";
 import { routeSiblings } from "./route-siblings";
 import { recordSiblingsLoader } from "./record-siblings";
+import { useTrailLevels } from "./trailLevels";
 
 const NAV = [...primaryNavItems, ...adminNavItems];
 
@@ -38,6 +39,9 @@ export function useDerivedTrail(options: UseDerivedTrailOptions = {}): Crumb[] {
   const livePathname = usePathname() ?? "/";
   const pathname = options.pathname ?? livePathname;
   const current = useCurrentRecord();
+  // Levels a layout above the page declared (the brand under /marketing/brands/<brand>/…): named by
+  // the record, never by the address's key.
+  const levels = useTrailLevels();
 
   // The declared record sits at the level whose segment equals its id.
   const declaredHref = useMemo(() => {
@@ -57,7 +61,8 @@ export function useDerivedTrail(options: UseDerivedTrailOptions = {}): Crumb[] {
     needsTitle[0] && !isUnresolved(needsTitle[0]) ? titleFor(needsTitle[0]) : null;
 
   const records = useMemo(() => {
-    const merged: Record<string, TrailRecord | undefined> = { ...options.records };
+    const merged: Record<string, TrailRecord | undefined> = { ...levels };
+    for (const [href, record] of Object.entries(options.records ?? {})) merged[href] = { ...merged[href], ...record };
     if (declaredHref && current) {
       merged[declaredHref] = {
         ...merged[declaredHref],
@@ -74,7 +79,7 @@ export function useDerivedTrail(options: UseDerivedTrailOptions = {}): Crumb[] {
       merged[lastHref] = { ...merged[lastHref], label: merged[lastHref]?.label ?? options.recordName };
     }
     return merged;
-  }, [options.records, options.recordName, declaredHref, current, resolvedTitle, pathname]);
+  }, [levels, options.records, options.recordName, declaredHref, current, resolvedTitle, pathname]);
 
   return useMemo(
     () =>

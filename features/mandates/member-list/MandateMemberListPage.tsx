@@ -18,9 +18,7 @@
 // The whole query lives in the URL, so Back restores scope, search and filters.
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Plus } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -114,19 +112,12 @@ export function MandateMemberListPage({
           </p>
         ) : null
       }
-      headerActions={
-        canCreate ? (
-          <ControlButton
-            variant="primary"
-            asChild
-            icon={<Plus className="h-3.5 w-3.5" />}
-            collapse="container"
-          >
-            <Link href={newSoftMandateHref(level, orgId)}>
-              New mandate
-            </Link>
-          </ControlButton>
-        ) : null
+      // The list's one verb (only where this seat may create): the header draws it, the frame's "…"
+      // carries it, the empty state offers it.
+      actions={
+        canCreate
+          ? [{ id: "new", label: "New mandate", icon: Plus, href: newSoftMandateHref(level, orgId), primary: true }]
+          : undefined
       }
     />
   );

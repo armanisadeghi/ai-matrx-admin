@@ -12,18 +12,14 @@ import { LayoutTemplate, Plus } from "lucide-react";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { appletListConfig } from "./listConfig";
 import { APPLET_LIST_SURFACE } from "./surface";
 
-function NewAppletButton() {
-  return (
-    <ControlButton variant="primary" asChild icon={<Plus className="h-4 w-4" />} collapse="container">
-      <Link href="/applets/build" aria-label="New Applet">
-        New Applet
-      </Link>
-    </ControlButton>
-  );
-}
+/** The list's verbs, one list: the header draws them, the frame's "…" carries them. */
+const APPLET_LIST_ACTIONS: ListPageAction[] = [
+  { id: "new", label: "New Applet", icon: Plus, href: "/applets/build", primary: true },
+];
 
 /** The first-run doors: build one by talking, or start from a template (audit L1). */
 function FirstAppletActions() {
@@ -48,7 +44,7 @@ export function AppletsListPage() {
       <EntityListPage
         config={appletListConfig}
         surface={APPLET_LIST_SURFACE}
-        headerActions={<NewAppletButton />}
+        actions={APPLET_LIST_ACTIONS}
         emptyAction={<FirstAppletActions />}
       />
     </>

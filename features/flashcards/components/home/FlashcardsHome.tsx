@@ -23,7 +23,6 @@ import { useRouter } from "next/navigation";
 import { INTELLIGENCE_ICON_NAME } from "@/components/icons/domain-icons";
 import { Flame, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import {
   EducationToolHeader,
   type EducationToolAction,
@@ -38,6 +37,7 @@ import { studyService } from "@/features/education/study/service/studyService";
 import type { StudyStreakRow } from "@/features/education/study/types";
 import { featureIntelligenceHref } from "@/features/mandates/feature-intelligence/hrefs";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import type { EntityListSurfaceController } from "@/lib/entity-list/components/EntityListPage";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -214,23 +214,13 @@ export function FlashcardsHome() {
     },
   ];
 
-  const createButton = (
-    <ControlButton variant="primary"
-      onClick={() => goTo(`${EDU_BASE}/new`)}
-      icon={<Plus className="h-4 w-4" />}
-      collapse="container"
-    >
-      Create deck
-    </ControlButton>
-  );
+  // The list's verb: the tab row draws it, the frame's "…" carries it, the empty state offers it.
+  const listActions: ListPageAction[] = [
+    { id: "create", label: "Create deck", icon: Plus, primary: true, onPress: () => goTo(`${EDU_BASE}/new`) },
+  ];
   // The streak rides the scope-tab row, beside Create deck — never a row of
-  // its own.
-  const tabRowActions = (
-    <>
-      <StreakChip streak={streak} />
-      {createButton}
-    </>
-  );
+  // its own. It is a status, not a verb.
+  const tabRowStatus = <StreakChip streak={streak} />;
   const surface =
     userId
       ? {
@@ -265,8 +255,8 @@ export function FlashcardsHome() {
           config={config}
           // The education layout already starts every route below the header.
           clearsShellHeader={false}
-          headerActions={tabRowActions}
-          emptyAction={createButton}
+          actions={listActions}
+          headerActions={tabRowStatus}
           surface={surface}
         />
       ) : authReady && !userId ? (

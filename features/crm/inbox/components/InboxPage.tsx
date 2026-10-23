@@ -14,10 +14,9 @@
  * second copy that can disagree with the screen.
  */
 
-import Link from "next/link";
 import { ListChecks } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
 import {
   CRM_INBOX_SURFACE_NAME,
@@ -25,6 +24,11 @@ import {
 } from "@/features/surfaces/manifests/crm-inbox.manifest";
 import { inboxListConfig } from "../listConfig";
 import { INBOX_ASSIST_SURFACE } from "../constants";
+
+/** The list's verbs, one list: the header draws them, the frame's "…" carries them. */
+const INBOX_ACTIONS: ListPageAction[] = [
+  { id: "chasebox", label: "Chasebox", icon: ListChecks, href: "/crm/chasebox" },
+];
 
 export function InboxPage() {
   return (
@@ -55,20 +59,9 @@ export function InboxPage() {
           }),
       }}
       notice={<AssistStrip surfaceName={INBOX_ASSIST_SURFACE} />}
-      headerActions={
-        // The inbox answers "who replied"; the Chasebox answers "what needs me
-        // now" across every queue, replies included. Each reaches the other.
-        <ControlButton
-          variant="outline"
-          asChild
-          icon={<ListChecks className="h-4 w-4" aria-hidden />}
-          collapse="container"
-        >
-          <Link href="/crm/chasebox">
-            Chasebox
-          </Link>
-        </ControlButton>
-      }
+      // The inbox answers "who replied"; the Chasebox answers "what needs me
+      // now" across every queue, replies included. Each reaches the other.
+      actions={INBOX_ACTIONS}
     />
   );
 }

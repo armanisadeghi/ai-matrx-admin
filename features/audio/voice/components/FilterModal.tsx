@@ -91,7 +91,6 @@ export function FilterModal({
                 isOpen={isOpen}
                 onClose={onClose}
                 title="Filter Voices"
-                description="Sort and filter voice options"
                 maxHeight="md"
             >
                 {content}

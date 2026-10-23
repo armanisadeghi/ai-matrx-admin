@@ -31,6 +31,7 @@
  */
 
 import type {
+  SurfaceActionCostFigure,
   SurfaceRegistry,
   SurfaceToolCall,
   SurfaceWriteContext,
@@ -68,7 +69,7 @@ export interface FramedSurfaceBridge {
   /** The surface's scope, read live; null when that surface is no longer mounted. */
   readScope: (surface: string) => Promise<SurfaceScopePayload | null>;
   runTool: (surface: string, name: string, input: unknown, call?: SurfaceToolCall) => Promise<unknown>;
-  toolCost: (surface: string, name: string, input: unknown) => Promise<string | null>;
+  toolCost: (surface: string, name: string, input: unknown) => Promise<SurfaceActionCostFigure | null>;
   validateWrite: (surface: string, name: string, value: unknown, context?: SurfaceWriteContext) => Promise<void>;
   applyWrite: (
     surface: string,
@@ -77,7 +78,7 @@ export interface FramedSurfaceBridge {
     context?: SurfaceWriteContext,
   ) => Promise<void | SurfaceWriteOutcome>;
   readCurrent: (surface: string, name: string, context?: SurfaceWriteContext) => Promise<string | null>;
-  writeCost: (surface: string, name: string, value: unknown) => Promise<string | null>;
+  writeCost: (surface: string, name: string, value: unknown) => Promise<SurfaceActionCostFigure | null>;
 }
 
 interface BridgeMessage {
@@ -143,7 +144,7 @@ export function createFramedSurfaceBridge(registry: SurfaceRegistry): FramedSurf
     },
     async toolCost(surface, name, input) {
       const handler = registry.clientTools(surface)[name];
-      return handler?.cost ? await handler.cost(copy(input)) : null;
+      return handler?.cost ? copy(await handler.cost(copy(input))) : null;
     },
     async validateWrite(surface, name, value, context) {
       await writeEntry(surface, name).validate?.(copy(value), copy(context));
@@ -157,7 +158,7 @@ export function createFramedSurfaceBridge(registry: SurfaceRegistry): FramedSurf
     },
     async writeCost(surface, name, value) {
       const cost = entryOf(writeHandlers(surface)[name])?.cost;
-      return cost ? await cost(copy(value)) : null;
+      return cost ? copy(await cost(copy(value))) : null;
     },
   };
 }

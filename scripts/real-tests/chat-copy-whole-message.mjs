@@ -123,6 +123,23 @@ try {
   await shot(page, "3-after-paste");
   check("pasted text keeps the words, not the reference", !!composer.value && composer.value.includes("The brand logo is attached") && !composer.value.includes("file:"), JSON.stringify(composer.value));
   check("pasted reference came back as the image chip", /brand-logo/.test(composer.chipText), composer.chipText.slice(0, 300));
+  check("copy names the sent context when the bubble shows it", !/items?\b/.test(await bubble.innerText()) || /Sent with this message: /.test(clip), clip.split("\n").find((l) => l.startsWith("Sent with")) ?? "(no chip shown)");
+
+  // A NEW chat with the same agent: the pasted variable line fills its declared variable.
+  console.log(JSON.stringify({ conversationId }));
+  const page2 = await ctx.newPage();
+  await page2.goto(`${origin}/chat/a/${AGENT}`, { waitUntil: "load", timeout: 300000 });
+  const fresh = page2.locator('[placeholder^="Enter a one-line"]').first();
+  await fresh.waitFor({ timeout: 180000 });
+  await fresh.fill("");
+  await page2.locator("textarea[data-agent-main-input]").first().click();
+  await paste(page2, { text: clip });
+  await page2.waitForTimeout(3000);
+  const filled = await fresh.inputValue();
+  const words = await page2.locator("textarea[data-agent-main-input]").first().inputValue();
+  await shot(page2, "4-paste-into-new-chat");
+  check("pasted Test Request line fills the agent's variable", filled === "Say ok.", JSON.stringify(filled));
+  check("the filled variable line is not left in the text", !words.includes("Test Request") && words.includes("The brand logo is attached"), JSON.stringify(words));
   console.log(JSON.stringify({ conversationId, url: page.url(), shots, results }));
 } finally {
   await browser.close();

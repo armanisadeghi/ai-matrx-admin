@@ -21,11 +21,9 @@
 // Everything agent-specific lives in ../listConfig.tsx; this file is the config
 // plus this page's slots (notice, header buttons, empty action).
 
-import Link from "@/components/navigation/AppLink";
 import { Plus, Network } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
-import type { EntityListController } from "@/lib/entity-list/config";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { agentListConfig } from "../listConfig";
 import { newAgentHref } from "../agentPaths";
 import { ADMIN_SYSTEM_AGENTS_LIST_SURFACE } from "../adminSurface";
@@ -77,23 +75,19 @@ export function AgentBrowsePage({
   const supportAdmin = variant === "support-admin";
   const adminRoute = systemAdmin || supportAdmin;
 
-  // On the System Agents management page the New button makes a system agent.
-  // On /agents/all the System tab is the platform's published built-ins for
-  // every viewer, and New there makes the viewer's own agent — the admin seat
-  // never acts as itself on a user page.
-  const newAgentButton = (list: EntityListController<AgentBrowseRow>) => {
-    const system = systemAdmin && list.query.scope.kind === "system";
-    return (
-      <ControlButton variant="primary" asChild icon={<Plus className="h-4 w-4" />} collapse="container">
-        <Link
-          href={newAgentHref(system)}
-          aria-label={system ? "New system agent" : "New agent"}
-        >
-          {system ? "New system agent" : "New agent"}
-        </Link>
-      </ControlButton>
-    );
-  };
+  // On the System Agents management page (System scope only) New makes a system agent. On
+  // /agents/all the System tab is the platform's published built-ins for every viewer, and New there
+  // makes the viewer's own agent — the admin seat never acts as itself on a user page. Support lookup
+  // creates nothing. One action list: the header draws each verb, the frame's "…" carries every one,
+  // the primary is the empty state's door.
+  const actions: ListPageAction[] | undefined = supportAdmin
+    ? undefined
+    : [
+        { id: "orchestras", label: "Orchestras", icon: Network, href: "/agents/orchestras" },
+        systemAdmin
+          ? { id: "new", label: "New system agent", icon: Plus, href: newAgentHref(true), primary: true }
+          : { id: "new", label: "New agent", icon: Plus, href: newAgentHref(false), primary: true },
+      ];
 
   return (
     <EntityListPage
@@ -125,25 +119,16 @@ export function AgentBrowsePage({
           : AGENT_BROWSE_SURFACE
       }
       notice={<ClassicViewNotice />}
-      headerActions={(list) =>
+      actions={actions}
+      headerActions={
         supportAdmin ? (
           <span className="flex items-center gap-2 type-secondary text-muted-foreground">
             <span className="rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-medium text-amber-700 dark:text-amber-300">
               Support tool
             </span>
           </span>
-        ) : (
-        <>
-          <ControlButton variant="outline" asChild icon={<Network className="h-4 w-4" />} collapse="container">
-            <Link href="/agents/orchestras" aria-label="Orchestras">
-              Orchestras
-            </Link>
-          </ControlButton>
-          {newAgentButton(list)}
-        </>
-        )
+        ) : undefined
       }
-      emptyAction={supportAdmin ? undefined : (list) => newAgentButton(list)}
     />
   );
 }
