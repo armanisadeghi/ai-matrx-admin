@@ -177,7 +177,6 @@ export interface RefreshRun {
   at: string | null;
   status: string;
   recordsBilled: number;
-  costUsd: number | null;
   summary: ChangeSummary | null;
 }
 
@@ -194,7 +193,6 @@ export function parseHistory(rows: unknown): RefreshRun[] {
         at: str(r.finished_at) ?? str(r.created_at),
         status: "done",
         recordsBilled: num(r.records_billed) ?? 0,
-        costUsd: num(r.cost_usd) ?? (typeof r.cost_usd === "string" ? asNumber(r.cost_usd) : null),
         summary: parseSummary(obj(r.result)?.changes),
       },
     ];

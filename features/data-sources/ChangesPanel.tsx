@@ -13,7 +13,6 @@ import { History } from "lucide-react";
 import { EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime, formatCount } from "@ai-matrx/kit/format";
 
-import { CostDoor } from "@/components/cost/CostDoor";
 
 import {
   fieldDelta,
@@ -72,7 +71,6 @@ function RunList({ runs, selected, onPick }: { runs: RefreshRun[]; selected: str
               <span className="shrink-0 tabular-nums text-foreground">{when(r.at)}</span>
               <span className="min-w-0 flex-1 truncate text-muted-foreground">{parts ? parts.join(" · ") : r.summary?.firstFetch ? "First fetch" : "Not recorded"}</span>
             </button>
-            <CostDoor usd={r.costUsd} iconOnly label="Cost of this refresh" className="shrink-0" />
           </li>
         );
       })}

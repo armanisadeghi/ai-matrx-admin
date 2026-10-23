@@ -48,7 +48,7 @@ export interface FetchJobRow {
 }
 
 export const JOB_COLUMNS =
-  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, lease_until, duration_ms, row_key_field:metadata->>row_key_field";
+  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, lease_until, duration_ms, row_key_field";
 
 const POLL_OPEN_MS = 3000;
 

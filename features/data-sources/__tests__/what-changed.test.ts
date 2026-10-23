@@ -69,15 +69,15 @@ describe("the change set", () => {
 });
 
 describe("the refresh history", () => {
-  it("lists finished refreshes newest first with counts and cost", () => {
+  it("lists finished refreshes newest first with counts and no cost", () => {
     const runs = parseHistory([
-      { id: "j2", status: "done", finished_at: "2026-10-12T10:00:00Z", cost_usd: 0.03, records_billed: 20, result: { changes: summary } },
+      { id: "j2", status: "done", finished_at: "2026-10-12T10:00:00Z", records_billed: 20, result: { changes: summary } },
       { id: "j3", status: "failed", finished_at: null },
-      { id: "j1", status: "done", created_at: "2026-10-11T10:00:00Z", cost_usd: "0.03", records_billed: 20, result: { changes: { ...summary, first_fetch: true } } },
+      { id: "j1", status: "done", created_at: "2026-10-11T10:00:00Z", records_billed: 20, result: { changes: { ...summary, first_fetch: true } } },
     ]);
     expect(runs.map((r) => r.jobId)).toEqual(["j2", "j1"]);
     expect(runs[0].summary?.added).toBe(12);
-    expect(runs[1].costUsd).toBe(0.03);
+    expect("costUsd" in runs[1]).toBe(false);
     expect(summaryParts(runs[1].summary)).toBeNull();
   });
 });
