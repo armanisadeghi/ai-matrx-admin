@@ -73,7 +73,7 @@ import { RecoveryNudge } from "@/features/request-recovery/components/RecoveryNu
 // association cache had. Heavy port bindings (WindowPanel, FilePickerWindow)
 // are behind their own lazy edges inside the host — this import stays light.
 import { AssociationsHost } from "@/features/scopes/host/AssociationsHost";
-import { SharingHost } from "@/providers/SharingHost";
+// EXP: import { SharingHost } from "@/providers/SharingHost";
 // The record-reference host (records-ui/entity-ref) and the settings host (design-system/settings):
 // mounted here, beside SharingHost, so every route that takes Providers has them bound before first render.
 import { EntityRefHost } from "@/features/data-tables/records-ui-host/entityRefHost";
@@ -185,7 +185,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
         <ChatHostAdapter>
         <ChatSurfaceRegistrations />
         <AssociationsHost>
-          <SharingHost />
+          {/* EXP: <SharingHost /> */}
           <EntityRefHost />
           <SettingsHost />
           <DetailHost>
