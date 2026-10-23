@@ -22,6 +22,8 @@ import { useClassTests } from "./useClassTests";
 
 export interface UseClassTestMaterialReturn {
   test: ClassTest | null;
+  /** Every test of the class (the test crumb's door lists them). */
+  tests: ClassTest[];
   /** The covered units, in class order. */
   units: { id: string; name: string }[];
   /** Content groups holding only what the covered units hold. */
@@ -80,6 +82,7 @@ export function useClassTestMaterial(
 
   return {
     test,
+    tests: tests.tests,
     units: covered,
     groups,
     items,

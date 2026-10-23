@@ -24,7 +24,16 @@ import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { CostDoor } from "@/components/cost/CostDoor";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { useTrackerInputs, type NewsTrackerInputs } from "./data";
+import { SIBLINGS_MAX } from "@/features/shell/breadcrumbs/record-siblings";
+import type { CrumbOption } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+import { listTrackerInputs, useTrackerInputs, type NewsTrackerInputs } from "./data";
+import { newsTrackerHref } from "./NewsTrackersList";
+
+/** The monitor crumb's door: the other news monitors, through the News monitors list's own read, capped. */
+async function trackerSiblings(trackerId: string): Promise<CrumbOption[]> {
+  const rows = await listTrackerInputs();
+  return rows.slice(0, SIBLINGS_MAX).map((t) => ({ label: t.name || "News monitor", href: newsTrackerHref(t.id), active: t.id === trackerId }));
+}
 
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -295,7 +304,7 @@ export function NewsTrackerInputsView({ trackerId }: { trackerId: string }) {
       <RecordPageHeader
         backHref="/marketing/monitoring"
         parents={[{ label: "News monitors", href: "/marketing/monitoring" }]}
-        record={{ name: tracker?.name ?? "News monitor" }}
+        record={{ name: tracker?.name ?? "News monitor", loadSiblings: () => trackerSiblings(trackerId) }}
         status={tracker ? STATUS_BADGE[tracker.status] : undefined}
         actions={
           editorHref

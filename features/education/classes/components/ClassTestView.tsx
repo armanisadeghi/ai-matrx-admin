@@ -18,6 +18,7 @@ import { useEntityTitles } from "@/features/scopes/hooks/useEntityTitles";
 import { Button } from "@/components/ui/button";
 import { useClassAccess } from "../hooks/useClassAccess";
 import { useClassTestMaterial } from "../hooks/useClassTestMaterial";
+import { testSiblings } from "../classTests";
 import { ContentGroups } from "./ClassHubView";
 import { MakePracticeTestButton } from "./MakePracticeTestButton";
 
@@ -69,7 +70,7 @@ export function ClassTestView({ classId, testId }: { classId: string; testId: st
       <RecordPageHeader
         backHref={classHref}
         parents={[{ label: state.name, href: classHref }]}
-        record={{ name: test?.name ?? "Test" }}
+        record={{ name: test?.name ?? "Test", siblings: testSiblings(classId, testId, material.tests) }}
       />
       <div className="matrx-touch-targets mx-auto w-full max-w-3xl space-y-5 p-4">
         {material.error ? (

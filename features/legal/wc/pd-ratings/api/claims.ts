@@ -43,26 +43,29 @@ const claimsKeys = {
 
 export { claimsKeys };
 
+/** The saved cases read (newest first; RLS filters server-side) — the list's and the case crumb's. */
+export async function fetchMyClaims(): Promise<SavedClaimRow[]> {
+  const { data, error } = await supabase
+    .schema(SCHEMA as never)
+    .from(TABLE as never)
+    .select(
+      "id, applicant_name, case_number, date_of_injury, occupational_code, " +
+        "user_id, organization_id, project_id, tags, created_at, updated_at",
+    )
+    .is("deleted_at", null)
+    .order("updated_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false });
+  if (error) throw operationFailed("load your saved cases", error);
+  return (data ?? []) as SavedClaimRow[];
+}
+
 /** List the current user's saved WC claims (RLS already filters server-side). */
 export function useMyClaims(userId: string | undefined) {
   return useQuery<SavedClaimRow[]>({
     queryKey: claimsKeys.list(userId),
     enabled: !!userId,
     staleTime: 30_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .schema(SCHEMA as never)
-        .from(TABLE as never)
-        .select(
-          "id, applicant_name, case_number, date_of_injury, occupational_code, " +
-            "user_id, organization_id, project_id, tags, created_at, updated_at",
-        )
-        .is("deleted_at", null)
-        .order("updated_at", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false });
-      if (error) throw operationFailed("load your saved cases", error);
-      return (data ?? []) as SavedClaimRow[];
-    },
+    queryFn: fetchMyClaims,
   });
 }
 

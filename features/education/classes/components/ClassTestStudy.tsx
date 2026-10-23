@@ -17,6 +17,7 @@ import { getVoiceTestForCard } from "@/features/flashcards/components/study/voic
 import { useWeakAreaDrill } from "@/features/flashcards/data/useWeakAreaDrill";
 import { useClassAccess } from "../hooks/useClassAccess";
 import { useClassTestMaterial } from "../hooks/useClassTestMaterial";
+import { testSiblings } from "../classTests";
 
 const STUDY_LIMIT = 40;
 
@@ -51,7 +52,7 @@ export function ClassTestStudy({ classId, testId }: { classId: string; testId: s
       <RecordPageHeader
         backHref={testHref}
         parents={state ? [{ label: state.name, href: `/education/classes/${classId}` }] : []}
-        record={{ name: material.test ? `Study: ${material.test.name}` : "Study" }}
+        record={{ name: material.test ? `Study: ${material.test.name}` : "Study", siblings: testSiblings(classId, testId, material.tests, "/study") }}
       />
       <div className="h-full overflow-hidden">
         {material.error ? (

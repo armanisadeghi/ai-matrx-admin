@@ -287,14 +287,6 @@
     "no-declared-trail|app/(core)/workflows/runs/analyze/page.tsx",
     "no-declared-trail|app/(core)/workflows/runs/page.tsx",
     "no-declared-trail|app/(core)/workflows/speed-test/page.tsx",
-    "no-declared-trail|app/(core)/workflows/waiting/page.tsx",
-    "record-without-siblings|app/(core)/pick-lists/[id]/StoreListPage.tsx",
-    "record-without-siblings|features/education/classes/components/ClassTestStudy.tsx",
-    "record-without-siblings|features/education/classes/components/ClassTestView.tsx",
-    "record-without-siblings|features/legal/wc/pd-ratings/SavedCaseLoader.tsx",
-    "record-without-siblings|features/make/gallery/TemplatePreviewPage.tsx",
-    "record-without-siblings|features/marketing/monitor-setup/inputs/NewsTrackerInputsView.tsx",
-    "record-without-siblings|features/marketing/seo/domain-research/DomainResearchPage.tsx",
-    "record-without-siblings|features/surfaces/components/hub/SurfaceHubDetailPage.tsx"
+    "no-declared-trail|app/(core)/workflows/waiting/page.tsx"
   ]
 }

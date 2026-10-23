@@ -77,7 +77,7 @@ export const templatePreviewHref = (id: string) => `/templates/${encodeURICompon
 type Read<T> = { phase: "reading" } | { phase: "failed"; why: string } | { phase: "read"; data: T };
 
 /** Every card the filter matches: the door pages at 200, so a long catalog is read to its end. */
-async function readCatalogue(filter: Record<string, unknown>): Promise<{ total: number; cards: GalleryCard[] }> {
+export async function readCatalogue(filter: Record<string, unknown>): Promise<{ total: number; cards: GalleryCard[] }> {
   const doors = storeDoors(createClient());
   const cards: GalleryCard[] = [];
   let offset = 0;

@@ -15,7 +15,7 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 import { PickListChoicesEditor } from "@/features/data-tables/pick-lists/components/PickListChoicesEditor";
-import { getListWithItems } from "@/features/data-tables/pick-lists/service";
+import { getAccessibleLists, getListWithItems } from "@/features/data-tables/pick-lists/service";
 import { buildListSurfaceWriteHandlers } from "@/features/data-tables/pick-lists/surface-write-handlers";
 import {
   buildPickListPageScope,
@@ -23,12 +23,20 @@ import {
   type PickListLoad,
   type PickListPageView,
 } from "@/features/data-tables/pick-lists/pickListPageScope";
+import { SIBLINGS_MAX } from "@/features/shell/breadcrumbs/record-siblings";
+import type { CrumbOption } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { UnifiedDataTablePage } from "@/features/unified-data/table-page/UnifiedDataTablePage";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 
 const SURFACE_NAME = "matrx-user/pick-lists";
+
+/** The list crumb's door: every other pick list, through the Pick lists index's own read, capped. */
+async function pickListSiblings(listId: string): Promise<CrumbOption[]> {
+  const lists = await getAccessibleLists();
+  return lists.slice(0, SIBLINGS_MAX).map((l) => ({ label: l.list_name || "Untitled list", href: `/pick-lists/${l.id}`, active: l.id === listId }));
+}
 
 export function StoreListPage({ listId }: { listId: string }) {
   const userId = useAppSelector(selectUserId);
@@ -111,7 +119,7 @@ export function StoreListPage({ listId }: { listId: string }) {
         <div className="flex h-full flex-col">
           {/* The Table view's table page owns the shell header (the table switcher); the Choices view names the list. */}
           {view === "choices" ? (
-            <RecordPageHeader backHref="/pick-lists" record={{ name: list?.list_name, token: "record", id: listId }} />
+            <RecordPageHeader backHref="/pick-lists" record={{ name: list?.list_name, token: "record", id: listId, loadSiblings: () => pickListSiblings(listId) }} />
           ) : null}
           <div className="shrink-0 px-4 pb-1 pt-[calc(var(--shell-header-h)+0.25rem)]">
             <SegmentedControl

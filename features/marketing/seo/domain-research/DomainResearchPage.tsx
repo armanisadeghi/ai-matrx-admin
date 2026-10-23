@@ -165,7 +165,8 @@ export function DomainResearchPage({ experience = false }: { experience?: boolea
     <>
       <RecordPageHeader
         parents={[{ label: "SEO Tools", href: marketingRoutes.tools() }]}
-        record={{ name: host ?? "Domain research" }}
+        // A place, not a record: the domain is the lookup typed in (`?d=`), with no id of its own.
+        level={{ name: host ?? "Domain research" }}
         status={tracked ? { label: "Tracked competitor", tone: "info" } : undefined}
         modes={
           host

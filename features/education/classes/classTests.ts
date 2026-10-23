@@ -8,6 +8,7 @@
 
 import type { ContainerLink } from "@ai-matrx/associations/react";
 import { CLASS_TEST_COVERS_ROLE, CLASS_TEST_EDGE_KIND } from "./constants";
+import { SIBLINGS_MAX } from "@/features/shell/breadcrumbs/record-siblings";
 import { isTestLink, itemKey, metadataOf, type PartEdge } from "./classParts";
 
 /** One test of a class, as the hub shows it. */
@@ -119,4 +120,21 @@ export function practiceTestSources<I extends FiledItem>(items: readonly I[]): I
 /** The decks (`fc_set`) among a test's items — what "Study" reviews. */
 export function testDeckIds(items: readonly FiledItem[]): string[] {
   return [...new Set(items.filter((i) => i.token === "fc_set").map((i) => i.entityId))];
+}
+
+/**
+ * The test crumb's door: every other test of the class (the class's own test list), each opening the
+ * same view (`suffix`, e.g. "/study") — capped.
+ */
+export function testSiblings(
+  classId: string,
+  activeTestId: string,
+  tests: readonly ClassTest[],
+  suffix = "",
+): { label: string; href: string; active: boolean }[] {
+  return tests.slice(0, SIBLINGS_MAX).map((t) => ({
+    label: t.name || "Untitled test",
+    href: `/education/classes/${classId}/tests/${t.id}${suffix}`,
+    active: t.id === activeTestId,
+  }));
 }
