@@ -10,7 +10,7 @@
  * `server.ts` directly from both places; they need no wrapper.
  */
 
-import type { SurfaceWriteHandlerEntry } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceActionCostFigure, SurfaceWriteHandlerEntry } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { AD_LIBRARY_LABELS, isAdLibrary, type AdCardModel } from "./types";
 import { goalMetricId, measureGoal, metricDefOf, type KpiAccount, type KpiMetricId } from "./kpi";
 import { addToCollection, createCollection, ingestPost } from "./server";
@@ -132,10 +132,10 @@ export function countOf(value: unknown, match: (item: unknown) => boolean = () =
 
 /**
  * Put a `cost` on one write handler of a set, so its approval card names what approving spends.
- * `withCostOn(() => handlers)("create_x", (value) => "≈ 12 points")` returns `{ create_x: {...entry, cost} }`.
+ * `withCostOn(() => handlers)("create_x", (value) => ({ points: 12 }))` returns `{ create_x: {...entry, cost} }`.
  */
 export function withCostOn(handlers: () => Record<string, SurfaceWriteHandlerEntry>) {
-  return (name: string, cost: (value: unknown) => string | null): Record<string, SurfaceWriteHandlerEntry> => {
+  return (name: string, cost: (value: unknown) => SurfaceActionCostFigure | null): Record<string, SurfaceWriteHandlerEntry> => {
     const entry = handlers()[name];
     if (!entry) throw new Error(`No write handler "${name}" to put a cost on.`);
     return { [name]: { ...entry, cost } };

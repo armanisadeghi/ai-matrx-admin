@@ -23,6 +23,7 @@ import { CostDoor } from "@/components/cost/CostDoor";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { shouldWarnAboutCost } from "@/components/cost/costTier";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import type { SurfaceActionCostFigure } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { getCosts } from "./server";
 import { postsUsd } from "./post-count";
 import type { SocialCosts, SocialSpendAction } from "./types";
@@ -52,14 +53,25 @@ export function formatPointsCost(
 }
 
 /**
- * The words an AGENT's proposal shows on its approval card: always the points, however small
- * (a person's own click keeps the warn-tier rule above). Null only when the server prices nothing.
+ * What an AGENT's proposal declares for its approval card: the figure, however small (a person's
+ * own click keeps the warn-tier rule above). The card draws it behind the host's Cost door; it is
+ * never words. Null only when the server prices nothing.
  */
-export function formatPointsAlways(usd: number | null, toPoints: (usd: number) => number | null): string | null {
+export function costFigure(usd: number | null, toPoints: (usd: number) => number | null): SurfaceActionCostFigure | null {
   if (usd == null) return null;
   const points = toPoints(usd);
   if (points == null) return null;
-  return `≈ ${Math.max(1, Math.ceil(points)).toLocaleString("en-US")} points`;
+  return { points: Math.max(1, Math.ceil(points)), usd };
+}
+
+/** Several figures as one total (null when none is priced). */
+export function sumCostFigures(figures: Array<SurfaceActionCostFigure | null>): SurfaceActionCostFigure | null {
+  const priced = figures.filter((f): f is SurfaceActionCostFigure => f != null);
+  if (!priced.length) return null;
+  return {
+    points: priced.reduce((n, f) => n + f.points, 0),
+    usd: priced.reduce((n, f) => n + (f.usd ?? 0), 0),
+  };
 }
 
 /** A confirm body: the caller's sentence, then the price behind the quiet Cost door (never printed). */
@@ -85,10 +97,10 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     toPoints: (usd: number) => toPoints(usd),
   };
 
-  /** For an agent's approval card: the points, even when small; "points (price not loaded)" when unknown. */
-  function agentCostText(action: SocialSpendAction, count = 1): string | null {
+  /** For an agent's approval card: the figure, even when small (the card keeps it behind the Cost door); null when unpriced. */
+  function agentCost(action: SocialSpendAction, count = 1): SurfaceActionCostFigure | null {
     if (count <= 0) return null;
-    return formatPointsAlways(actionUsd(costs.data, action, count), display.toPoints) ?? "points (price not loaded yet)";
+    return costFigure(actionUsd(costs.data, action, count), display.toPoints);
   }
 
   async function confirmSpend(
@@ -120,13 +132,6 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     return createElement(CostDoor, { usd: each.reduce<number>((sum, u) => sum + (u ?? 0), 0), prefix: "about " });
   }
 
-  /** The points one fetch of `count` posts from EACH platform uses, as one total, for a pre-commit preview; null when any is unpriced. */
-  function postsTotalText(platforms: string[], count: number): string | null {
-    const each = platforms.map((p) => postsUsd(costs.data, p, count));
-    if (!each.length || each.some((u) => u == null)) return null;
-    return formatPointsAlways(each.reduce<number>((sum, u) => sum + (u ?? 0), 0), display.toPoints);
-  }
-
   /** Confirm a fetch of `count` posts of `platform` (a warning-tier cost only; trivial costs ask nothing). */
   async function confirmPosts(
     platform: string,
@@ -138,7 +143,7 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     return confirm({ title: dialog.title, description: costDescription(undefined, postsUsd(costs.data, platform, count)), confirmLabel: dialog.confirmLabel });
   }
 
-  return { costNode, postsNode, agentCostText, confirmSpend, confirmPosts, postsTotalText };
+  return { costNode, postsNode, agentCost, confirmSpend, confirmPosts };
 }
 
 // ---------------------------------------------------------------------------

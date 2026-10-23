@@ -27,8 +27,10 @@
 `pnpm check:cost-display` (`scripts/check-cost-display.ts`, release gates, shrink-only baseline): P1 price placement
 (`ALLOWED_PLACES` cases `billing/usage/pricing/budget`, `battle`, `admin-gated`, `out of points`, `usage door`; anything
 inside `<CostDoor>`/`<AdminOnly>` is behind the door), P2 bare dollars off the admin site, R1–R7 correctness.
+S1 flags a server-sent cost sentence field (`cost.lines`, `*_cost_note`) rendered outside a door or a click-to-open `<details>`; H1 catches runtime-built units (`point${plural}`, a `unit = "points"` variable, "N credits", "Used N points."). A brand's OWN price (not our charge) is marked in code with `<ProductPrice>` / `asProductPrice()` (`components/cost/ProductPrice.tsx`), never a file list.
 `--census` lists every price-showing file; `--self-test` proves the rules.
 
 ## Change log
 
 - 2026-10-22 — CostDoor + AdminOnly added; dollars bare only on the admin site; guard P1 cases narrowed, door spans, P2 (owner ruling).
+- 2026-10-22 — guard S1/H1 + ProductPrice marker; agent approve-spend cards and bulk confirms carry their cost as a figure behind CostDoor (`EntityBulkActionConfirm.cost`, `SurfaceActionCostFigure`); advanced reader asks above knob `advanced_read.confirm_over_points`.

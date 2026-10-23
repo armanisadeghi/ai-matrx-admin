@@ -779,7 +779,7 @@ export function EntityListPage<TRow>({
       : probe.state === "failed"
         ? {
             title: `No live ${plural} in this view`,
-            description: `Nothing live is listed here, and the check for archived ${plural} did not answer — so this page cannot tell you whether any exist. Open Filters & Sort → Archived to look for yourself.`,
+            description: `The archived check did not answer.`,
             action: (
               <Button variant="outline" onClick={list.refresh}>
                 Try again

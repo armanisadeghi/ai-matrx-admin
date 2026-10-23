@@ -5,7 +5,9 @@ import { Telescope } from "lucide-react";
 import { Button, Switch } from "@ai-matrx/design-system/controls";
 
 import { useLibraryOrganizationId } from "../library/hooks";
-import { aboutTime, slowCoverage, upToPoints, type AdvancedAllow, type AdvancedItem } from "./contract";
+import { aboutTime, slowCoverage, type AdvancedAllow, type AdvancedItem } from "./contract";
+import { CostDoor } from "@/components/cost/CostDoor";
+import { confirmAdvancedRead, useConfirmOverPoints } from "./confirmAdvancedRead";
 import { readEntry, startAdvancedRead, useReadVersion } from "./store";
 import { useAdvancedQuote } from "./useAdvanced";
 
@@ -22,6 +24,7 @@ export interface AdvancedReadBatchProps {
  */
 export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatchProps) {
   const organizationId = useLibraryOrganizationId();
+  const confirmOver = useConfirmOverPoints();
   const version = useReadVersion();
   const [slow, setSlow] = useState(false);
   const unique = [...new Set(urls)];
@@ -49,8 +52,12 @@ export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatch
   if (unique.length === 0) return null;
   if (!started && quote && covered.length === 0 && !slowOption) return null;
 
-  const go = () => organizationId && startAdvancedRead({ organizationId, urls: covered.length ? covered : idle, allow, onItem });
   const n = covered.length || idle.length;
+  const go = async () => {
+    if (!organizationId) return;
+    if (!(await confirmAdvancedRead(quote?.pointsUpToTotal, confirmOver, `Try the advanced reader on ${n} pages?`))) return;
+    startAdvancedRead({ organizationId, urls: covered.length ? covered : idle, allow, onItem });
+  };
   return (
     <div className={`flex flex-wrap items-center gap-3 ${className ?? ""}`} data-advanced-read-batch="">
       {n > 0 ? (
@@ -64,9 +71,9 @@ export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatch
           {tally.running > 0 ? "Reading" : `Try all ${n}`}
         </Button>
       ) : null}
-      {n > 0 && upToPoints(quote?.pointsUpToTotal) ? (
-        <span className="text-xs text-muted-foreground" data-advanced-read-quote="">
-          {upToPoints(quote?.pointsUpToTotal)}
+      {n > 0 && quote?.pointsUpToTotal != null ? (
+        <span data-advanced-read-quote="">
+          <CostDoor points={quote.pointsUpToTotal} prefix="Up to " />
         </span>
       ) : null}
       {slowOption && n > 0 ? (

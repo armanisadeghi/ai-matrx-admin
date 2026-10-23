@@ -10,6 +10,7 @@
  * panel (one provision snapshot per call) beside the run.
  */
 
+import { ProductPrice, asProductPrice } from "@/components/cost/ProductPrice";
 import { useQuery } from "@tanstack/react-query";
 import { listBrandAssets } from "@/features/marketing/data/service";
 import { photosOf } from "@/features/marketing/photos/subject-photos";
@@ -132,7 +133,7 @@ function peekOf(item: OfferingItem): PeekRecord {
           item.families.map((f) => FAMILY_LABEL[f] ?? f).join(", ") ||
           "Address only",
       },
-      ...(item.priceText ? [{ property: "Price", value: item.priceText }] : []),
+      ...(item.priceText ? [{ property: "Price", value: asProductPrice(item.priceText) }] : []),
       ...(item.group ? [{ property: "Group", value: item.group }] : []),
       ...(quotes.length
         ? [
@@ -228,7 +229,7 @@ function offeringColumns(
       width: 100,
       cell: (item) =>
         item.priceText ? (
-          <span className="tabular-nums">{item.priceText}</span>
+          <ProductPrice className="tabular-nums">{item.priceText}</ProductPrice>
         ) : (
           <span className="text-muted-foreground">—</span>
         ),

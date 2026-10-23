@@ -18,6 +18,7 @@ import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { useBrandIdentityBaseScope } from "@/features/marketing/components/brand/BrandIdentitySurface";
 import { createMarketingBrandOfferingsScope } from "@/features/surfaces/manifests/marketing-brand-offerings.manifest";
 import type { TopicPlacementStatus } from "../topics/types";
+import { asProductPrice } from "@/components/cost/ProductPrice";
 import type { CatalogOffering, OfferingPrice, OfferingStatRow } from "./data";
 import type { OfferingEditDraft } from "./OfferingEditDialog";
 import type { OfferingWorthValues } from "./OfferingWorthDialog";
@@ -86,7 +87,7 @@ function outlineOf(catalog: CatalogOffering[], prices: Record<string, OfferingPr
   const lines: string[] = [];
   const walk = (parent: string | null, depth: number) => {
     for (const offering of children.get(parent) ?? []) {
-      const price = formatOfferingPrice(prices[offering.id]);
+      const price = asProductPrice(formatOfferingPrice(prices[offering.id]));
       lines.push(
         `${"  ".repeat(depth)}${offering.name} (${offering.kind})${price ? ` — ${price}` : ""}`,
       );

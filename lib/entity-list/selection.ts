@@ -34,6 +34,7 @@
 // which after a filter change would be false.
 
 import type { ComponentType } from "react";
+import type { CostDoorProps } from "@/components/cost/CostDoor";
 import type { ListScope } from "@/lib/list-scope/types";
 import type { ArchivedFilter, EntityFilters, EntityListQuery } from "./types";
 
@@ -139,6 +140,13 @@ export interface EntityBulkActionConfirm {
    * click law (`common-docs/policies/no-dead-ends.md`).
    */
   description: string;
+  /**
+   * WHAT THE CLICK SPENDS, as a figure (`{ usd }`, `{ points }` or labelled `rows`), drawn by the
+   * shell as a quiet CostDoor after the sentence — the confirm keeps its stop, the price never
+   * prints (owner ruling 2026-10-22, `common-docs/policies/points-and-money-in-the-ui.md`). Never
+   * write a price into `description`.
+   */
+  cost?: CostDoorProps;
   confirmLabel?: string;
   variant?: "default" | "destructive";
   /**

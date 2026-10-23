@@ -99,7 +99,7 @@ function chip(active: boolean) {
 
 export function SwipeFileTab() {
   const { brandId, organizationId, canEdit } = useSocials();
-  const { costNode, agentCostText } = useSocialSpend(organizationId);
+  const { costNode, agentCost } = useSocialSpend(organizationId);
   const invalidate = useInvalidateSocial();
   const collections = useAllSwipeCollections();
   const [showArchived, setShowArchived] = useState(false);
@@ -409,7 +409,7 @@ export function SwipeFileTab() {
   const swipeWrites: Record<string, SurfaceWriteHandlerEntry> = {
     ...swipeHandlers,
     // The approval card names the points, however small (one fetch per link).
-    ...withCostOn(() => swipeHandlers)("create_swipe_links", (value) => agentCostText("save_link", countOf(value))),
+    ...withCostOn(() => swipeHandlers)("create_swipe_links", (value) => agentCost("save_link", countOf(value))),
   };
   useSurfaceWriteHandlers(SOCIAL_SWIPE_SURFACE_NAME, swipeWrites);
 

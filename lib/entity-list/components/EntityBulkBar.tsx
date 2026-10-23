@@ -28,6 +28,7 @@ import { TextInputDialog } from "@ai-matrx/design-system";
 import { Button, DateField, Select, Textarea } from "@ai-matrx/design-system/controls";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import {
@@ -40,6 +41,16 @@ import {
 import type { EntityListSelection } from "../useEntityListSelection";
 import { BulkNoneDoneError, copySkippedAction } from "../bulkSkipped";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+
+/** The confirm sentence, then its cost (when the verb declares one) behind the quiet Cost door. */
+function confirmBody(question: EntityBulkActionConfirm): ReactNode {
+  if (!question.cost) return question.description;
+  return (
+    <>
+      {question.description} <CostDoor {...question.cost} />
+    </>
+  );
+}
 
 export function EntityBulkActions<TRow>({
   actions,
@@ -127,7 +138,7 @@ export function EntityBulkActions<TRow>({
     } else if (question) {
       const ok = await confirm({
         title: question.title,
-        description: question.description,
+        description: confirmBody(question),
         confirmLabel: question.confirmLabel ?? action.label,
         variant: question.variant ?? (action.variant === "destructive" ? "destructive" : "default"),
       });
@@ -237,7 +248,7 @@ export function EntityBulkActions<TRow>({
             setAsking(null);
           }}
           title={asking.question.title}
-          description={asking.question.description}
+          description={confirmBody(asking.question)}
           placeholder={asking.question.reason?.placeholder}
           confirmLabel={asking.confirmLabel}
           allowEmpty={asking.question.reason?.optional ?? false}
@@ -297,7 +308,7 @@ function BulkAskDialog({
       open
       onOpenChange={(open) => !open && onClose(null)}
       title={asking.question.title}
-      description={asking.question.description}
+      description={confirmBody(asking.question)}
       variant={asking.variant}
       confirmLabel={asking.confirmLabel}
       cancelLabel="Cancel"

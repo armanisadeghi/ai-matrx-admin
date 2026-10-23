@@ -6,7 +6,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-import { RENDER_CHARS, upToPoints, type AdvancedItem } from "../contract";
+import { RENDER_CHARS, type AdvancedItem } from "../contract";
 
 jest.mock("@ai-matrx/chat/ui/markdown-stream/MarkdownStream", () => ({
   __esModule: true,
@@ -51,15 +51,11 @@ const item = (over: Partial<AdvancedItem> = {}): AdvancedItem => ({
 });
 
 describe("advanced reader UI", () => {
-  it("formats the quote", () => {
-    expect(upToPoints(12)).toBe("Up to 12 points");
-    expect(upToPoints(1)).toBe("Up to 1 point");
-    expect(upToPoints(null)).toBeNull();
-  });
-
-  it("shows the price BEFORE the button is pressed", () => {
+  it("keeps the price behind a Cost door, never printed beside the button", () => {
     mount(<AdvancedReadButton url="https://g2.com/x" />);
-    expect(container.querySelector("[data-advanced-read-quote]")?.textContent).toBe("Up to 12 points");
+    const quote = container.querySelector("[data-advanced-read-quote]");
+    expect(quote).not.toBeNull();
+    expect(quote?.textContent).not.toMatch(/point|pts/i);
     expect(container.querySelector("[data-action=advanced-read]")).not.toBeNull();
   });
 

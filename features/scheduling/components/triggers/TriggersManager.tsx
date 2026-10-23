@@ -428,6 +428,9 @@ export function TriggersManager({
   const stateOne = (action: TriggerAction) => async (id: string) => {
     await setWorkflowTriggerState(id, action);
   };
+  /** What the paused triggers cost a month together (only the ones firing now). */
+  const monthlyOf = (rows: ManagedTrigger[]) =>
+    rows.reduce((sum, r) => sum + (r.overview.is_active ? r.cost.est_monthly_cost : 0), 0);
   const triggersLabel = (n: number) => `${n} ${n === 1 ? "trigger" : "triggers"}`;
   const { rowActionDefs, bulkActions } = defineRowVerbs<ManagedTrigger>(
     [
@@ -467,6 +470,7 @@ export function TriggersManager({
           confirm: (t) => ({
             title: `Pause ${triggersLabel(t.ids.length)}?`,
             description: "They stop firing on their own right now. Runs already started finish and Resume turns them back on.",
+            cost: { label: "Cost", rows: [{ label: "Per month combined", usd: monthlyOf(t.rows), prefix: "~" }] },
             confirmLabel: "Pause",
           }),
           runOne: stateOne("pause"),

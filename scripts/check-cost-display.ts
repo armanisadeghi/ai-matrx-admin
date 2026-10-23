@@ -166,6 +166,7 @@ export function countCostSites(source: string): number {
       }
     }
   });
+  for (const l of productPriceLines(source)) lines.delete(l);
   return lines.size;
 }
 
@@ -441,10 +442,25 @@ const LITERAL_ALWAYS: RegExp[] = [
   // "Free trial", "free text", "free-form" do not fire
   /(?:["'`]|>)\s*Free\s*(?:["'`<]|[,.·—–:;!](?!\w))/,
   /^\s*Free\s*$/,
+  // "credits" is not our word for the price (policy: points); a count of them is a price
+  /(?:\d[\d,.]*|\})\s*credits?\b/i,
+  // a spend toast / receipt: "Used 12 points.", "Spent ${n} points", "Charged 3 pts"
+  /\b(?:used|spent|charged|costs?)\s+(?:about\s+|up to\s+)?(?:\d[\d,.]*|\$?\{[^}]*\})\s*(?:points?|pts)\b/i,
   // a free allowance counted out ("3 free comparisons", `${n} free runs left`) — telling a person about
   // points and spend (owner ruling 2026-10-22)
   /(?:\d[\d,.]*|\})\s+free\s+(?:comparisons?|runs?|searches|search|checks?|lookups?|records?|uses?|tries|credits?|points?)\b/i,
 ];
+/** Runtime-built points units ("point${plural}", `${n} ${"pts"}`, `{n}pt`, a `unit = … "points"` variable): a price
+ *  only beside a money word or "up to"/"at most"/"maximum" ("N key points" and typographic "12pt" are not). */
+const LITERAL_RUNTIME: RegExp[] = [
+  /\bpoint\$\{/,
+  /["'`]point["'`]\s*\+/,
+  /\$\{\s*["'`](?:pts?|points?|credits?)["'`]\s*\}/,
+  /\}\s*pt\b(?!\s*=)/,
+  /\b\w*[uU]nit\w*\s*=\s*[^;\n]*["'`](?:points?|pts|credits?)["'`]/,
+];
+const MONEY_OR_CAP = /cost|spen[dt]|price|charge|budget|wallet|credit|estimat|usd|up\s*to|at\s+most|maximum|\bmax\b|\bquote/i;
+
 /** "N points" is a price only beside a money word ("12 data points", a score's "+5 points" are not). */
 const LITERAL_POINTS = /(?:\d[\d,.]*|\})\s*(?:AI\s+)?points?\b(?!\s*[.(\[=:?])(?!\s+(?:at|to)\b)/;
 const MONEY_WORD = /cost|spen[dt]|price|charge|budget|wallet|credit|estimat|usd|points_?per|pointsPer/i;
@@ -452,6 +468,7 @@ const MONEY_WORD = /cost|spen[dt]|price|charge|budget|wallet|credit|estimat|usd|
 /** True when a code line carries a literal price string. Pure. */
 export function literalPriceOn(code: string): boolean {
   if (LITERAL_ALWAYS.some((re) => re.test(code))) return true;
+  if (MONEY_OR_CAP.test(code) && LITERAL_RUNTIME.some((re) => re.test(code))) return true;
   return MONEY_WORD.test(code) && LITERAL_POINTS.test(code);
 }
 
@@ -537,9 +554,30 @@ export const DOOR_ELEMENTS = ["CostDoor", "AdminOnly"] as const;
 /** Line numbers (1-based) covered by a `<CostDoor …/>` / `<CostDoor>…</CostDoor>` / `<AdminOnly>…</AdminOnly>`
  *  element, props included. Pure. */
 export function doorLines(source: string): Set<number> {
+  const covered = elementLines(source, DOOR_ELEMENTS);
+  for (const l of productPriceLines(source)) covered.add(l);
+  return covered;
+}
+
+/** THE PRODUCT-PRICE MARKER (owner ruling 2026-10-22): a price that is a brand's OWN content (an
+ *  offering's price, a listing) is not what the platform charged. It is marked, in the code, by the
+ *  typed `<ProductPrice>` element or the `asProductPrice(text)` call from `components/cost/ProductPrice`
+ *  — never by a file list. Lines inside the element, or holding the call, are skipped by P1, P2 and the
+ *  dollar rules. */
+export const PRODUCT_PRICE_ELEMENTS = ["ProductPrice"] as const;
+export function productPriceLines(source: string): Set<number> {
+  const covered = elementLines(source, PRODUCT_PRICE_ELEMENTS);
+  source.split("\n").forEach((line, i) => {
+    if (/\basProductPrice\(/.test(line)) covered.add(i + 1);
+  });
+  return covered;
+}
+
+/** Line numbers (1-based) covered by any of the named JSX elements, props included. Pure. */
+export function elementLines(source: string, names: readonly string[]): Set<number> {
   const covered = new Set<number>();
   const lineOf = (i: number) => source.slice(0, i).split("\n").length;
-  const open = new RegExp(`<(${DOOR_ELEMENTS.join("|")})\\b`, "g");
+  const open = new RegExp(`<(${names.join("|")})\\b`, "g");
   let m: RegExpExecArray | null;
   while ((m = open.exec(source))) {
     const name = m[1];
@@ -569,6 +607,38 @@ export function doorLines(source: string): Set<number> {
   return covered;
 }
 
+/**
+ * SERVER COST FIELDS (S1, owner ruling 2026-10-22): fields the server fills with a ready-made cost
+ * sentence ("up to 200 points each", "estimated cost: about 30 points"). The
+ * client cannot see the text, but it can see the FIELD being rendered, so reading one is a price on
+ * screen exactly like a literal: it must sit inside a door, a click-to-open `<details>`, or a file in
+ * ALLOWED_PLACES. Add a field here the day the server starts sending a new cost sentence.
+ */
+export const SERVER_COST_FIELDS: RegExp[] = [
+  /\.cost\??\.lines\b/, // media-research preview: "up to N points each" per search line
+  /(?:\?\.|\.|\[["'])(?:compute_cost_note|estimated_cost_note|cost_note|cost_sentence|cost_lines?)\b/, // read, not declared
+];
+
+/** Does a code line read a server field that carries a cost sentence? Pure. */
+export function serverCostFieldOn(code: string): boolean {
+  return SERVER_COST_FIELDS.some((re) => re.test(code));
+}
+
+/** Line numbers (1-based) inside a `<details>…</details>` element: a section the person opens by
+ *  clicking its summary, which is a door in effect (the only place a server cost line may print). Pure. */
+export function detailsLines(source: string): Set<number> {
+  const covered = new Set<number>();
+  const lineOf = (i: number) => source.slice(0, i).split("\n").length;
+  const open = /<details\b/g;
+  let m: RegExpExecArray | null;
+  while ((m = open.exec(source))) {
+    const close = source.indexOf("</details>", m.index);
+    if (close === -1) continue;
+    for (let l = lineOf(m.index); l <= lineOf(close); l++) covered.add(l);
+  }
+  return covered;
+}
+
 /** P1 — lines where a file puts a price on screen: a use of a cost-rendering
  *  export of `components/cost/*`, a kit points call, a PRICE_HELPERS name or a
  *  derived price helper, or a literal price string. Comments and import lines
@@ -584,10 +654,13 @@ export function costRenderSites(source: string, file = "", isProducer?: Producer
   );
   const uses = locals.map((name) => new RegExp(`(?<![\\w.])${name}\\b(?!\\s*:)`));
   const behindDoor = doorLines(source);
+  const inDetails = detailsLines(source);
   const hits: number[] = [];
   codeLines(source).forEach((code, i) => {
     if (behindDoor.has(i + 1)) return;
-    if (code && (uses.some((re) => re.test(code)) || literalPriceOn(code))) hits.push(i + 1);
+    if (!code) return;
+    if (uses.some((re) => re.test(code)) || literalPriceOn(code)) hits.push(i + 1);
+    else if ((!file || /\.tsx$/.test(file)) && serverCostFieldOn(code) && !inDetails.has(i + 1)) hits.push(i + 1);
   });
   return hits;
 }
@@ -1025,6 +1098,35 @@ function selfTest(): number {
       want: 0,
     },
     { name: "a free allowance", source: "const s = `${n} free comparisons a day`;", want: 1 },
+    { name: "H1 runtime plural unit", source: "const t = `Up to ${n} point${n === 1 ? \"\" : \"s\"}`;", want: 1 },
+    { name: "H1 unit variable", source: "const costUnit = n === 1 ? \"point\" : \"points\";", want: 1 },
+    { name: "H1 templated pts unit", source: "const t = `Cost ${n} ${\"pts\"}`;", want: 1 },
+    { name: "H1 credits count", source: "<Button>Run ({n} credits)</Button>", want: 1 },
+    { name: "H1 spend toast", source: "toast.success(`Used ${n} points.`);", want: 1 },
+    { name: "H1 a key-points count is not a price", source: "const t = `${n} key point${n === 1 ? \"\" : \"s\"}`;", want: 0 },
+    { name: "H1 a typographic pt is not a price", source: "const size = `${w}pt ${h}pt`;", want: 0 },
+    { name: "PP a brand's own price inside <ProductPrice>", source: "export const F = ({ p }: { p: number }) => (\n  <ProductPrice>{`${p} points`}</ProductPrice>\n);", want: 0 },
+    { name: "PP a brand's own price through asProductPrice()", source: "const line = asProductPrice(`Up to ${n} point${n === 1 ? \"\" : \"s\"}`);", want: 0 },
+    {
+      name: "S1 a server cost sentence printed bare",
+      source: `export const F = ({ p }: { p: { cost: { lines: string[] } } }) => (\n  <ul>{p.cost.lines.map((l) => <li key={l}>{l}</li>)}</ul>\n);`,
+      want: 1,
+    },
+    {
+      name: "S1 a server cost note printed bare",
+      source: `export const F = ({ r }: { r: { estimated_cost_note: string } }) => <p>{r.estimated_cost_note}</p>;`,
+      want: 1,
+    },
+    {
+      name: "S1 the same server lines inside a click-to-open details",
+      source: `export const F = ({ p }: { p: { cost: { lines: string[] } } }) => (\n  <details>\n    <summary>What it covers</summary>\n    <ul>{p.cost.lines.map((l) => <li key={l}>{l}</li>)}</ul>\n  </details>\n);`,
+      want: 0,
+    },
+    {
+      name: "S1 a server cost note inside a CostDoor row",
+      source: `import { CostDoor } from "@/components/cost/CostDoor";\nexport const F = ({ r }: { r: { cost_note: string } }) => (\n  <CostDoor\n    rows={[{ label: "Note", text: r.cost_note }]}\n  />\n);`,
+      want: 0,
+    },
   ];
   for (const p of doorProbes) {
     const got = costRenderSites(p.source).length;
