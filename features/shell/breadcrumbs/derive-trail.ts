@@ -95,12 +95,37 @@ function navIndex(nav: readonly TrailNavNode[]): Map<string, NavHit> {
   return index;
 }
 
-/** The module row for a first segment: the row whose address or any child's address starts there. */
-function moduleFor(nav: readonly TrailNavNode[], seg: string): TrailNavNode | undefined {
+interface ModuleHit {
+  row: TrailNavNode;
+  /** The rows its crumb's door lists: the top menu, or the group's modules. */
+  siblings: readonly TrailNavNode[];
+  /** The group the module sits in (Industries), when it is one menu inside another. */
+  groupLabel?: string;
+}
+
+/**
+ * The module row for a first segment: the row whose address or any child's address starts there.
+ * A top row that GROUPS modules (its own address is its first module's) (Industries: each industry has its own menu) is never the module
+ * itself — the industry inside it is, and its door lists the group's other modules. Before, every
+ * industry's trail read "Industries" (/legal, /medical, /commerce/…, and /education by address).
+ */
+function moduleFor(nav: readonly TrailNavNode[], seg: string): ModuleHit | undefined {
   const starts = (href: string) => bare(href).split("/")[1] === seg;
   const deep = (n: TrailNavNode): boolean =>
     isDestination(n) && (starts(n.href) || (n.children?.some(deep) ?? false));
-  return nav.find((n) => isDestination(n) && starts(n.href)) ?? nav.find(deep);
+  const top = nav.find((n) => isDestination(n) && starts(n.href)) ?? nav.find(deep);
+  if (!top) return undefined;
+  const modules = (top.children ?? []).filter((c) => isDestination(c) && (c.children?.length ?? 0) > 0);
+  // A group's own address is one of its modules' (Industries opens Education); a module with
+  // sub-menus (Memory › Research) has an address of its own and stays the module.
+  const isGroup = modules.some((c) => bare(c.href) === bare(top.href));
+  const owner = isGroup
+    ? (modules.find((c) => starts(c.href)) ?? modules.find((c) => c.children!.some(deep)))
+    : undefined;
+  if (owner) {
+    return { row: owner, siblings: (top.children ?? []).filter(isDestination), groupLabel: top.label };
+  }
+  return { row: top, siblings: nav.filter(isDestination) };
 }
 
 /** "Agents" → "Agent", "Categories" → "Category": the kind of a record under a list. */
@@ -132,7 +157,8 @@ export function deriveTrail(input: DeriveTrailInput): Crumb[] {
     // Menu knowledge for this level.
     let navHit: NavHit | undefined;
     let moduleRow: TrailNavNode | undefined;
-    if (i === 0) moduleRow = moduleFor(nav, segment);
+    const moduleHit = i === 0 ? moduleFor(nav, segment) : undefined;
+    if (moduleHit) moduleRow = moduleHit.row;
     else navHit = index.get(href);
 
     let label: string;
@@ -166,11 +192,9 @@ export function deriveTrail(input: DeriveTrailInput): Crumb[] {
     } else if (record?.loadOptions) {
       loadOptions = record.loadOptions;
       optionsLabel = optionsLabel ?? parentLabel;
-    } else if (moduleRow) {
-      options = nav
-        .filter(isDestination)
-        .map((n) => ({ label: n.label, href: n.href, active: n === moduleRow }));
-      optionsLabel = "Menu";
+    } else if (moduleHit) {
+      options = moduleHit.siblings.map((n) => ({ label: n.label, href: n.href, active: n === moduleRow }));
+      optionsLabel = moduleHit.groupLabel ?? "Menu";
     } else if (navHit && navHit.siblings.length > 1) {
       options = navHit.siblings.map((n) => ({
         label: n.label,
