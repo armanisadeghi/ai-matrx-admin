@@ -30,6 +30,8 @@ const LABELS: Record<CleanupOpId, string> = {
 };
 
 const FORMATS = ["png", "jpg", "jpeg", "webp", "tiff"] as const;
+/** Region numbers are page points measured from the top-left corner of the page. */
+const REGION_FIELDS = [["page_number", "Page"], ["x0", "Left"], ["y0", "Top"], ["x1", "Right"], ["y1", "Bottom"]] as const;
 const EMPTY_REGION: RedactRegion = { page_number: 1, x0: 50, y0: 50, x1: 562, y1: 100, replacement: "BLOCK", preserve_text: false };
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -58,7 +60,7 @@ export function CleanupTool({ fileId, fileName, onOpenFile }: { fileId: string; 
   const [text, setText] = useState<string | null>(null);
   const [reason, setReason] = useState("Manual region redaction");
   const [scrubMeta, setScrubMeta] = useState(true);
-  const [regions, setRegions] = useState<RedactRegion[]>([{ ...EMPTY_REGION }]);
+  const [regions, setRegions] = useState<RedactRegion[]>([]);
   const [dpi, setDpi] = useState("150");
   const [fmt, setFmt] = useState<(typeof FORMATS)[number]>("png");
   const [pagesText, setPagesText] = useState("");
@@ -141,9 +143,11 @@ export function CleanupTool({ fileId, fileName, onOpenFile }: { fileId: string; 
         <div className="flex flex-col gap-3">
           {regions.map((r, i) => (
             <div key={i} className="flex flex-col gap-2 rounded-md border border-border p-2">
-              <div className="grid grid-cols-5 gap-1">
-                {(["page_number", "x0", "y0", "x1", "y1"] as const).map((k) => (
-                  <Field key={k} type="number" value={String(r[k])} aria-label={`Region ${i + 1} ${k === "page_number" ? "page" : k}`} onChange={(e) => patchRegion(i, { [k]: num(e.target.value) } as Partial<RedactRegion>)} />
+              <div className="grid grid-cols-3 gap-2">
+                {REGION_FIELDS.map(([k, label]) => (
+                  <Row key={k} label={label}>
+                    <Field type="number" value={String(r[k])} aria-label={`Region ${i + 1} ${label.toLowerCase()}`} onChange={(e) => patchRegion(i, { [k]: num(e.target.value) } as Partial<RedactRegion>)} />
+                  </Row>
                 ))}
               </div>
               <div className="flex items-center justify-between gap-2">
@@ -153,7 +157,7 @@ export function CleanupTool({ fileId, fileName, onOpenFile }: { fileId: string; 
                   aria-label={`Region ${i + 1} replacement`}
                   options={[{ value: "BLOCK", label: "Black box" }, { value: "REMOVE", label: "Remove" }]}
                 />
-                <Button variant="quiet" onClick={() => setRegions((rs) => rs.filter((_, idx) => idx !== i))} disabled={regions.length < 2}>Remove region</Button>
+                <Button variant="quiet" onClick={() => setRegions((rs) => rs.filter((_, idx) => idx !== i))} >Remove region</Button>
               </div>
             </div>
           ))}
@@ -181,7 +185,7 @@ export function CleanupTool({ fileId, fileName, onOpenFile }: { fileId: string; 
           <Field type="number" min={0} value={threshold} onChange={(e) => setThreshold(e.target.value)} aria-label="OCR threshold" />
         </Row>
       ) : null}
-      <Button variant="primary" disabled={busy} onClick={() => void run()}>{busy ? "Working" : op === "strip-repeated" ? "Strip and show the text" : op === "ocr-text" ? "Recognize text" : op === "render-all" ? "Download images" : "Make a clean copy"}</Button>
+      <Button variant="primary" disabled={busy || (op === "redact-regions" && regions.length === 0)} onClick={() => void run()}>{busy ? "Working" : op === "strip-repeated" ? "Strip and show the text" : op === "ocr-text" ? "Recognize text" : op === "render-all" ? "Download images" : "Make a clean copy"}</Button>
       {error ? <div role="alert" className="text-xs text-destructive">{error}</div> : null}
       {madeFile ? <Button variant="outline" onClick={() => onOpenFile(madeFile)}>Open the new file</Button> : null}
       {text !== null ? (

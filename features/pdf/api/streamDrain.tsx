@@ -19,6 +19,7 @@
  */
 
 import { Loader2 } from "lucide-react";
+import { plainPdfMessage } from "./plainError";
 
 import { postNdjson } from "@/lib/python-client";
 import type {
@@ -51,7 +52,7 @@ export async function drainPdfStream<T extends PdfStreamData>(
   for await (const evt of postNdjson(path, body, { signal: opts.signal })) {
     if (evt.event === "error") {
       throw new Error(
-        evt.data.user_message ?? evt.data.message ?? `${path} stream failed`,
+        evt.data.user_message ?? plainPdfMessage({ detail: evt.data.message }),
       );
     }
     if (evt.event !== "data") continue;
@@ -67,9 +68,7 @@ export async function drainPdfStream<T extends PdfStreamData>(
     }
   }
   if (!terminal) {
-    throw new Error(
-      `${path}: stream ended without a terminal "${terminalType}" event`,
-    );
+    throw new Error("The server stopped before it finished. Try again in a moment.");
   }
   return terminal;
 }

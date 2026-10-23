@@ -36,3 +36,17 @@ describe("the thumbnail queue", () => {
     await expect(second).resolves.toBe("blob:x");
   });
 });
+
+describe("fetchFreshPdfBytes", () => {
+  it("reads past the cache so a new version is never served from the old copy", async () => {
+    const { fetchFreshPdfBytes } = await import("../pdfThumbnails");
+    const calls: RequestInit[] = [];
+    const fake = (async (_u: string, init: RequestInit) => {
+      calls.push(init);
+      return { ok: true, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer } as Response;
+    }) as unknown as typeof fetch;
+    const out = await fetchFreshPdfBytes("https://x/y.pdf", { a: "b" }, true, fake);
+    expect([...out]).toEqual([1, 2, 3]);
+    expect(calls[0]).toMatchObject({ cache: "reload", credentials: "include", headers: { a: "b" } });
+  });
+});

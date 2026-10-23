@@ -34,7 +34,7 @@ export function createThumbnailQueue(input: PdfDocumentInput, rasterize: Rasteri
     pending = new Map();
     const pages = [...batch.keys()].sort((a, b) => a - b);
     try {
-      const { pages: blobs } = await rasterize(input, { scale: THUMB_SCALE, pages });
+      const { pages: blobs } = await rasterize(typeof input === "object" && "data" in input ? { data: input.data.slice() } : input, { scale: THUMB_SCALE, pages });
       blobs.forEach((blob, i) => {
         const page = pages[i]!;
         if (disposed) return batch.get(page)?.reject(new Error("closed"));
@@ -64,4 +64,20 @@ export function createThumbnailQueue(input: PdfDocumentInput, rasterize: Rasteri
       urls.clear();
     },
   };
+}
+
+/**
+ * The file's bytes read PAST every cache, for after a page change saved a new version under the same id: the same
+ * URL may still be served from the browser's or CDN's copy of the old bytes, which is why thumbnails stayed
+ * unrotated until a reload. `cache: "reload"` goes to the network and refreshes the stored copy.
+ */
+export async function fetchFreshPdfBytes(
+  url: string,
+  httpHeaders: Record<string, string>,
+  withCredentials: boolean,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Uint8Array> {
+  const res = await fetchImpl(url, { headers: httpHeaders, credentials: withCredentials ? "include" : "same-origin", cache: "reload" });
+  if (!res.ok) throw new Error("The new version of the file could not be read.");
+  return new Uint8Array(await res.arrayBuffer());
 }

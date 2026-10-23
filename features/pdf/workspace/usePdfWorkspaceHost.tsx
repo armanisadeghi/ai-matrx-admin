@@ -27,9 +27,11 @@ import type { PdfTablesReport } from "@/features/pdf-extractor/types";
 import { drainPdfStream } from "../api/streamDrain";
 import { buildPdfSourceFromFileId } from "../utils/source";
 import { usePdfClient } from "../api/client";
+import { plainPdfError } from "../api/plainError";
+import { redactPatternOptions } from "./redactPatternOptions";
 import PdfPreview from "../components/viewer/PdfPreview";
 import { callsFor, fileIdOf, type PdfCall } from "./pdfOps";
-import { createThumbnailQueue, type ThumbnailQueue } from "./pdfThumbnails";
+import { createThumbnailQueue, fetchFreshPdfBytes, type ThumbnailQueue } from "./pdfThumbnails";
 import { PdfThumbnail } from "./PdfThumbnail";
 import { useWorkspaceTools, type StudioBridge } from "./useWorkspaceTools";
 import type { ExtractorBridge } from "./extractor/extractorBridge";
@@ -52,6 +54,8 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
   const { remoteUrl, headers, withCredentials, fetchBytes } = useCloudPdfBytes(fileId);
   const [online, setOnline] = useState(true);
   const [queueVersion, setQueueVersion] = useState(0);
+  /** The bytes of the version a page change just saved, read past the cache; thumbnails draw from these. */
+  const [freshBytes, setFreshBytes] = useState<Uint8Array | null>(null);
 
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
@@ -69,8 +73,9 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
   const queue = useMemo<ThumbnailQueue | null>(() => {
     void queueVersion;
     if (!remoteUrl) return null;
+    if (freshBytes) return createThumbnailQueue({ data: freshBytes });
     return createThumbnailQueue({ url: remoteUrl, httpHeaders: JSON.parse(headersKey) as Record<string, string>, withCredentials });
-  }, [remoteUrl, headersKey, withCredentials, queueVersion]);
+  }, [remoteUrl, headersKey, withCredentials, queueVersion, freshBytes]);
   useEffect(() => () => queue?.dispose(), [queue]);
 
   const executeCall = useCallback(
@@ -103,7 +108,7 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
       form.append("file", new File([bytes], file?.fileName ?? "document.pdf", { type: "application/pdf" }));
       const url = `${client.buildUrl("compress")}?level=${call.level}&output_mode=derivative&parent_file_id=${encodeURIComponent(fileId)}`;
       const res = await fetch(url, { method: "POST", headers: await client.authHeaders(), body: form });
-      if (!res.ok) throw new Error(`Compress failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
+      if (!res.ok) throw plainPdfError({ label: "POST compress", status: res.status, detail: (await res.text().catch(() => "")).slice(0, 300) });
       const id = fileIdOf(await res.json());
       if (!id) throw new Error("The server compressed the file but did not say where it saved it.");
       return { kind: "file", fileId: id, name: "Compressed copy" };
@@ -114,16 +119,23 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
   const run = useCallback(
     async (request: PdfRunRequest): Promise<PdfRunResult> => {
       let last: PdfRunResult | null = null;
-      for (const call of callsFor(fileId, request)) last = await executeCall(call);
+      const texts: string[] = [];
+      for (const call of callsFor(fileId, request)) {
+        last = await executeCall(call);
+        if (last.kind === "text") texts.push(last.text);
+      }
+      if (last?.kind === "text" && texts.length > 1) last = { kind: "text", text: texts.join("\n\n") };
       if (!last) throw new Error("There was nothing to do.");
       if (last.kind === "replaced") {
         // The bytes changed under the same id: drop warm copies and draw thumbnails again.
         invalidate(fileId);
         setQueueVersion((v) => v + 1);
+        // Thumbnails keep the old picture until the new version's bytes arrive, then redraw from them.
+        if (remoteUrl) fetchFreshPdfBytes(remoteUrl, headers, withCredentials).then(setFreshBytes, () => undefined);
       }
       return last;
     },
-    [executeCall, fileId],
+    [executeCall, fileId, remoteUrl, headers, withCredentials],
   );
 
   const openFile = useCallback((id: string) => router.push(`/pdf/${id}`), [router]);
@@ -203,10 +215,7 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
         remoteUrl ? readPdfAnnotations({ url: remoteUrl, httpHeaders: headers, withCredentials }) : readPdfAnnotations({ data: new Uint8Array(await (await fetchBytes()).arrayBuffer()) }),
       signaturePad: SignaturePad,
       redactPatterns: async () => {
-        const catalog = await client.getJson<unknown>("redactPatterns");
-        const list = Array.isArray(catalog) ? catalog : ((catalog as { patterns?: unknown[] }).patterns ?? []);
-        return (list as Array<{ id?: string; name?: string; label?: string }>)
-          .flatMap((p) => (typeof p.id === "string" ? [{ id: p.id, label: p.label ?? p.name ?? p.id }] : []));
+        return redactPatternOptions(await client.getJson<unknown>("redactPatterns"));
       },
     }),
     [fileId, file?.fileName, online, queue, run, router, fetchBytes, dispatch, client, tools, viewerOverride, openFile, annotationCounts, remoteUrl, headers, withCredentials],

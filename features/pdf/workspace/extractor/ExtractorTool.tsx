@@ -23,7 +23,6 @@ import { usePdfExtractor, invalidateProcessedDocumentCache, type PdfDocument } f
 import { usePdfDocRun } from "@/features/pdf-extractor/hooks/usePdfDocRun";
 import { useProcessedDocumentPages } from "@/features/pdf-extractor/hooks/useProcessedDocumentPages";
 import { useProcessedDocSync } from "@/features/pdf-extractor/hooks/useProcessedDocSync";
-import { confirmRecleanIfCleaned } from "@/features/pdf-extractor/service/confirmReclean";
 import { NO_PAGES_TO_CLEAN_REASON, canAiClean, isDocCleaned } from "@/features/pdf-extractor/service/cleanOutcome";
 import { CopyPagesOverlay } from "@/features/pdf-extractor/components/CopyPagesOverlay";
 import { PdfBatchExtractDebugTrigger } from "@/features/pdf-extractor/components/PdfBatchExtractDebugTrigger";
@@ -33,6 +32,7 @@ import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { knowledgeAssetsInput } from "@/features/rag/canvas/knowledgeAssetsKind";
 import { useExistingPdfExtraction } from "@/features/pdf/hooks/useExistingPdfExtraction";
 import { resolvePdfSurfaceIds, invalidatePdfSurfaceLinks } from "@/features/pdf/hooks/usePdfSurfaceLinks";
+import { confirmPaidPdfAi } from "./confirmPaidAi";
 import { AutoCleanSetting } from "./AutoCleanOnOpen";
 import { ExtractorInspector, type SectionKey } from "./ExtractorInspector";
 import type { ExtractorBridge } from "./extractorBridge";
@@ -55,6 +55,7 @@ export function ExtractorTool({ fileId, pageNumber, bridge }: { fileId: string; 
   const [copyOpen, setCopyOpen] = useState(false);
   const [requestedSection, setRequestedSection] = useState<SectionKey | null>(null);
   const cleanInFlight = useRef(false);
+  const pipelineInFlight = useRef(false);
   // Knowledge Assets is a canvas tab beside the document (one per document); this action toggles it.
   const knowledgeAssets = useToolToggle(knowledgeAssetsInput(doc ? { id: doc.id, name: doc.name, totalPages: doc.totalPages } : null));
 
@@ -139,7 +140,7 @@ export function ExtractorTool({ fileId, pageNumber, bridge }: { fileId: string; 
   const runAiClean = useCallback(async () => {
     if (!doc || cleanInFlight.current) return;
     cleanInFlight.current = true;
-    if (!(await confirmRecleanIfCleaned(isDocCleaned(pages, doc.cleanContent)))) {
+    if (!(await confirmPaidPdfAi(isDocCleaned(pages, doc.cleanContent) ? "reclean" : "clean", pages.length || doc.totalPages || 0))) {
       cleanInFlight.current = false;
       return;
     }
@@ -164,7 +165,12 @@ export function ExtractorTool({ fileId, pageNumber, bridge }: { fileId: string; 
   }, [doc, pages, extractor, fetchDocument, refreshPages, toast]);
 
   const runPipeline = useCallback(async () => {
-    if (!doc) return;
+    if (!doc || pipelineInFlight.current) return;
+    pipelineInFlight.current = true;
+    if (!(await confirmPaidPdfAi("pipeline", pages.length || doc.totalPages || 0))) {
+      pipelineInFlight.current = false;
+      return;
+    }
     setPipelineRunning(true);
     setLiveStatus("Starting pipeline");
     try {
@@ -185,10 +191,11 @@ export function ExtractorTool({ fileId, pageNumber, bridge }: { fileId: string; 
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Pipeline failed");
     } finally {
+      pipelineInFlight.current = false;
       setPipelineRunning(false);
       setLiveStatus(null);
     }
-  }, [doc, extractor, fetchDocument, refreshPages, toast, fileId]);
+  }, [doc, pages, extractor, fetchDocument, refreshPages, toast, fileId]);
 
   const refresh = useCallback(async () => {
     if (!doc) return;

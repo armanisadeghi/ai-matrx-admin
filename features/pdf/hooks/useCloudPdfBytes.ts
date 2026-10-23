@@ -14,7 +14,7 @@ export function useCloudPdfBytes(fileId: string) {
   const fetchBytes = useCallback(async (): Promise<Blob> => {
     if (!remoteUrl) throw new Error("The file is still loading. Try again in a moment.");
     const res = await fetch(remoteUrl, { headers, credentials: withCredentials ? "include" : "same-origin" });
-    if (!res.ok) throw new Error(`The file could not be read (${res.status}).`);
+    if (!res.ok) throw new Error(res.status === 404 ? "That file could not be found. It may have been moved or deleted." : "The file could not be read. Try again in a moment.");
     return res.blob();
   }, [remoteUrl, headers, withCredentials]);
   return { remoteUrl, headers, withCredentials, fetchBytes };

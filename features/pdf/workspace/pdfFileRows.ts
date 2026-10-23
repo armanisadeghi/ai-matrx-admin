@@ -62,3 +62,8 @@ export function pdfFileRows(
     })
     .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
 }
+
+/** Active rows and archived rows, apart: an archived PDF never sits in the active list (it lives under "Archived"). */
+export function splitByArchive(rows: readonly PdfFileRow[]): { active: PdfFileRow[]; archived: PdfFileRow[] } {
+  return { active: rows.filter((r) => !r.archived), archived: rows.filter((r) => r.archived) };
+}

@@ -24,6 +24,18 @@ const SUMMARY = {
   reorder: "Reordered pages in the PDF workspace",
 } as const;
 
+/** Sorted, de-duplicated 1-based pages as runs of consecutive pages: [1,2,3,5] -> 1-3, 5-5. */
+export function contiguousRuns(pages: readonly number[]): Array<{ start: number; end: number }> {
+  const sorted = [...new Set(pages)].sort((a, b) => a - b);
+  const runs: Array<{ start: number; end: number }> = [];
+  for (const p of sorted) {
+    const last = runs[runs.length - 1];
+    if (last && p === last.end + 1) last.end = p;
+    else runs.push({ start: p, end: p });
+  }
+  return runs;
+}
+
 /** The server calls for one request, in the order they must run. */
 export function callsFor(fileId: string, request: PdfRunRequest): PdfCall[] {
   const src = buildPdfSourceFromFileId(fileId);
@@ -48,8 +60,12 @@ export function callsFor(fileId: string, request: PdfRunRequest): PdfCall[] {
       return [{ kind: "json", endpoint: "redactPattern", result: "file", body: { ...src, pattern: request.pattern, reason: request.reason, output_mode: "derivative" } }];
     case "compress":
       return [{ kind: "compress", level: request.level }];
-    case "extract-text":
-      return [{ kind: "stream-text", body: { ...src } }];
+    case "extract-text": {
+      // The Pages field: the server reads a contiguous slice (page_start..page_end), so "1-3, 5" is two calls.
+      const pages = (request as { pages?: number[] }).pages;
+      if (!pages || pages.length === 0) return [{ kind: "stream-text", body: { ...src } }];
+      return contiguousRuns(pages).map((r): PdfCall => ({ kind: "stream-text", body: { ...src, page_start: r.start, page_end: r.end } }));
+    }
     case "extract-tables":
       return [{ kind: "stream-tables", body: { ...src, output_format: "csv" } }];
   }

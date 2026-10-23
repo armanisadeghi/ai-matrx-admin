@@ -49,8 +49,7 @@ export function FindingsPanel({ fileId, onJumpToPage }: Props) {
   if (!entries.length) {
     return (
       <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-        No findings yet. Annotate fields like Applicant Name, DOB, WPI %,
-        Impairment Code… and they'll show up here grouped by label.
+        No findings yet. Annotate fields on the page and they'll show up here grouped by label.
       </div>
     );
   }

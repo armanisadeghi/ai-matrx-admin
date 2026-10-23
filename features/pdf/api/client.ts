@@ -22,6 +22,7 @@ import { useApiAuth } from "@/hooks/useApiAuth";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { ENDPOINTS } from "@ai-matrx/api";
+import { plainPdfError } from "./plainError";
 import {
   buildMatrxRequestUrl,
   extractMatrxErrorMessage,
@@ -83,7 +84,8 @@ export async function pdfErrorFromResponse(
   } catch {
     // not JSON — keep raw text
   }
-  return new Error(`${label} → ${response.status}: ${detail.slice(0, 2000)}`);
+  // Plain words for the person; the endpoint, status and the server's detail ride along as `technical`.
+  return plainPdfError({ label, status: response.status, detail });
 }
 
 export function usePdfClient(): PdfClient {

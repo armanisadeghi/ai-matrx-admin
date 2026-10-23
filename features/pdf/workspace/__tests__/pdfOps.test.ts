@@ -89,3 +89,17 @@ describe("fileIdOf", () => {
     expect(fileIdOf(null)).toBeNull();
   });
 });
+
+describe("Get text honors the Pages field", () => {
+  it("asks only for the pages typed, one call per run of consecutive pages", () => {
+    const calls = callsFor(FILE, { tool: "extract-text", pages: [1] } as unknown as PdfRunRequest);
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as { body: Record<string, unknown> }).body).toMatchObject({ page_start: 1, page_end: 1 });
+    const split = callsFor(FILE, { tool: "extract-text", pages: [5, 1, 2, 3] } as unknown as PdfRunRequest).map((c) => (c as { body: Record<string, unknown> }).body);
+    expect(split.map((b) => [b.page_start, b.page_end])).toEqual([[1, 3], [5, 5]]);
+  });
+  it("no pages typed means the whole document", () => {
+    const [call] = callsFor(FILE, { tool: "extract-text" } as unknown as PdfRunRequest);
+    expect((call as { body: Record<string, unknown> }).body.page_start).toBeUndefined();
+  });
+});

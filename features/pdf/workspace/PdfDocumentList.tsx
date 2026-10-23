@@ -29,10 +29,11 @@ import { useTreeReadStatus } from "@/features/files/hooks/useFilesReadStatus";
 import { useShowSystemFiles } from "@/features/files/hooks/useShowSystemFiles";
 import { PdfDocRenameDialog } from "./PdfDocRenameDialog";
 import { renamePdfFile } from "./renamePdfDocument";
-import { PDF_TEXT_STATUS_LABEL, pdfFileRows, type PdfFileDoc, type PdfFileRow } from "./pdfFileRows";
+import { PDF_TEXT_STATUS_LABEL, pdfFileRows, splitByArchive, type PdfFileDoc, type PdfFileRow } from "./pdfFileRows";
 import { usePdfFileDocs } from "./usePdfFileDocs";
 
 const NO_DOCS: ReadonlyMap<string, PdfFileDoc> = new Map();
+const NO_ROWS: PdfFileRow[] = [];
 
 export function PdfDocumentList() {
   const router = useRouter();
@@ -52,9 +53,10 @@ export function PdfDocumentList() {
   );
   const { docs, refresh: refreshDocs, setDocName } = usePdfFileDocs(pdfIds);
   const all = useMemo(() => pdfFileRows(filesById, docs, { showSystemFiles }), [filesById, docs, showSystemFiles]);
-  const active = useMemo(() => all.filter((r) => !r.archived), [all]);
-  const archived = useMemo(() => all.filter((r) => r.archived), [all]);
-  const rows = showArchived ? [...active, ...archived] : active;
+  const { active, archived } = useMemo(() => splitByArchive(all), [all]);
+  // Archived rows never mix into the active list: they sit under the Archived disclosure, in their own table.
+  const rows = active;
+  const archivedRows = showArchived ? archived : NO_ROWS;
   const archivedCount = trashLoaded ? archived.length : trashCount;
 
   // The archived count up front (a head count, no rows); the rows themselves load when the disclosure opens.
@@ -134,27 +136,34 @@ export function PdfDocumentList() {
     actions: bulkActions,
     onRefresh: refreshDocs,
   });
+  const bulkArchived = useTableBulkSelection<PdfFileRow>({
+    noun: "PDF",
+    rows: archivedRows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.name,
+    actions: bulkActions,
+    onRefresh: refreshDocs,
+  });
 
   const columns = useMemo((): MatrxColumnDef<PdfFileRow>[] => [
     {
-      id: "name", accessorKey: "name", header: "Name", width: 300,
+      id: "name", accessorKey: "name", header: "Name", width: 240,
       cell: (r) => (
         <Link href={`/pdf/${r.id}`} className="flex min-w-0 items-center gap-2 hover:underline">
           <FileText className="size-3.5 shrink-0 text-muted-foreground" />
           <span className="truncate">{r.name}</span>
-          {r.archived ? <span className="shrink-0 text-xs text-muted-foreground">Archived</span> : null}
         </Link>
       ),
     },
-    { id: "textStatus", accessorFn: (r) => PDF_TEXT_STATUS_LABEL[r.textStatus], header: "Text", width: 120, cell: (r) => <span className="text-xs">{PDF_TEXT_STATUS_LABEL[r.textStatus]}</span> },
-    { id: "totalPages", accessorKey: "totalPages", header: "Pages", width: 80, cell: (r) => <span className="text-xs">{r.totalPages ?? ""}</span> },
-    { id: "createdAt", accessorKey: "createdAt", header: "Added", filter: "date", width: 120, cell: (r) => <span className="text-xs">{new Date(r.createdAt).toLocaleDateString()}</span> },
+    { id: "textStatus", accessorFn: (r) => PDF_TEXT_STATUS_LABEL[r.textStatus], header: "Text", width: 110, cell: (r) => <span className="text-xs">{PDF_TEXT_STATUS_LABEL[r.textStatus]}</span> },
+    { id: "totalPages", accessorKey: "totalPages", header: "Pages", width: 70, cell: (r) => <span className="text-xs">{r.totalPages ?? ""}</span> },
+    { id: "createdAt", accessorKey: "createdAt", header: "Added", filter: "date", width: 130, cell: (r) => <span className="text-xs">{new Date(r.createdAt).toLocaleDateString()}</span> },
   ], []);
 
   const loading = status === "loading";
   if (status === "ready" && !active.length && !archivedCount) return null;
   return (
-    <section className="flex w-full max-w-3xl flex-col gap-2 px-4" data-pdf-document-list="">
+    <section className="flex w-full max-w-4xl flex-col gap-2 px-4" data-pdf-document-list="">
       <h2 className="text-sm font-medium">Your PDFs</h2>
       <div className="h-80 min-h-0">
         <MatrxDataTable
@@ -172,6 +181,21 @@ export function PdfDocumentList() {
         />
       </div>
       <ArchivedDisclosure count={archivedCount} open={showArchived} onOpenChange={onShowArchived} />
+      {showArchived ? (
+        <div className="h-64 min-h-0" data-pdf-archived-list="">
+          <MatrxDataTable
+            urlState={{ id: "pdf-front-door-docs-archived" }}
+            data={archivedRows}
+            columns={columns}
+            getRowId={(r) => r.id}
+            isLoading={!trashLoaded}
+            pageSize={25}
+            emptyState={{ title: "Nothing archived", description: "Archived PDFs show here." }}
+            rowActionDefs={rowActionDefs}
+            selection={bulkArchived.selection}
+          />
+        </div>
+      ) : null}
       <PdfDocRenameDialog
         open={renaming !== null}
         onOpenChange={(o) => { if (!o) setRenaming(null); }}

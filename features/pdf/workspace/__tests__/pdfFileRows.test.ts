@@ -41,3 +41,13 @@ describe("pdfFileRows (Your PDFs lists PDF files, not processed documents)", () 
     expect(pdfFileRows({ s: sys }, new Map(), { showSystemFiles: true })).toHaveLength(1);
   });
 });
+
+describe("splitByArchive", () => {
+  it("keeps archived rows out of the active list", async () => {
+    const { splitByArchive } = await import("../pdfFileRows");
+    const row = (id: string, archived: boolean) => ({ id, name: id, createdAt: "", updatedAt: "", fileSize: null, archived, textStatus: "none" as const, docId: null, totalPages: null });
+    const { active, archived } = splitByArchive([row("a", false), row("b", true), row("c", false)]);
+    expect(active.map((r) => r.id)).toEqual(["a", "c"]);
+    expect(archived.map((r) => r.id)).toEqual(["b"]);
+  });
+});
