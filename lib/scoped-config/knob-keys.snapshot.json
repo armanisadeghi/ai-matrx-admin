@@ -1307,6 +1307,8 @@
 ["collab","max_rebase_span"],
 ["collab","op_retention_days"],
 ["collab","ot_rooms"],
+["collab","ot_rooms_docs"],
+["collab","ot_rooms_sheets"],
 ["collab","read_limit"],
 ["collab","room_append_budget"],
 ["collab","send_gap_ms"],

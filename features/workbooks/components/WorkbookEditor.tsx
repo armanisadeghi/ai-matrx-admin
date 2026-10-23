@@ -540,7 +540,7 @@ export default function WorkbookEditor({
     try {
       const { workbookUsesOrderedRoom } = await import("@ai-matrx/office/univer/collab");
       const { collabRoomExists } = await import("@ai-matrx/data/realtime/collab");
-      const knob = await readCollabOtRooms();
+      const knob = await readCollabOtRooms("sheets");
       const who = (await getClaimsUser(supabase)).data?.user?.id;
       const chosen = await chooseRoom({
         roomExists: () => collabRoomExists(supabase as unknown as Parameters<typeof collabRoomExists>[0], workbookId),

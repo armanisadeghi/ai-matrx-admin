@@ -206,6 +206,9 @@ const COMPUTED_REFS: Record<string, string> = {
     "reads each pair straight out of its own declared TOOL_ORG_KNOBS table via " +
     "refs.map((ref) => ensureEffectiveKnob(...)) — a member access on a local " +
     "declaration, the same shape as the other three entries above",
+  "lib/knobs/collabOtRooms.ts":
+    "reads each product's pair out of its own declared OWN table (`collab` / `ot_rooms_docs`, `collab` / `ot_rooms_sheets`) " +
+    "and the shared `collab` / `ot_rooms`; all three are rows in the knob snapshot and the wf_116 seed",
   "lib/api/run-wait.ts":
     "one read per output kind at `agents.run_wait` / runWaitKnobKey(kind); every kind in " +
     "RUN_OUTPUT_KINDS is proven seeded by the 'run-wait' case below",
