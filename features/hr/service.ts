@@ -25,6 +25,7 @@
 // `{kind:"failed"}` with a sentence, never a bare Postgres code (§2 error state).
 
 import { supabase } from "@/utils/supabase/client";
+import type { Database } from "@/types/database.types";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { readAllRows } from "@ai-matrx/data/db";
 import {
@@ -224,8 +225,22 @@ function isRefusalEnvelope(value: unknown): value is HrRefusalEnvelope {
  * Callers now take this `Record<string, unknown>` and MAP it field by field, so the
  * type each one declares is a statement about the wire that is actually true.
  */
+/*
+  🚨 EVERY DOOR IS CALLED IN THE SCHEMA IT LIVES IN (2026-10-22). The transport moved to
+  `supabase.schema("hr")` when the doors were copied into `hr`, but three were never copied —
+  `hr_my_context`, `hr_employee_profile`, `hr_break_glass` live ONLY in `public` — so PostgREST
+  answered PGRST202 and /hr said "Your HR employers could not be loaded" for everybody. A door's
+  name is now typed against the generated schema: a door missing from `hr` fails `type-check`
+  unless it is named here, and the day it lands in `hr` (and `pnpm db-types` runs) it leaves this list.
+*/
+const HR_DOORS_IN_PUBLIC = ["hr_my_context", "hr_employee_profile", "hr_break_glass"] as const satisfies readonly (keyof Database["public"]["Functions"])[];
+type HrPublicDoor = (typeof HR_DOORS_IN_PUBLIC)[number];
+/** An HR door: a function in the `hr` schema, or one of the few still only in `public`. */
+export type HrDoor = keyof Database["hr"]["Functions"] | HrPublicDoor;
+const isPublicDoor = (fn: HrDoor): fn is HrPublicDoor => (HR_DOORS_IN_PUBLIC as readonly string[]).includes(fn);
+
 async function callHrRaw(
-  fn: string,
+  fn: HrDoor,
   args: Record<string, unknown>,
   options: { envelope: boolean; whatFailed: string; write?: boolean },
 ): Promise<HrResult<Record<string, unknown>>> {
@@ -242,7 +257,8 @@ async function callHrRaw(
   let data: unknown = null;
   let error: { code?: string; message?: string } | null = null;
   try {
-    ({ data, error } = (await supabase.schema("hr").rpc(fn as never, args as never)) as {
+    const door = isPublicDoor(fn) ? supabase.rpc(fn as never, args as never) : supabase.schema("hr").rpc(fn as never, args as never);
+    ({ data, error } = (await door) as {
       data: unknown;
       error: { code?: string; message?: string } | null;
     });
@@ -380,7 +396,7 @@ async function callHrRaw(
  * set-compared with the declared type's fields, in both directions.
  */
 async function callHrAligned<T>(
-  fn: string,
+  fn: HrDoor,
   args: Record<string, unknown>,
   options: { envelope: boolean; whatFailed: string },
 ): Promise<HrResult<T>> {
@@ -423,7 +439,7 @@ function mapWriteAck(
 
 /** A write door: the transport, then the `ok` check. Never a cast. */
 async function callHrWrite(
-  fn: string,
+  fn: HrDoor,
   args: Record<string, unknown>,
   options: { envelope: boolean; whatFailed: string },
 ): Promise<HrResult<HrWriteAck>> {
