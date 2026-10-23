@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { usePdfWorkspaceHost } from "./usePdfWorkspaceHost";
 import { PDF_WORKSPACE_SURFACE_NAME, WorkspaceSurface } from "./WorkspaceSurface";
 import { ExtractorSurface } from "./extractor/ExtractorSurface";
+import { AutoCleanOnOpen } from "./extractor/AutoCleanOnOpen";
 
 export { PDF_WORKSPACE_SURFACE_NAME };
 
@@ -33,6 +34,7 @@ export function PdfWorkspaceBody({
   const { host, studio, extractorBridge, getPage } = usePdfWorkspaceHost(fileId);
   const body = (
     <>
+      <AutoCleanOnOpen fileId={fileId} />
       {header ? (
         <RecordPageHeader backHref="/pdf" parents={[{ label: "PDF", href: "/pdf" }]} record={{ name: host.file.name, token: "file", id: fileId }} />
       ) : null}
