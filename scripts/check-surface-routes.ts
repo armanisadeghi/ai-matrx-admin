@@ -198,6 +198,7 @@ const DELIBERATELY_UNMAPPED: readonly {
   { prefix: "/registered-results/sitemap-viewer", exact: true, reason: "registered-results developer viewers" },
   { prefix: "/administration/compute/resilience-lab", exact: true, reason: "lab / infra test bench" },
   { prefix: "/administration/compute/sandbox-infra", exact: true, reason: "lab / infra test bench" },
+  { prefix: "/administration/compute/repair-runs", exact: true, reason: "launcher: each run is a chat, the chat is its surface" },
   { prefix: "/administration/education/fastfire-capture-test", exact: true, reason: "capture test bench" },
   { prefix: "/administration/intelligence/go/[...slug]", exact: true, reason: "go resolver, redirects" },
   { prefix: "/administration/intelligence/memory-lab", exact: true, reason: "lab: memory test bench" },

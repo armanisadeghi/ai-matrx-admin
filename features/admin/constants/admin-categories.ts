@@ -148,6 +148,12 @@ export const adminCategoriesData: AdminCategory[] = [
         iconName: "ShieldCheck",
         link: "/administration/compute/proof-runs",
       },
+      {
+        title: "Repair Runs",
+        description: "Start an agent on a known problem in the platform sandbox",
+        iconName: "Wrench",
+        link: "/administration/compute/repair-runs",
+      },
     ],
   },
   {

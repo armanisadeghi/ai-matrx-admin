@@ -33,6 +33,7 @@ import { useToolToggle } from "@/features/canvas/host/toolCanvas";
 import { knowledgeAssetsInput } from "@/features/rag/canvas/knowledgeAssetsKind";
 import { useExistingPdfExtraction } from "@/features/pdf/hooks/useExistingPdfExtraction";
 import { resolvePdfSurfaceIds, invalidatePdfSurfaceLinks } from "@/features/pdf/hooks/usePdfSurfaceLinks";
+import { AutoCleanSetting } from "./AutoCleanOnOpen";
 import { ExtractorInspector, type SectionKey } from "./ExtractorInspector";
 import type { ExtractorBridge } from "./extractorBridge";
 
@@ -274,6 +275,7 @@ export function ExtractorTool({ fileId, pageNumber, bridge }: { fileId: string; 
             <Button variant="primary" disabled={running || !cleanable} onClick={() => void runAiClean()} title={cleanable ? undefined : NO_PAGES_TO_CLEAN_REASON}>
               {aiCleanRunning ? "Cleaning" : cleaned ? "Clean again with AI" : "Clean with AI"}
             </Button>
+            <AutoCleanSetting />
             <Button variant="outline" disabled={running} onClick={() => void runPipeline()}>
               {pipelineRunning ? "Running" : "Run the full pipeline"}
             </Button>

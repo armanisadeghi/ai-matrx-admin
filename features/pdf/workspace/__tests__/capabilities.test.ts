@@ -14,6 +14,7 @@ import * as path from "path";
 import { pdfExtractorManifest } from "@/features/surfaces/manifests/pdf-extractor.manifest";
 
 const read = (rel: string) => fs.readFileSync(path.join(process.cwd(), "features/pdf/workspace", rel), "utf8");
+import { autoCleanIsOn } from "../extractor/autoClean";
 import { WORKSPACE_TOOL_IDS } from "../useWorkspaceTools";
 
 const MODES = ["view", "select", "draw"] as const;
@@ -30,9 +31,25 @@ describe("PDF workspace capability census", () => {
       if (h.kind === "front-door" && !(read("PdfFrontDoor.tsx").includes("<PdfDocumentList") && read("PdfDocumentList.tsx").includes("usePdfStudioDocs") && read("PdfFrontDoor.tsx").includes("FilePickerWindow"))) missing.push(`${c.id}: the front door no longer lists documents and offers the picker`);
       if (h.kind === "page-surface" && !(h.surface === pdfExtractorManifest.surfaceName && read("PdfWorkspaceRoute.tsx").includes("<ExtractorSurface"))) missing.push(`${c.id}: the workspace page no longer declares ${h.surface}`);
       if (h.kind === "thumbnail-badge" && !read("usePdfWorkspaceHost.tsx").includes("renderPageBadge")) missing.push(`${c.id}: the host draws no thumbnail badge`);
+      if (h.kind === "source-has") {
+        for (const check of h.checks) {
+          const abs = path.join(process.cwd(), check.file);
+          // A path ending in "/" is a built package folder: every .js file in it, joined.
+          const text = check.file.endsWith("/")
+            ? (fs.existsSync(abs) ? fs.readdirSync(abs).filter((f) => f.endsWith(".js")).map((f) => fs.readFileSync(path.join(abs, f), "utf8")).join("\n") : "")
+            : fs.existsSync(abs) ? fs.readFileSync(abs, "utf8") : "";
+          const lacking = check.has.filter((m) => !text.includes(m));
+          if (lacking.length) missing.push(`${c.id}: ${check.file} no longer has ${lacking.join(", ")}`);
+        }
+      }
       if (h.kind === "mode" && !MODES.includes(h.mode)) missing.push(`${c.id}: mode ${h.mode} is gone`);
     }
     expect(missing).toEqual([]);
+  });
+
+  it("AI clean on open is off unless the knob says true", () => {
+    expect([undefined, null, false, "true", 1].map(autoCleanIsOn)).toEqual([false, false, false, false, false]);
+    expect(autoCleanIsOn(true)).toBe(true);
   });
 
   it("the host tools the rows name are registered", () => {

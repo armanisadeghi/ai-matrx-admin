@@ -4591,6 +4591,7 @@
 ["orm.write_retry","deadlock_backoff_max_ms"],
 ["orm.write_retry","deadlock_max_retries"],
 ["page_extraction","max_concurrent_chunks"],
+["pdf.workspace","auto_clean_on_open"],
 ["perf","alert_cooldown_minutes"],
 ["perf","baseline_days"],
 ["perf","baseline_min_samples"],

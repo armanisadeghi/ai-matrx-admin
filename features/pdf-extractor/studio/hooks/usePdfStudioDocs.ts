@@ -129,6 +129,32 @@ export function usePdfStudioDocs(opts?: {
     [userId],
   );
 
+  // Bring an archived document back (clears `archived_at`). The twin of `deleteDoc`: archiving never destroys.
+  const restoreDoc = useCallback(
+    async (id: string) => {
+      if (!userId) throw new Error("Not signed in");
+      let prev: StudioDocSummary[] = [];
+      setDocs((cur) => {
+        prev = cur;
+        return cur.map((d) => (d.id === id ? { ...d, archived: false } : d));
+      });
+      const { error: err } = await tryWriteOne(
+        docprocDb(supabase)
+          .from("processed_documents")
+          .update({ archived_at: null })
+          .eq("id", id)
+          .eq("created_by", userId)
+          .select("id"),
+        { action: "restore", noun: "document" },
+      );
+      if (err) {
+        setDocs(prev);
+        throw err instanceof WriteDidNotLandError ? err : operationFailed("restore that document", err);
+      }
+    },
+    [userId],
+  );
+
   const setDocName = useCallback((id: string, name: string) => {
     setDocs((cur) => cur.map((d) => (d.id === id ? { ...d, name } : d)));
   }, []);
@@ -291,6 +317,7 @@ export function usePdfStudioDocs(opts?: {
     error,
     refresh,
     deleteDoc,
+    restoreDoc,
     setDocName,
     search,
     setSearch,
