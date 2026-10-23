@@ -1,4 +1,4 @@
-# features/pdf-extractor — PDF Extractor studio (a SURFACE of the PDF domain)
+# features/pdf-extractor — legacy extractor pieces (the studio itself is gone; the PDF workspace at `/pdf`, `features/pdf/workspace`, replaced it)
 
 **This is a surface, not a standalone feature.** The canonical PDF _domain_ — the
 renderer, page spine, ops, extraction, viewers — lives in

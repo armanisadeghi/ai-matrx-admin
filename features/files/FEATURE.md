@@ -379,7 +379,7 @@ useDurableSrc,useFileBlob}.ts` are deleted — consumers use `useMediaResolution
   existing `crossOrigin` lane; ordinary previews retain the canonical element transport, and
   external URLs are unchanged.
 - **2026-08-27 — PDF Edit reaches the canonical annotation surface on every viewport.** The
-  Preview action routes PDFs to Analysis Studio, while the File tab strip and Files/Studio PDF
+  Preview action routes PDFs to the PDF workspace (`/pdf`, `features/pdf/workspace`), while the File tab strip and Files/Studio PDF
   annotation controls keep the tablet/mobile 44px touch floor.
 - **2026-08-27 — Tablet file actions regain Move and the 44px dialog floor.** The shared file menu
   now opens its canonical picker without requiring a host callback; Rename/Delete actions remain

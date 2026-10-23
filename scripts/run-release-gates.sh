@@ -1408,6 +1408,9 @@ else
         "Floating clearance — self-test|pnpm check:floating-clearance:self-test"
         "Overlays never move the page|pnpm check:overlays-never-move-page"
         "Overlays never move the page — self-test|pnpm check:overlays-never-move-page:self-test"
+        # PAGE BODY IN main.shell-main IS h-full (report-only: the script always exits 0 without --strict).
+        "Page body fills the shell (h-full, not h-dvh)|pnpm check:page-body-fills-shell"
+        "Page body fills the shell — self-test|pnpm check:page-body-fills-shell:self-test"
         "SSR viewport branch|pnpm check:ssr-viewport-branch"
         "SSR viewport branch — self-test|pnpm check:ssr-viewport-branch:self-test"
         "UI drift|pnpm check:ui-drift"
