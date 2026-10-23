@@ -36,7 +36,7 @@ describe("the /pdf pages", () => {
     const route = read("features/pdf/workspace/PdfWorkspaceRoute.tsx");
     expect(route).toContain("PDF_WORKSPACE_SURFACE_NAME");
     expect(read("features/pdf/workspace/WorkspaceSurface.tsx")).toContain('"matrx-user/analysis-studio"');
-    expect(route).toContain("<RecordPageHeader");
+    expect(route).toContain("<PdfRecordHeader");
     expect(route).toContain("<PdfWorkspace host={host}");
   });
 });
@@ -58,5 +58,17 @@ describe("mounting", () => {
 
   it("the stylesheet scans the office package so the chrome's classes exist", () => {
     expect(read("app/globals.css")).toContain('@source "../node_modules/@ai-matrx/office/dist";');
+  });
+
+  it("the page bodies are full-height (h-full), never h-dvh: .shell-main takes no scroll runway, so opening the thumbnails sheet cannot move the page", () => {
+    const body = read("features/pdf/workspace/PdfWorkspaceRoute.tsx");
+    const door = read("features/pdf/workspace/PdfFrontDoor.tsx");
+    for (const src of [body, door]) {
+      expect(src).not.toMatch(/className=\{?["`][^"`]*\bh-dvh\b/);
+    }
+    expect(body).toMatch(/header \? "h-full w-full overflow-hidden pt-\[var\(--shell-header-h\)\]"/);
+    expect(door).toContain('className="flex h-full w-full flex-col');
+    // The rule that makes it true: a main with a full-height child drops its runway.
+    expect(read("styles/shell.css")).toMatch(/\.shell-main:has\(> \.h-full\)::after\s*\{\s*content:\s*none/);
   });
 });

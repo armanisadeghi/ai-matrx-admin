@@ -38,7 +38,14 @@ export function PdfWorkspaceBody({
       {header ? (
         <PdfRecordHeader fileId={fileId} fileName={host.file.name} />
       ) : null}
-      <div className={cn(header ? "h-dvh w-full pt-[var(--shell-header-h)]" : "h-full w-full", className)} data-surface={surface ? PDF_WORKSPACE_SURFACE_NAME : undefined}>
+      {/* On the page the body is `h-full` (never `h-dvh`): `.shell-main` takes no scroll runway when its child is `h-full`, so the
+          main can never scroll under the workspace and opening a sheet or focusing a control never moves the page (the
+          `h-dvh` body left a 50dvh runway: main scrolled 80px at 375 wide when the thumbnails sheet opened). */}
+      <div
+        className={cn(header ? "h-full w-full overflow-hidden pt-[var(--shell-header-h)]" : "h-full w-full", className)}
+        data-surface={surface ? PDF_WORKSPACE_SURFACE_NAME : undefined}
+        data-matrx-viewport-surface={header ? "" : undefined}
+      >
         <PdfWorkspace host={host} />
       </div>
     </>
