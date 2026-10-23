@@ -118,3 +118,18 @@ describe("describeEventSource", () => {
     expect(describeEventSource({ table: "a.b", operation: "insert" })).toBe("a.b inserts");
   });
 });
+
+describe("eventSourceAdvice watched", () => {
+  it("names an unwatched table and stays quiet when unknown or watched", () => {
+    const draft = { ...EMPTY_EVENT_DRAFT, table: "crm.contacts" };
+    expect(eventSourceAdvice(draft, [], null, false).map((n) => n.id)).toContain(
+      "table-unwatched",
+    );
+    expect(eventSourceAdvice(draft, [], null, true).map((n) => n.id)).not.toContain(
+      "table-unwatched",
+    );
+    expect(eventSourceAdvice(draft, [], null).map((n) => n.id)).not.toContain(
+      "table-unwatched",
+    );
+  });
+});

@@ -109,6 +109,7 @@ export function eventSourceAdvice(
   draft: EventDraft,
   workflowInputNames: readonly string[],
   knownColumns: readonly string[] | null,
+  watched: boolean | null = null,
 ): EventAdvice[] {
   const notes: EventAdvice[] = [];
   const table = draft.table.trim();
@@ -116,6 +117,14 @@ export function eventSourceAdvice(
     notes.push({
       id: "table-shape",
       text: "Write the table as schema.table, lowercase.",
+    });
+  }
+  // A table nobody watched never produces events (the capture trigger IS the
+  // allowlist); the server refuses such a source, so it is named here first.
+  if (table && watched === false) {
+    notes.push({
+      id: "table-unwatched",
+      text: "This table is not watched; it cannot start a run.",
     });
   }
   if (draft.whenColumn.trim() && !draft.whenValue.trim()) {

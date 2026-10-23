@@ -54,12 +54,21 @@ export function EventTriggerPane({
 
   const known = catalog.tables.find((t) => t.table === draft.table.trim());
   const columns = known?.columns ?? null;
-  const advice = eventSourceAdvice(draft, workflowInputNames, columns);
+  const advice = eventSourceAdvice(
+    draft,
+    workflowInputNames,
+    columns,
+    known ? known.watched : null,
+  );
   const listNote = catalog.error;
 
   const tableOptions = [
     { value: "", label: "Pick a table…" },
-    ...catalog.tables.map((t) => ({ value: t.table, label: t.label, meta: t.table })),
+    ...catalog.tables.map((t) => ({
+      value: t.table,
+      label: t.label,
+      meta: t.watched ? t.table : `${t.table} · not watched`,
+    })),
   ];
 
   const setRow = (index: number, patch: Partial<EventDraft["inputMap"][number]>) =>
