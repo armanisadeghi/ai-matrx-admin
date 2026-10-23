@@ -87,4 +87,10 @@ describe("describeEventSource", () => {
       }),
     ).toBe("a.b updates · status: open → done · any organization");
   });
+
+  it("reads a missing operation as the server does: an insert watch", () => {
+    // workflow.emit_trigger_events: coalesce(event_source->>'operation', 'insert')
+    expect(describeEventSource({ table: "a.b" })).toBe("a.b inserts");
+    expect(describeEventSource({ table: "a.b", operation: "insert" })).toBe("a.b inserts");
+  });
 });

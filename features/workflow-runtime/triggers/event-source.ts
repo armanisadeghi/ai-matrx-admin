@@ -166,6 +166,9 @@ export function describeEventSource(source: Record<string, unknown>): string {
   const parts: string[] = [];
   const table = typeof source.table === "string" ? source.table : null;
   if (table) {
+    // A source that omits `operation` IS an insert watch: the capture
+    // function reads `coalesce(event_source->>'operation', 'insert')`
+    // (workflow.emit_trigger_events), so the summary mirrors the server.
     const op = source.operation === "update" ? "updates" : "inserts";
     parts.push(`${table} ${op}`);
   }
