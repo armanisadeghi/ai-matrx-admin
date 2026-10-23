@@ -54,7 +54,11 @@ export function DerivedBreadcrumb({ className, max, fallback, ...options }: Deri
   );
 }
 
-/** A route whose whole header is the trail (plus optional right-slot actions). */
+/**
+ * A route whose whole header is the trail (plus optional right-slot actions). As a `fallback` (a module
+ * layout's) it is the most generic header there is, so it yields to the page's header AND to any
+ * fallback the page draws itself (the table page's, a route skeleton's): one fallback at a time.
+ */
 export function DerivedCrumbTrailHeader({
   right,
   fallback,
@@ -62,5 +66,5 @@ export function DerivedCrumbTrailHeader({
 }: UseDerivedTrailOptions & { right?: React.ReactNode; fallback?: boolean }) {
   const trail = useDerivedTrail(options);
   if (trail.length === 0) return null;
-  return <CrumbTrailHeader trail={trail} right={right} fallback={fallback} />;
+  return <CrumbTrailHeader trail={trail} right={right} fallback={fallback ? "derived" : false} />;
 }

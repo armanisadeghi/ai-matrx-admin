@@ -27,6 +27,7 @@ import { useBackHref } from "@/lib/navigation/useBackHref";
 import NavLink from "@/components/navigation/NavLink";
 import { ChevronRight } from "lucide-react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
+import type { HeaderFallback } from "@/features/shell/components/header/useYieldedFallback";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { RecordId, Skeleton } from "@ai-matrx/design-system";
 import { frameCrumbOf, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
@@ -72,8 +73,8 @@ export interface CrumbTrailHeaderProps {
   trail: Crumb[];
   /** Right-slot tap-target actions. */
   right?: React.ReactNode;
-  /** Yield to any page-specific header mounted deeper in the route tree. */
-  fallback?: boolean;
+  /** Yield to any page-specific header mounted deeper in the route tree (`"derived"`: and to any other fallback). */
+  fallback?: HeaderFallback;
 }
 
 // EVERY CRUMB IS A DOOR (Arman, 2026-10-22): the classic trail opens a level's siblings through the
@@ -148,7 +149,7 @@ export function CrumbTrailHeader({
   fallback = false,
 }: CrumbTrailHeaderProps) {
   // THE NEW APP FRAME: the trail goes to the frame's crumb row; only `right` stays in the header slot.
-  const inFrame = useDeclareFrameCrumbs(trail.length > 0 ? trail.map(frameCrumbOf) : null, { fallback });
+  const inFrame = useDeclareFrameCrumbs(trail.length > 0 ? trail.map(frameCrumbOf) : null, { fallback: Boolean(fallback) });
   // Back returns where this tab came from; the crumb is the fallback.
   const back = useBackHref(backHref ?? trail[0]?.href ?? "/");
   if (trail.length === 0) return null;

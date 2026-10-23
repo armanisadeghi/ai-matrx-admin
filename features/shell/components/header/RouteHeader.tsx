@@ -54,7 +54,7 @@
 
 "use client";
 
-import { useYieldedFallback } from "./useYieldedFallback";
+import { useYieldedFallback, type HeaderFallback } from "./useYieldedFallback";
 import {
   Fragment,
   useEffect,
@@ -109,8 +109,8 @@ interface RouteHeaderProps {
   center?: React.ReactNode;
   /** Contextual actions, lowest priority first. Pass siblings — they fold into "…" when the row is narrow. */
   right?: React.ReactNode;
-  /** Yield to any page-specific header mounted deeper in the route tree. */
-  fallback?: boolean;
+  /** Yield to any page-specific header mounted deeper in the route tree (`"derived"`: and to any other fallback). */
+  fallback?: HeaderFallback;
   /**
    * Keep the center in the row on a phone instead of moving it into the ⋮
    * sheet. For a route whose center IS its primary control and collapses
