@@ -76,7 +76,7 @@ import { AssociationsHost } from "@/features/scopes/host/AssociationsHost";
 import { SharingHost } from "@/providers/SharingHost";
 // The record-reference host (records-ui/entity-ref) and the settings host (design-system/settings):
 // mounted here, beside SharingHost, so every route that takes Providers has them bound before first render.
-// EXP: import { EntityRefHost } from "@/features/data-tables/records-ui-host/entityRefHost";
+import { EntityRefHost } from "@/features/data-tables/records-ui-host/entityRefHost";
 import { SettingsHost } from "@/features/settings/doors/settingsHost";
 import { DetailHost } from "@/features/window-panels/detail/DetailHost";
 
@@ -186,7 +186,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
         <ChatSurfaceRegistrations />
         <AssociationsHost>
           <SharingHost />
-          {/* EXP: <EntityRefHost /> */}
+          <EntityRefHost />
           <SettingsHost />
           <DetailHost>
             <AgentCatalogHost>
