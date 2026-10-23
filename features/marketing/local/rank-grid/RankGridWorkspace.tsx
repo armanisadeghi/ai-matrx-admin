@@ -86,7 +86,7 @@ export function RankGridWorkspace({ brandId, locationId }: { brandId: string; lo
             href: marketingRoutes.brandLocation(brandId, locationId),
           },
         ]}
-        record={{ name: "Rank grid" }}
+        level={{ name: "Rank grid" }}
       />
       <div className="h-full overflow-hidden">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll>

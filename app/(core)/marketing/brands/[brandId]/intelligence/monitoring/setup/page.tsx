@@ -15,7 +15,7 @@ import { MonitorSetupEditor } from "@/features/marketing/monitor-setup/MonitorSe
 export default function MonitorSetupPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "News monitor" }} />
+      <RecordPageHeader level={{ name: "News monitor" }} />
       <Suspense fallback={<LoadingSurface label="Loading the monitor…" />}>
         <MonitorSetupEditor />
       </Suspense>

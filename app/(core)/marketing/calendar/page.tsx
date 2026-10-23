@@ -31,7 +31,7 @@ export default async function MarketingCalendarPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "PR Calendar" }} />
+      <RecordPageHeader level={{ name: "PR Calendar" }} />
       <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
         <div className="mx-auto flex max-w-xl flex-col gap-3 p-6">
           <div className="flex items-center gap-2">

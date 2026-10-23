@@ -21,7 +21,7 @@ import { BrandScopedMonitoring } from "@/features/marketing/front-doors/BrandSco
 export default function BrandMonitoringPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "Monitoring" }} />
+      <RecordPageHeader level={{ name: "Monitoring" }} />
       {/* The site selector reads `?site=` on the client. */}
       <Suspense fallback={<LoadingSurface label="Loading monitoring…" />}>
         <BrandScopedMonitoring />

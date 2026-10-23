@@ -32,5 +32,5 @@ export function pressRoomDoors(brandSeg: string): RecordPageAction[] {
 }
 
 export function PressRoomHeader({ brandId }: { brandId: string }) {
-  return <RecordPageHeader record={{ name: "Press Room" }} actions={pressRoomDoors(brandId)} />;
+  return <RecordPageHeader level={{ name: "Press Room" }} actions={pressRoomDoors(brandId)} />;
 }

@@ -11,7 +11,7 @@ import { NewsTrackersList } from "@/features/marketing/monitor-setup/inputs/News
 export default function MarketingNewsMonitorsPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "News monitors" }} />
+      <RecordPageHeader level={{ name: "News monitors" }} />
       <div className="h-full min-h-0 overflow-hidden">
         <NewsTrackersList />
       </div>

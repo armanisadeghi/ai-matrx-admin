@@ -55,7 +55,7 @@ export function InitiativesListPage({
       surfaceName="matrx-user/marketing-initiatives"
       getScope={() => createMarketingInitiativesScope({ page_kind: "list" })}
     >
-      <RecordPageHeader record={{ name: "Initiatives" }} />
+      <RecordPageHeader level={{ name: "Initiatives" }} />
       <EntityListPage
         config={scopedConfig}
         headerActions={action}

@@ -23,7 +23,7 @@ export default async function BrandAiVisibilityPage({
   if (!brand) return <MarketingAddressUnavailable token="web_brand" address={brandId} />;
   return (
     <>
-      <RecordPageHeader record={{ name: "What AI says about you" }} />
+      <RecordPageHeader level={{ name: "What AI says about you" }} />
       <Suspense fallback={<LoadingSurface label="Loading…" />}>
         <div className="p-4">
           <BrandAiVisibilityView brandId={brand.id} />

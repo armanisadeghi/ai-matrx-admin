@@ -37,7 +37,7 @@ export default function MarketingToolsPage() {
   }));
   return (
     <>
-      <RecordPageHeader record={{ name: "SEO Tools" }} />
+      <RecordPageHeader level={{ name: "SEO Tools" }} />
       <div className="h-full overflow-y-auto bg-textured">
         <div className="mx-auto w-full max-w-7xl px-3 pb-6 pt-[calc(var(--shell-header-h)+0.75rem)] sm:px-4">
           <MarketingDestinationMap

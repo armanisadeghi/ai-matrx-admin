@@ -22,7 +22,7 @@ export function BrandNewPage() {
     <SurfaceRuntimeProvider surfaceName="matrx-user/marketing" getScope={() => createMarketingScope({ hub_view: "brands" })}>
       <RecordPageHeader
         backHref={marketingRoutes.brandsAll()}
-        record={{ name: "Add brand" }}
+        level={{ name: "Add brand" }}
       />
       <div className="h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <div className="mx-auto h-full w-full max-w-2xl px-4 py-4">

@@ -15,7 +15,7 @@ import { RecordPageHeader } from "@/features/shell/components/header/templates/R
 export default function OperationsCapabilitiesPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "SEO Capabilities" }} />
+      <RecordPageHeader level={{ name: "SEO Capabilities" }} />
       <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
         <Suspense fallback={<LoadingSurface label="Loading SEO capabilities…" />}>
           <SeoCapabilitiesWorkspace />

@@ -13,7 +13,7 @@ import { MandateDoorLink } from "@/features/mandates/components/MandateDoorLink"
 export default function MarketingPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "Marketing" }} />
+      <RecordPageHeader level={{ name: "Marketing" }} />
       <MandateDoorLink feature="seo" label="Marketing & SEO agents" className="ml-auto" />
       <div className="h-full overflow-hidden">
         <MarketingHome pillars={MARKETING_PILLARS} />

@@ -11,7 +11,7 @@ import { BrandReputationSites } from "@/features/marketing/components/reputation
 export default function BrandReputationPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "Reputation" }} />
+      <RecordPageHeader level={{ name: "Reputation" }} />
       <BrandReputationSites />
     </>
   );

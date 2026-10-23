@@ -18,7 +18,7 @@ import { OrganizationRunConsoleMount } from "@/features/marketing/seo/run-consol
 export default function MarketingAutomationsPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "Automations" }} />
+      <RecordPageHeader level={{ name: "Automations" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <OrganizationRunConsoleMount />
       </div>

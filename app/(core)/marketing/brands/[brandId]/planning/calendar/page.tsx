@@ -16,7 +16,7 @@ import { PrCalendarPage } from "@/features/marketing/pr/calendar/PrCalendarPage"
 export default function BrandCalendarPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "PR Calendar" }} />
+      <RecordPageHeader level={{ name: "PR Calendar" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <Suspense fallback={<LoadingSurface label="Loading the PR calendar…" />}>
           <PrCalendarPage />

@@ -20,7 +20,7 @@ import { BrandScopedEmail } from "@/features/marketing/front-doors/BrandScopedEm
 export default function BrandEmailPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "Email" }} />
+      <RecordPageHeader level={{ name: "Email" }} />
       <BrandScopedEmail />
     </>
   );

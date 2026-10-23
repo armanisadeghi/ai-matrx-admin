@@ -14,7 +14,7 @@ import { GOOGLE_ADS_REPORTING_SCOPES } from "@/lib/googleScopes";
 export default function BrandAdsPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "Google Ads" }} />
+      <RecordPageHeader level={{ name: "Google Ads" }} />
       <div className="h-full overflow-y-auto overflow-x-hidden">
         <LazyGoogleAPIProvider scopes={[...GOOGLE_ADS_REPORTING_SCOPES]}>
           <GoogleAdsWorkspace />
