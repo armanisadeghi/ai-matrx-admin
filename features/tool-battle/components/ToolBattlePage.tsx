@@ -52,7 +52,7 @@ export function ToolBattlePage({ battleId }: { battleId: string }) {
   if (read.state === "loading") {
     return (
       <>
-        <RecordPageHeader backHref={BATTLE_HOME} parents={[{ label: "Tool Battle", href: BATTLE_HOME }]} record={{ name: "Battle" }} />
+        <RecordPageHeader backHref={BATTLE_HOME} parents={[{ label: "Tool Battle", href: BATTLE_HOME }]} record={{ name: "Battle", token: "tool_battle", id: battleId }} />
         <div className="px-[var(--matrx-page-gutter)] pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">
           <RegionSkeleton shape="rows" count={5} aria-label="Loading the battle" />
         </div>

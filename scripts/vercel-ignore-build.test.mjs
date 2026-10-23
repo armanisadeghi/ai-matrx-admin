@@ -251,3 +251,30 @@ test("(j) unrelated live-version metadata cannot block a release HEAD", () => {
     assert.equal(build, true, `a release as HEAD must still build:\n${output}`);
     assert.match(output, /pushed HEAD is a release commit/, `the HEAD decision was not reported:\n${output}`);
 });
+
+test("(k) a release subject on a branch other than main SKIPS", () => {
+    const dir = track(newRepo());
+    commit(dir, "chore: baseline");
+    const head = commit(dir, "release: hang bisect #73 (preview only, temporary branch)");
+    const { build, output } = runIgnore(dir, {
+        MATRX_BUILD_TARGET: "main",
+        VERCEL_GIT_COMMIT_SHA: head,
+        VERCEL_GIT_COMMIT_REF: "hang-b5-73",
+        VERCEL_GIT_COMMIT_MESSAGE: "release: hang bisect #73 (preview only, temporary branch)",
+    });
+    assert.equal(build, false, `a release-prefixed commit on a side branch built:\n${output}`);
+    assert.match(output, /branch 'hang-b5-73' is not main/, `the branch decision was not reported:\n${output}`);
+});
+
+test("(k2) a release subject on main still builds", () => {
+    const dir = track(newRepo());
+    commit(dir, "chore: baseline");
+    const head = commit(dir, "release: v0.4.9999");
+    const { build } = runIgnore(dir, {
+        MATRX_BUILD_TARGET: "main",
+        VERCEL_GIT_COMMIT_SHA: head,
+        VERCEL_GIT_COMMIT_REF: "main",
+        VERCEL_GIT_COMMIT_MESSAGE: "release: v0.4.9999",
+    });
+    assert.equal(build, true);
+});

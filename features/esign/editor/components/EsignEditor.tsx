@@ -13,6 +13,7 @@ import { Copy, Eye, FileText, LayoutTemplate, PenLine, Redo2, Send, Trash2, Undo
 import { Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
 import { useIsMobile, useMediaQuery } from "@ai-matrx/kit/media-query";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import { RECORD_SIBLINGS, SIBLINGS_MAX } from "@/features/shell/breadcrumbs/record-siblings";
 import { useRouter } from "next/navigation";
 
 import { toast } from "@/lib/toast";
@@ -680,11 +681,30 @@ export function EsignEditor(props: EsignEditorProps) {
 
   const onlyMe = !!props.me && draft.recipients.length > 0 && draft.recipients.every((r) => r.user_id === props.me?.user_id);
 
+  // The record's door: the other templates (the Templates list's own read) or the other envelopes
+  // (the E-Signatures list's own read, record-siblings.ts), read when the door opens.
+  const loadEditorSiblings = async () => {
+    const currentId = templateMode ? (templateState?.id ?? null) : boot.id;
+    if (templateMode) {
+      const [{ fetchTemplatePage }, { DEFAULT_ENTITY_LIST_QUERY }] = await Promise.all([
+        import("@/features/esign/templates/service"),
+        import("@/lib/entity-list/types"),
+      ]);
+      const page = await fetchTemplatePage(
+        { ...DEFAULT_ENTITY_LIST_QUERY, scope: { kind: "all" } },
+        { sort: "updated_at", direction: "desc", favoritesFirst: false, pageSize: SIBLINGS_MAX },
+      );
+      return page.rows.map((t) => ({ label: t.name || "Template", href: `/esign/templates/${t.id}`, active: t.id === currentId }));
+    }
+    const rows = (await RECORD_SIBLINGS.esign_envelope?.()) ?? [];
+    return rows.map((r) => ({ label: r.label, href: `/esign/${r.id}`, active: r.id === currentId }));
+  };
+
   return (
     <SurfaceRuntimeProvider surfaceName={templateMode ? ESIGN_TEMPLATE_SURFACE_NAME : ESIGN_ENVELOPE_SURFACE_NAME} getScope={getSurfaceScope} getWriteHandlers={getSurfaceWriteHandlers}>
       <RecordPageHeader
         backHref={props.backHref ?? "/esign"}
-        record={{ name: draft.title.trim() || (templateMode ? "New template" : "New envelope") }}
+        record={{ name: draft.title.trim() || (templateMode ? "New template" : "New envelope"), loadSiblings: loadEditorSiblings }}
         status={{ label: statusLabel, tone: sync.status === "retrying" ? "warning" : sync.status === "saved" ? "success" : "neutral" }}
         actions={[
           { label: "Undo", icon: Undo2, onPress: undo, disabled: !canUndo },

@@ -92,6 +92,9 @@ export const HEAVY: ReadonlyArray<HeavyEntry> = [
   { match: /^recharts\//, why: "recharts — charts load with the surface that draws them" },
   { match: /^features\/content-ir\/registry\/component-registry\.ts$/, why: "content-ir component registry (the kind stack, ~130 modules) — loads when a kind is shown; shell surfaces draw answers through AnswerTextView / AnswerValueSlot" },
   { match: /^@ai-matrx\/messaging\/dist\/react\.js$/, why: "messaging screens (inbox, thread, composer, react-markdown) — the shell mounts the provider and hooks through @ai-matrx/messaging/react/host" },
+  // 2026-10-22: one helper import (clientLabelFor) from a module that also imported this package
+  // put it in every route via ChatHostAdapter; the Vercel compile then OOM'd/stalled from 1f47830c51.
+  { match: /^@ai-matrx\/coding-sessions\/dist\/react\/index\.js$/, why: "coding-sessions UI (chat conversation column, tool-call surfaces, agents catalog) — loads with the Code/devices screens, never the shell" },
   { match: /^@ai-matrx\/design-system\/dist\/data-table\/index\.js$/, why: "design-system data-table index (MatrxDataTable and every grid feature)" },
   // THE NEW APP FRAME (ROLLOUT-PLAN §1 Guards): it reaches a person only through the one gated
   // dynamic() edge in features/shell/frame-host; a static import from the classic shell would ship

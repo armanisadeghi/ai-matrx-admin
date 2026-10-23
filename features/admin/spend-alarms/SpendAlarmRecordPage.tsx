@@ -420,7 +420,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
           { label: "Billing", href: "/administration/billing" },
           { label: "Alarms", href: SPEND_ALARMS_PATH },
         ]}
-        record={{ name: record ? alarmTitle(record) : loading ? "Alarm" : "Alarm not found" }}
+        record={{ name: record ? alarmTitle(record) : loading ? "Alarm" : "Alarm not found", token: "billing_spend_alarm", id }}
         status={record ? { label: statusLabel, tone: record.status === "open" ? LEVEL_TONE[record.level] : "neutral" } : undefined}
         actions={headerActions}
       />

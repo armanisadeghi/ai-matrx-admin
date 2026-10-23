@@ -24,6 +24,7 @@ import {
   agentBuildHref,
   fetchHeldRun,
   fetchHeldRunsForAlarm,
+  fetchHeldRunsForApprovals,
   GATE_LABEL,
   heldRunHref,
   mandateAdminHref,
@@ -130,6 +131,17 @@ export function HeldRunView({ id }: { id: string }) {
   };
 
   const replays = run?.replays ?? [];
+  // The record's door: the other runs held with this one — the alarm's runs this page already read,
+  // else the runs its spend approval stopped (the approval page's own read), newest first.
+  const loadHeldRunSiblings = async () => {
+    const approvalId = run?.refs.approval_id;
+    const list = siblings.length > 0 ? siblings : approvalId ? await fetchHeldRunsForApprovals([approvalId]) : run ? [run] : [];
+    return list.map((s) => ({
+      label: s.agent_name || s.mandate_key || "Held run",
+      href: heldRunHref(s.id),
+      active: s.id === run?.id,
+    }));
+  };
   const label = run ? (mandateLabel ?? run.agent_name ?? run.mandate_key ?? "Held run") : loading ? "Held run" : "Held run not found";
 
   // Surface `matrx-admin/held-run`: the frozen run as shown; its automation can be paused or resumed.
@@ -186,7 +198,7 @@ export function HeldRunView({ id }: { id: string }) {
           { label: "Billing", href: "/administration/billing" },
           { label: "Alarms", href: "/administration/billing/alarms" },
         ]}
-        record={{ name: label }}
+        record={{ name: label, loadSiblings: loadHeldRunSiblings }}
         status={run ? { label: GATE_LABEL[run.gate] ?? run.gate, tone: "neutral" } : undefined}
         actions={[]}
       />

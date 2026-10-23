@@ -135,7 +135,7 @@ export function AppletHeader({
     <RecordPageHeader
       backHref={backHref}
       parents={[{ label: "Applets", href: backHref }]}
-      record={{ name: appName }}
+      record={{ name: appName, token: "app", id: appId }}
       status={{ label: state.label, tone: state.tone }}
       modes={modes}
       actions={actions}
