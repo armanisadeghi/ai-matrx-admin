@@ -15,6 +15,7 @@ import { BookText } from "lucide-react";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 import { ModuleSignInGate } from "@/features/auth/components/module-landing/ModuleSignInGate";
 import { createRouteMetadata } from "@/utils/route-metadata";
+import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 export const metadata = createRouteMetadata("/print", {
     titlePrefix: "Order printed copies",
@@ -37,5 +38,11 @@ export default async function PrintOrderLayout({ children }: { children: React.R
             />
         );
     }
-    return children;
+    // The page names its levels through the derived trail (crumb doors, features/shell/FEATURE.md).
+    return (
+        <>
+            <DerivedCrumbTrailHeader fallback />
+            {children}
+        </>
+    );
 }

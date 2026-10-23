@@ -4,14 +4,14 @@ import { PanelLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { usePanelControls } from "@/features/resizable-panels/PanelControlProvider";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { HeaderActionsSlot } from "@/features/shell/components/header/HeaderActionsSlot";
+import { DerivedBreadcrumb } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 /**
  * Header controls for the /agent-connections route family. Lives inside the
  * shell glass header via <PageHeader/>. Toggles the collapsible sidebar
  * column through the shared <PanelControlProvider/> (same pattern as
  * TasksHeaderControls) and carries the route's identity — the sidebar list
- * is the real nav, so this is just a toggle + a small title, no title/
- * description block.
+ * is the real nav, so this is just a toggle + the derived trail.
  *
  * On mobile the resizable sidebar panel isn't mounted at all — `MobilePanelShell`
  * (`AgentConnectionsRouteShell.tsx`) renders the section list as its own bottom
@@ -35,9 +35,9 @@ export function AgentConnectionsHeaderControls() {
           />
         </HeaderActionsSlot>
       )}
-      <h1 className={`text-sm font-medium text-foreground truncate ${isMobile ? "" : "ml-2"}`}>
-        Agent Connections
-      </h1>
+      {/* The derived trail (Agent Connections › <section ▾>): each level a link, the section crumb
+          opens the other sections (features/shell/FEATURE.md § Every crumb is a door). */}
+      <DerivedBreadcrumb className={isMobile ? "" : "ml-2"} />
     </div>
   );
 }

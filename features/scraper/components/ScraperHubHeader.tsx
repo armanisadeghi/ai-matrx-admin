@@ -7,6 +7,7 @@
 
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { RouteModeNav } from "@/features/shell/components/header/RouteModeNav";
+import { DerivedBreadcrumb } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 import { Globe, Zap, Search, ScanSearch, ClipboardList } from "lucide-react";
 
 const HUB_NAV_ITEMS = [
@@ -18,5 +19,12 @@ const HUB_NAV_ITEMS = [
 ];
 
 export function ScraperHubHeader({ right }: { right?: React.ReactNode }) {
-  return <RouteHeader center={<RouteModeNav items={HUB_NAV_ITEMS} />} right={right} />;
+  // The derived trail names the level and opens its siblings (crumb doors, features/shell/FEATURE.md).
+  return (
+    <RouteHeader
+      left={<DerivedBreadcrumb className="pl-1" />}
+      center={<RouteModeNav items={HUB_NAV_ITEMS} />}
+      right={right}
+    />
+  );
 }

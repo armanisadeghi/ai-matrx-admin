@@ -2,7 +2,7 @@
 
 import { PdfWorkspace } from "@ai-matrx/office/pdf";
 import { rememberFileOrganization } from "@/features/files/api/fileOrganization";
-import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import { PdfRecordHeader } from "./PdfRecordHeader";
 import { cn } from "@/lib/utils";
 import { usePdfWorkspaceHost } from "./usePdfWorkspaceHost";
 import { PDF_WORKSPACE_SURFACE_NAME, WorkspaceSurface } from "./WorkspaceSurface";
@@ -33,7 +33,7 @@ export function PdfWorkspaceBody({
   const body = (
     <>
       {header ? (
-        <RecordPageHeader backHref="/pdf" parents={[{ label: "PDF", href: "/pdf" }]} record={{ name: host.file.name, token: "file", id: fileId }} />
+        <PdfRecordHeader fileId={fileId} fileName={host.file.name} />
       ) : null}
       <div className={cn(header ? "h-dvh w-full pt-[var(--shell-header-h)]" : "h-full w-full", className)} data-surface={surface ? PDF_WORKSPACE_SURFACE_NAME : undefined}>
         <PdfWorkspace host={host} />
