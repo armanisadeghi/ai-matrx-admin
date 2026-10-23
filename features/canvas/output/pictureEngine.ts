@@ -17,7 +17,6 @@
 
 import { createElement, Suspense, type ReactNode } from "react";
 import { Provider } from "react-redux";
-import { createRoot } from "react-dom/client";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
 
@@ -154,6 +153,10 @@ export async function withOffscreen<T>(
   const { wrapper, stage: host } = offscreenStage(`width:${options.width}px;${height}background:${options.background ?? pageBackground()}`);
   host.setAttribute("data-matrx-offscreen-picture", "");
   const store = getStoreSingleton();
+  // Loaded when a picture is made, never at module load: this file sits on the canvas host path that
+  // every route loads, and a static react-dom/client import put its client runtime into every route
+  // (2026-10-22 build hunt, check:shell-eager-graph --attribute).
+  const { createRoot } = await import("react-dom/client");
   const root = createRoot(host);
   try {
     const boundary = createElement(TooltipProvider, { delayDuration: 200, children: createElement(Suspense, { fallback: null }, node) });
