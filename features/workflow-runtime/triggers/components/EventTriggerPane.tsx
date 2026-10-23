@@ -125,6 +125,7 @@ export function EventTriggerPane({
             value={draft.whenFromValue}
             onChange={(e) => set("whenFromValue", e.target.value)}
             placeholder="Any value"
+            disabled={draft.operation === "insert"}
             width="md"
           />
         </SettingRow>

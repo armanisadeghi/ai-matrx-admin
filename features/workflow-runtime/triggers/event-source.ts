@@ -82,7 +82,8 @@ export function buildEventSource(draft: EventDraft): TableEventSourceSpec {
     source: "table",
     table: draft.table.trim(),
     operation: draft.operation,
-    ...(column ? { when_column: column, when_value: value } : {}),
+    ...(column ? { when_column: column } : {}),
+    ...(column && value ? { when_value: value } : {}),
     ...(column && from ? { when_from_value: from } : {}),
     entity_key_column: draft.entityKeyColumn.trim() || "id",
     debounce_seconds: debounceOf(draft),
@@ -119,8 +120,8 @@ export function eventSourceAdvice(
   }
   if (draft.whenColumn.trim() && !draft.whenValue.trim()) {
     notes.push({
-      id: "when-pair",
-      text: "A column to watch needs the value it changes to.",
+      id: "value-missing",
+      text: "Pick the value the column lands on.",
     });
   }
   if (!draft.whenColumn.trim() && draft.whenFromValue.trim()) {
@@ -128,6 +129,13 @@ export function eventSourceAdvice(
       id: "from-needs-column",
       text: "The from-value only applies with a column to watch.",
     });
+  }
+  const from = draft.whenFromValue.trim();
+  if (from && draft.operation === "insert") {
+    notes.push({ id: "from-needs-update", text: "From only applies to updates." });
+  }
+  if (from && from === draft.whenValue.trim()) {
+    notes.push({ id: "from-equals-to", text: "From and to are the same value." });
   }
   if (knownColumns && knownColumns.length > 0) {
     const unknown = [

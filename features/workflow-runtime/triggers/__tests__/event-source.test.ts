@@ -67,10 +67,34 @@ describe("eventSourceAdvice", () => {
     ).map((n) => n.id);
     expect(ids).toEqual([
       "table-shape",
-      "when-pair",
+      "value-missing",
       "unknown-columns",
       "unknown-inputs",
     ]);
+  });
+});
+
+describe("eventSourceAdvice hops", () => {
+  const ids = (over: object) =>
+    eventSourceAdvice({ ...EMPTY_EVENT_DRAFT, table: "a.b", ...over }, [], null).map((n) => n.id);
+
+  it("names a from-value on an insert", () => {
+    expect(ids({ whenColumn: "s", whenValue: "x", whenFromValue: "y" })).toEqual(["from-needs-update"]);
+    expect(ids({ operation: "update", whenColumn: "s", whenValue: "x", whenFromValue: "y" })).toEqual([]);
+  });
+
+  it("names a same-value hop", () => {
+    expect(ids({ operation: "update", whenColumn: "s", whenValue: "x", whenFromValue: "x" })).toEqual(["from-equals-to"]);
+  });
+
+  it("names a missing value", () => {
+    expect(ids({ whenColumn: "s" })).toEqual(["value-missing"]);
+  });
+
+  it("omits a blank when_value", () => {
+    const spec = buildEventSource({ ...EMPTY_EVENT_DRAFT, table: "a.b", whenColumn: "s" });
+    expect(spec).toMatchObject({ when_column: "s" });
+    expect("when_value" in spec).toBe(false);
   });
 });
 
