@@ -100,8 +100,9 @@ export interface CaptureScreenProps {
    *   the `capturing → captured` transition (`closeItem`).
    * - `"instant"` — adds the Process button: the CLIENT runs the intake
    *   analysis through the `product_capture.instant_analysis` mandate and
-   *   streams the result into `InstantProcessSheet`; on success the item goes
-   *   `capturing → processed` directly, so the server lane never fires for it.
+   *   streams the result into `InstantProcessSheet`; on success the record is
+   *   saved and the item goes `capturing → captured`, so the server runs
+   *   research (skipping its analyzer) and settles it on `processed`.
    */
   mode?: "standard" | "instant";
 }

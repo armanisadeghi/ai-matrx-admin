@@ -10,6 +10,7 @@
  * would be promising something the platform deliberately cannot do.
  */
 
+import { describeEventSource } from "../event-source";
 import { useState } from "react";
 import {
   CalendarClock,
@@ -64,8 +65,8 @@ export function TriggerCard({
     ? describeRecurrence(fromCron(trigger.cronExpression))
     : null;
   const watchedTable =
-    isEvent && typeof trigger.eventSource?.table === "string"
-      ? trigger.eventSource.table
+    isEvent && trigger.eventSource
+      ? describeEventSource(trigger.eventSource) || null
       : null;
 
   return (

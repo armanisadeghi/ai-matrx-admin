@@ -65,7 +65,7 @@ const PRODUCT_CAPTURE_ADMIN_MAP: FeatureAdminMap = {
       url: "/tools/product-capture/instant",
       label: "Instant capture (client process lane)",
       description:
-        "The process-mode A/B test: the same capture surface plus a Process button — the browser runs the product_capture.instant_analysis mandate on the item's photos and streams the electronics_intake_analysis record into a bottom sheet. Success writes the instant_analysis payload and moves the item capturing → processed directly (never 'captured', so the server workflow lane can't double-process it).",
+        "The process-mode A/B test: the same capture surface plus a Process button — the browser runs the product_capture.instant_analysis mandate on the item's photos and streams the electronics_intake_analysis record into a bottom sheet. Success writes the instant_analysis payload, then moves the item capturing → captured: the server workflow skips its analyzer and runs research, then settles it on processed.",
       filePath: "app/(core)/tools/product-capture/instant/page.tsx",
       status: "Live",
       notes: [
@@ -194,7 +194,7 @@ const PRODUCT_CAPTURE_ADMIN_MAP: FeatureAdminMap = {
       name: "useInstantAnalysis + InstantProcessSheet",
       filePath: "features/product-capture/hooks/useInstantAnalysis.ts",
       description:
-        "The instant lane: useLiveAgentRun over the product_capture.instant_analysis mandate with the item's photos as message parts; result persisted via the onResult seam (instant_analysis payload + markProcessed). The sheet streams the run through LiveRunDisplay (canonical pipeline, kind component included).",
+        "The instant lane: useLiveAgentRun over the product_capture.instant_analysis mandate with the item's photos as message parts; result persisted via the onResult seam (instant_analysis payload, then the closeItem handoff to server research). The sheet streams the run through LiveRunDisplay (canonical pipeline, kind component included).",
       status: "Live",
     },
     {

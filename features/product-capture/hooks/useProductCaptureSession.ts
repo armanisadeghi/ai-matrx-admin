@@ -121,12 +121,14 @@ export interface UseProductCaptureSessionOptions {
    * finished item flips it back to `capturing` so closing it again re-fires
    * that handoff (more photos = a reprocess).
    *
-   * 🚨 `"instant"` — the client already ran the analysis, so this lane NEVER
-   * writes `captured` and never re-opens a finished item. Both writes would
-   * hand a already-analyzed item to the server pipeline: `capturing →
-   * processed` skipping `captured` is the ONLY thing keeping the two lanes
-   * from double-processing, and a close (or a reopen-then-close on revisit)
-   * walks straight through it.
+   * 🚨 `"instant"` — the handoff is the ANALYSIS's, not the session's: the
+   * instant analysis writes `capturing → captured` itself, AFTER its record
+   * is saved (`useInstantAnalysis`), so the server pipeline skips its own
+   * analyzer and researches what the phone found. So this lane never closes
+   * on leaving (a close before the analysis lands would hand the server an
+   * item with no record — a second, paid analysis) and never re-opens a
+   * finished item (a reopen-then-close on revisit re-runs the whole pipeline
+   * on an item the server already settled).
    */
   lane?: "standard" | "instant";
 }
@@ -324,9 +326,9 @@ export function useProductCaptureSession(
     void (async () => {
       await flushNotes(item);
       if (!item) return;
-      // The instant lane's terminal write is `markProcessed` (capturing →
-      // processed), fired by the analysis itself. Closing here would write
-      // `captured` and hand the item to the server pipeline as well.
+      // The instant lane's handoff (`capturing → captured`) is written by the
+      // analysis itself, after its record is saved. Closing here could hand
+      // the server an item with no record yet — a second, paid analysis.
       if (instantLane) return;
       try {
         await closeItem(item);

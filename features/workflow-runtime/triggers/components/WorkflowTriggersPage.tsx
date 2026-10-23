@@ -124,7 +124,7 @@ export function WorkflowTriggersPage({
         setAdding(false);
         if (plaintextSecret) setFreshSecret(plaintextSecret);
         toast.success(
-          created.kind === "cron"
+          created.kind === "cron" || created.kind === "event"
             ? "It'll run on its own from now on."
             : "Its address is ready.",
         );

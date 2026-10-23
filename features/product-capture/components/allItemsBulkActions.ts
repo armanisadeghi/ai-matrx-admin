@@ -7,7 +7,7 @@
 import { CheckCircle2, RefreshCw, Trash2 } from "lucide-react";
 import { bulkActionsFromRowVerbs } from "@/lib/entity-list/rowVerbs";
 import type { EntityBulkAction } from "@/lib/entity-list/selection";
-import { closeItem, deleteItem } from "../service";
+import { deleteItem, handOffItem } from "../service";
 import type { CaptureItem } from "../types";
 
 /** The least an items-table row carries for these verbs. */
@@ -28,10 +28,11 @@ export function itemBulkActions(
   onSaved: (id: string, saved: CaptureItem) => void,
   onDeleted: (id: string) => void,
 ): EntityBulkAction<ItemBulkRow>[] {
-  // Flipping into `captured` IS the workflow handoff (the DB transition fires the trigger).
+  // Flipping into `captured` IS the workflow handoff (the DB transition fires the
+  // trigger): closeItem for a capturing item, reprocessItem for a settled one.
   const close = async (id: string, row: ItemBulkRow | undefined) => {
     if (!row) throw new Error("The item is no longer listed");
-    onSaved(id, await closeItem(row.item));
+    onSaved(id, await handOffItem(row.item));
   };
   return bulkActionsFromRowVerbs(
     ITEM_VERBS,

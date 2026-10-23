@@ -12,11 +12,14 @@
  */
 
 import { useState } from "react";
-import { Globe, Loader2, CalendarClock } from "lucide-react";
+import { Globe, Loader2, CalendarClock, DatabaseZap } from "lucide-react";
 
+import { Button } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { validateCron } from "@ai-matrx/data/scheduler";
 import { cn } from "@/utils/cn";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";
 
 import {
   EMPTY_SERVED_INPUTS,
@@ -27,10 +30,18 @@ import { triggerDefaultInputs } from "../default-inputs";
 import { DEFAULT_RECURRENCE, toCron, type Recurrence } from "../recurrence";
 import type { CreateTriggerArgs } from "../useWorkflowTriggers";
 import { generateWebhookSecret } from "../useWorkflowTriggers";
+import {
+  buildEventSource,
+  EMPTY_EVENT_DRAFT,
+  eventDraftIsSendable,
+  type EventDraft,
+} from "../event-source";
+import { usePlatformTables } from "../usePlatformTables";
+import { EventTriggerPane } from "./EventTriggerPane";
 import { browserTimezone, RecurrenceEditor } from "./RecurrenceEditor";
 import { TriggerDefaultInputs } from "./TriggerDefaultInputs";
 
-type NewKind = "cron" | "webhook";
+type NewKind = "cron" | "webhook" | "event";
 
 export function NewTriggerForm({
   definitionId,
@@ -50,6 +61,9 @@ export function NewTriggerForm({
   const [name, setName] = useState(`${workflowName} — automatic`);
   const [recurrence, setRecurrence] = useState<Recurrence>(DEFAULT_RECURRENCE);
   const [timezone, setTimezone] = useState<string>(browserTimezone());
+  const [eventDraft, setEventDraft] = useState<EventDraft>(EMPTY_EVENT_DRAFT);
+  const catalog = usePlatformTables();
+  const isAdmin = useAppSelector(selectIsSuperAdmin);
 
   // THE surface is fetched HERE, not inside the fields: saving the trigger
   // needs the same declaration the editor renders, and one paint asks once.
@@ -76,6 +90,23 @@ export function NewTriggerForm({
       return;
     }
     const defaultInputs = triggerDefaultInputs(inputs, values);
+    if (kind === "event") {
+      if (!eventDraftIsSendable(eventDraft)) {
+        toast.error("Say which table to watch.");
+        return;
+      }
+      onCreate(
+        {
+          definitionId,
+          name: name.trim(),
+          kind: "event",
+          eventSource: buildEventSource(eventDraft),
+          defaultInputs,
+        },
+        null,
+      );
+      return;
+    }
     if (kind === "webhook") {
       const secret = generateWebhookSecret();
       onCreate(
@@ -105,7 +136,7 @@ export function NewTriggerForm({
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4">
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-2 sm:grid-cols-3">
         <KindChoice
           selected={kind === "cron"}
           icon={<CalendarClock className="h-4 w-4" />}
@@ -119,6 +150,13 @@ export function NewTriggerForm({
           title="When something calls it"
           detail="Another tool or website starts it by calling an address."
           onSelect={() => setKind("webhook")}
+        />
+        <KindChoice
+          selected={kind === "event"}
+          icon={<DatabaseZap className="h-4 w-4" />}
+          title="On a data change"
+          detail="It runs when a row in a table is added or changes."
+          onSelect={() => setKind("event")}
         />
       </div>
 
@@ -140,6 +178,14 @@ export function NewTriggerForm({
           timezone={timezone}
           onRecurrenceChange={setRecurrence}
           onTimezoneChange={setTimezone}
+        />
+      ) : kind === "event" ? (
+        <EventTriggerPane
+          draft={eventDraft}
+          onChange={setEventDraft}
+          catalog={catalog}
+          workflowInputNames={inputs.map((i) => i.name)}
+          isAdmin={isAdmin}
         />
       ) : (
         <p className="rounded-lg border border-border bg-muted/40 p-2.5 text-xs text-muted-foreground">
@@ -164,22 +210,13 @@ export function NewTriggerForm({
       </div>
 
       <div className="flex items-center gap-2 border-t border-border pt-3">
-        <button
-          type="button"
-          disabled={creating}
-          onClick={submit}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
-        >
+        <Button variant="primary" disabled={creating} onClick={submit}>
           {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
           {creating ? "Saving…" : "Turn it on"}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="min-h-9 rounded-lg border border-border px-3 text-sm text-foreground"
-        >
+        </Button>
+        <Button variant="outline" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   );

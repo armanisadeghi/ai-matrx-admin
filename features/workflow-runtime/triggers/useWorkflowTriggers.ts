@@ -19,6 +19,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { callApi, type ApiCallConfig } from "@/lib/api/call-api";
 import { toast } from "@/lib/toast";
 
+import type { TableEventSourceSpec } from "./event-source";
 import {
   parseTrigger,
   parseTriggerFireList,
@@ -32,8 +33,7 @@ import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 export interface CreateTriggerArgs {
   definitionId: string;
   name: string;
-  /** Event triggers are registered from watched tables, never authored here. */
-  kind: Exclude<TriggerKind, "event">;
+  kind: TriggerKind;
   description?: string;
   /** Required for `cron`. A 5-field expression — build it with `toCron`. */
   cronExpression?: string;
@@ -41,6 +41,8 @@ export interface CreateTriggerArgs {
   /** Required for `webhook`. Sent once, never returned by any read. */
   webhookSecret?: string;
   defaultInputs?: Record<string, unknown>;
+  /** Required for `event`: the data change that fires it. */
+  eventSource?: TableEventSourceSpec;
 }
 
 export interface WorkflowTriggersApi {
@@ -153,6 +155,7 @@ export function useWorkflowTriggers(
             ...(args.defaultInputs
               ? { default_inputs: args.defaultInputs }
               : {}),
+            ...(args.eventSource ? { event_source: args.eventSource } : {}),
           },
         };
         const result = await dispatch(callApi(config));

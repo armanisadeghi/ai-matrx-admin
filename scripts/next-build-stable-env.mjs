@@ -45,9 +45,10 @@ export function runNext(cmd, args, { watchdog, stallMs = COMPILE_STALL_MINUTES *
       tail = text.slice(-300);
       if (!timer && COMPILE_STARTED.test(text)) {
         timer = setTimeout(() => {
-          stalled = true;
-          console.error(`[compile-watchdog] STALLED: Turbopack compile still running after ${COMPILE_STALL_MINUTES} min (healthy: 6-10 min). Killing the build's process group.`);
-          try { process.kill(-child.pid, "SIGKILL"); } catch { child.kill("SIGKILL"); }
+          // REPORT ONLY (Arman, 2026-10-22: "never ever ever during a release"). The kill turned every
+          // slow compile into a failed release: the compile is slow (40 GB, 20+ min), not deadlocked,
+          // so killing it guaranteed failure. It now only says so; Vercel's own 45-min cap is the limit.
+          console.error(`[compile-watchdog] SLOW: Turbopack compile still running after ${COMPILE_STALL_MINUTES} min (healthy: 6-10 min). Not killed — the build continues.`);
         }, stallMs);
       }
       if (timer && COMPILE_ENDED.test(text)) { clearTimeout(timer); timer = null; }
