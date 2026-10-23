@@ -1,25 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import { Plus } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { rulebookListConfig } from "../listConfig";
 
 export function MasterworkStudioPage() {
-  const newBtn = (
-    <ControlButton variant="primary" asChild aria-label="New Masterwork" icon={<Plus className="h-4 w-4" />} collapse="container">
-      <Link href="/masterwork/new">
-        New Masterwork
-      </Link>
-    </ControlButton>
-  );
+  // The list's one verb: the header draws it, the frame's "…" carries it, the empty state offers it.
+  const actions: ListPageAction[] = [
+    { id: "new", label: "New Masterwork", icon: Plus, href: "/masterwork/new", primary: true },
+  ];
 
   return (
     <EntityListPage
       config={rulebookListConfig}
-      headerActions={newBtn}
-      emptyAction={newBtn}
+      actions={actions}
     />
   );
 }

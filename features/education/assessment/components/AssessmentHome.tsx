@@ -19,6 +19,7 @@ import { Building2, LogIn, Plus, User } from "lucide-react";
 import { Button as ControlButton, EmptyState } from "@ai-matrx/design-system/controls";
 import { EducationToolHeader } from "@/features/education/components/EducationToolHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import { ListPageActionButton, type ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import type { EntityListSurfaceController } from "@/lib/entity-list/components/EntityListPage";
 import type { EntityListController } from "@/lib/entity-list/config";
 import {
@@ -82,15 +83,8 @@ export function AssessmentHome({ kind }: { kind: AssessmentKind }) {
     ? buildAssessmentListConfig({ config, userId, useRowActions: ROW_ACTIONS[kind] })
     : null;
 
-  // Navigation is a link. In the tab row the label hides on a phone (the
-  // accessible name stays); the empty state always shows it.
-  const createButton = (showLabel: boolean) => (
-    <ControlButton variant="primary" asChild icon={<Plus className="h-4 w-4" />} collapse={showLabel ? undefined : "container"}>
-      <Link href={newHref} aria-label={`New ${config.noun}`}>
-        New {config.noun}
-      </Link>
-    </ControlButton>
-  );
+  // The list's verb, as data: the tab row draws it, the frame's "…" carries it (navigation is a link).
+  const createAction: ListPageAction = { id: "new", label: `New ${config.noun}`, icon: Plus, href: newHref, primary: true };
 
   // Each lane's empty state offers what fits THAT lane: a new quiz lands in
   // Mine, so only Mine offers New; every other lane points to the lanes that
@@ -127,7 +121,7 @@ export function AssessmentHome({ kind }: { kind: AssessmentKind }) {
               See {d.label} ({counts[d.kind]})
             </ControlButton>
           ))}
-          {lane === "mine" ? createButton(true) : null}
+          {lane === "mine" ? <ListPageActionButton action={createAction} /> : null}
         </div>
       </div>
     );
@@ -162,7 +156,7 @@ export function AssessmentHome({ kind }: { kind: AssessmentKind }) {
           config={listConfig}
           // The education layout already starts every route below the header.
           clearsShellHeader={false}
-          headerActions={createButton(false)}
+          actions={[createAction]}
           emptyAction={emptyAction}
           surface={surface}
         />

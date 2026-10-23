@@ -76,7 +76,7 @@ export const RECORD_SIBLINGS: Readonly<Record<string, SiblingsLoader>> = {
     ]);
     const page = await researchTopicListService.fetchPage(
       { ...DEFAULT_ENTITY_LIST_QUERY, scope: { kind: "all" } },
-      { sort: "updated_at", direction: "desc", pageSize: SIBLINGS_MAX },
+      { sort: "updated_at", direction: "desc", favoritesFirst: false, pageSize: SIBLINGS_MAX },
     );
     return page.rows.map((row) => ({ id: row.id, label: row.name || "Untitled topic" }));
   },

@@ -1,9 +1,9 @@
 "use client";
 import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { initiativeListConfig } from "./listConfig";
@@ -40,16 +40,10 @@ export function InitiativesListPage({
         : initiativeListConfig,
     [brandName],
   );
-  const action = (
-    <ControlButton
-      variant="primary"
-      onClick={() => setCreating(true)}
-      icon={<Plus className="h-4 w-4" />}
-      collapse="container"
-    >
-      New initiative
-    </ControlButton>
-  );
+  // The list's one verb: the header draws it, the frame's "…" carries it, the empty state offers it.
+  const actions: ListPageAction[] = [
+    { id: "new", label: "New initiative", icon: Plus, primary: true, onPress: () => setCreating(true) },
+  ];
   return (
     <SurfaceRuntimeProvider
       surfaceName="matrx-user/marketing-initiatives"
@@ -58,8 +52,7 @@ export function InitiativesListPage({
       <RecordPageHeader level={{ name: "Initiatives" }} />
       <EntityListPage
         config={scopedConfig}
-        headerActions={action}
-        emptyAction={action}
+        actions={actions}
       />
       <InitiativeEditorDialog
         open={creating}

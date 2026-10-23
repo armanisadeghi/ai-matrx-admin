@@ -21,7 +21,9 @@
  *                                    `entityRecord=`) with no sibling door (`siblings`, `entityOptions`).
  *   button-outside-actions|<file>    a header control passed through `right=` / `rightEnd=` or a
  *                                    PageHeaderRightPortal with an onClick — a button whose action is
- *                                    not in the declared `actions` list, so "…" cannot carry it.
+ *                                    not in the declared `actions` list, so "…" cannot carry it; and an
+ *                                    `<EntityListPage headerActions=…>` holding a button or link (a list
+ *                                    verb belongs in `actions`).
  *
  * NOT A PAGE: a page file whose body is only a server redirect (`redirect(` / `permanentRedirect(` and
  * no JSX at all) has no UI and so no header — it is skipped, never exempted (`isRedirectOnly`).
@@ -200,6 +202,28 @@ export function scanSource(file, text) {
       sites.push({ rule: "button-outside-actions", line: lineOf(text, m.index + p.index), what: `<${m[1]} ${p[1]}=…>` });
     }
   }
+  // A list page's verbs are `actions` (ListPageActions: the header draws them, "…" carries them);
+  // `headerActions` is for read-outs and list-bound tools (a status chip, refresh) — never a button or
+  // a link, which "…" would then miss.
+  for (const m of text.matchAll(/<EntityListPage\b/g)) {
+    const tag = tagAt(text, m.index);
+    const at = tag.search(/\bheaderActions=\{/);
+    if (at === -1) continue;
+    let value = arrayLiteralAt(tag.replace(/^([\s\S]*?\bheaderActions=)\{/, "$1["), at);
+    // `headerActions={newButton}`: read the const it names, in this file.
+    const named = /^\s*(\w+)\s*$/.exec(value)?.[1];
+    if (named) {
+      const decl = text.search(new RegExp(`\\bconst\\s+${named}\\s*=`));
+      if (decl !== -1) {
+        const rest = text.slice(decl, decl + 4000);
+        const firstLine = rest.split("\n")[0];
+        value = /;\s*$/.test(firstLine) ? firstLine : rest.split(/\n\s*\);?\s*\n/)[0];
+      }
+    }
+    if (/<(ControlButton|Button|Link)\b/.test(value)) {
+      sites.push({ rule: "button-outside-actions", line: lineOf(text, m.index + at), what: "<EntityListPage headerActions=…> holds a button or link" });
+    }
+  }
   for (const m of text.matchAll(/<PageHeaderRightPortal\b[\s\S]*?<\/PageHeaderRightPortal>/g)) {
     if (/onClick=|onPress=/.test(m[0])) sites.push({ rule: "button-outside-actions", line: lineOf(text, m.index), what: "PageHeaderRightPortal button" });
   }
@@ -373,6 +397,13 @@ function selfTest() {
       // RED: a template only NAMED (comment, type) in an imported file is not a header.
       "app/(core)/labels/page.tsx": 'import { Labels } from "@/features/labels/Labels";\nexport default function P() { return <Labels />; }\n',
       "features/labels/Labels.tsx": '// The EntityListPage shell\'s TRow lives in types.\nimport type { EntityListPage } from "./types";\nexport function Labels() { return <div />; }\n',
+      // RED: a list verb as a loose header button; GREEN: the verb in `actions`, a status in headerActions.
+      "features/lists/LooseVerb.tsx":
+        'import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";\nexport function L() { return <EntityListPage config={{}} headerActions={<ControlButton onClick={() => {}}>New</ControlButton>} />; }\n',
+      "features/lists/NamedVerb.tsx":
+        'import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";\nexport function L() {\n  const newButton = (\n    <Button variant="primary">New</Button>\n  );\n  return <EntityListPage config={{}} headerActions={newButton} />;\n}\n',
+      "features/lists/DeclaredVerb.tsx":
+        'import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";\nexport function L() { return <EntityListPage config={{}} actions={[{ id: "new", label: "New", icon: Plus, primary: true }]} headerActions={<StreakChip streak={3} />} />; }\n',
       // GREEN: exempt by Arman's word.
       "app/(core)/kiosk-like/page.tsx": '// crumb-doors-exempt: Arman 2026-10-22 "no header on this one"\nexport default function P() { return <div />; }\n',
     };
@@ -383,6 +414,8 @@ function selfTest() {
     const keys = collect({ root: dir }).map((f) => f.key);
     const want = [
       "button-outside-actions|features/forms/FormRecord.tsx",
+      "button-outside-actions|features/lists/LooseVerb.tsx",
+      "button-outside-actions|features/lists/NamedVerb.tsx",
       "dead-crumb|features/forms/FormRecord.tsx",
       "no-declared-trail|app/(core)/forms/bare/page.tsx",
       "no-declared-trail|app/(core)/forms/guarded/page.tsx",

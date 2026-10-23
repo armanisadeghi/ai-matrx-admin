@@ -9,8 +9,7 @@
 // (/administration/intelligence/mandates/references) keeps its own conversion
 // list per repository (common-docs/systems/intelligence/mandates/OPTIONS.md §2).
 
-import Link from "@/components/navigation/AppLink";
-import { Copy, ExternalLink } from "lucide-react";
+import { Copy, ExternalLink, HeartPulse } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
 import { Muted, TextCell, type EntityColumnSpec } from "@/lib/entity-list/columns";
@@ -244,14 +243,8 @@ export function UnconvertedCallsPage() {
       // (Arman, 2026-09-26).
       scopeTabs={false}
       clearsShellHeader={false}
-      headerActions={
-        <Link
-          href={ADMIN_MANDATES_HEALTH}
-          className="whitespace-nowrap rounded px-1.5 py-0.5 type-secondary text-muted-foreground hover:bg-accent hover:text-foreground"
-        >
-          Mandate health
-        </Link>
-      }
+      // A door to the sibling report, as a list action: the header draws it, the frame's "…" carries it.
+      actions={[{ id: "sibling-report", label: "Mandate health", icon: HeartPulse, href: ADMIN_MANDATES_HEALTH }]}
     />
   );
 }

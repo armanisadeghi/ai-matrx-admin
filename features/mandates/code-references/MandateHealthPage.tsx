@@ -12,7 +12,7 @@
 import { useState } from "react";
 import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
-import { Copy, ExternalLink } from "lucide-react";
+import { Copy, ExternalLink, Unplug } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
 import { Muted, TextCell, type EntityColumnSpec } from "@/lib/entity-list/columns";
@@ -326,14 +326,8 @@ export function MandateHealthPage() {
           consequence="The findings below come only from the sources that answered."
         />
       }
-      headerActions={
-        <Link
-          href={UNCONVERTED_PATH}
-          className="whitespace-nowrap rounded px-1.5 py-0.5 type-secondary text-muted-foreground hover:bg-accent hover:text-foreground"
-        >
-          Unconverted AI calls
-        </Link>
-      }
+      // A door to the sibling report, as a list action: the header draws it, the frame's "…" carries it.
+      actions={[{ id: "sibling-report", label: "Unconverted AI calls", icon: Unplug, href: UNCONVERTED_PATH }]}
     />
   );
 }

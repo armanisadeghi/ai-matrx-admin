@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 import { Plus } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAdminFeature,
   selectUserId,
 } from "@/lib/redux/selectors/userSelectors";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import type { EntityListController } from "@/lib/entity-list/config";
 import { produceMissingComponentAssists } from "@/features/content-ir/studio/shape-assists-producer";
 import { createShapesScope } from "@/features/surfaces/manifests/shapes.manifest";
@@ -46,20 +45,16 @@ export function ShapeBrowsePage() {
   const canPromote = useAppSelector((s) =>
     selectAdminFeature(s, "shape.promote-to-system"),
   );
-  const newShapeButton = (
-    <ControlButton variant="primary" asChild icon={<Plus className="h-4 w-4" />} collapse="container">
-      <Link href={SHAPES_NEW_HREF} aria-label="New shape">
-        New shape
-      </Link>
-    </ControlButton>
-  );
+  // The list's one verb: the header draws it, the frame's "…" carries it, the empty state offers it.
+  const actions: ListPageAction[] = [
+    { id: "new", label: "New shape", icon: Plus, href: SHAPES_NEW_HREF, primary: true },
+  ];
 
   return (
     <EntityListPage
       config={canPromote ? shapeListConfigWithPromote : shapeListConfig}
       notice={(list) => <ShapeAssistProducer list={list} />}
-      headerActions={newShapeButton}
-      emptyAction={newShapeButton}
+      actions={actions}
       surface={{
         surfaceName: SHAPES_SURFACE_NAME,
         getScope: (list) =>

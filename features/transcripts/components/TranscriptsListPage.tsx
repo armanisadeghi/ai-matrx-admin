@@ -10,60 +10,40 @@
 // bespoke 780-line table): rows now come from the trx_list_scoped RPC as ONE
 // list with a `kind` column, paged/filtered/sorted/counted server-side.
 
-import Link from "next/link";
 import { Library, Plus } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import { ListPageActionButton, type ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { transcriptListConfig } from "../browse/listConfig";
 import { TranscriptsListHeader } from "./TranscriptsListHeader";
 import { TranscriptsSurfaceGuide } from "./TranscriptsSurfaceGuide";
 import { LIBRARIES_PATH } from "@/features/knowledge/modulePaths";
 
 export function TranscriptsListPage() {
-  const newButton = (
-    <ControlButton variant="primary" asChild>
-      <Link href="/transcripts/new" aria-label="New transcript">
-        <Plus className="h-4 w-4" />
-        <span className="max-sm:sr-only">New</span>
-      </Link>
-    </ControlButton>
-  );
-
   // A WHOLE CHANNEL IS NOT FOUR MORE CLICKS OF "New". The four capture
   // surfaces all take one recording at a time; someone who already has
   // transcripts and wants a creator's entire back catalog has no door here
   // at all. Libraries is that door.
   //
-  // It sits in `headerActions`, NOT in TranscriptsSurfaceGuide: the guide
+  // It sits in the list's actions, NOT in TranscriptsSurfaceGuide: the guide
   // renders only inside the empty state, and the person this door is for — the
   // one who already has transcripts — never sees the empty state. A door only
-  // the wrong audience can reach is a dead end with extra steps. The header
-  // keeps its one-button density on phones (label collapses like "New").
-  const wholeChannelButton = (
-    <ControlButton variant="outline" asChild>
-      <Link
-        href={LIBRARIES_PATH}
-        aria-label="Catalog a whole YouTube channel in Libraries"
-      >
-        <Library className="h-4 w-4" />
-        <span className="max-sm:sr-only">Whole channel</span>
-      </Link>
-    </ControlButton>
-  );
-
-  const headerActions = (
-    <div className="flex items-center gap-2">
-      {wholeChannelButton}
-      {newButton}
-    </div>
-  );
+  // the wrong audience can reach is a dead end with extra steps. One action
+  // list: the list header draws each verb, the frame's "…" carries every one.
+  const actions: ListPageAction[] = [
+    { id: "whole-channel", label: "Whole channel", icon: Library, href: LIBRARIES_PATH },
+    { id: "new", label: "New transcript", icon: Plus, href: "/transcripts/new", primary: true },
+  ];
 
   // The empty state is the ONE place the surface wayfinding renders — it never
   // sits above the list, so a user with transcripts sees zero page shift.
   const emptyAction = (
     <>
-      {headerActions}
+      <span className="flex flex-wrap items-center justify-center gap-2">
+        {actions.map((action) => (
+          <ListPageActionButton key={action.id} action={action} />
+        ))}
+      </span>
       <TranscriptsSurfaceGuide />
     </>
   );
@@ -73,7 +53,7 @@ export function TranscriptsListPage() {
       <TranscriptsListHeader />
       <EntityListPage
         config={transcriptListConfig}
-        headerActions={headerActions}
+        actions={actions}
         emptyAction={emptyAction}
       />
     </>

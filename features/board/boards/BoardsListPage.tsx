@@ -9,9 +9,9 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { LayoutTemplate, Loader2, Plus } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import { ListPageActionButton, type ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAccessToken, selectAuthReady, selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useCreateBoard } from "../persistence/useCreateBoard";
@@ -42,21 +42,18 @@ function BoardsList() {
   const accessToken = useAppSelector(selectAccessToken);
   const mayLoad = Boolean(authReady && userId && accessToken);
 
-  const newButton = (
-    <ControlButton variant="primary" onClick={() => void newBoard()} disabled={creating} icon={creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} collapse="container">
-      New board
-    </ControlButton>
-  );
-  const templatesButton = (
-    <ControlButton variant="outline" onClick={() => setTemplatesOpen(true)} icon={<LayoutTemplate className="h-4 w-4" />} collapse="container">
-      From a template
-    </ControlButton>
-  );
-  const actions = (
-    <>
-      {templatesButton}
-      {newButton}
-    </>
+  // One action list: the list header draws each verb, the frame's "…" carries every one; the empty
+  // state offers the same two.
+  const actions: ListPageAction[] = [
+    { id: "from-template", label: "From a template", icon: LayoutTemplate, onPress: () => setTemplatesOpen(true) },
+    { id: "new", label: "New board", icon: creating ? Loader2 : Plus, primary: true, disabled: creating, onPress: () => void newBoard() },
+  ];
+  const emptyActions = (
+    <span className="flex flex-wrap items-center justify-center gap-2">
+      {actions.map((action) => (
+        <ListPageActionButton key={action.id} action={action} />
+      ))}
+    </span>
   );
 
   return (
@@ -64,7 +61,7 @@ function BoardsList() {
       <RecordPageHeader level={{ name: "Boards" }} />
       {mayLoad ? (
         <div className="contents matrx-touch-targets">
-          <EntityListPage config={boardListConfig} headerActions={actions} emptyAction={actions} />
+          <EntityListPage config={boardListConfig} actions={actions} emptyAction={emptyActions} />
         </div>
       ) : (
         <div className="flex min-h-40 items-center justify-center gap-2 text-sm text-muted-foreground" role="status">

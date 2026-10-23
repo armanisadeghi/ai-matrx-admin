@@ -10,10 +10,10 @@ import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
+import type { ListPageAction } from "@/lib/entity-list/components/ListPageActions";
 
 import { buildCertifiedPrinterListConfig } from "../listConfig";
 import { certifyPrinterHref } from "../types";
@@ -22,13 +22,10 @@ export function CertifiedPrintersPage() {
   const router = useRouter();
   const config = useMemo(() => buildCertifiedPrinterListConfig(), []);
 
-  const actions = (
-    <ControlButton variant="primary" asChild icon={<BadgeCheck className="h-4 w-4" />} collapse="container">
-      <Link href={certifyPrinterHref()}>
-        Certify a printer
-      </Link>
-    </ControlButton>
-  );
+  // The list's one verb: the header draws it, the frame's "…" carries it, the empty state offers it.
+  const actions: ListPageAction[] = [
+    { id: "certify", label: "Certify a printer", icon: BadgeCheck, href: certifyPrinterHref(), primary: true },
+  ];
 
   return (
     <>
@@ -59,8 +56,7 @@ export function CertifiedPrintersPage() {
         <EntityListPage
           config={config}
           defaultScope={{ kind: "orgs" }}
-          headerActions={actions}
-          emptyAction={actions}
+          actions={actions}
         />
       )}
     </>
