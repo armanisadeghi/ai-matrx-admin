@@ -77,6 +77,12 @@ export interface RecordPageHeaderProps {
     /** Omit to use the derived last crumb (the address's key, the declared name, else the short id). */
     name?: string;
     siblings?: CrumbOption[];
+    /**
+     * The other records, read when the record's door first opens — for a type whose list read needs
+     * the page's own context (an HR employer scope), so it cannot be a context-free loader in
+     * `breadcrumbs/record-siblings.ts`. Reuse the list's own read; cap it at `SIBLINGS_MAX`.
+     */
+    loadSiblings?: () => Promise<CrumbOption[]>;
     /** Type token + id of the record: "Add to my menu" then adds the record itself (current-record). */
     token?: string;
     id?: string;
@@ -225,7 +231,7 @@ function PageRecordHeader({
       entityLabel={recordName}
       entityRecord={record.token && record.id ? { token: record.token, id: record.id } : undefined}
       entityOptions={record.siblings ?? levelOptions}
-      entityLoadOptions={levelLoadOptions}
+      entityLoadOptions={levelLoadOptions ?? declaredRecord?.loadSiblings}
       entityStatus={
         status || indicator ? (
           <>

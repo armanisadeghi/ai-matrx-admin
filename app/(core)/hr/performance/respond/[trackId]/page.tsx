@@ -14,7 +14,9 @@ export default async function HrPerformanceRespondPage({ params, searchParams }:
   const { trackId } = await params;
   return (
     <>
-      <RecordPageHeader backHref={hrHref(org)} parents={[{ label: "HR", href: hrHref(org) }]} record={{ name: "Complete your review" }} />
+      {/* A PLACE: the one door a respondent's notice opens. A respondent has no list of their halves
+          anywhere, so there is no "other halves" door to open. */}
+      <RecordPageHeader backHref={hrHref(org)} parents={[{ label: "HR", href: hrHref(org) }]} level={{ name: "Complete your review" }} />
       <Suspense fallback={<div className="h-full animate-pulse bg-card/40" aria-label="Loading your review" />}>
         <Review360RespondPage trackId={trackId} />
       </Suspense>

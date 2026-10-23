@@ -133,7 +133,7 @@ interface OpenNoticeProps {
 function OpenNotice({ title, body, action }: OpenNoticeProps) {
   return (
     <>
-      <RecordPageHeader record={{ name: "Open" }} />
+      <RecordPageHeader level={{ name: "Open" }} />
       <div className="h-full overflow-y-auto bg-textured p-4 pt-[calc(var(--shell-header-h)+1rem)]">
         <div className="mx-auto flex max-w-xl flex-col items-start gap-2 rounded-md border border-border bg-card p-6">
           <p className="text-sm font-medium text-foreground">{title}</p>

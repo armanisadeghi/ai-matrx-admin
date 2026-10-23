@@ -6,7 +6,7 @@ import { hrHref, hrPerformance360Href, hrPerformanceReviewHref } from "@/feature
 import { Suspense } from "react";
 
 import { Review360InPersonPage } from "@/features/employee-performance-reviews/review-360/Review360InPerson";
-import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import { Review360RecordHeader } from "@/features/employee-performance-reviews/review-360/Review360Pages";
 
 export const metadata = { title: "360 review meeting" };
 
@@ -15,10 +15,11 @@ export default async function HrPerformanceReviewMeetingPage({ params, searchPar
   const { reviewId } = await params;
   return (
     <>
-      <RecordPageHeader
+      <Review360RecordHeader
         backHref={hrPerformanceReviewHref(reviewId, org)}
         parents={[{ label: "HR", href: hrHref(org) }, { label: "360 review (trial)", href: hrPerformance360Href(org) }]}
-        record={{ name: "Review meeting" }}
+        reviewId={reviewId}
+        name="Review meeting"
       />
       <Suspense fallback={<div className="h-full animate-pulse bg-card/40" aria-label="Loading the review" />}>
         <Review360InPersonPage reviewId={reviewId} />

@@ -12,7 +12,7 @@
 // itself. A route that took an employment id here would be an access surface.
 
 import { hrHref, hrMeHref, hrMeTimeOffHref } from "@/features/hr/routes";
-import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import { HrRecordPageHeader } from "@/features/hr/shared/HrRecordPageHeader";
 import { MyLeaveLedgerSurface } from "@/features/hr/leave/components/MyLeaveLedgerSurface";
 import { notFound } from "next/navigation";
 import { isFullUuid } from "@/utils/supabase-search";
@@ -38,7 +38,7 @@ export default async function HrMeTimeOffLedgerPage({
 
   return (
     <>
-      <RecordPageHeader
+      <HrRecordPageHeader
         backHref={hrMeTimeOffHref(org)}
         parents={[
           { label: "HR", href: hrHref(org) },
@@ -46,6 +46,7 @@ export default async function HrMeTimeOffLedgerPage({
           { label: "My time off", href: hrMeTimeOffHref(org) },
         ]}
         record={{ name: "Time-off ledger" }}
+        siblingsOf={{ kind: "time-off-policy", id: policyId }}
       />
       <div className="flex h-full flex-col overflow-hidden pt-[var(--shell-header-h)]">
         <div className="min-h-0 flex-1 overflow-y-auto">

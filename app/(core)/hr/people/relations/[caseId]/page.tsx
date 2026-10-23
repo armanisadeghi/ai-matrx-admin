@@ -8,7 +8,7 @@
 import { hrHref, hrRelationsHref } from "@/features/hr/routes";
 import { Suspense } from "react";
 
-import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import { HrRecordPageHeader } from "@/features/hr/shared/HrRecordPageHeader";
 import { CaseSurface } from "@/features/hr/people/relations/components/CaseSurface";
 import { HrLoading } from "@/features/hr/shared/HrStates";
 import type { HrCaseKind } from "@/features/hr/people/relations/types";
@@ -39,13 +39,14 @@ export default async function HrRelationsCasePage({
 
   return (
     <>
-      <RecordPageHeader
+      <HrRecordPageHeader
         backHref={hrRelationsHref(org)}
         parents={[
           { label: "HR", href: hrHref(org) },
           { label: "Employee relations", href: hrRelationsHref(org) },
         ]}
         record={{ name: "Case" }}
+        siblingsOf={{ kind: "relations-case", id: caseId }}
       />
       <div className="flex h-full flex-col overflow-hidden">
         <div className="min-h-0 flex-1 overflow-y-auto">

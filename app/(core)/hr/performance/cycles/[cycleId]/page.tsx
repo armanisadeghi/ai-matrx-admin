@@ -7,7 +7,7 @@ import { Suspense } from "react";
 
 import { CyclePage } from "@/features/employee-performance-reviews/standard/CyclePage";
 import { HrLoading } from "@/features/hr/shared/HrStates";
-import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import { HrRecordPageHeader } from "@/features/hr/shared/HrRecordPageHeader";
 
 export const metadata = { title: "Review cycle" };
 
@@ -16,13 +16,14 @@ export default async function HrPerformanceCyclePage({ params, searchParams }: {
   const { cycleId } = await params;
   return (
     <>
-      <RecordPageHeader
+      <HrRecordPageHeader
         backHref={hrPerformanceHref(org)}
         parents={[
           { label: "HR", href: hrHref(org) },
           { label: "Performance", href: hrPerformanceHref(org) },
         ]}
         record={{ name: "Review cycle" }}
+        siblingsOf={{ kind: "review-cycle", id: cycleId }}
       />
       <Suspense fallback={<HrLoading variant="panel" rows={5} />}>
         <CyclePage cycleId={cycleId} />
