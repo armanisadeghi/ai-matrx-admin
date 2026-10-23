@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 import { Globe2 } from "lucide-react";
 import { SiteIcon } from "@ai-matrx/design-system";
 import { cn } from "@ai-matrx/design-system/cn";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
+import { KpiTile } from "@ai-matrx/design-system/controls";
 
 export interface IntroFact {
   id: string;

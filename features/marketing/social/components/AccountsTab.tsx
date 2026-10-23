@@ -18,7 +18,7 @@ import { useSurfaceRuntimeRegistration, useSurfaceWriteHandlers } from "@ai-matr
 import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { parseCreateAccounts, parseUpdateAccounts } from "../agent-writes";
-import { useSocialSpend } from "../cost";
+import { sumCostFigures, useSocialSpend } from "../cost";
 import { countOf, withCostOn } from "../social-actions";
 import { xmlElement, xmlList } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
 import { createSocialAccountsScope, SOCIAL_ACCOUNTS_SURFACE_NAME } from "@/features/surfaces/manifests/marketing-social-accounts.manifest";
@@ -158,7 +158,7 @@ export function AccountsTab() {
     trackAllOwn,
     refreshAllOwn,
   } = useTrackOwn(organizationId, brandId);
-  const { agentCostText, confirmPosts } = useSocialSpend(organizationId);
+  const { agentCost, confirmPosts } = useSocialSpend(organizationId);
   const { choice: countChoice } = usePostCount();
   const postsMax = useProfilePostsMax();
   const askedPosts = resolveCount(countChoice, postsMax.value);
@@ -809,11 +809,9 @@ export function AccountsTab() {
   const accountCost = withCostOn(() => accountWrites);
   useSurfaceWriteHandlers(SOCIAL_ACCOUNTS_SURFACE_NAME, {
     ...accountWrites,
-    ...accountCost("create_accounts", (value) => agentCostText("track", countOf(value))),
+    ...accountCost("create_accounts", (value) => agentCost("track", countOf(value))),
     ...accountCost("update_accounts", (value) =>
-      [agentCostText("track", flagged("tracked")(value)), agentCostText("profile_page", flagged("refresh")(value))]
-        .filter(Boolean)
-        .join(" + ") || null,
+      sumCostFigures([agentCost("track", flagged("tracked")(value)), agentCost("profile_page", flagged("refresh")(value))]),
     ),
   });
 

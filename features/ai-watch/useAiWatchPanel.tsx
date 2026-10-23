@@ -891,7 +891,7 @@ function OutputKindSchema({ kind }: { kind: string }) {
 }
 
 function ProvisionSection({ title, rows, requestId }: { title: string; rows: ProvisionRow[]; requestId: string | null }) {
-  // The streamed frame names each value by hash only; the values come from the server on demand
+  // The streamed frame names each value by an opaque reference only; the values come from the server on demand
   // (GET /runs/{request_id}/values, admin debug mode — Watch AI is admin + debug only).
   const [values, setValues] = useState<Map<string, unknown>>(new Map());
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -986,7 +986,8 @@ function provisionRows(frame: MandateRunData): ProvisionRow[] {
       inline: "value" in p,
       value: p.value,
       ref: typeof p.value_ref === "string" ? p.value_ref : null,
-      hash: typeof p.value_hash === "string" ? p.value_hash : null,
+      // An opaque positional reference (`f0:p:<name>`), never a digest of the value — the server resolves it.
+      hash: typeof p.watch_ref === "string" ? p.watch_ref : null,
     };
   });
 }

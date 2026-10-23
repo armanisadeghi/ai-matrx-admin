@@ -97,7 +97,7 @@ async function lookAgainAt(def: TrackedAdvertiser["definition"], organizationId:
  */
 function useAdsAgentWrites(onTracked: () => void) {
   const { organizationId, brandId } = useSocials();
-  const { agentCostText } = useSocialSpend(organizationId);
+  const { agentCost } = useSocialSpend(organizationId);
   const client = useQueryClient();
   const invalidate = useInvalidateSocial();
   const tracked = useTrackedAdvertisers();
@@ -159,7 +159,7 @@ function useAdsAgentWrites(onTracked: () => void) {
     countOf(value, (item) => !!item && typeof item === "object" && (item as { look_again?: unknown }).look_again === true);
   useSurfaceWriteHandlers(SOCIAL_ADS_SURFACE_NAME, {
     ...adsWrites,
-    ...withCostOn(() => adsWrites)("update_tracked_advertisers", (value) => agentCostText("ads_search", lookAgainCount(value))),
+    ...withCostOn(() => adsWrites)("update_tracked_advertisers", (value) => agentCost("ads_search", lookAgainCount(value))),
   });
 }
 
@@ -212,7 +212,7 @@ function AdFilters({
 
 function AdsSearch({ onTracked }: { onTracked: () => void }) {
   const { organizationId, brandId, canEdit } = useSocials();
-  const { confirmSpend, agentCostText } = useSocialSpend(organizationId);
+  const { confirmSpend, agentCost } = useSocialSpend(organizationId);
   const invalidate = useInvalidateSocial();
   const [library, setLibrary] = useState<AdLibrary>("meta");
   const [kind, setKind] = useState<"query" | "advertiser">("query");
@@ -319,7 +319,7 @@ function AdsSearch({ onTracked }: { onTracked: () => void }) {
       await run({ library: lib, kind: by, text: q });
       return "Search finished; see results.";
     },
-  }, { costs: { [SOCIAL_ADS_TOOLS.search]: () => agentCostText("ads_search") } });
+  }, { costs: { [SOCIAL_ADS_TOOLS.search]: () => agentCost("ads_search") } });
   const canSearch = text.trim().length > 1 && !busy;
   const country = meta?.effective_params?.country;
   const region = meta?.effective_params?.region;

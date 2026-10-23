@@ -162,7 +162,7 @@ export function BrandCompetitorDirectory() {
   const queryClient = useQueryClient();
   const brandRef = useMemo(() => ({ id: brand.id, organizationId: brand.organizationId }), [brand.id, brand.organizationId]);
   const socialActions = useCompetitorSocialActions(brandRef);
-  const { agentCostText } = useSocialSpend(brand.organizationId);
+  const { agentCost } = useSocialSpend(brand.organizationId);
   const [jobs, setJobs] = useState<BrandCompetitor[]>([]);
   const patchJob = useCallback((key: string, fn: (job: BrandCompetitor) => BrandCompetitor) => {
     setJobs((current) => current.map((job) => (job.key === key ? fn(job) : job)));
@@ -518,11 +518,11 @@ export function BrandCompetitorDirectory() {
       const handles = Array.isArray(value)
         ? value.reduce((n: number, c) => n + Object.keys((c as { handles?: object } | null)?.handles ?? {}).length, 0)
         : 0;
-      return handles > 0 ? agentCostText("track", handles) : null;
+      return handles > 0 ? agentCost("track", handles) : null;
     }),
     ...competitorCost("update_competitors", (value) =>
       countOf(value, (item) => (item as { track_found?: unknown } | null)?.track_found === true) > 0
-        ? `${agentCostText("track", 1)} per account tracked`
+        ? agentCost("track", 1)
         : null,
     ),
   });

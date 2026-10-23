@@ -65,7 +65,9 @@ async function signedInContext(browser) {
 }
 
 const shot = (page, name) => page.screenshot({ path: path.join(shots, `${name}.png`) });
-const orbCount = (page) => page.locator('[class*="top-[3px]"]').count();
+// A transcript must be on screen for "no orb" to mean anything (a signed-out page has no orb either).
+const orbCount = async (page) =>
+  (await page.locator("[data-user-message-style]").count()) === 0 ? -1 : page.locator('[class*="top-[3px]"]').count();
 async function waitIdle(page, ms = 120000) {
   await page.getByRole("button", { name: "Send message" }).first().waitFor({ timeout: ms });
 }

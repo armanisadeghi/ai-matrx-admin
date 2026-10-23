@@ -22,7 +22,7 @@ import { Button, EmptyState, RegionSkeleton, SegmentedControl } from "@ai-matrx/
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
+import { KpiTile } from "@ai-matrx/design-system/controls";
 import { usePinned } from "@/components/favorites/usePinned";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectPreferencesLoadStatus } from "@/lib/redux/preferences/userPreferenceSelectors";

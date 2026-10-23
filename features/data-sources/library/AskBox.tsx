@@ -21,22 +21,40 @@ import { fillFromAsk, pickAskSource, type AskFill } from "../askFill";
 import type { Library, LibrarySource } from "./catalog";
 import { LIBRARY_TASKS, resolveTask, type LibraryTask } from "./tasks";
 
-/** What the box decided: open this source with this fill, and run it when the fill is complete. */
+/**
+ * What the box decided: open this source with this fill, and run it only when the fill is complete AND nothing the
+ * person asked for was dropped. A dropped filter stops the run (review I-3): the form says what was not applied and
+ * offers "Run anyway" or `alternative`, a source of the same task that takes everything asked.
+ */
 export interface AskPlan {
   task: LibraryTask;
   source: LibrarySource;
   fill: AskFill;
   run: boolean;
+  alternative: AskPlan | null;
 }
 
 /** The plan for a task card and a reading, or null when the card has no source on this library. */
 export function planFor(library: Library, cardId: string, reading: AskReading): AskPlan | null {
   const task = LIBRARY_TASKS.find((t) => t.id === cardId);
   if (!task) return null;
-  const source = pickAskSource(resolveTask(library, task).all);
+  const all = resolveTask(library, task).all;
+  const source = pickAskSource(all);
   if (!source) return null;
   const fill = fillFromAsk(source, reading);
-  return { task, source, fill, run: fill.complete };
+  const takesAll = (f: AskFill) => f.complete && f.unapplied.length === 0;
+  let alternative: AskPlan | null = null;
+  if (!takesAll(fill)) {
+    for (const other of all) {
+      if (other.key === source.key || other.knownIssue) continue;
+      const otherFill = fillFromAsk(other, reading);
+      if (takesAll(otherFill)) {
+        alternative = { task, source: other, fill: otherFill, run: true, alternative: null };
+        break;
+      }
+    }
+  }
+  return { task, source, fill, run: takesAll(fill), alternative };
 }
 
 /** The tasks to offer when the words do not settle on one: the guess first, then what else they fit, at most three. */

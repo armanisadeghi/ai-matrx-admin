@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1735 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1748 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "8e9ce5353662";
+export const KIND_REGISTRY_FINGERPRINT = "5a34ff989900";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -9580,6 +9580,25 @@ export interface ReputationCase {
   opportunity_score: number;
   recommended_action: string;
   requires_human_review?: boolean;
+}
+
+/**
+ * The exact excerpt one evidence item stands on (``_row_evidence``).
+ *  *
+ *  * Shared by 9 kinds (seo_reputation_ai_citation, seo_reputation_ai_claim, seo_reputation_backlink, seo_reputation_brand_fact, …).
+ */
+export interface ReputationEvidenceRef {
+  url?: string | null;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  supports: string;
+  source_id?: string | null;
+  observed_at?: string | null;
+  source_kind: string;
+  exact_excerpt: string;
 }
 
 /**
@@ -56479,6 +56498,49 @@ export interface SeoRankTargetRemoval {
 }
 
 /**
+ * A source cited in an observed answer-engine answer about the brand.
+ *  *
+ *  * Kind `seo_reputation_ai_citation` (registry v1).
+ */
+export interface SeoReputationAiCitation {
+  id: string;
+  url?: string | null;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_ai_citation";
+  domain?: string | null;
+  cited_for?: unknown;
+  evidence_ref: ReputationEvidenceRef;
+  source_capture?: unknown;
+  evidence_quality?: unknown;
+  endorsement_signal?: unknown;
+}
+
+/**
+ * A claim observed in an answer-engine answer about the brand.
+ *  *
+ *  * Kind `seo_reputation_ai_claim` (registry v1).
+ */
+export interface SeoReputationAiClaim {
+  id: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_ai_claim";
+  stance?: string | null;
+  subject?: string | null;
+  claim_text?: string | null;
+  confidence?: number | null;
+  source_urls?: unknown;
+  evidence_ref: ReputationEvidenceRef;
+  significance?: number | null;
+  evidence_text?: string | null;
+  verification_status?: string | null;
+}
+
+/**
  * Output of ``seo.reputation.intelligence.analyze``.
  *
  * Mirrors ``ReputationRunResult`` field-for-field.
@@ -56498,6 +56560,237 @@ export interface SeoReputationAnalysis {
   kind_instance_id?: string | null;
   evidence_coverage: SeoReputationEvidenceCoverage;
   publication_opportunities?: number;
+}
+
+/**
+ * A quality-filtered backlink with its captured source page and resolved assessment.
+ *  *
+ *  * Kind `seo_reputation_backlink` (registry v1).
+ */
+export interface SeoReputationBacklink {
+  id: string;
+  state?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_backlink";
+  capture?: unknown;
+  page_type?: string | null;
+  source_url?: string | null;
+  target_url?: string | null;
+  anchor_text?: string | null;
+  evidence_ref: ReputationEvidenceRef;
+  last_seen_at?: unknown;
+  risk_verdict?: string | null;
+  source_title?: string | null;
+  control_level?: string | null;
+  first_seen_at?: unknown;
+  source_domain?: string | null;
+  current_action?: string | null;
+  target_page_id?: string | null;
+  assessment_score?: number | null;
+  resolved_assessment?: unknown;
+}
+
+/**
+ * A brand asset available to support a pitch or a correction.
+ *  *
+ *  * Kind `seo_reputation_brand_asset` (registry v1).
+ */
+export interface SeoReputationBrandAsset {
+  id: string;
+  data?: unknown;
+  kind?: string | null;
+  notes?: string | null;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_brand_asset";
+  file_id?: string | null;
+  confirmed?: boolean;
+  source_url?: string | null;
+}
+
+/**
+ * The first-party brand record with its excerpt evidence; authoritative only for fields present.
+ *  *
+ *  * Kind `seo_reputation_brand_fact` (registry v1).
+ */
+export interface SeoReputationBrandFact {
+  id: string;
+  name?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_brand_fact";
+  profile?: unknown;
+  industry?: string | null;
+  description?: string | null;
+  site_domain?: string | null;
+  evidence_ref: ReputationEvidenceRef;
+  site_root_url?: string | null;
+}
+
+/**
+ * One first-party business fact, with its evidence and whether a person confirmed it.
+ *  *
+ *  * Kind `seo_reputation_business_fact` (registry v1).
+ */
+export interface SeoReputationBusinessFact {
+  id: string;
+  kind?: string | null;
+  label?: string | null;
+  value?: unknown;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_business_fact";
+  source?: unknown;
+  confirmed?: boolean;
+  evidence_ref: ReputationEvidenceRef;
+}
+
+/**
+ * An observed competitor intersection with its first-party assessment.
+ *  *
+ *  * Kind `seo_reputation_competitor` (registry v1).
+ */
+export interface SeoReputationCompetitor {
+  id: string;
+  name?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_competitor";
+  domain?: string | null;
+  evidence_ref: ReputationEvidenceRef;
+  latest_autopsy?: unknown;
+  relevance_score?: number | null;
+  resolved_assessment?: unknown;
+  keyword_intersections?: number | null;
+}
+
+/**
+ * A persisted competitor opportunity with its supporting evidence.
+ *  *
+ *  * Kind `seo_reputation_competitor_opportunity` (registry v1).
+ */
+export interface SeoReputationCompetitorOpportunity {
+  id: string;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_competitor_opportunity";
+  verdict?: unknown;
+  evidence?: unknown;
+  priority?: number | null;
+  confidence?: number | null;
+  evidence_ref: ReputationEvidenceRef;
+  competitor_url?: string | null;
+  target_page_id?: string | null;
+  primary_keyword?: string | null;
+  target_page_url?: string | null;
+  opportunity_type?: string | null;
+  competitor_domain?: string | null;
+  recommended_action?: unknown;
+  supporting_keywords?: unknown;
+  why_competitor_wins?: unknown;
+}
+
+/**
+ * What the evidence sweep reviewed and what it excluded, counted (``EvidenceCoverage``).
+ *  *
+ *  * Kind `seo_reputation_coverage` (registry v1).
+ */
+export interface SeoReputationCoverage {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_coverage";
+  domains_reviewed?: number;
+  rag_hits_reviewed?: number;
+  backlinks_reviewed?: number;
+  brand_facts_reviewed?: number;
+  ai_citations_reviewed?: number;
+  captured_pages_reviewed?: number;
+  excluded_low_quality_inputs?: number;
+  competitor_intersections_reviewed?: number;
+}
+
+/**
+ * The adjudication policy a reputation review follows (``QUALITY_POLICY``).
+ *  *
+ *  * Kind `seo_reputation_quality_policy` (registry v1).
+ */
+export interface SeoReputationQualityPolicy {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_quality_policy";
+  closed_evidence_only: boolean;
+  minimum_case_confidence: number;
+  minimum_evidence_quality: number;
+  facts_and_inferences_separate: boolean;
+  minimum_publication_confidence: number;
+  no_suppression_or_astroturfing: boolean;
+  correction_requires_contrary_authoritative_evidence: boolean;
+}
+
+/**
+ * One piece of the organization's own expert knowledge about the brand (ACL-scoped retrieval).
+ *  *
+ *  * Kind `seo_reputation_rag_hit` (registry v1).
+ */
+export interface SeoReputationRagHit {
+  score?: number | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_rag_hit";
+  chunk_id: string;
+  entities?: unknown;
+  metadata?: unknown;
+  source_id?: string | null;
+  source_kind?: string | null;
+  content_text: string;
+  evidence_ref: ReputationEvidenceRef;
+}
+
+/**
+ * A first-party referring-domain profile derived from the observed links.
+ *  *
+ *  * Kind `seo_reputation_referring_domain` (registry v1).
+ */
+export interface SeoReputationReferringDomain {
+  id: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_referring_domain";
+  domain?: string | null;
+  domain_type?: string | null;
+  evidence_ref: ReputationEvidenceRef;
+  provider_metrics?: unknown;
+  resolved_opinion?: unknown;
+  current_backlinks?: number | null;
+}
+
+/**
+ * The website a reputation review is for.
+ *  *
+ *  * Kind `seo_reputation_site` (registry v1).
+ */
+export interface SeoReputationSite {
+  id: string;
+  name?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "seo_reputation_site";
+  domain?: string | null;
+  root_url?: string | null;
 }
 
 /**
@@ -68978,7 +69271,20 @@ export type GeneratedKindSlug =
   | "seo_rank_serp_landscape"
   | "seo_rank_target"
   | "seo_rank_target_removal"
+  | "seo_reputation_ai_citation"
+  | "seo_reputation_ai_claim"
   | "seo_reputation_analysis"
+  | "seo_reputation_backlink"
+  | "seo_reputation_brand_asset"
+  | "seo_reputation_brand_fact"
+  | "seo_reputation_business_fact"
+  | "seo_reputation_competitor"
+  | "seo_reputation_competitor_opportunity"
+  | "seo_reputation_coverage"
+  | "seo_reputation_quality_policy"
+  | "seo_reputation_rag_hit"
+  | "seo_reputation_referring_domain"
+  | "seo_reputation_site"
   | "seo_robots_check_result"
   | "seo_ruling_confirmation"
   | "seo_ruling_confirmation_set"
@@ -70716,7 +71022,20 @@ export interface KindPayloadBySlug {
   "seo_rank_serp_landscape": SeoRankSerpLandscape;
   "seo_rank_target": SeoRankTarget;
   "seo_rank_target_removal": SeoRankTargetRemoval;
+  "seo_reputation_ai_citation": SeoReputationAiCitation;
+  "seo_reputation_ai_claim": SeoReputationAiClaim;
   "seo_reputation_analysis": SeoReputationAnalysis;
+  "seo_reputation_backlink": SeoReputationBacklink;
+  "seo_reputation_brand_asset": SeoReputationBrandAsset;
+  "seo_reputation_brand_fact": SeoReputationBrandFact;
+  "seo_reputation_business_fact": SeoReputationBusinessFact;
+  "seo_reputation_competitor": SeoReputationCompetitor;
+  "seo_reputation_competitor_opportunity": SeoReputationCompetitorOpportunity;
+  "seo_reputation_coverage": SeoReputationCoverage;
+  "seo_reputation_quality_policy": SeoReputationQualityPolicy;
+  "seo_reputation_rag_hit": SeoReputationRagHit;
+  "seo_reputation_referring_domain": SeoReputationReferringDomain;
+  "seo_reputation_site": SeoReputationSite;
   "seo_robots_check_result": SeoRobotsCheckResult;
   "seo_ruling_confirmation": SeoRulingConfirmation;
   "seo_ruling_confirmation_set": SeoRulingConfirmationSet;
@@ -72458,7 +72777,20 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "seo_rank_serp_landscape",
   "seo_rank_target",
   "seo_rank_target_removal",
+  "seo_reputation_ai_citation",
+  "seo_reputation_ai_claim",
   "seo_reputation_analysis",
+  "seo_reputation_backlink",
+  "seo_reputation_brand_asset",
+  "seo_reputation_brand_fact",
+  "seo_reputation_business_fact",
+  "seo_reputation_competitor",
+  "seo_reputation_competitor_opportunity",
+  "seo_reputation_coverage",
+  "seo_reputation_quality_policy",
+  "seo_reputation_rag_hit",
+  "seo_reputation_referring_domain",
+  "seo_reputation_site",
   "seo_robots_check_result",
   "seo_ruling_confirmation",
   "seo_ruling_confirmation_set",

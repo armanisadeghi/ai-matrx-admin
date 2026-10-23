@@ -440,7 +440,7 @@ function PostAgentSurface({
   host: PostHost;
 }) {
   const router = useRouter();
-  const { agentCostText } = useSocialSpend(organizationId);
+  const { agentCost } = useSocialSpend(organizationId);
   const transcript = usePostTranscript(postId);
   const kind = socialPostKind({
     post: data.post,
@@ -476,8 +476,7 @@ function PostAgentSurface({
     {
       // Named on the approval card before an agent spends: the transcript's points, and the breakdown's AI run.
       costs: {
-        [SOCIAL_POST_CLIENT_TOOLS.getTranscript]: () => agentCostText("transcript"),
-        [SOCIAL_POST_CLIENT_TOOLS.breakdown]: () => "AI usage, billed in points",
+        [SOCIAL_POST_CLIENT_TOOLS.getTranscript]: () => agentCost("transcript"),
       },
     },
   );
