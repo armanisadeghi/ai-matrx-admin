@@ -342,6 +342,30 @@ export async function closeItem(item: CaptureItem): Promise<CaptureItem> {
 }
 
 /**
+ * Reprocess a settled item: a DELIBERATE `processed → captured`, so the server
+ * pipeline runs on it again (the DB transition fires the event trigger, the
+ * run re-analyzes — or reuses a stored instant analysis — and re-researches,
+ * updating the product rows in place). The ONE door for the "Reprocess" action.
+ * `closeItem` refuses this on purpose: an accidental close of a settled item
+ * must never re-run paid work, so the re-run is its own named write, decided
+ * against the row that lands.
+ */
+export async function reprocessItem(item: CaptureItem): Promise<CaptureItem> {
+  return guardedItemWrite(item, (current) =>
+    current.status === "processed" ? { status: "captured" } : null,
+  );
+}
+
+/**
+ * The manage surfaces' "Mark ready / Reprocess" press: hand a `capturing` item
+ * over (`closeItem`) or re-run a `processed` one (`reprocessItem`). A `captured`
+ * item is already in the pipeline's hands and is left alone.
+ */
+export async function handOffItem(item: CaptureItem): Promise<CaptureItem> {
+  return item.status === "processed" ? reprocessItem(item) : closeItem(item);
+}
+
+/**
  * Reopen an item on the capture surface (deep link / review-sheet resume):
  * back to `capturing` so downstream consumers know it is mid-capture again.
  * Closing it later re-fires the transition — more photos mean a reprocess.
