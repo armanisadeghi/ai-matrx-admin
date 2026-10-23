@@ -9,6 +9,7 @@ import {
   Package,
   Target,
 } from "lucide-react";
+import { DerivedBreadcrumb } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { RouteModeNav } from "@/features/shell/components/header/RouteModeNav";
 
@@ -58,10 +59,14 @@ export const EDUCATION_NAV_ITEMS = [
  */
 export const EDUCATION_NAV_FALLBACK_LABEL = "Education";
 
-/** One responsive shell header shared by every Education route. */
+/** One responsive shell header shared by every Education route: the trail and the section menu. */
 export function EducationHeader() {
   return (
     <RouteHeader
+      // The derived trail (Education › <place ▾> › <record ▾>): every level a link and a door. It is a
+      // fallback, like this header: a page that declares its own trail outranks it (crumb doors,
+      // features/shell/FEATURE.md § Every crumb is a door).
+      left={<DerivedBreadcrumb className="pl-1" fallback />}
       center={
         <RouteModeNav
           items={EDUCATION_NAV_ITEMS}

@@ -1,15 +1,9 @@
 import type { ReactNode } from "react";
-import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 /**
- * /education/flashcards/** — every page here names its levels through the derived trail; a page with its own header
- * draws it and this steps aside (crumb doors, features/shell/FEATURE.md § Every crumb is a door).
+ * /education/flashcards/** — the Education layout's header draws the derived trail for every page
+ * here (crumb doors, features/shell/FEATURE.md § Every crumb is a door).
  */
 export default function FlashcardsLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <DerivedCrumbTrailHeader fallback />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
