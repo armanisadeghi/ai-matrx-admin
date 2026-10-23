@@ -48,6 +48,13 @@ if [[ -n "$branch" && "$branch" != "main" ]]; then
 fi
 
 targets_this_project() {
+  # A main-site release is only ever scripts/release.sh's own subject:
+  # "release: vX.Y.Z[ - note]" / "release-all: vX.Y.Z[ - note]". A hand-typed
+  # "release: <anything>" is not a release (Arman, 2026-10-22).
+  case "$1" in
+    release:*|release-all:*)
+      [[ "$1" =~ ^release(-all)?:\ v[0-9]+\.[0-9]+\.[0-9]+([[:space:]]|$) ]] || return 1 ;;
+  esac
   case "$1" in
     release-all:*) return 0 ;;
     release-admin:*) [[ "$target" == "admin" ]] && return 0 ;;
