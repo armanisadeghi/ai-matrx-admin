@@ -24,6 +24,8 @@ overrides:
 
 packageExtensionsChecksum: sha256-aTdjZRZyHyl0/0riXzUQV8jAsI+fW6DatNlhGVIOmFA=
 
+pnpmfileChecksum: sha256-LXsAGaTbQYPwIaH9Eri/UxhbnIk+A63YSu7mkxo/N5w=
+
 patchedDependencies:
   '@tiptap/react@3.31.3':
     hash: 5f5fcbe4af95a650cb741b85f7cf560ff67f990c918914c9fc26c72bb1aab72b
