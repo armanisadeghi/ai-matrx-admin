@@ -218,6 +218,42 @@ export function titleMaxWidth(
   return cap >= floor ? cap : null;
 }
 
+/**
+ * The title's grid track once measured. When the center control's widest face fits at the true
+ * center, the title's track is FIXED at the room left of it (`fixed`): the title draws left-aligned
+ * inside it and ellipsizes there, so a title of any length leaves the center cell, the centering
+ * inset and the control exactly where they were (2026-10-22, chat-switch-stability: a
+ * `fit-content` track moved the center cell 52px on every chat switch between a short and a long
+ * title, and the control with it for one frame). Otherwise the old rule: the title takes its
+ * natural width up to the cap that keeps the smallest trigger on screen.
+ */
+export function titleTrack(
+  total: number,
+  rightWidth: number,
+  navFull: number,
+  navMin: number,
+  floor: number,
+): { max: number | null; fixed: boolean } {
+  const centeredCap =
+    navFull > 0 ? Math.floor((total - navFull) / 2 - CENTER_FLANK_GUTTER_PX / 2) : null;
+  const inflowCap = titleMaxWidth(total, rightWidth, navMin, floor);
+  if (centeredCap != null && centeredCap >= floor && rightWidth <= centeredCap) {
+    return { max: Math.min(centeredCap, inflowCap ?? centeredCap), fixed: true };
+  }
+  return { max: inflowCap, fixed: false };
+}
+
+/** The measured header's grid columns (null pad = not measured yet: CSS-only centering). */
+export function routeHeaderColumns(
+  centerPad: { left: number; right: number } | null,
+  track: { max: number | null; fixed: boolean },
+): string {
+  if (centerPad == null) return "minmax(max-content, 1fr) auto minmax(max-content, 1fr)";
+  const left =
+    track.max == null ? "auto" : track.fixed ? `${track.max}px` : `fit-content(${track.max}px)`;
+  return `${left} minmax(0, 1fr) auto`;
+}
+
 /** The left region's natural (unclipped) width, read without a paint. */
 function naturalWidth(el: HTMLElement): number {
   // `maxWidth` too: the global `* { max-width: 100% }` would cap the probe at
@@ -331,7 +367,7 @@ export default function RouteHeader({
   // trigger. Unmeasured (null) is safe: the cells are in flow, so a stale or
   // missing measurement can only leave the nav off-center, never on top.
   const [centerPad, setCenterPad] = useState<{ left: number; right: number } | null>(null);
-  const [leftMax, setLeftMax] = useState<number | null>(null);
+  const [leftTrack, setLeftTrack] = useState<{ max: number | null; fixed: boolean }>({ max: null, fixed: false });
   const [folded, setFolded] = useState(0);
   const [emptyKeys, setEmptyKeys] = useState<string>("");
   const [compactPrimary, setCompactPrimary] = useState(false);
@@ -460,16 +496,8 @@ export default function RouteHeader({
           root.querySelectorAll<HTMLElement>("[data-route-header-center] [inert] > *"),
         ).map((el) => el.scrollWidth),
       );
-      const centeredCap =
-        navFull > 0
-          ? Math.floor((root.clientWidth - navFull) / 2 - CENTER_FLANK_GUTTER_PX / 2)
-          : null;
-      const inflowCap = titleMaxWidth(root.clientWidth, rightWidth, navMin, floor);
-      setLeftMax(
-        centeredCap != null && centeredCap >= floor && rightWidth <= centeredCap
-          ? Math.min(centeredCap, inflowCap ?? centeredCap)
-          : inflowCap,
-      );
+      const track = titleTrack(root.clientWidth, rightWidth, navFull, navMin, floor);
+      setLeftTrack((prev) => (prev.max === track.max && prev.fixed === track.fixed ? prev : track));
     };
 
     measure();
@@ -602,10 +630,7 @@ export default function RouteHeader({
                 // After it: the title takes its natural width up to the cap
                 // that keeps the nav's smallest trigger on screen; the center
                 // takes the rest.
-                gridTemplateColumns:
-                  centerPad == null
-                    ? "minmax(max-content, 1fr) auto minmax(max-content, 1fr)"
-                    : `${leftMax != null ? `fit-content(${leftMax}px)` : "auto"} minmax(0, 1fr) auto`,
+                gridTemplateColumns: routeHeaderColumns(centerPad, leftTrack),
               }
             : undefined
         }
