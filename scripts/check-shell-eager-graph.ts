@@ -398,6 +398,77 @@ async function selfTest(): Promise<void> {
   }
 }
 
+/**
+ * --attribute (REPORT ONLY, 2026-10-22, Arman: "have your checks provide details of what was added
+ * that is causing the bloat"). Who puts what into EVERY route's first load:
+ *   1. per client reference (each module the shell's server graph hands the browser): the bytes of
+ *      everything reachable from it, and the bytes ONLY it reaches (drop it and they leave the set);
+ *   2. per heavy package: the import chain from the shell to its first eager module.
+ * The 2026-10-22 outage (three hosts mounted in app/Providers.tsx) is exactly a row of table 1.
+ */
+function attribute(g: Graph, byPkg: Map<string, number>): void {
+  const size = new Map<string, number>();
+  for (const f of g.parent.keys()) {
+    try {
+      size.set(f, readFileSync(f).length);
+    } catch {
+      size.set(f, 0);
+    }
+  }
+  const forward = new Map<string, string[]>();
+  for (const [to, froms] of g.importers) {
+    if (!g.parent.has(to)) continue;
+    for (const from of froms) {
+      if (!g.parent.has(from)) continue;
+      let list = forward.get(from);
+      if (!list) forward.set(from, (list = []));
+      list.push(to);
+    }
+  }
+  const reach = (root: string, skip?: string): Set<string> => {
+    const seen = new Set<string>();
+    const stack = [root];
+    while (stack.length) {
+      const f = stack.pop()!;
+      if (seen.has(f) || f === skip) continue;
+      seen.add(f);
+      for (const n of forward.get(f) ?? []) if (!seen.has(n)) stack.push(n);
+    }
+    return seen;
+  };
+  const refs = [...g.clientRefs].filter((r) => g.parent.has(r));
+  const closures = new Map(refs.map((r) => [r, reach(r)]));
+  // How many client references reach each module: a module reached by one ref only is that ref's alone.
+  const reachedBy = new Map<string, number>();
+  for (const set of closures.values()) for (const f of set) reachedBy.set(f, (reachedBy.get(f) ?? 0) + 1);
+  const rows = refs.map((r) => {
+    let incl = 0;
+    let only = 0;
+    const pk = new Map<string, number>();
+    for (const f of closures.get(r)!) {
+      const s = size.get(f) ?? 0;
+      incl += s;
+      if (reachedBy.get(f) === 1) {
+        only += s;
+        pk.set(pkgName(f), (pk.get(pkgName(f)) ?? 0) + s);
+      }
+    }
+    const top = [...pk].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([n, s]) => `${n} ${(s / 1e3).toFixed(0)}K`).join(", ");
+    return { r, incl, only, top };
+  });
+  console.log("\n── client references, by bytes ONLY they bring into every route (top 40) ──");
+  console.log("  ONLY_KB   INCL_KB  CLIENT REFERENCE  [what only it brings]");
+  for (const x of rows.sort((a, b) => b.only - a.only).slice(0, 40))
+    console.log(`${(x.only / 1e3).toFixed(0).padStart(8)} ${(x.incl / 1e3).toFixed(0).padStart(9)}  ${pkgPath(x.r)}  [${x.top}]`);
+  console.log("\n── heavy packages: the chain from the shell to their first eager module ──");
+  for (const [n, sz] of [...byPkg].sort((a, b) => b[1] - a[1]).slice(0, 25)) {
+    if (n === "(app)") continue;
+    const target = [...g.parent.keys()].find((f) => pkgName(f) === n);
+    if (!target) continue;
+    console.log(`\n${(sz / 1e3).toFixed(0).padStart(7)} KB  ${n}\n    ${chainTo(g, target).join("\n    -> ")}`);
+  }
+}
+
 function sizeOf(g: Graph): { bytes: number; byPkg: Map<string, number> } {
   let bytes = 0;
   const byPkg = new Map<string, number>();
@@ -450,6 +521,7 @@ async function main(): Promise<void> {
       for (const [n, sz] of [...byPkg].sort((a, b) => b[1] - a[1]).slice(0, 40))
         console.log(`${(sz / 1e3).toFixed(0).padStart(8)} KB  ${n}`);
     }
+    if (args.includes("--attribute")) attribute(g, byPkg);
     const hits = heavyHits(g);
     const hard = blocking(hits);
     const soft = hits.filter((h) => h.advisory);
