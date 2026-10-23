@@ -3,7 +3,8 @@
 // The three 360 review screens under /hr/performance: the HR manager's list, one review (both
 // halves side by side once both are in), and a respondent's own half in the existing editor.
 
-import { hrPerformanceHref, hrPerformanceReviewHref } from "@/features/hr/routes";
+import { HR_ORG_PARAM } from "@/features/hr/constants";
+import { hrPerformance360ReviewHref, hrPerformanceHref } from "@/features/hr/routes";
 import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -49,7 +50,8 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 function useOrg(): string | null {
   const params = useSearchParams();
   const hr = useHrContext();
-  return params?.get("org") || hr.active?.organization_id || null;
+  // `?org=` (the 360 notices and meeting links) or HR's own `?org_filter=` (every HR link builder).
+  return params?.get("org") || params?.get(HR_ORG_PARAM) || hr.active?.organization_id || null;
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
@@ -85,7 +87,7 @@ const REVIEW_LIST_COLUMNS: MatrxColumnDef<Review360ListRow>[] = [
     width: 260,
     frozen: true,
     cell: (r) => (
-      <Link className="hover:underline" href={hrPerformanceReviewHref(r._id, r._organizationId)}>
+      <Link className="hover:underline" href={hrPerformance360ReviewHref(r._id, r._organizationId)}>
         {r.employee_name ?? "360 review"}
       </Link>
     ),

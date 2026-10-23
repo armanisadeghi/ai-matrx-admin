@@ -437,6 +437,10 @@ export function hrPerformanceGoalsHref(org: HrOrgRef): string {
 export function hrPerformance360Href(org: HrOrgRef): string {
   return hrUrl("/hr/performance/360", org);
 }
+/** One 360 review (`/hr/performance/<reviewId>`) — never the standard review's workspace. */
+export function hrPerformance360ReviewHref(reviewId: string, org: HrOrgRef): string {
+  return hrUrl(`/hr/performance/${encodeURIComponent(reviewId)}`, org);
+}
 export function hrAssetsHref(org: HrOrgRef): string {
   return hrUrl("/hr/assets", org);
 }
