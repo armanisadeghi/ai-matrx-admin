@@ -460,6 +460,13 @@ function attribute(g: Graph, byPkg: Map<string, number>): void {
   console.log("  ONLY_KB   INCL_KB  CLIENT REFERENCE  [what only it brings]");
   for (const x of rows.sort((a, b) => b.only - a.only).slice(0, 40))
     console.log(`${(x.only / 1e3).toFixed(0).padStart(8)} ${(x.incl / 1e3).toFixed(0).padStart(9)}  ${pkgPath(x.r)}  [${x.top}]`);
+  console.log("\n── the biggest files ONLY each top-6 client reference brings ──");
+  for (const x of rows.slice(0, 6)) {
+    const mine = [...closures.get(x.r)!].filter((f) => reachedBy.get(f) === 1);
+    const top = mine.sort((a, b) => (size.get(b) ?? 0) - (size.get(a) ?? 0)).slice(0, 15);
+    console.log(`\n${(x.only / 1e3).toFixed(0).padStart(7)} KB  ${pkgPath(x.r)}`);
+    for (const f of top) console.log(`    ${((size.get(f) ?? 0) / 1e3).toFixed(0).padStart(6)} KB  ${pkgPath(f)}`);
+  }
   console.log("\n── heavy packages: the chain from the shell to their first eager module ──");
   for (const [n, sz] of [...byPkg].sort((a, b) => b[1] - a[1]).slice(0, 25)) {
     if (n === "(app)") continue;
