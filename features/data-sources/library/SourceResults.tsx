@@ -12,6 +12,8 @@
  */
 
 import dynamic from "next/dynamic";
+import { useMemo } from "react";
+import { useFields } from "@ai-matrx/records/react";
 import { CheckCircle2, SearchX, Table2 } from "lucide-react";
 import { Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
@@ -24,6 +26,8 @@ import type { RunState } from "../runs";
 import { isOpenStatus, runRowFilter, runScope, runStatusLabel, useDataFetchJob, useResumeStalledRun, useRunRowKeys, useTypicalRunMs, type FetchJobRow } from "./runHistory";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { tookWords } from "./runTiming";
+import { openingHiddenFields } from "../openingColumns";
+import { useLibrary, useLibraryOrganizationId } from "./hooks";
 import { UnderTheHood } from "./UnderTheHood";
 
 // The grid is heavy: it loads when there are results to draw, never with the library.
@@ -43,11 +47,30 @@ export const ALL_ROWS_NOTICE = "Showing all saved rows: this run predates per-ru
  * record added in a narrowed view would belong to no run and vanish at once, so records are added
  * in the full table ("Open as table").
  */
+/**
+ * The grid opens on the source's short plain set (THE ONE COLUMN REGISTRY, `../openingColumns`), the same
+ * columns "What you get" lists; every other column is hidden through the grid's own hidden-columns look, one
+ * click away. The grid reads its opening look once, on arrival; it waits for the fields so it opens on it.
+ */
+function useOpeningHidden(tableId: string, sourceKey: string | null | undefined): { ready: boolean; hidden: string[] | null } {
+  const organizationId = useLibraryOrganizationId();
+  const library = useLibrary(sourceKey ? organizationId : null);
+  const fields = useFields(sourceKey ? tableId : null);
+  const source = sourceKey ? library.data?.sources.find((s) => s.key === sourceKey) ?? null : null;
+  const hidden = useMemo(
+    () => (source && fields.data ? openingHiddenFields(fields.data, source.output_fields ?? [], undefined, source.key) : null),
+    [source, fields.data],
+  );
+  const ready = !sourceKey || !(library.isLoading || fields.isLoading);
+  return { ready, hidden };
+}
+
 export function InlineResultsTable({ tableId, job }: { tableId: string; job?: FetchJobRow | null }) {
   const keysQuery = useRunRowKeys(job);
   const keys = keysQuery.data ?? null;
   const scope = runScope(job, keys);
-  if (scope === "coming" || (Boolean(job?.id) && keysQuery.isLoading)) return <RowsComing />;
+  const opening = useOpeningHidden(tableId, job?.source_key);
+  if (scope === "coming" || (Boolean(job?.id) && keysQuery.isLoading) || !opening.ready) return <RowsComing />;
   const filter = runRowFilter(job, keys);
   return (
     <div className="flex flex-col gap-2" data-run-scope={scope}>
@@ -58,7 +81,14 @@ export function InlineResultsTable({ tableId, job }: { tableId: string; job?: Fe
         </div>
       ) : null}
       <div className="flex h-[min(78dvh,760px)] min-h-[420px] flex-col" data-inline-results={tableId} data-run-rows={filter ? "this-run" : "all"}>
-        <LocatedTableViewer tableId={tableId} filter={filter} rowPeek readOnly />
+        <LocatedTableViewer
+          key={opening.hidden ? "opening-columns" : "plain"}
+          tableId={tableId}
+          filter={filter}
+          rowPeek
+          readOnly
+          {...(opening.hidden ? { viewAddress: { hidden: opening.hidden } } : {})}
+        />
       </div>
     </div>
   );

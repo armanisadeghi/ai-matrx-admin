@@ -11,6 +11,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 let search = "";
 const pushed: string[] = [];
 const replaced: string[] = [];
+// The fetched table's own fields (the grid opens on the source's plain set: `../openingColumns`).
+const TABLE_FIELDS = ["name", "rating", "reviews_count", "category", "address", "phone_number", "open_website", "cid", "timestamp", "input"].map((k) => ({ key: k, name: k, label: k }));
+jest.mock("@ai-matrx/records/react", () => ({
+  ...jest.requireActual("@ai-matrx/records/react"),
+  useFields: () => ({ data: TABLE_FIELDS, isLoading: false }),
+}));
 jest.mock("next/navigation", () => ({
   usePathname: () => "/data/library",
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),

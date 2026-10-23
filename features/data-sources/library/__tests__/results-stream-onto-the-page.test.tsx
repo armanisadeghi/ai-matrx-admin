@@ -14,6 +14,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 let search = "";
 const pushed: string[] = [];
 const replaced: string[] = [];
+// The fetched table's own fields (the grid opens on the source's plain set: `../openingColumns`).
+const TABLE_FIELDS = ["name", "rating", "reviews_count", "category", "address", "phone_number", "open_website", "cid", "timestamp", "input"].map((k) => ({ key: k, name: k, label: k }));
+jest.mock("@ai-matrx/records/react", () => ({
+  ...jest.requireActual("@ai-matrx/records/react"),
+  useFields: () => ({ data: TABLE_FIELDS, isLoading: false }),
+}));
 jest.mock("next/navigation", () => ({
   usePathname: () => "/data/library",
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
@@ -25,10 +31,11 @@ jest.mock("@/lib/url-state/addressWithoutNavigating", () => ({
 }));
 // The heavy grid: stands in as a marker carrying the table id it was asked to draw.
 jest.mock("next/dynamic", () => () =>
-  function LocatedTableStandIn(props: { tableId: string; filter?: unknown; readOnly?: boolean }) {
+  function LocatedTableStandIn(props: { tableId: string; filter?: unknown; readOnly?: boolean; viewAddress?: { hidden?: string[] } }) {
     return (
       <div
         data-testid="located-table"
+        data-hidden={props.viewAddress?.hidden?.join(",") ?? ""}
         data-table={props.tableId}
         data-read-only={props.readOnly ? "yes" : ""}
         data-filter={props.filter ? JSON.stringify(props.filter) : ""}
@@ -105,7 +112,8 @@ import { DataLibraryPage } from "../DataLibraryPage";
 
 const LIBRARY = parseLibrary({
   sources: [
-    { key: "google_maps_place", label: "Google Maps place", group: "Places & local business", input: { kind: "url" }, verified_live: true, usd_per_record: 0.002 },
+    { key: "google_maps_place", label: "Google Maps place", group: "Places & local business", input: { kind: "url" }, verified_live: true, usd_per_record: 0.002,
+      output_fields: ["name", "rating", "reviews_count", "category", "address", "phone_number", "open_website", "cid", "timestamp", "input"] },
   ],
 });
 
@@ -174,6 +182,16 @@ test("a finished run draws its table inline under the search, with Open as table
   expect(replaced.some((h) => h.includes("job=J1"))).toBe(true);
   // Results are doing, not deciding: no price beside them (law 14).
   expect(host.querySelector('[data-results="live"]')?.textContent).not.toMatch(/points/);
+});
+
+test("the inline grid opens on the source's plain columns (the one column registry); the rest are one click away", () => {
+  search = "source=google_maps_place";
+  jobRows.J1 = job("J1");
+  runNow = { status: "done", result: { ...job("J1"), job_id: "J1", columns: [], records_billed: 3, cost_usd: 0, values_as_text: 0, limit_applied: null } };
+  render();
+  const hidden = (host.querySelector('[data-testid="located-table"]')?.getAttribute("data-hidden") ?? "").split(",");
+  // shown: Name, Rating, Reviews, Category, Address, Phone, Website; hidden: everything else
+  expect(hidden.sort()).toEqual(["cid", "input", "timestamp"]);
 });
 
 test("a running run fills the same inline table as soon as the server names it", () => {

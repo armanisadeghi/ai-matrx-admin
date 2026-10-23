@@ -17,6 +17,7 @@
 
 import type { ObjectAction } from "@ai-matrx/records-ui/object-actions";
 import type { RecordFilter } from "@ai-matrx/records";
+import type { ViewAddressState } from "@ai-matrx/records-ui";
 import { NO_ADDRESS, UnifiedTableBody, useUnifiedTable } from "@/features/unified-data/table-page/UnifiedTable";
 
 type ViewerProps = {
@@ -33,9 +34,14 @@ type ViewerProps = {
   filter?: RecordFilter | null;
   /** A hovered row shows the one Peek (records-ui `rowPeek`). Default off. */
   rowPeek?: boolean;
+  /**
+   * The look the grid opens on (read once on arrival), in the table page's own address shape — e.g. the
+   * columns a library run opens on (`hidden`). Left out, the table's own look.
+   */
+  viewAddress?: ViewAddressState | null;
 };
 
-export function LocatedTableViewer({ tableId, actionExtensions, readOnly = false, filter = null, rowPeek = false }: ViewerProps) {
+export function LocatedTableViewer({ tableId, actionExtensions, readOnly = false, filter = null, rowPeek = false, viewAddress }: ViewerProps) {
   const mount = useUnifiedTable({
     tableId,
     address: filter ? { ...NO_ADDRESS, filter } : NO_ADDRESS,
@@ -49,7 +55,7 @@ export function LocatedTableViewer({ tableId, actionExtensions, readOnly = false
       data-grid={mount.mergedGrid ? "merged" : "classic"}
       {...(readOnly ? { "data-read-only": "preview" } : {})}
     >
-      <UnifiedTableBody mount={mount} {...(rowPeek ? { rowPeek } : {})} />
+      <UnifiedTableBody mount={mount} {...(rowPeek ? { rowPeek } : {})} {...(viewAddress ? { viewAddress } : {})} />
     </div>
   );
 }
