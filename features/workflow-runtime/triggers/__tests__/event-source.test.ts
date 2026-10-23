@@ -133,3 +133,20 @@ describe("eventSourceAdvice watched", () => {
     );
   });
 });
+
+describe("buildEventSource hops", () => {
+  it("never sends a from-value on an insert watch", () => {
+    const draft = {
+      ...EMPTY_EVENT_DRAFT,
+      table: "a.b",
+      operation: "insert" as const,
+      whenColumn: "status",
+      whenValue: "captured",
+      whenFromValue: "capturing",
+    };
+    expect(buildEventSource(draft)).not.toHaveProperty("when_from_value");
+    expect(buildEventSource({ ...draft, operation: "update" })).toMatchObject({
+      when_from_value: "capturing",
+    });
+  });
+});

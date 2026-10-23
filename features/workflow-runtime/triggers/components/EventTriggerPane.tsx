@@ -104,7 +104,15 @@ export function EventTriggerPane({
             aria-label="Which change starts it"
             value={draft.operation}
             data={OPERATIONS}
-            onValueChange={(v) => set("operation", v)}
+            onValueChange={(v) =>
+              // Switching to insert clears the hop: the field is disabled there
+              // and a leftover value could never be cleared by hand.
+              onChange({
+                ...draft,
+                operation: v,
+                whenFromValue: v === "insert" ? "" : draft.whenFromValue,
+              })
+            }
           />
         </SettingRow>
       </RowGroup>

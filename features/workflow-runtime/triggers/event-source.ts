@@ -84,7 +84,9 @@ export function buildEventSource(draft: EventDraft): TableEventSourceSpec {
     operation: draft.operation,
     ...(column ? { when_column: column } : {}),
     ...(column && value ? { when_value: value } : {}),
-    ...(column && from ? { when_from_value: from } : {}),
+    // A hop is an UPDATE fact (the server refuses it on an insert watch);
+    // a value left in the draft after switching to insert is not sent.
+    ...(column && from && draft.operation === "update" ? { when_from_value: from } : {}),
     entity_key_column: draft.entityKeyColumn.trim() || "id",
     debounce_seconds: debounceOf(draft),
     input_map: inputMap,
