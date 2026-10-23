@@ -189,13 +189,13 @@ test("(e2) release-lab: builds the lab only", () => {
 test("(f) release-all: as HEAD builds every project", () => {
     const dir = track(newRepo());
     const base = commit(dir, "chore: baseline");
-    const head = commit(dir, "release-all: everything ships");
+    const head = commit(dir, "release-all: v1.2.4 - everything ships");
     for (const t of ["main", "admin", "demos", "lab"]) {
         const { build, output } = runIgnore(dir, {
             MATRX_BUILD_TARGET: t,
             VERCEL_GIT_PREVIOUS_SHA: base,
             VERCEL_GIT_COMMIT_SHA: head,
-            VERCEL_GIT_COMMIT_MESSAGE: "release-all: everything ships",
+            VERCEL_GIT_COMMIT_MESSAGE: "release-all: v1.2.4 - everything ships",
         });
         assert.equal(build, true, `target=${t} missed release-all as HEAD:\n${output}`);
     }
@@ -216,7 +216,7 @@ test("(g) live SHA lag cannot make an ordinary HEAD rebuild a release", () => {
 test("(h) a release already behind an ordinary HEAD does not rebuild", () => {
     const dir = track(newRepo());
     commit(dir, "chore: baseline");
-    const released = commit(dir, "release: already live");
+    const released = commit(dir, "release: v1.2.5 - already live");
     const head = commit(dir, "chore(docs): a note after the release");
     const { build, output } = runIgnore(dir, {
         MATRX_BUILD_TARGET: "main",
@@ -241,13 +241,53 @@ test("(i) missing Vercel message falls back to the checked-out HEAD subject", ()
 test("(j) unrelated live-version metadata cannot block a release HEAD", () => {
     const dir = track(newRepo());
     commit(dir, "chore: baseline");
-    const head = commit(dir, "release: ships even when the live answer is old");
+    const head = commit(dir, "release: v1.2.6 - ships even when the live answer is old");
     const { build, output } = runIgnore(dir, {
         MATRX_BUILD_TARGET: "main",
         VERCEL_GIT_COMMIT_SHA: head,
-        VERCEL_GIT_COMMIT_MESSAGE: "release: ships even when the live answer is old",
+        VERCEL_GIT_COMMIT_MESSAGE: "release: v1.2.6 - ships even when the live answer is old",
         MATRX_DEPLOYED_SHA_URL: "https://unused.invalid/api/version",
     });
     assert.equal(build, true, `a release as HEAD must still build:\n${output}`);
     assert.match(output, /pushed HEAD is a release commit/, `the HEAD decision was not reported:\n${output}`);
+});
+
+test("(k) a release subject on a branch other than main SKIPS", () => {
+    const dir = track(newRepo());
+    commit(dir, "chore: baseline");
+    const head = commit(dir, "release: hang bisect #73 (preview only, temporary branch)");
+    const { build, output } = runIgnore(dir, {
+        MATRX_BUILD_TARGET: "main",
+        VERCEL_GIT_COMMIT_SHA: head,
+        VERCEL_GIT_COMMIT_REF: "hang-b5-73",
+        VERCEL_GIT_COMMIT_MESSAGE: "release: hang bisect #73 (preview only, temporary branch)",
+    });
+    assert.equal(build, false, `a release-prefixed commit on a side branch built:\n${output}`);
+    assert.match(output, /branch 'hang-b5-73' is not main/, `the branch decision was not reported:\n${output}`);
+});
+
+test("(k2) a release subject on main still builds", () => {
+    const dir = track(newRepo());
+    commit(dir, "chore: baseline");
+    const head = commit(dir, "release: v0.4.9999");
+    const { build } = runIgnore(dir, {
+        MATRX_BUILD_TARGET: "main",
+        VERCEL_GIT_COMMIT_SHA: head,
+        VERCEL_GIT_COMMIT_REF: "main",
+        VERCEL_GIT_COMMIT_MESSAGE: "release: v0.4.9999",
+    });
+    assert.equal(build, true);
+});
+
+test("(l) a hand-typed release: subject with no version SKIPS, even on main", () => {
+    const dir = track(newRepo());
+    commit(dir, "chore: baseline");
+    const head = commit(dir, "release: hang fix proof — origin/main + clientLabel split");
+    const { build, output } = runIgnore(dir, {
+        MATRX_BUILD_TARGET: "main",
+        VERCEL_GIT_COMMIT_SHA: head,
+        VERCEL_GIT_COMMIT_REF: "main",
+        VERCEL_GIT_COMMIT_MESSAGE: "release: hang fix proof — origin/main + clientLabel split",
+    });
+    assert.equal(build, false, `an unversioned release: subject built:\n${output}`);
 });
