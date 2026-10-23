@@ -152,7 +152,6 @@ export function VoiceSelectionModal({
                 isOpen={isOpen}
                 onClose={handleClose}
                 title={title}
-                description="Browse and test available voices"
                 maxHeight="xl"
             >
                 {content}

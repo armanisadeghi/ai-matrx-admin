@@ -24,6 +24,7 @@ jest.mock("@ai-matrx/design-system/controls", () => {
   return {
     ...actual,
     InfoHint: () => null,
+    TextArrayInput: () => null,
     Select: ({ value, options }: { value: string; options: { value: string }[] }) => (
       <div data-picker="context" data-value={value}>
         {options.map((o) => (
@@ -33,10 +34,6 @@ jest.mock("@ai-matrx/design-system/controls", () => {
     ),
   };
 });
-jest.mock("@ai-matrx/design-system/controls", () => ({
-  ...jest.requireActual("@ai-matrx/design-system/controls"),
-  TextArrayInput: () => null,
-}));
 jest.mock("@/components/official/ProTextarea", () => ({ ProTextarea: () => null }));
 jest.mock("@/features/marketing/data/hooks", () => ({
   useUpdatePageDesiredValues: () => ({ mutateAsync: jest.fn(), isPending: false }),

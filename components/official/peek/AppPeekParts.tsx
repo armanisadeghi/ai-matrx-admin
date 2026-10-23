@@ -22,7 +22,7 @@ const EntityCustomFields = dynamic(
   () => import("@/features/unified-data/components/EntityCustomFields").then((m) => m.EntityCustomFields),
   { ssr: false },
 );
-const AccessGate = dynamic(() => import("@ai-matrx/sharing/access/react").then((m) => m.AccessGate), {
+const LazyAccessGate = dynamic(() => import("@ai-matrx/sharing/access/react").then((m) => m.AccessGate), {
   ssr: false,
 });
 const RichContent = dynamic(() => import("@ai-matrx/rich-content/levels/RichContent").then((m) => m.RichContent), {
@@ -40,7 +40,7 @@ function renderPeekPart(part: PeekPart): ReactNode {
       // Collapsed in a quick look: the records-ui screen loads when the person opens the section.
       return <EntityCustomFields entityToken={part.token} recordId={part.id} absentWhenNotApplicable collapsed />;
     case "access":
-      return <AccessGate token={part.token} id={part.id} {...(part.error !== undefined ? { error: part.error } : {})} />;
+      return <LazyAccessGate token={part.token} id={part.id} {...(part.error !== undefined ? { error: part.error } : {})} />;
     case "media":
       return (
         <MediaThumbnail

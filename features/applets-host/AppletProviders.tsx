@@ -14,7 +14,8 @@
 // the data table host (`<DataPage>`), toasts, Alchemy (copy doors), tooltips, the module-header and
 // selected-images contexts (their hooks throw without them), realtime (`rows:<alias>` live), media
 // (images in kinds), audio (the writing box's mic), the guest allowance bridge, the deferred singletons
-// (overlays: the live-run window), the confirm, clipboard and value-prompt hosts, and the sharing host (it
+// (overlays: the live-run window), the confirm host and the clipboard manual-copy host (a blocked copy opens its dialog
+// through ClipboardFallbackHost; root-hosts-are-bound.test.ts pins both together), and the sharing host (it
 // binds the access screens the Applet's not-found page draws).
 //
 // LEFT OUT, because no Applet surface reaches them: Meet, Messaging, the sandbox lifecycle and gate,
@@ -52,6 +53,7 @@ import DeferredSingletonWrapper from "@/app/DeferredSingletonWrapper";
 import { AppSummonProvider } from "@/features/overlays/host/AppSummonProvider";
 import { MediaHostProvider } from "@/features/files/media-client/MediaHostProvider";
 import { ConfirmDialogHost } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { ClipboardFallbackHost } from "@ai-matrx/design-system";
 import { GlobalAuthSync } from "@/features/auth/components/GlobalAuthSync";
 import { GuestAiAllowanceBridge } from "@/components/guest/GuestAiAllowanceBridge";
 
@@ -86,6 +88,7 @@ export function AppletProviders({ children }: { children: React.ReactNode }) {
                                           {children}
                                           <DeferredSingletonWrapper />
                                           <ConfirmDialogHost />
+                                          <ClipboardFallbackHost />
                                           <ComingSoonClient />
                                           <AgentPeekHost />
                                         </MediaHostProvider>
