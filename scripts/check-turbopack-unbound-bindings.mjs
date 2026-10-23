@@ -10,9 +10,11 @@ import { failOrScream } from "./lib/release-verdict.mjs";
 // motion/react with `"VisualElement",()=>__TURBOPACK__imported__module__60386__.F`,
 // and every stored component importing motion crashed. The compile runtime now
 // contains such an export (@ai-matrx/code-runtime readModuleExports); this
-// names each one at build time. It reports, it does not block the release:
-// the leaked export is usually never read, and holding the train on a
-// bundler defect would ship nothing.
+// names each one at build time. 2026-10-22 v0.4.3449 shipped the same six
+// again: the trigger is framer-motion's duplicate motion-dom re-export
+// (`export *` + an explicit list), patched in patches/framer-motion@13.4.4.patch.
+// A finding FAILS locally and at commit; on Vercel / CI / the release path it
+// screams and exits 0 (release-verdict.mjs — Arman 2026-10-21, nothing blocks a release).
 const leaked = /__TURBOPACK__imported__module__(\d+)__/g;
 
 /** Every leaked binding in one chunk's text, with the export it serves when visible. */
@@ -48,7 +50,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
             " through a binding the bundler never declared; reading it throws ReferenceError.",
         );
       }
-      console.error(`[turbopack-bindings] ${findings.length} unbound binding(s) in ${scanned} client chunks — a Turbopack codegen defect; see the comment at the top of this script.`);
+      const summary = `${findings.length} unbound binding(s) in ${scanned} client chunks — a Turbopack codegen defect; see the comment at the top of this script.`;
+      console.error(`[turbopack-bindings] ${summary}`);
+      process.exitCode = failOrScream("turbopack-bindings", summary);
     }
   } catch (error) {
     console.error(`[turbopack-bindings] ${error.message}`);
