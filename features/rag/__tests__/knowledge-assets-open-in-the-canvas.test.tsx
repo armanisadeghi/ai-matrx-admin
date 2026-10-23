@@ -93,7 +93,7 @@ it("the studios' Knowledge Assets actions toggle the canvas tab — no docked pa
   for (const file of [
     "features/source-studio/components/SourceStudio.tsx",
     "features/rag/components/library/LibraryPreviewPage.tsx",
-    "features/pdf-extractor/studio/PdfStudioShell.tsx",
+    "features/pdf/workspace/extractor/ExtractorTool.tsx",
   ]) {
     const source = readFileSync(join(root, file), "utf8");
     expect(source).not.toContain("MatrxDynamicPanelHost");

@@ -7,19 +7,18 @@ import type { PdfSurfaceLinkIds } from "./registry";
  *
  * A control labeled "PDF Extractor" opens the PDF Extractor. A processed
  * document's HOME is its Source screen (SOURCE-CONVERGENCE §8.2, reached via
- * `buildSourceHref`), but the PDF tools stay at `/tools/pdf-extractor?doc=<id>`
+ * `buildSourceHref`), but the PDF tools are the PDF workspace (`/pdf/<fileId>`)
  * — sending this link to /knowledge/sources made every "Open in PDF Extractor"
  * land on Knowledge once the 2026-09-26 files backfill gave every file a
  * processed document.
  */
 export function buildPdfExtractorHref(ids: PdfSurfaceLinkIds): string {
+  if (ids.fileId) return `/pdf/${encodeURIComponent(ids.fileId)}`;
   if (ids.processedDocumentId) {
+    // The old route resolves the document to its file (or its Source screen).
     return `/tools/pdf-extractor?doc=${encodeURIComponent(ids.processedDocumentId)}`;
   }
-  if (ids.fileId) {
-    return `/tools/pdf-extractor?file=${encodeURIComponent(ids.fileId)}`;
-  }
-  return "/tools/pdf-extractor";
+  return "/pdf";
 }
 
 /** The processed document's home: its Source screen in Knowledge. */

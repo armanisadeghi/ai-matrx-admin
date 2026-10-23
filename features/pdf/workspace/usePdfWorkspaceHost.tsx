@@ -19,7 +19,7 @@ import { selectFileById } from "@/features/files/redux/selectors";
 import { renameFile } from "@/features/files/redux/thunks";
 import { invalidate } from "@/features/files/hooks/blob-cache";
 import { useEnsureCloudFile } from "@/features/files/hooks/useEnsureCloudFile";
-import { usePdfRemoteSource } from "@/features/pdf/hooks/usePdfRemoteSource";
+import { useCloudPdfBytes } from "@/features/pdf/hooks/useCloudPdfBytes";
 import { streamPdfExtractTextRemote } from "@/features/pdf-extractor/service/streamPdf";
 import type { PdfTablesReport } from "@/features/pdf-extractor/types";
 import { drainPdfStream } from "../api/streamDrain";
@@ -30,6 +30,7 @@ import { callsFor, fileIdOf, type PdfCall } from "./pdfOps";
 import { createThumbnailQueue, type ThumbnailQueue } from "./pdfThumbnails";
 import { PdfThumbnail } from "./PdfThumbnail";
 import { useWorkspaceTools, type StudioBridge } from "./useWorkspaceTools";
+import type { ExtractorBridge } from "./extractor/extractorBridge";
 
 async function saveBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
@@ -40,13 +41,13 @@ async function saveBlob(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; ready: boolean; studio: StudioBridge } {
+export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; ready: boolean; studio: StudioBridge; extractorBridge: ExtractorBridge; getPage(): number } {
   const router = useRouter();
   const dispatch = useAppDispatch();
   useEnsureCloudFile(fileId);
   const file = useAppSelector((s) => selectFileById(s, fileId));
   const client = usePdfClient();
-  const source = usePdfRemoteSource(fileId);
+  const { remoteUrl, headers, withCredentials, fetchBytes } = useCloudPdfBytes(fileId);
   const [online, setOnline] = useState(true);
   const [queueVersion, setQueueVersion] = useState(0);
 
@@ -62,7 +63,6 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
   }, []);
 
   // One thumbnail queue per document bytes; a new version of the file starts a fresh one.
-  const { remoteUrl, headers, withCredentials } = source;
   const headersKey = JSON.stringify(headers);
   const queue = useMemo<ThumbnailQueue | null>(() => {
     void queueVersion;
@@ -70,13 +70,6 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
     return createThumbnailQueue({ url: remoteUrl, httpHeaders: JSON.parse(headersKey) as Record<string, string>, withCredentials });
   }, [remoteUrl, headersKey, withCredentials, queueVersion]);
   useEffect(() => () => queue?.dispose(), [queue]);
-
-  const fetchBytes = useCallback(async (): Promise<Blob> => {
-    if (!remoteUrl) throw new Error("The file is still loading. Try again in a moment.");
-    const res = await fetch(remoteUrl, { headers, credentials: withCredentials ? "include" : "same-origin" });
-    if (!res.ok) throw new Error(`The file could not be read (${res.status}).`);
-    return res.blob();
-  }, [remoteUrl, headers, withCredentials]);
 
   const executeCall = useCallback(
     async (call: PdfCall): Promise<PdfRunResult> => {
@@ -132,7 +125,7 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
   );
 
   const openFile = useCallback((id: string) => router.push(`/pdf/${id}`), [router]);
-  const { tools, viewerOverride, studio } = useWorkspaceTools({ fileId, fileName: file?.fileName ?? "document.pdf", openFile });
+  const { tools, viewerOverride, studio, annotationCounts, extractorBridge, getPage } = useWorkspaceTools({ fileId, fileName: file?.fileName ?? "document.pdf", openFile });
 
   const host = useMemo<PdfWorkspaceHost>(
     () => ({
@@ -158,6 +151,12 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
         />
         ),
       renderThumbnail: (page) => <PdfThumbnail page={page} queue={queue} />,
+      renderPageBadge: (page) => {
+        const n = annotationCounts[page];
+        return n ? (
+          <span className="rounded-full bg-primary px-1.5 text-[10px] font-medium leading-4 text-primary-foreground" title={`${n} annotation${n === 1 ? "" : "s"}`}>{n}</span>
+        ) : null;
+      },
       run,
       openTool: (tool) => router.push(tool === "scan" ? "/tools/scanner" : "/esign/new"),
       openFile,
@@ -193,8 +192,8 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
           .flatMap((p) => (typeof p.id === "string" ? [{ id: p.id, label: p.label ?? p.name ?? p.id }] : []));
       },
     }),
-    [fileId, file?.fileName, online, queue, run, router, fetchBytes, dispatch, client, tools, viewerOverride, openFile],
+    [fileId, file?.fileName, online, queue, run, router, fetchBytes, dispatch, client, tools, viewerOverride, openFile, annotationCounts],
   );
 
-  return { host, ready: !!file, studio };
+  return { host, ready: !!file, studio, extractorBridge, getPage };
 }

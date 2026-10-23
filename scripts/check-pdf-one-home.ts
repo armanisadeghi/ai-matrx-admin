@@ -30,6 +30,12 @@ const RETIRED_PATHS = [
   "features/file-analysis/studio/StudioShell.tsx",
   "app/(core)/files/f/[fileId]/studio",
   "app/(dev)/demos/pdf-processing",
+  "features/pdf-extractor/studio/PdfStudioShell.tsx",
+  "features/pdf-extractor/studio/PdfStudioMobile.tsx",
+  "features/pdf-extractor/studio/PdfStudioSidebar.tsx",
+  "features/pdf-extractor/studio/PdfStudioInspector.tsx",
+  "features/pdf-extractor/components/ManipulationPanel.tsx",
+  "app/(core)/tools/pdf-extractor/PdfStudioRouteClient.tsx",
 ];
 const SCAN_DIRS = ["app", "components", "features", "lib", "hooks", "utils", "providers"];
 

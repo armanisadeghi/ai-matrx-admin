@@ -107,3 +107,67 @@ export function cleanupCallFor(fileId: string, request: CleanupOp): CleanupCall 
       return { kind: "ocr", body: { ...src, force_ocr: true, use_ocr_threshold: request.threshold, include_page_metadata: false } };
   }
 }
+
+// ── Combine and insert (merge this file with others; splice pages of another file into this one) ──
+
+export interface CombineSource {
+  fileId: string;
+  /** Pages of that file to use (1-based). Null: all of them. */
+  pages: number[] | null;
+}
+
+export type CombineOp =
+  /** This file first, then each source in order, as a NEW FILE. */
+  | { op: "merge"; sources: CombineSource[]; filename: string | null }
+  /** The pages of `source` placed after `afterPage` of this file (0: at the start), as a NEW FILE. */
+  | { op: "insert"; source: CombineSource; afterPage: number };
+
+export type CombineCall = { kind: "file"; endpoint: "merge" | "insertPages"; body: Record<string, unknown> };
+
+/** How a combine request becomes its one server call. Every file goes in by id (`media.file_id`); the original is never touched. */
+export function combineCallFor(fileId: string, request: CombineOp): CombineCall {
+  const src = buildPdfSourceFromFileId(fileId);
+  if (request.op === "merge") {
+    return {
+      kind: "file",
+      endpoint: "merge",
+      body: {
+        sources: [src, ...request.sources.map((s) => ({ ...buildPdfSourceFromFileId(s.fileId), ...(s.pages ? { pages: s.pages } : {}) }))],
+        output_mode: "derivative",
+        ...(request.filename ? { filename: request.filename } : {}),
+      },
+    };
+  }
+  return {
+    kind: "file",
+    endpoint: "insertPages",
+    body: {
+      ...src,
+      source_media: { file_id: request.source.fileId },
+      after_page: request.afterPage,
+      ...(request.source.pages ? { source_pages: request.source.pages } : {}),
+      output_mode: "derivative",
+    },
+  };
+}
+
+// ── Strip repeated regions (headers and footers removed from the extracted text of every page) ──
+
+export interface StripRepeatedOp {
+  /** Null: the server's own default. */
+  minPagesRatio: number | null;
+  minConfidence: number | null;
+  acceptedRegionIds: string[] | null;
+}
+
+/** The streamed call that returns the text of every page without its repeated regions. */
+export function stripRepeatedCallFor(fileId: string, request: StripRepeatedOp): { body: Record<string, unknown> } {
+  return {
+    body: {
+      ...buildPdfSourceFromFileId(fileId),
+      ...(request.minPagesRatio !== null ? { min_pages_ratio: request.minPagesRatio } : {}),
+      ...(request.minConfidence !== null ? { min_confidence: request.minConfidence } : {}),
+      ...(request.acceptedRegionIds && request.acceptedRegionIds.length ? { accepted_region_ids: request.acceptedRegionIds } : {}),
+    },
+  };
+}
