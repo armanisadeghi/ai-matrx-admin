@@ -18,7 +18,9 @@ jest.mock("@ai-matrx/kit/download", () => ({ downloadFile: jest.fn() }));
 jest.mock("@ai-matrx/media/files/engine/host/ui", () => ({
   ...jest.requireActual("@ai-matrx/media/files/engine/host/ui"),
   copyNotify: jest.fn(),
-  showManualCopy: (...a: unknown[]) => manualCopyDialog(...a),
+}));
+jest.mock("@ai-matrx/kit/clipboard-fallback-opener", () => ({
+  openClipboardFallback: (...a: unknown[]) => manualCopyDialog(...a),
 }));
 jest.mock("@ai-matrx/kit/notify", () => ({ ...jest.requireActual("@ai-matrx/kit/notify"), toast: { error: jest.fn(), success: jest.fn() } }));
 const file = { id: "f1", fileName: "a.png", visibility: "private", publicUrl: null, source: { kind: "cloud" } };
@@ -83,7 +85,8 @@ it("puts the share link in front of the person when the clipboard refuses", asyn
   copyText.mockResolvedValue(false);
   await expect(actions.copyShareUrl()).resolves.toBeNull();
   expect(manualCopyDialog).toHaveBeenCalledWith(
-    expect.objectContaining({ text: "https://py.example/share/tok123" }),
+    "https://py.example/share/tok123",
+    expect.objectContaining({ title: "Copy the share link" }),
   );
 });
 
