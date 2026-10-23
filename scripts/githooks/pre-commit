@@ -24,6 +24,10 @@ fi
 # holding a git conflict marker line is refused (~0.1 s, reads the index). Self-test: --self-test.
 sh "$HOOK_DIR/no-conflict-markers.sh" || exit 1
 
+# PNPM CONFIG UNIT (2026-10-22): a commit taking pnpm-lock.yaml also takes pnpm-workspace.yaml and
+# patches/ when they differ (ERR_PNPM_LOCKFILE_CONFIG_MISMATCH, 0bc5076445). Adds, never refuses.
+sh "$HOOK_DIR/pnpm-config-unit.sh" pre
+
 # RELEASE PATH NEVER BLOCKED, AT WRITE TIME (adversarial review 2026-10-22): a staged git hook, ship.sh,
 # scripts/release.sh or scripts/sync-main.py is checked by the release-path guard's static part (~0.1 s,
 # read from the index; only the lines this commit adds are judged for a new non-zero exit). Commit time

@@ -172,6 +172,7 @@ import { useFocusEditTarget, useIsEditTarget } from "@/features/marketing/lib/us
 import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { ShareModal } from "@ai-matrx/sharing/react";
+import { useDeclareFrameActions } from "@/features/shell/frame-host/framePageHeader";
 import { DiscoverBrandButton, DiscoverBrandMenuItem } from "@/features/marketing/components/brands/DiscoverBrandButton";
 import { useLiveBrand } from "@/features/marketing/components/brands/useLiveBrand";
 import {
@@ -675,6 +676,19 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const facts = useBusinessFacts(brandId);
   // access-errors: ok — inbox count badge; absence only hides the badge
   const pending = usePendingDiscoveredCount(brandId);
+  // "…" HOLDS EVERY ACTION OF THE BRAND (Arman, 2026-10-22): the crumb declares the brand-level doors
+  // (edit, enrich, competitors, identity, archive); the verbs only this page runs in place join them.
+  const loaded = brand.data;
+  useDeclareFrameActions(
+    loaded
+      ? [
+          { id: "brand:share", label: "Share", icon: Share2, onSelect: () => setSharing(true) },
+          { id: "brand:review", label: "Review findings", icon: Inbox, onSelect: () => router.push(marketingRoutes.brandDiscovery(marketingSeg(loaded))) },
+          { id: "brand:decide", label: "Decide where candidates belong", icon: Layers, onSelect: () => router.push(marketingRoutes.brandSession(marketingSeg(loaded))) },
+          ...(canEdit ? [{ id: "brand:move", label: "Move to another organization", icon: ArrowRightLeft, onSelect: () => setMoving(true) }] : []),
+        ]
+      : null,
+  );
   // access-errors: ok — the hero's account icons; without it they fall back to the public link
   const socialAccounts = useBrandSocialAccounts(brandId);
 

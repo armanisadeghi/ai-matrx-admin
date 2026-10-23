@@ -1048,7 +1048,12 @@ def keep_pnpm_unit_whole(blocked):
     _, names, _ = git("diff", "--cached", "--name-only", "-z")
     staged = [x for x in names.split("\0") if x]
     _, st, _ = git("status", "--porcelain", "-z", "-uall", "--", *PNPM_UNIT_FILES, *PNPM_UNIT_DIRS, check=False)
-    changed = [e[3:] for e in st.split("\0") if len(e) > 3]
+    changed, entries = [], iter(st.split("\0"))
+    for e in entries:
+        if len(e) > 3:
+            changed.append(e[3:])
+            if e[0] in "RC":
+                next(entries, None)   # -z puts a rename's source path in its own field
     add, drop = pnpm_unit_plan(staged, changed, set(blocked))
     if add:
         git("add", "-A", "--", *[":(literal)" + p for p in add], check=False)
@@ -1358,6 +1363,7 @@ def commit_all():
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP HELD %s — it would break the build, so it stays uncommitted on disk and the "
             "next sync retries it:\n        %s" % (p, "\n        ".join(reasons[:4])))
+    keep_pnpm_unit_whole(excluded + sorted(skipped_here))
     # check-staged-imports runs at commit time (pre-commit), never here: the sweep is the release path.
     rc, _, _ = git("diff", "--cached", "--quiet", check=False)
     if rc == 0:

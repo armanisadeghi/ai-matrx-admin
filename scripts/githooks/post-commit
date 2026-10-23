@@ -1,0 +1,9 @@
+#!/bin/sh
+# Versioned post-commit hook for matrx-frontend (core.hooksPath scripts/githooks). Never fails.
+# PNPM CONFIG UNIT: after a `git commit --only`, reset a stale shared-index copy of a pnpm config
+# file the pre-commit hook added (scripts/githooks/pnpm-config-unit.sh).
+HOOK_DIR=$(cd "$(dirname "$0")" && pwd)
+LOCAL_HOOK="$(git rev-parse --git-common-dir)/hooks/post-commit"
+[ -x "$LOCAL_HOOK" ] && "$LOCAL_HOOK" "$@"
+sh "$HOOK_DIR/pnpm-config-unit.sh" post
+exit 0
