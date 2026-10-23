@@ -23,6 +23,7 @@ import { createElement, useEffect, useState } from "react";
 import {
   useSurfaceClientTools,
   useSurfaceRuntimeRegistration,
+  type SurfaceActionCost,
   type SurfaceClientToolHandlers,
   type SurfaceWriteHandlerEntry,
   type SurfaceWriteHandlers,
@@ -95,7 +96,7 @@ export function FramedPageSurface({ frame, path }: { frame: HTMLIFrameElement | 
       const entry: SurfaceWriteHandlerEntry = {
         validate: (value, context) => bridge("nothing was changed").validateWrite(name, target.name, value, context),
         apply: (value, context) => bridge("nothing was changed").applyWrite(name, target.name, value, context),
-        cost: (value) => live()?.writeCost(name, target.name, value) ?? null,
+        cost: async (value) => (await live()?.writeCost(name, target.name, value)) ?? null,
       };
       if (target.readCurrent) {
         entry.readCurrent = (context) => bridge("nothing was read").readCurrent(name, target.name, context);
@@ -131,7 +132,7 @@ function FramedPageTools({
   live: () => FramedSurfaceBridge | null;
 }) {
   const handlers: SurfaceClientToolHandlers = {};
-  const costs: Record<string, (input: unknown) => Promise<string | null>> = {};
+  const costs: Record<string, SurfaceActionCost> = {};
   for (const tool of tools) {
     const name = surfaceName as string;
     handlers[tool] = async (input, call) => {
