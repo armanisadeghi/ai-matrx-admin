@@ -51,7 +51,8 @@ export function PdfFrontDoor() {
   return (
     <SurfaceRuntimeProvider surfaceName={PDF_FRONT_DOOR_SURFACE_NAME} getScope={() => ({})} isEditable={false}>
       <RouteHeader left={<span className="px-2 text-sm font-medium">PDF</span>} />
-      <div className="flex h-dvh w-full flex-col items-center gap-6 overflow-y-auto pb-6 pt-[var(--shell-header-h)]">
+      {/* `h-full`, not `h-dvh`: a full-height child makes `.shell-main` take no runway, so the page itself never scrolls (this div is the scroller). */}
+      <div className="flex h-full w-full flex-col items-center gap-6 overflow-y-auto pb-6 pt-[var(--shell-header-h)]">
         <div className="my-auto flex w-full flex-col items-center gap-6">
         <EmptyState
           icon={<FileText />}

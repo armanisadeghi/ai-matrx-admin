@@ -28,7 +28,7 @@ describe("PDF workspace capability census", () => {
       if (h.kind === "rail" && !PDF_TOOLS.some((t) => t.id === h.tool && t.status === "ready")) missing.push(`${c.id}: rail tool ${h.tool} is not a ready tool`);
       if (h.kind === "analysis-tab" && !STUDIO_INSPECTOR_TAB_IDS.includes(h.tab)) missing.push(`${c.id}: Analysis tab ${h.tab} is gone`);
       if (h.kind === "host-tool" && !(h.tool in WORKSPACE_TOOL_IDS)) missing.push(`${c.id}: host tool ${h.tool} is gone`);
-      if (h.kind === "front-door" && !(read("PdfFrontDoor.tsx").includes("<PdfDocumentList") && read("PdfDocumentList.tsx").includes("usePdfStudioDocs") && read("PdfFrontDoor.tsx").includes("FilePickerWindow"))) missing.push(`${c.id}: the front door no longer lists documents and offers the picker`);
+      if (h.kind === "front-door" && !(read("PdfFrontDoor.tsx").includes("<PdfDocumentList") && read("PdfDocumentList.tsx").includes("pdfFileRows") && !read("PdfDocumentList.tsx").includes("usePdfStudioDocs") && read("PdfFrontDoor.tsx").includes("FilePickerWindow"))) missing.push(`${c.id}: the front door no longer lists documents and offers the picker`);
       if (h.kind === "page-surface" && !(h.surface === pdfExtractorManifest.surfaceName && read("PdfWorkspaceRoute.tsx").includes("<ExtractorSurface"))) missing.push(`${c.id}: the workspace page no longer declares ${h.surface}`);
       if (h.kind === "thumbnail-badge" && !read("usePdfWorkspaceHost.tsx").includes("renderPageBadge")) missing.push(`${c.id}: the host draws no thumbnail badge`);
       if (h.kind === "source-has") {
