@@ -1,7 +1,6 @@
 import { KindRenderHarness } from "@ai-matrx/rich-content/kinds/react/render-harness";
 import { ModuleSignInGate } from "@/features/auth/components/module-landing/ModuleSignInGate";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
-import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 export default async function ShapesWorkspaceLayout({
   children,
@@ -20,12 +19,6 @@ export default async function ShapesWorkspaceLayout({
   }
   // The Shape Studio (Preview, Test, Stream, Instances, playground) is a
   // render harness: no generic-floor sighting is filed from inside it.
-  // Every page here names its levels through the derived trail; a page with its own header draws it
-  // and this steps aside (crumb doors, features/shell/FEATURE.md § Every crumb is a door).
-  return (
-    <>
-      <DerivedCrumbTrailHeader fallback />
-      <KindRenderHarness>{children}</KindRenderHarness>
-    </>
-  );
+  // The module layout above draws the derived trail for every page here (crumb doors).
+  return <KindRenderHarness>{children}</KindRenderHarness>;
 }

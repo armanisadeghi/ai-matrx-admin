@@ -22,6 +22,7 @@ import { HrFrameSidebar } from "@/features/hr/shared/HrFrameMenu";
 import { HrProvider } from "@/features/hr/shared/HrProvider";
 import { HrLoading } from "@/features/hr/shared/HrStates";
 import { createRouteMetadata } from "@/utils/route-metadata";
+import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 export const metadata = createRouteMetadata("/hr", {
   title: "Human Resources",
@@ -29,12 +30,17 @@ export const metadata = createRouteMetadata("/hr", {
 });
 
 export default function HrLayout({ children }: { children: ReactNode }) {
+  // Every page here names its levels through the derived trail; a page with its own header draws it
+  // and this steps aside (crumb doors, features/shell/FEATURE.md § Every crumb is a door).
   return (
-    <Suspense fallback={<HrLoading variant="cards" rows={4} />}>
-      <HrProvider>
-        {/* The new app frame's ONE HR menu (its sidebar); renders nothing in classic. */}
-        <HrFrameSidebar>{children}</HrFrameSidebar>
-      </HrProvider>
-    </Suspense>
+    <>
+      <DerivedCrumbTrailHeader fallback />
+      <Suspense fallback={<HrLoading variant="cards" rows={4} />}>
+        <HrProvider>
+          {/* The new app frame's ONE HR menu (its sidebar); renders nothing in classic. */}
+          <HrFrameSidebar>{children}</HrFrameSidebar>
+        </HrProvider>
+      </Suspense>
+    </>
   );
 }
