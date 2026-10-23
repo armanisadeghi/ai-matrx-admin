@@ -108,6 +108,7 @@ export const routeMenuRegistry: RouteMenuEntry[] = [
     iconName: "MessageCircle",
     label: "Chats",
     defaultView: "main",
+    ownsSidebarTop: true,
     importFn: loadChatSidebarMenu,
   },
   {

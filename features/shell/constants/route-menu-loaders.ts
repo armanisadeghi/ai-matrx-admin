@@ -13,10 +13,11 @@
 export const loadSettingsRouteMenu = () => import("@/features/settings/route-menu/SettingsRouteMenu");
 export const loadAgentRunSidebarMenu = () => import("@ai-matrx/chat/agents/components/shell/AgentRunSidebarMenu");
 export const loadAdminRouteSidebarMenu = () => import("@/features/admin/components/AdminRouteSidebarMenu");
-export const loadChatSidebarMenu = () => import("@ai-matrx/chat/agents/components/chat/ChatSidebarMenu");
 /** /chat: THE shared conversation sidebar (approved 2026-10-22). */
 export const loadChatConversationSidebarMenu = () =>
   import("@ai-matrx/chat/agents/components/chat/ChatConversationSidebarMenu");
+/** Pages with their own chat panel (Board, Education): the same shared sidebar; it opens rows in the page's panel through the in-place host. */
+export const loadChatSidebarMenu = loadChatConversationSidebarMenu;
 export const loadStaffSidebarMenu = () => import("@/features/personal-staff/components/StaffSidebarMenu");
 export const loadCodeSidebarMenu = () => import("@/features/code/shell/CodeSidebarMenu");
 export const loadMarketingSidebarMenu = () => import("@/features/marketing/components/shell/MarketingSidebarMenu");
