@@ -38,6 +38,13 @@ function isConfigurable(m: SurfaceManifest): boolean {
   );
 }
 
+/** The registered user surfaces the hub can configure (before the active-row check). */
+export function configurableHubManifests(): SurfaceManifest[] {
+  return getAllManifests().filter(
+    (m) => m.surfaceName.startsWith(USER_CLIENT_PREFIX) && isConfigurable(m),
+  );
+}
+
 interface HubRow {
   manifest: SurfaceManifest;
   description: string | null;
@@ -54,10 +61,7 @@ export function SurfacesHubPage() {
     let cancelled = false;
     void (async () => {
       try {
-        const configurable = getAllManifests().filter(
-          (m) =>
-            m.surfaceName.startsWith(USER_CLIENT_PREFIX) && isConfigurable(m),
-        );
+        const configurable = configurableHubManifests();
         const active = await listSurfaceOptions();
         const activeByName = new Map(active.map((s) => [s.name, s]));
         // LOUD drift signal: a configurable manifest with no active ui_surface

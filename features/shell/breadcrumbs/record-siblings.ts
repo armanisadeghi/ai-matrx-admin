@@ -37,6 +37,12 @@ export const RECORD_SIBLINGS: Readonly<Record<string, SiblingsLoader>> = {
     });
     return page.rows.map((row) => ({ id: row.id, label: row.name ?? "Untitled agent" }));
   },
+  app: async () => {
+    // The Applets list's own read (active ones, mine + my organizations + shared), newest first.
+    const { listApplets } = await import("@/features/applets/browse/service");
+    const rows = await listApplets("active");
+    return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.name || "Untitled applet" }));
+  },
   note: async () => {
     // The notes sidebar's own list read (no bodies), newest first.
     const { fetchNoteListItems } = await import("@/features/notes/service/notesService");
@@ -79,6 +85,36 @@ export const RECORD_SIBLINGS: Readonly<Record<string, SiblingsLoader>> = {
       { sort: "updated_at", direction: "desc", favoritesFirst: false, pageSize: SIBLINGS_MAX },
     );
     return page.rows.map((row) => ({ id: row.id, label: row.name || "Untitled topic" }));
+  },
+  memory_trial: async () => {
+    // The Memory Lab's own trial list, newest first.
+    const { listTrials } = await import("@/features/memory-lab/data");
+    const rows = await listTrials();
+    return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.title || "Trial" }));
+  },
+  tool_battle: async () => {
+    // Tool Battle's own battle list, newest first. A blind battle keeps its title hidden.
+    const { listBattles } = await import("@/features/tool-battle/service");
+    const rows = await listBattles();
+    return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.blind ? "Blind battle" : row.title || "Battle" }));
+  },
+  esign_envelope: async () => {
+    // The E-Signatures list's own read (every lane), newest first.
+    const [{ fetchEnvelopeListPage }, { DEFAULT_ENTITY_LIST_QUERY }] = await Promise.all([
+      import("@/features/esign/envelopes/service"),
+      import("@/lib/entity-list/types"),
+    ]);
+    const page = await fetchEnvelopeListPage(
+      { ...DEFAULT_ENTITY_LIST_QUERY, scope: { kind: "all" } },
+      { sort: "updated_at", direction: "desc", favoritesFirst: false, pageSize: SIBLINGS_MAX },
+    );
+    return page.rows.map((row) => ({ id: row.id, label: row.title || "Envelope" }));
+  },
+  billing_spend_alarm: async () => {
+    // The Alarms board's own read (the dock's door, resolved included), newest first.
+    const { fetchSpendAlarms, alarmTitle } = await import("@/features/admin/spend-alarms/spendAlarms");
+    const rows = await fetchSpendAlarms();
+    return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: alarmTitle(row) }));
   },
   "visual-map-sample": async () => {
     // The Visual Map Lab list's own read (subjects, workflows, saved samples).

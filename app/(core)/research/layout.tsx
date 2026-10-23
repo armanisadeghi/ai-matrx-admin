@@ -1,5 +1,6 @@
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { createRouteMetadata } from "@/utils/route-metadata";
+import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const backendUrl = AIDREAM_PRODUCTION_URL;
@@ -20,8 +21,11 @@ export default function ResearchLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Every page here names its levels through the derived trail; a page with its own header draws it
+  // and this steps aside (crumb doors, features/shell/FEATURE.md § Every crumb is a door).
   return (
     <>
+      <DerivedCrumbTrailHeader fallback />
       {supabaseUrl && (
         <>
           <link rel="preconnect" href={supabaseUrl} />

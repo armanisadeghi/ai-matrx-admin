@@ -3,11 +3,16 @@
 // The three 360 review screens under /hr/performance: the HR manager's list, one review (both
 // halves side by side once both are in), and a respondent's own half in the existing editor.
 
-import { hrPerformanceHref, hrPerformanceReviewHref } from "@/features/hr/routes";
+import { HR_ORG_PARAM } from "@/features/hr/constants";
+import { hrPerformance360ReviewHref, hrPerformanceHref } from "@/features/hr/routes";
 import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import type { ComponentProps } from "react";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import type { CrumbOption } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+import { SIBLINGS_MAX, siblingHref } from "@/features/shell/breadcrumbs/record-siblings";
 import { CalendarPlus, ClipboardCheck, Send, Share2 } from "lucide-react";
 import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { useRecordsClient } from "@ai-matrx/records/react";
@@ -45,7 +50,8 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 function useOrg(): string | null {
   const params = useSearchParams();
   const hr = useHrContext();
-  return params?.get("org") || hr.active?.organization_id || null;
+  // `?org=` (the 360 notices and meeting links) or HR's own `?org_filter=` (every HR link builder).
+  return params?.get("org") || params?.get(HR_ORG_PARAM) || hr.active?.organization_id || null;
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
@@ -81,7 +87,7 @@ const REVIEW_LIST_COLUMNS: MatrxColumnDef<Review360ListRow>[] = [
     width: 260,
     frozen: true,
     cell: (r) => (
-      <Link className="hover:underline" href={hrPerformanceReviewHref(r._id, r._organizationId)}>
+      <Link className="hover:underline" href={hrPerformance360ReviewHref(r._id, r._organizationId)}>
         {r.employee_name ?? "360 review"}
       </Link>
     ),
@@ -352,6 +358,43 @@ function ReviewDetailBody({
       </div>
     </div>
   );
+}
+
+// ── the 360 review's record header (its crumb opens the other 360 reviews) ─────────────────────
+
+type Review360HeaderProps = Omit<ComponentProps<typeof RecordPageHeader>, "record" | "level"> & { reviewId: string; name: string };
+
+/**
+ * The record header of `/hr/performance/<reviewId>` and its meeting view. Its crumb's door lists the
+ * other 360 reviews through the list page's own read (`listReviews360`), read when the door opens;
+ * switching keeps the view and `?org=`.
+ */
+export function Review360RecordHeader(props: Review360HeaderProps) {
+  const org = useOrg();
+  if (!org) return <Review360RecordHeaderLine {...props} load={async () => []} />;
+  return (
+    <Review360Host organizationId={org}>
+      <Review360RecordHeaderWithClient {...props} org={org} />
+    </Review360Host>
+  );
+}
+
+function Review360RecordHeaderWithClient({ org, ...props }: Review360HeaderProps & { org: string }) {
+  const client = useRecordsClient();
+  const load = async (): Promise<CrumbOption[]> => {
+    const r = await listReviews360(client, org);
+    if (!r.ok) return [];
+    return r.data.slice(0, SIBLINGS_MAX).map((row) => ({
+      label: row.employee_name ?? "360 review",
+      href: `${siblingHref(window.location.pathname, props.reviewId, row._id)}${window.location.search}`,
+      active: row._id === props.reviewId,
+    }));
+  };
+  return <Review360RecordHeaderLine {...props} load={load} />;
+}
+
+function Review360RecordHeaderLine({ reviewId: _reviewId, name, load, ...rest }: Review360HeaderProps & { load: () => Promise<CrumbOption[]> }) {
+  return <RecordPageHeader {...rest} record={{ name, loadSiblings: load }} />;
 }
 
 // ── /hr/performance/respond/[trackId] ─────────────────────────────────────────────────────────

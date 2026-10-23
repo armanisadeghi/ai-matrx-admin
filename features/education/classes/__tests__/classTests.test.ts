@@ -10,6 +10,7 @@ import {
   practiceTestSources,
   sortTests,
   testCoverage,
+  testSiblings,
   testDateOf,
   testDeckIds,
   testEdgeMetadata,
@@ -111,5 +112,18 @@ describe("sortTests", () => {
       { name: "Midterm", date: "2026-10-20" },
     ]);
     expect(sorted.map((t) => t.date)).toEqual(["2026-10-20", "2026-12-10", null]);
+  });
+});
+
+describe("testSiblings — the test crumb opens the class's other tests", () => {
+  it("lists every test of the class, keeps the view, marks the current one", () => {
+    const tests = [
+      { id: "t1", name: "Midterm", date: null, unitIds: [] },
+      { id: "t2", name: "", date: null, unitIds: [] },
+    ];
+    expect(testSiblings("c1", "t2", tests, "/study")).toEqual([
+      { label: "Midterm", href: "/education/classes/c1/tests/t1/study", active: false },
+      { label: "Untitled test", href: "/education/classes/c1/tests/t2/study", active: true },
+    ]);
   });
 });

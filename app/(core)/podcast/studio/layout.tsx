@@ -1,5 +1,4 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
-import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 export const metadata = createRouteMetadata("/podcast", {
   titlePrefix: "Studio",
@@ -13,12 +12,6 @@ export default function PodcastStudioLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // The studio's pages name their levels through the derived trail; a page with its own header
-  // (a show, a run) draws it and this steps aside (crumb doors, features/shell/FEATURE.md).
-  return (
-    <>
-      <DerivedCrumbTrailHeader fallback />
-      {children}
-    </>
-  );
+  // The module layout above draws the derived trail for every page here (crumb doors).
+  return <>{children}</>;
 }

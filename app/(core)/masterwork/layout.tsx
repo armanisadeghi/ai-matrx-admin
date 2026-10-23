@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { currentRequestLoginHref } from "@/utils/auth/server-login-href";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
+import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 export const metadata = createRouteMetadata("/masterwork", {
   title: "Masterwork",
@@ -30,14 +31,27 @@ export default async function MasterworkLayout({
     pathname === "/masterwork" ||
     pathname.startsWith("/masterwork/vision-interview");
 
-  if (hasGuestLanding) return <TouchFloor>{children}</TouchFloor>;
+  if (hasGuestLanding) return <WithTrail>{children}</WithTrail>;
 
   const { isAuthenticated } = await getSessionVerdict();
   if (!isAuthenticated) {
     redirect(await currentRequestLoginHref("/masterwork"));
   }
 
-  return <TouchFloor>{children}</TouchFloor>;
+  return <WithTrail>{children}</WithTrail>;
+}
+
+/**
+ * Every masterwork page names its levels through the derived trail; a page with its own header draws
+ * it and this steps aside (crumb doors, features/shell/FEATURE.md § Every crumb is a door).
+ */
+function WithTrail({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <DerivedCrumbTrailHeader fallback />
+      <TouchFloor>{children}</TouchFloor>
+    </>
+  );
 }
 
 /**

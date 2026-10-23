@@ -34,7 +34,7 @@ export default async function AppletBuildPage({ params }: { params: Promise<{ id
   const initialRecord = data ? toRecord(data as RecordRow) : null;
   return (
     <>
-      <RecordPageHeader backHref="/applets" parents={[{ label: "Applets", href: "/applets" }]} record={{ name: data?.name ?? "Build an Applet" }} />
+      <RecordPageHeader backHref="/applets" parents={[{ label: "Applets", href: "/applets" }]} record={{ name: data?.name ?? "Build an Applet", token: "app", id }} />
       <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <AppletBuilder appletId={id} routed initialRecord={initialRecord} />
       </div>

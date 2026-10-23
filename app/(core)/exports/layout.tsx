@@ -5,6 +5,7 @@
 
 import type { ReactNode } from "react";
 import { createRouteMetadata } from "@/utils/route-metadata";
+import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 export const metadata = createRouteMetadata("/exports", {
   title: "Bring your export",
@@ -16,5 +17,12 @@ export const metadata = createRouteMetadata("/exports", {
 export default function ExportsLayout({ children }: { children: ReactNode }) {
   // A route layout boundary must never clip its children unconditionally
   // (core-route-headers § failure class 2): each leaf owns its own scrolling.
-  return <>{children}</>;
+  // Every page here names its levels through the derived trail; a page with its own header draws it
+  // and this steps aside (crumb doors, features/shell/FEATURE.md § Every crumb is a door).
+  return (
+    <>
+      <DerivedCrumbTrailHeader fallback />
+      {children}
+    </>
+  );
 }

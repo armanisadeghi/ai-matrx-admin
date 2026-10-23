@@ -2,7 +2,6 @@ import { getAgent } from "@/lib/agents/data";
 import { createDynamicRouteMetadata } from "@/utils/route-metadata";
 import { AgentHydratorServer } from "@ai-matrx/chat/agents/route/AgentHydratorServer";
 import { DeclareAgentRecord } from "@/features/agents/route/DeclareAgentRecord";
-import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 export async function generateMetadata({
   params,
@@ -40,10 +39,8 @@ export default async function AgentDetailLayout({
       <AgentHydratorServer agentId={id} />
       {/* The record every page under /agents/[id] shows, with its name ("Add to my menu" adds this agent). */}
       <DeclareAgentRecord id={id} />
-      {/* The trail (Agents › <agent ▾> › <page>): the agent crumb opens the other agents (the `agent`
-          sibling loader). The page's AgentHeader comes from the chat package and declares no trail, so
-          this one is the frame's; on the classic line it yields to the page's header. */}
-      <DerivedCrumbTrailHeader fallback />
+      {/* The trail (Agents › <agent ▾> › <page>) is the /agents layout's fallback: the agent crumb
+          opens the other agents (the `agent` sibling loader, read from the record declared here). */}
       <div className="h-full overflow-y-auto overflow-x-hidden">{children}</div>
     </>
   );

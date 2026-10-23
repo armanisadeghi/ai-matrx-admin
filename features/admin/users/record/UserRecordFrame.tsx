@@ -19,6 +19,8 @@ import {
   type RecordPageMenuItem,
 } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useRecordTitle } from "@/lib/record-title/record-title";
+import { SIBLINGS_MAX } from "@/features/shell/breadcrumbs/record-siblings";
+import type { AdminUserRow } from "../types";
 import { isVisibleUserTab, userRecordHref, visibleUserTabs, type UserRecordScope, type UserTabId } from "./userSurfaces";
 
 /** The tab segment of the record's address (`<base>/<tab>`), or undefined on Overview. */
@@ -96,6 +98,23 @@ export function UserRecordFrame({
     if (tab && !isVisibleUserTab(tab, scope)) router.replace(userRecordHref(userId, "overview", scope));
   }, [tab, userId, scope, router]);
   useRecordTitle(title);
+  // The person's door opens the other people of this seat — the roster the hub lists (platform: the
+  // cached `/api/admin/users` read; organization: `org_admin_list_members`), same tab, capped.
+  const loadPeople = async () => {
+    const people: { id: string; label: string }[] =
+      scope.kind === "organization"
+        ? (await (await import("@/features/organizations/admin/service")).listOrgMembers(scope.orgId)).map((m) => ({
+            id: m.userId,
+            label: m.displayName || m.email || "Member",
+          }))
+        : ((await (await import("../adminRoster")).loadAdminRoster()).users as AdminUserRow[]).map((u) => ({
+            id: u.id,
+            label: u.display_name || u.full_name || u.email || "Person",
+          }));
+    return people
+      .slice(0, SIBLINGS_MAX)
+      .map((p) => ({ label: p.label, href: userRecordHref(p.id, activeTab, scope), active: p.id === userId }));
+  };
 
   // What the open tab shows, for Copy for AI (read at click time; never re-renders the page).
   const tabData = useRef<{ tab: UserTabId; data: unknown } | null>(null);
@@ -113,7 +132,7 @@ export function UserRecordFrame({
       <RecordPageHeader
         backHref={backHref}
         parents={parents}
-        record={{ name: title ?? (loading ? placeholderName.loading : placeholderName.missing) }}
+        record={{ name: title ?? (loading ? placeholderName.loading : placeholderName.missing), loadSiblings: loadPeople }}
         status={status}
         actions={actions}
         menu={menuItems.length ? { items: menuItems } : undefined}

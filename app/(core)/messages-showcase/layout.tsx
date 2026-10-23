@@ -2,10 +2,10 @@ import type { ReactNode } from "react";
 import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 /**
- * /masterwork/[id]/** — every page here names its levels through the derived trail; a page with its own header
+ * /messages-showcase/** — every page here names its levels through the derived trail; a page with its own header
  * draws it and this steps aside (crumb doors, features/shell/FEATURE.md § Every crumb is a door).
  */
-export default function MasterworkRecordLayout({ children }: { children: ReactNode }) {
+export default function MessagesShowcaseLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <DerivedCrumbTrailHeader fallback />

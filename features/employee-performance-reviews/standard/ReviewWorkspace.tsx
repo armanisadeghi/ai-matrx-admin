@@ -19,6 +19,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { HrPageState } from "@/features/hr/shared/HrStates";
 import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
+import { useHrSiblingsLoader } from "@/features/hr/shared/HrRecordPageHeader";
 import { toast } from "@/lib/toast";
 import { useOpenAccessSetupWindow } from "@/features/overlays/definitions/accessSetupWindow.overlay";
 
@@ -40,6 +41,8 @@ type Dialog = "share" | "acknowledge" | "reopen" | "cancel" | "replace" | null;
 
 export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
   const org = useSearchParams()?.get(HR_ORG_PARAM);
+  // The review crumb opens my other reviews (StandardHome's own read), read when its door opens.
+  const loadSiblings = useHrSiblingsLoader("review", reviewId);
   const [detail, setDetail] = useState<ReviewDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
@@ -180,7 +183,7 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
             { label: "HR", href: hrHref(org) },
             { label: "Performance", href: hrPerformanceHref(org) },
           ]}
-          record={{ name: "Review" }}
+          record={{ name: "Review", loadSiblings }}
         />
         <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
           <AccessGate token="hr_review" id={reviewId} fallbackHref={hrPerformanceHref(org)} fallbackLabel="Performance" />
@@ -197,7 +200,7 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
         { label: "HR", href: hrHref(org) },
         { label: "Performance", href: hrPerformanceHref(org) },
       ]}
-      record={{ name: review?.employeeName ?? "Review", token: "hr_review", id: reviewId }}
+      record={{ name: review?.employeeName ?? "Review", token: "hr_review", id: reviewId, loadSiblings }}
       status={review ? { label: statusLabel(review.status), tone: statusTone(review.status) } : undefined}
       actions={
         review

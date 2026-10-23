@@ -23,12 +23,17 @@ export interface DerivedBreadcrumbProps extends UseDerivedTrailOptions {
   className?: string;
   /** Show only the last `max` levels on a narrow header (default: all). */
   max?: number;
+  /**
+   * A module header kept in a LAYOUT (Education's): its trail yields to any trail the page declares
+   * (the frame picks the page's; the layout re-declares on every address change, after the page).
+   */
+  fallback?: boolean;
 }
 
-export function DerivedBreadcrumb({ className, max, ...options }: DerivedBreadcrumbProps) {
+export function DerivedBreadcrumb({ className, max, fallback, ...options }: DerivedBreadcrumbProps) {
   const all = useDerivedTrail(options);
   // THE NEW APP FRAME draws the trail in its own crumb row: hand it over and draw nothing here.
-  const inFrame = useDeclareFrameCrumbs(all.length > 0 ? all.map(frameCrumbOf) : null);
+  const inFrame = useDeclareFrameCrumbs(all.length > 0 ? all.map(frameCrumbOf) : null, { fallback });
   if (all.length === 0 || inFrame) return null;
   const trail = max && all.length > max ? all.slice(-max) : all;
   return (

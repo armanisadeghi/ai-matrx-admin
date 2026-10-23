@@ -123,7 +123,10 @@ export default function RenderedDocumentRoute({
 
     return (
         <SurfaceRuntimeProvider surfaceName={RENDERED_DOCUMENT_SURFACE_NAME} getScope={getScope} isEditable={false}>
-            <RecordPageHeader record={{ name: "Document" }} />
+            {/* A PLACE, not a record crumb: the one address a link lands on. Rendered documents have no list
+                anywhere in the app (they are reached only through the link an agent sends), so there is no
+                "other documents" door to open. */}
+            <RecordPageHeader level={{ name: "Document" }} />
             <div className="h-full overflow-y-auto pt-[var(--shell-header-h)] p-4 pb-[var(--matrx-page-runway)]" data-matrx-page-runway="">
                 {refusal ? (
                     // The door's own refusal (or a zero-row answer) goes to the

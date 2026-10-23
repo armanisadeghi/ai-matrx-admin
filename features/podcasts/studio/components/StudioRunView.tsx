@@ -38,6 +38,8 @@ import { ResultActions } from "@/features/podcasts/generator/components/ResultAc
 import { TranscriptPanel } from "@/features/podcasts/generator/components/TranscriptPanel";
 import { episodeHref } from "@/features/podcasts/generator/constants";
 import { useStudioRun } from "@/features/podcasts/studio/runs/useStudioRun";
+import { fetchPodcastRuns } from "@/features/podcasts/studio/runs/runsRepository";
+import { SIBLINGS_MAX } from "@/features/shell/breadcrumbs/record-siblings";
 import { RunRecoveryBannerFor } from "@/features/podcasts/studio/components/RunRecoveryBanner";
 import { RunTruthInspector } from "@/features/podcasts/studio/components/RunTruthInspector";
 import { SourceSummaryPanel } from "@/features/podcasts/studio/components/SourceSummaryPanel";
@@ -72,6 +74,11 @@ export function StudioRunView({ runId }: { runId: string }) {
   // Keep the hook result so RunRecoveryBannerFor derives its own props —
   // five hand-wired copies is what let `audioMissing` go missing elsewhere.
   const run = useStudioRun(runId);
+  // The run's door opens the other runs: the studio home's own list read, newest first, capped.
+  const loadRunSiblings = async () => {
+    const runs = await fetchPodcastRuns({ limit: SIBLINGS_MAX });
+    return runs.map((r) => ({ label: r.title || "Episode", href: `/podcast/studio/run/${r.run_id}`, active: r.run_id === runId }));
+  };
   const {
     state,
     startedAt,
@@ -131,7 +138,7 @@ export function StudioRunView({ runId }: { runId: string }) {
   if (loading) {
     return (
       <>
-        <RecordPageHeader record={{ name: "Studio run" }} />
+        <RecordPageHeader record={{ name: "Studio run", loadSiblings: loadRunSiblings }} />
         <div className="mx-auto max-w-5xl px-4 py-10">
           <Skeleton className="mb-4 h-8 w-64" />
           <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -150,7 +157,7 @@ export function StudioRunView({ runId }: { runId: string }) {
     // Denied / deleted / never existed / signed-out all read as zero rows here.
     return (
       <>
-        <EntityModeHeader backHref="/podcast/studio" entityLabel="Studio run" />
+        <EntityModeHeader backHref="/podcast/studio" entityLabel="Studio run" entityLoadOptions={loadRunSiblings} />
         <AccessGate
           token="pc_studio_run"
           id={runId}
@@ -295,6 +302,7 @@ export function StudioRunView({ runId }: { runId: string }) {
       <EntityModeHeader
         backHref="/podcast/studio"
         entityLabel={isRunning && !streaming ? "Studio run" : "Episode"}
+        entityLoadOptions={loadRunSiblings}
         actions={[
           { label: "Refresh", icon: RefreshCw, onPress: refresh },
           {

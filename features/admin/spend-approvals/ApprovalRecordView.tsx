@@ -26,6 +26,7 @@ import { ApprovalEditBody } from "./ApprovalEditBody";
 import { DecisionDialog, HistoryList, spendApprovalsTableId, type Pending } from "./SpendApprovalsBoard";
 import { HeldRunsList } from "./SubjectApprovalsPanel";
 import { useSpendApprovalsData } from "./useSpendApprovalsData";
+import { SIBLINGS_MAX } from "@/features/shell/breadcrumbs/record-siblings";
 import { spendApprovalSurfaceRow } from "./spendApprovalSurface";
 import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
@@ -97,6 +98,12 @@ export function ApprovalRecordView({
     spendApprovalsTableId(seat),
   );
   const row = rows.find((r) => r.subject_kind === subject.kind && r.subject_id === subject.id) ?? null;
+  // The record's door: the other approvals — the list's own rows, already read for this page.
+  const siblings = rows.slice(0, SIBLINGS_MAX).map((r) => ({
+    label: r.subject_name || r.subject_id,
+    href: approvalRecordHref(r.subject_kind, r.subject_id, seat, orgSlug),
+    active: r === row,
+  }));
   const related = row ? rows.filter((r) => r.id !== row.id && rowMatchesSubject(r, subject)) : [];
   const kindLabel = SUBJECT_KIND_LABEL[subject.kind] ?? subject.kind;
 
@@ -157,7 +164,7 @@ export function ApprovalRecordView({
           ...(seat === "admin" ? [{ label: "Billing", href: "/administration/billing" }] : []),
           { label: "Spend approvals", href: listHref },
         ]}
-        record={{ name }}
+        record={{ name, siblings }}
         {...(r ? { status: isCovered(r) ? { label: COVERED_LABEL, tone: "success" as const } : { label: APPROVAL_STATUS_LABEL[r.status], tone: STATUS_TONE[r.status] } } : {})}
         actions={actions}
       />

@@ -40,6 +40,7 @@ import { selectAllOrgs } from "@/features/agent-context/redux/organizationsSlice
 import { fetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import { useOpenDictionarySelectorWindow } from "@/features/overlays/definitions/dictionarySelectorWindow.overlay";
 import { getManifest } from "@/features/surfaces/manifests/registry";
+import { configurableHubManifests, surfaceHubHref } from "./SurfacesHubPage";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import { useSurfaceConfig } from "@ai-matrx/chat/surfaces/hooks/useSurfaceConfig";
 import {
@@ -106,7 +107,15 @@ export function SurfaceHubDetailPage({ segments }: { segments: string[] }) {
       <RecordPageHeader
         backHref="/surfaces"
         parents={[{ label: "Surfaces", href: "/surfaces" }]}
-        record={{ name: label }}
+        record={{
+          name: label,
+          // The surface crumb opens the other surfaces the hub lists (the registered manifests).
+          siblings: configurableHubManifests().map((m) => ({
+            label: getSurfaceDisplayLabel(m.surfaceName),
+            href: surfaceHubHref(m.surfaceName),
+            active: m.surfaceName === surfaceName,
+          })),
+        }}
       />
       <div className="h-full overflow-hidden">
         <div

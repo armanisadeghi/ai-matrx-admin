@@ -134,7 +134,7 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
   if (gateError) {
     return (
       <>
-        <RecordPageHeader backHref={LAB_HREF} parents={[{ label: "Memory Lab", href: LAB_HREF }]} record={{ name: "Trial" }} />
+        <RecordPageHeader backHref={LAB_HREF} parents={[{ label: "Memory Lab", href: LAB_HREF }]} record={{ name: "Trial", token: "memory_trial", id: trialId }} />
         <AccessGate
           token="memory_trial"
           id={trialId}
