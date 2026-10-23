@@ -20,7 +20,9 @@ Rules:
   any admin page can link a record straight to a run.
 - The new tab is opened inside the click (browsers block a tab opened after an await) and closed
   if the server refuses; the refusal sentence shows beside Start as the server wrote it.
+- Box: Mine (default — the admin's own box with their vault, cloud browser and GitHub) or Platform.
 - Each run row opens its chat; its sandbox opens the admin sandbox record page.
 
 ## Change Log
 - 2026-10-23: created.
+- 2026-10-23: Mine / Platform box choice.

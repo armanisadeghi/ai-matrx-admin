@@ -23,6 +23,7 @@ import {
   Input,
   LabeledField,
   RegionSkeleton,
+  SegmentedControl,
   Select,
   type BadgeTone,
 } from "@ai-matrx/design-system/controls";
@@ -35,6 +36,7 @@ import {
   readPlatformBox,
   startRepairRun,
   type PlatformBox,
+  type BoxChoice,
   type RepairRun,
   type SubjectKind,
 } from "./api";
@@ -85,6 +87,7 @@ export default function RepairRunsConsole() {
   );
   const [subjectId, setSubjectId] = useState(params.get("subject_id") ?? "");
   const [instructions, setInstructions] = useState("");
+  const [boxChoice, setBoxChoice] = useState<BoxChoice>("mine");
   const [starting, setStarting] = useState(false);
   const [runs, setRuns] = useState<RepairRun[] | null>(null);
   const [box, setBox] = useState<PlatformBox | null>(null);
@@ -137,6 +140,7 @@ export default function RepairRunsConsole() {
         instructions,
         subjectKind,
         subjectId: subjectKind ? subjectId.trim() : null,
+        box: boxChoice,
       });
       if (tab) tab.location.href = chatHref(run.conversation_id);
       setInstructions("");
@@ -176,6 +180,20 @@ export default function RepairRunsConsole() {
               <span className="text-sm text-muted-foreground">None yet — the first Start creates it</span>
             ) : null}
           </div>
+
+          <LabeledField label="Box" htmlFor="repair-box" help="Mine carries your vault, cloud browser and GitHub; Platform carries none of a person's access.">
+            <div id="repair-box">
+              <SegmentedControl<BoxChoice>
+                aria-label="Whose sandbox the run works in"
+                value={boxChoice}
+                onValueChange={setBoxChoice}
+                data={[
+                  { value: "mine", label: "Mine" },
+                  { value: "platform", label: "Platform" },
+                ]}
+              />
+            </div>
+          </LabeledField>
 
           <LabeledField label="Agent" htmlFor="repair-agent" required>
             <div id="repair-agent">

@@ -12,11 +12,14 @@ import type { OperationDescriptor } from "@ai-matrx/api";
 import { serverApi } from "@/lib/api/server-api";
 
 export type SubjectKind = "system_error" | "feedback" | "check_finding";
+/** `mine`: the admin's own box (their vault, cloud browser, GitHub). `platform`: the platform's box. */
+export type BoxChoice = "mine" | "platform";
 
 export interface StartRunInput {
   agentId: string;
   instructions: string;
   subjectKind: SubjectKind | null;
+  box: BoxChoice;
   subjectId: string | null;
 }
 
@@ -25,6 +28,7 @@ export interface StartedRun {
   request_id: string;
   sandbox_instance_id: string;
   sandbox_id: string;
+  box: BoxChoice;
   agent_id: string;
   agent_name: string;
   title: string;
@@ -35,6 +39,7 @@ export interface RepairBirth {
   launched_at?: string;
   sandbox_instance_id?: string;
   sandbox_id?: string;
+  box?: BoxChoice;
   subject?: { kind: SubjectKind; id: string; label: string; title: string } | null;
 }
 
@@ -96,6 +101,7 @@ export async function startRepairRun(input: StartRunInput): Promise<StartedRun> 
       instructions: input.instructions,
       subject_kind: input.subjectKind,
       subject_id: input.subjectId,
+      box: input.box,
     },
   });
 }
