@@ -12,12 +12,13 @@
 
 import { ServerRenderedHeaderSlot } from "./ServerRenderedHeaderSlot";
 import { useInHeaderSpecimen } from "./header-specimen-context";
+import type { HeaderFallback } from "./useYieldedFallback";
 
 interface PageHeaderPortalProps {
   desktop?: React.ReactNode;
   mobile?: React.ReactNode;
   children?: React.ReactNode;
-  fallback?: boolean;
+  fallback?: HeaderFallback;
 }
 
 export default function PageHeaderPortal({
@@ -44,6 +45,8 @@ export default function PageHeaderPortal({
       nodeProps={{
         className: "contents",
         "data-page-header-portal": fallback ? "fallback" : "page",
+        // The derived trail's fallback also yields to every other fallback (styles/shell.css).
+        "data-page-header-fallback": fallback === "derived" ? "derived" : undefined,
       }}
     >
       {children && <div className="shell-header-inject flex">{children}</div>}

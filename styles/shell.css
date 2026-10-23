@@ -1830,6 +1830,18 @@ body[style*="pointer-events: none"] {
   > [data-page-header-ghost-portal="fallback"] {
   display: none;
 }
+/* ONE FALLBACK AT A TIME (crumb doors wave 8, 2026-10-22). A module layout's derived trail
+   (`data-page-header-fallback="derived"`) is the most generic header there is: it also steps aside
+   for any OTHER fallback a page draws itself (the table page's until its own header mounts, a route
+   skeleton's) — on a pick list's Table view both used to draw side by side. Two derived trails
+   name the same address, so only the newest draws. */
+.shell-header-center:has(> [data-page-header-portal="fallback"]:not([data-page-header-fallback="derived"]))
+  > [data-page-header-fallback="derived"],
+.shell-header-center:has(> [data-page-header-ghost-portal="fallback"]:not([data-page-header-fallback="derived"]))
+  > [data-page-header-fallback="derived"],
+.shell-header-center > [data-page-header-fallback="derived"]:has(~ [data-page-header-fallback="derived"]) {
+  display: none;
+}
 /* A STREAMED PAGE REPLACES ITS loading.tsx (CD-PERF-01, 2026-10-21). The route's loading skeleton
    and the page streamed after it both draw the route header in the server's HTML, so a slot's
    ghost layer briefly holds two clones of the same kind side by side: the visible one slid 107px

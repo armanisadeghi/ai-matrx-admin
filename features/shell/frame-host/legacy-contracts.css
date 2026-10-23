@@ -45,6 +45,8 @@
    Before hydration the page's header is a GHOST in <body> laid over the slot (ServerRenderedHeaderSlot),
    so while any center ghost exists the derived crumbs step aside too. */
 #frame-header-center:has(> [data-page-header-portal="page"]) > [data-page-header-portal="fallback"],
+#frame-header-center:has(> [data-page-header-portal="fallback"]:not([data-page-header-fallback="derived"])) > [data-page-header-fallback="derived"],
+#frame-header-center > [data-page-header-fallback="derived"]:has(~ [data-page-header-fallback="derived"]),
 #frame-header-center:has(> [data-page-header-portal]:not([data-frame-derived])) > [data-frame-derived],
 body:has(> matrx-header-ghost.shell-header-center) #frame-header-center > [data-frame-derived] {
   display: none;

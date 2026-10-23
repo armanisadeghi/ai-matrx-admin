@@ -39,6 +39,7 @@
 //   Children can be server-rendered nodes; React streams them through the portal.
 
 import PageHeaderPortal from "./PageHeaderPortal";
+import type { HeaderFallback } from "./useYieldedFallback";
 
 interface PageHeaderProps {
   /** Shown on all breakpoints. Cannot be combined with desktop/mobile. */
@@ -47,8 +48,8 @@ interface PageHeaderProps {
   desktop?: React.ReactNode;
   /** Shown only below lg (mobile). Use with desktop prop. */
   mobile?: React.ReactNode;
-  /** Hidden whenever the same route tree mounts a page-specific header. */
-  fallback?: boolean;
+  /** Hidden whenever the same route tree mounts a page-specific header (`"derived"`: or any other fallback). */
+  fallback?: HeaderFallback;
 }
 
 export default function PageHeader({
