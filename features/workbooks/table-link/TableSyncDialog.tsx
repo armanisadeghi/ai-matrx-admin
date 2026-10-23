@@ -412,13 +412,13 @@ export function TableSyncDialog({
                   )}
                 </div>
               ))}
-              <div className="text-muted-foreground">Keep row 1 and the hidden {RECORD_ID_HEADER} column intact to stay linked</div>
+              <div className="text-muted-foreground">Keep row 1 and the {RECORD_ID_HEADER} column intact to stay linked</div>
             </div>
           )}
           {body}
           {loaded.state === "ready" && issues.length === 0 && (
             <div className="px-1 text-xs text-muted-foreground" data-table-sync-rules="">
-              Stays linked while row 1 and the hidden {RECORD_ID_HEADER} column are intact
+              Stays linked while row 1 and the {RECORD_ID_HEADER} column are intact
             </div>
           )}
           {loaded.state === "ready" && nothing && !blocking && (
