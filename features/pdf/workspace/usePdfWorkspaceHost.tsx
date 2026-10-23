@@ -16,7 +16,9 @@ import type { PdfRunRequest, PdfRunResult, PdfWorkspaceHost } from "@ai-matrx/of
 import { ENDPOINTS } from "@ai-matrx/api";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
-import { renameFile } from "@/features/files/redux/thunks";
+import { renameFile, saveFileNewVersion } from "@/features/files/redux/thunks";
+import { readPdfAnnotations } from "@ai-matrx/media/viewers/pdf";
+import { SignaturePad } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { invalidate } from "@/features/files/hooks/blob-cache";
 import { useEnsureCloudFile } from "@/features/files/hooks/useEnsureCloudFile";
 import { useCloudPdfBytes } from "@/features/pdf/hooks/useCloudPdfBytes";
@@ -142,6 +144,7 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
           continuousZoom={state.zoom}
           spread={state.spread}
           rotations={state.rotations}
+          onMarkupEngine={state.onMarkupEngine}
           onDocumentLoad={state.onDocumentLoad}
           renderOverlay={({ pageNumber, pageWidthPt, pageHeightPt }) => {
             state.onPageSize(pageNumber, pageWidthPt, pageHeightPt);
@@ -185,6 +188,20 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
         };
         document.body.appendChild(frame);
       },
+      // Markup (PDF-PLAN U10): the editors' saveDocument bytes become the next version of THIS file. The
+      // versions endpoint never runs extraction, so a markup-only save keeps the text (rule R1).
+      saveMarkup: async (bytes, summary) => {
+        const out = await dispatch(
+          saveFileNewVersion({ fileId, content: new Blob([bytes as BlobPart], { type: "application/pdf" }), changeSummary: `Markup: ${summary}` }),
+        ).unwrap();
+        invalidate(fileId);
+        setQueueVersion((v) => v + 1);
+        return { kind: "replaced", version: out.versionNumber };
+      },
+      // Read through the range-capable URL (pages are read on demand), never a second full download.
+      existingAnnotations: async () =>
+        remoteUrl ? readPdfAnnotations({ url: remoteUrl, httpHeaders: headers, withCredentials }) : readPdfAnnotations({ data: new Uint8Array(await (await fetchBytes()).arrayBuffer()) }),
+      signaturePad: SignaturePad,
       redactPatterns: async () => {
         const catalog = await client.getJson<unknown>("redactPatterns");
         const list = Array.isArray(catalog) ? catalog : ((catalog as { patterns?: unknown[] }).patterns ?? []);
@@ -192,7 +209,7 @@ export function usePdfWorkspaceHost(fileId: string): { host: PdfWorkspaceHost; r
           .flatMap((p) => (typeof p.id === "string" ? [{ id: p.id, label: p.label ?? p.name ?? p.id }] : []));
       },
     }),
-    [fileId, file?.fileName, online, queue, run, router, fetchBytes, dispatch, client, tools, viewerOverride, openFile, annotationCounts],
+    [fileId, file?.fileName, online, queue, run, router, fetchBytes, dispatch, client, tools, viewerOverride, openFile, annotationCounts, remoteUrl, headers, withCredentials],
   );
 
   return { host, ready: !!file, studio, extractorBridge, getPage };
