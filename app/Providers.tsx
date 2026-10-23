@@ -134,7 +134,9 @@ import { CloudFilesRealtimeProvider } from "@/features/files/providers/CloudFile
 // See features/files/media-client/. Deep import, not a barrel.
 import { MediaHostProvider } from "@/features/files/media-client/MediaHostProvider";
 import { ConfirmDialogHost } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { ClipboardFallbackHost } from "@ai-matrx/design-system";
+// Manual copy is the summon overlay `clipboardFallbackDialog`; the bridge only forwards kit
+// `openClipboardFallback` asks to it (no dialog body in first load).
+import { ClipboardFallbackBridge } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackBridge";
 // THE imperative dialog hosts (file pickers, upload guard, manual copy, sandbox gate, value
 // prompts, bulk Move/Share, scope mismatch, can't-remove, conversation rename) — ONE edge,
 // ONE auth sync for the whole app (authed session + guest fingerprint).
@@ -245,7 +247,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   global replacement for `window.confirm`.
                                   See components/dialogs/confirm/. */}
                                           <ConfirmDialogHost />
-                                          <ClipboardFallbackHost />
+                                          <ClipboardFallbackBridge />
                                           <ComingSoonClient />
                                           {/* Agent quick-look host. `openAgentPeek(id)`
                                   from anywhere opens the canonical

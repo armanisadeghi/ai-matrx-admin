@@ -31,7 +31,7 @@ import {
 import { toast } from "@/lib/toast";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { ClipboardFallbackDialog } from "@ai-matrx/design-system";
+import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
 import { useClassInvites, extractEmails } from "../hooks/useClassInvites";
 import { classJoinUrl, classInviteAcceptUrl } from "../service";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,17 +56,10 @@ export function InviteStudentsSheet({
   const inv = useClassInvites(classId, open);
   const [emailText, setEmailText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // Browser clipboard write failures (blocked permission, non-HTTPS iframe,
-  // older browser) never dead-end on a toast — the platform's fallback dialog
-  // shows the value in a selectable field instead.
-  const [clipboardFallback, setClipboardFallback] = useState<{
-    value: string;
-    what: string;
-  } | null>(null);
 
   async function copyText(value: string, what: string) {
     if (!(await copyTextKit(value, `${what} copied.`))) {
-      setClipboardFallback({ value, what });
+      void showManualCopy({ text: value, title: `Copy ${what.toLowerCase()}` });
       return;
     }
   }
@@ -308,14 +301,6 @@ export function InviteStudentsSheet({
           )}
         </div>
     </MatrxDynamicPanelHost>
-    <ClipboardFallbackDialog
-      open={clipboardFallback !== null}
-      onOpenChange={(o) => {
-        if (!o) setClipboardFallback(null);
-      }}
-      url={clipboardFallback?.value ?? ""}
-      title={`Copy ${clipboardFallback?.what.toLowerCase() ?? "link"}`}
-    />
     </>
   );
 }

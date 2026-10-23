@@ -38,7 +38,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useRef, useState } from "react";
 
-import { ClipboardFallbackDialog } from "@ai-matrx/design-system";
+import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useOpenTopicPanel } from "@/features/overlays/definitions/topicalMapTopicPanel.overlay";
@@ -163,7 +163,6 @@ function TopicDetailBodyInner({
   const scrollRef = useRef<HTMLDivElement>(null);
   useClippedContentGuard(scrollRef, { label: "topical-map topic panel" });
   const [requestedChange, setRequestedChange] = useState<TopicChangeKind | null>(null);
-  const [clipboardFallback, setClipboardFallback] = useState<string | null>(null);
 
   if (!topic) {
     if (data.treeSelfLoading) {
@@ -218,7 +217,7 @@ function TopicDetailBodyInner({
 
   async function copySlug(): Promise<void> {
     if (!(await copyText(slug))) {
-      setClipboardFallback(slug);
+      void showManualCopy({ text: slug, title: "Copy the slug" });
     }
   }
 
@@ -368,12 +367,6 @@ function TopicDetailBodyInner({
         ) : null}
       </div>
 
-      <ClipboardFallbackDialog
-        open={clipboardFallback !== null}
-        onOpenChange={(open) => (open ? undefined : setClipboardFallback(null))}
-        url={clipboardFallback ?? ""}
-        title="Copy the slug"
-      />
       {/* SPECIAL_KINDS is the panel's only knowledge of kinds; it exists so the
           four named sections and the generic one never show the same row twice. */}
       <span hidden data-special-kinds={[...SPECIAL_KINDS].join(",")} />

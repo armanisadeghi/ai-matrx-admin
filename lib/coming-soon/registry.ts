@@ -1078,6 +1078,34 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
     // re-run their KnowledgeQuery since `last_notified_at`, notify the owner.
     surfaces: ["/knowledge hub — Save view dialog", "/knowledge hub — saved view menu"],
   },
+  // The three agent windows that were blank stubs (summon final review 2, defect 8). The menu
+  // rows and tools-grid tiles announce these instead of opening a stub window; the stub overlays
+  // (features/window-panels/windows/agents/AgentPlaceholderWindows.tsx) stay until each is built.
+  "agents.optimizer": {
+    id: "agents.optimizer",
+    label: "Matrx Agent Optimizer",
+    owner: "agents",
+    promise:
+      "Tuning suggestions for this agent's prompt, variables and tools, each one applied with a click.",
+    stage: "planned",
+    surfaces: ["agent options menu — Matrx Agent Optimizer", "tools grid — Matrx Agent Optimizer"],
+  },
+  "agents.interface-variations": {
+    id: "agents.interface-variations",
+    label: "Interface variations",
+    owner: "agents",
+    promise: "Try this agent in every surface (modal, inline, sidebar, floating) side by side from one place.",
+    stage: "planned",
+    surfaces: ["agent options menu — Interface variations", "tools grid — Interface Variations"],
+  },
+  "agents.data-storage": {
+    id: "agents.data-storage",
+    label: "Data storage support",
+    owner: "agents",
+    promise: "Give this agent its own tables, vector memory and long-term recall, scoped per user, organization or shared.",
+    stage: "planned",
+    surfaces: ["agent options menu — Add Data Storage Support", "tools grid — Data Storage Support"],
+  },
   "medical.workspace": {
     id: "medical.workspace",
     label: "Medical workspace",

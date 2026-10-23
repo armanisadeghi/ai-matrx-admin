@@ -29,7 +29,7 @@ import { Files, PanelRight } from "lucide-react";
 
 import { TopicTree, type TopicTreeRow } from "@/components/official/topic-tree/TopicTree";
 import { SuspenseLoader } from "@ai-matrx/design-system";
-import { ClipboardFallbackDialog } from "@ai-matrx/design-system";
+import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useOpenTopicPanel } from "@/features/overlays/definitions/topicalMapTopicPanel.overlay";
@@ -140,7 +140,6 @@ function OutlineBody({ mapId, siteId, readOnly, knobs }: OutlineBodyProps) {
   const [menuSlug, setMenuSlug] = useState<string | null>(null);
   const [moveSlug, setMoveSlug] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingTopicAction | null>(null);
-  const [clipboardFallback, setClipboardFallback] = useState<string | null>(null);
 
   const treeHostRef = useRef<HTMLDivElement>(null);
   useClippedContentGuard(treeHostRef, { label: "topical-map outline" });
@@ -289,7 +288,7 @@ function OutlineBody({ mapId, siteId, readOnly, knobs }: OutlineBodyProps) {
 
   async function copySlug(slug: string): Promise<void> {
     if (!(await copyText(slug))) {
-      setClipboardFallback(slug);
+      void showManualCopy({ text: slug, title: "Copy the topic slug", description: "The clipboard was not available. Press Cmd/Ctrl+C to copy the slug." });
     }
   }
 
@@ -418,13 +417,6 @@ function OutlineBody({ mapId, siteId, readOnly, knobs }: OutlineBodyProps) {
         </>
       )}
 
-      <ClipboardFallbackDialog
-        open={clipboardFallback !== null}
-        onOpenChange={(open) => (open ? undefined : setClipboardFallback(null))}
-        url={clipboardFallback ?? ""}
-        title="Copy the topic slug"
-        description="The clipboard was not available. Press Cmd/Ctrl+C to copy the slug."
-      />
     </>
   );
 }
