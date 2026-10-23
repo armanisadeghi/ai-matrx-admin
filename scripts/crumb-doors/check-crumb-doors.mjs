@@ -195,7 +195,8 @@ export function scanSource(file, text) {
     // A record whose type has a sibling loader (record-siblings.ts) gets its door from the derived trail.
     const token = /\btoken\s*:\s*["'`]([\w-]+)["'`]/.exec(tag)?.[1];
     const registered = token != null && siblingTokens().has(token);
-    if (isRecord && !registered && !/\bsiblings\s*[:=]|\bentityOptions=/.test(tag)) {
+    // `siblings: …`, `siblings={…}` or the shorthand `{ name, siblings }` / `{ siblings }` spread.
+    if (isRecord && !registered && !/\bsiblings\s*[:=]|[{,]\s*siblings\s*[,}]|\bentityOptions=/.test(tag)) {
       sites.push({ rule: "record-without-siblings", line: lineOf(text, m.index), what: `<${m[1]}> record without siblings` });
     }
     for (const p of tag.matchAll(/\b(right|rightEnd)=\{/g)) {
@@ -381,6 +382,9 @@ function selfTest() {
       // GREEN: the contract — links on every level, siblings, one action list.
       "app/(core)/notes/[id]/page.tsx":
         'import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";\nexport default function P() { return <RecordPageHeader parents={[{ label: "Notes", href: "/notes" }]} record={{ name: "A", siblings: [] }} actions={[]} />; }\n',
+      // GREEN: the record's siblings in shorthand (`{ siblings }`), spread only when there are several.
+      "features/pads/PadHeader.tsx":
+        'import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";\nexport function H({ siblings }: { siblings: [] }) { return <RecordPageHeader record={{ name: "Pad", ...(siblings.length > 1 ? { siblings } : {}) }} actions={[]} />; }\n',
       // GREEN: a redirect-only page renders nothing — no header to declare.
       "app/(core)/forms/old/page.tsx":
         'import { redirect } from "next/navigation";\nexport default async function P({ params }: { params: Promise<{ id: string }> }) { redirect(`/forms/${(await params).id}`); }\n',

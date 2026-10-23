@@ -61,7 +61,18 @@ export function LaunchpadPage({
   initialSiblings?: { key: string; title: string }[] | null;
 }) {
   return (
-    <LaunchpadsMount fallback={<RecordPageHeader backHref="/launchpad" record={{ name: initial?.title ?? "Launchpad" }} />}>
+    <LaunchpadsMount
+      fallback={
+        <RecordPageHeader
+          backHref="/launchpad"
+          record={{
+            name: initial?.title ?? "Launchpad",
+            // The server's own read of the other launchpads, the same list the body's door shows.
+            siblings: (initialSiblings ?? []).map((e) => ({ label: e.title, href: launchpadHref(e.key), active: e.key === launchpadKey })),
+          }}
+        />
+      }
+    >
       <LaunchpadBody launchpadKey={launchpadKey} initial={initial} initialSiblings={initialSiblings} />
     </LaunchpadsMount>
   );
