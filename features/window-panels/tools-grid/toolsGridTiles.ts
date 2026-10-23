@@ -19,6 +19,7 @@
  * overlay definition in `features/overlays/definitions/`
  * (same `overlayId`). New grid-only entries are suffixed with ` (new)`.
  */
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import type { LucideIcon } from "lucide-react";
 import {
   Activity,
@@ -492,16 +493,16 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     label: "Matrx Agent Optimizer (new)",
     icon: CircleDot,
     category: "agents",
-    overlayId: "agentOptimizerWindow",
-    seedData: (ctx) => seedAgentId(ctx),
+    // Not built yet: a tracked promise, never a blank stub window.
+    onActivate: () => void announceComingSoon("agents.optimizer"),
   },
   {
     id: "tile.agent-interface-variations",
     label: "Interface Variations (new)",
     icon: AppWindow,
     category: "agents",
-    overlayId: "agentInterfaceVariationsWindow",
-    seedData: (ctx) => seedAgentId(ctx),
+    // Not built yet: a tracked promise, never a blank stub window.
+    onActivate: () => void announceComingSoon("agents.interface-variations"),
   },
   {
     id: "tile.agent-create-app",
@@ -516,8 +517,8 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     label: "Data Storage Support (new)",
     icon: Boxes,
     category: "agents",
-    overlayId: "agentDataStorageWindow",
-    seedData: (ctx) => seedAgentId(ctx),
+    // Not built yet: a tracked promise, never a blank stub window.
+    onActivate: () => void announceComingSoon("agents.data-storage"),
   },
   {
     id: "tile.agent-find-usages",

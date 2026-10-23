@@ -29,7 +29,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ClipboardFallbackDialog } from "@ai-matrx/design-system";
+import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
 import {
   ScoredChecklist,
   type ScoredChecklistRow,
@@ -71,7 +71,6 @@ export function PreUploadCheck({ className }: PreUploadCheckProps) {
     notify: copyNotify,
   });
   const [draft, setDraft] = useState(EMPTY_DRAFT);
-  const [clipboardFallback, setClipboardFallback] = useState<string | null>(null);
   const knob = useTargetKeywordRequired();
 
   const scoredDraft: PreUploadDraft = {
@@ -98,7 +97,7 @@ export function PreUploadCheck({ className }: PreUploadCheckProps) {
   async function copyForStudio(): Promise<void> {
     const text = studioClipboardText(scoredDraft);
     if (!(await copyText(text, "Copied — paste it into YouTube Studio."))) {
-      setClipboardFallback(text);
+      void showManualCopy({ text, title: "Copy this into YouTube Studio", description: "The clipboard was not available. Press Cmd/Ctrl+C to copy the title, description and tags." });
     }
   }
 
@@ -243,13 +242,6 @@ export function PreUploadCheck({ className }: PreUploadCheckProps) {
         </div>
       </div>
 
-      <ClipboardFallbackDialog
-        open={clipboardFallback !== null}
-        onOpenChange={(open) => (open ? undefined : setClipboardFallback(null))}
-        url={clipboardFallback ?? ""}
-        title="Copy this into YouTube Studio"
-        description="The clipboard was not available. Press Cmd/Ctrl+C to copy the title, description and tags."
-      />
     </section>
   );
 }

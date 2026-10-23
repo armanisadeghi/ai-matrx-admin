@@ -9,16 +9,14 @@ import { useOpenAgentSettingsWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenAgentRunHistoryWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenAgentContentWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenAgentRunWindow } from "@ai-matrx/chat/host/window-openers";
-import { useOpenAgentOptimizerWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenAgentFindUsagesWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenAgentCreateAppWindow } from "@ai-matrx/chat/host/window-openers";
-import { useOpenAgentDataStorageWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenAgentConvertSystemWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenAgentShortcutQuickCreateWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenAgentAdminFindUsagesWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenAgentImportWindow } from "@ai-matrx/chat/host/window-openers";
-import { useOpenAgentInterfaceVariationsWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenSaveTemplateDialog } from "@ai-matrx/chat/host/window-openers";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 
 /** The menu label is also this item's dispatch key. */
 const SAVE_AS_TEMPLATE_LABEL = "Save as template";
@@ -244,16 +242,13 @@ export function AgentOptionsMenu({
   const openRunHistory = useOpenAgentRunHistoryWindow();
   const openAdvancedEditor = useOpenAgentContentWindow();
   const openRun = useOpenAgentRunWindow();
-  const openOptimizer = useOpenAgentOptimizerWindow();
   const openFindUsages = useOpenAgentFindUsagesWindow();
   const openCreateApp = useOpenAgentCreateAppWindow();
-  const openDataStorage = useOpenAgentDataStorageWindow();
   const openConvertSystem = useOpenAgentConvertSystemWindow();
   const openShortcut = useOpenAgentShortcutQuickCreateWindow();
   const openSaveTemplate = useOpenSaveTemplateDialog();
   const openAdminFindUsages = useOpenAgentAdminFindUsagesWindow();
   const openImport = useOpenAgentImportWindow();
-  const openInterfaceVariations = useOpenAgentInterfaceVariationsWindow();
 
   // Duplicate asks which version to copy (default: current), then runs the
   // shared flow. The dialog lives at this level so it survives the dropdown /
@@ -354,7 +349,7 @@ export function AgentOptionsMenu({
         "[AGENT OPTIONS MENU] Opening matrx agent optimizer, Agent ID:",
         agentId,
       );
-      openOptimizer({ agentId: agentId ?? null });
+      void announceComingSoon("agents.optimizer");
       setOpen(false);
     } else if (label === "Find Usages") {
       console.log("[AGENT OPTIONS MENU] Finding usages, Agent ID:", agentId);
@@ -369,7 +364,7 @@ export function AgentOptionsMenu({
         "[AGENT OPTIONS MENU] Adding data storage support, Agent ID:",
         agentId,
       );
-      openDataStorage({ agentId: agentId ?? null });
+      void announceComingSoon("agents.data-storage");
       setOpen(false);
     } else if (label === "Linked Agent Sync") {
       console.log(
@@ -474,7 +469,7 @@ export function AgentOptionsMenu({
       id: "agent:interface-variations",
       label: "Interface variations",
       icon: Layers,
-      onSelect: () => openInterfaceVariations({ agentId }),
+      onSelect: () => void announceComingSoon("agents.interface-variations"),
     },
     ...NEW_TAB_ITEMS.map(({ label, icon, getHref }) => ({
       id: `agent:new-tab:${label}`,
@@ -520,7 +515,7 @@ export function AgentOptionsMenu({
       "[AGENT OPTIONS MENU] Handling interface variation click, Agent ID:",
       agentId,
     );
-    openInterfaceVariations({ agentId: agentId ?? null });
+    void announceComingSoon("agents.interface-variations");
     setOpen(false);
   };
 
@@ -809,16 +804,13 @@ function MobileMenuContent({
   const openRunHistory = useOpenAgentRunHistoryWindow();
   const openAdvancedEditor = useOpenAgentContentWindow();
   const openRun = useOpenAgentRunWindow();
-  const openOptimizer = useOpenAgentOptimizerWindow();
   const openFindUsages = useOpenAgentFindUsagesWindow();
   const openCreateApp = useOpenAgentCreateAppWindow();
-  const openDataStorage = useOpenAgentDataStorageWindow();
   const openConvertSystem = useOpenAgentConvertSystemWindow();
   const openShortcut = useOpenAgentShortcutQuickCreateWindow();
   const openSaveTemplate = useOpenSaveTemplateDialog();
   const openAdminFindUsages = useOpenAgentAdminFindUsagesWindow();
   const openImport = useOpenAgentImportWindow();
-  const openInterfaceVariations = useOpenAgentInterfaceVariationsWindow();
 
   // Same builtin-aware filtering as the desktop variant — see AgentOptionsMenu
   // for the full rationale.
@@ -865,7 +857,7 @@ function MobileMenuContent({
       });
       onClose();
     } else if (label === "Matrx Agent Optimizer") {
-      openOptimizer({ agentId: agentId ?? null });
+      void announceComingSoon("agents.optimizer");
       onClose();
     } else if (label === "Find Usages") {
       openFindUsages({ agentId: agentId ?? null });
@@ -874,7 +866,7 @@ function MobileMenuContent({
       openCreateApp();
       onClose();
     } else if (label === "Add Data Storage Support") {
-      openDataStorage({ agentId: agentId ?? null });
+      void announceComingSoon("agents.data-storage");
       onClose();
     } else if (label === "Linked Agent Sync") {
       openConvertSystem({ agentId: agentId ?? null });
@@ -927,7 +919,7 @@ function MobileMenuContent({
   };
 
   const handleVariationClick = () => {
-    openInterfaceVariations({ agentId: agentId ?? null });
+    void announceComingSoon("agents.interface-variations");
     onClose();
   };
 

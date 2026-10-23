@@ -136,6 +136,7 @@ export const OVERLAY_META_INDEX: readonly OverlayMetaRow[] = [
   { id: "homePickerDialog", label: "Move to", instance: "single" },
   { id: "tagPickerDialog", label: "Tag", instance: "single" },
   { id: "shareWithPeopleDialog", label: "Share", instance: "single" },
+  { id: "clipboardFallbackDialog", label: "Copy manually", instance: "single" },
   { id: "smartAddHelperWindow", label: "Smart Add helper", instance: "multi", window: { windowId: "smart-add-helper-window", mobile: "fullscreen" } },
   { id: "filePreviewWindow", label: "File Preview Window", instance: "single", window: { windowId: "file-preview-window", mobile: "fullscreen" } },
   { id: "flashcardItemWindow", label: "Flashcard Item Window", instance: "single", window: { windowId: "flashcard-item-window", mobile: "fullscreen" } },
