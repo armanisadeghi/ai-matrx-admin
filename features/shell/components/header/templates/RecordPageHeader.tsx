@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 // RecordPageHeader — THE internal-page template (page-top template 3 of 4).
 //
 // ONE line in the shell header, the org/scopes crumb pattern:
@@ -81,6 +83,12 @@ export interface RecordPageHeaderProps {
   };
   /** One compact status badge beside the name. */
   status?: { label: string; tone?: BadgeTone };
+  /**
+   * A LIVE status beside the name, after the badge — a control that reports on the record and opens
+   * its own detail (the `IntelligenceIndicator`: the AI jobs that work on this record). Drawn on the
+   * classic line, in the frame header and in a host bar alike; never an action (those go in `actions`).
+   */
+  indicator?: React.ReactNode;
   /** Sub-views of the record, centered on the line. */
   modes?: RouteNavItem[];
   /** Required when modes differ only by query string. */
@@ -120,6 +128,7 @@ const menuAction = (item: RecordPageMenuItem): RecordMenuAction => ({
 function HostedRecordPageHeader({
   record = {},
   status,
+  indicator,
   modes,
   activeModeHref,
   onModeSelect,
@@ -145,6 +154,7 @@ function HostedRecordPageHeader({
       }
     >
       {status ? <Badge tone={status.tone ?? "neutral"}>{status.label}</Badge> : null}
+      {indicator}
       {modes?.length ? <RouteModeNav items={modes} activeHref={activeModeHref} onNavigate={onModeSelect} maxVariant="menu" /> : null}
     </HostedRecordBar>
   );
@@ -163,6 +173,7 @@ function PageRecordHeader({
   level,
   record: declaredRecord,
   status,
+  indicator,
   modes,
   activeModeHref,
   onModeSelect,
@@ -216,7 +227,12 @@ function PageRecordHeader({
       entityOptions={record.siblings ?? levelOptions}
       entityLoadOptions={levelLoadOptions}
       entityStatus={
-        status ? <Badge tone={status.tone ?? "neutral"}>{status.label}</Badge> : undefined
+        status || indicator ? (
+          <>
+            {status ? <Badge tone={status.tone ?? "neutral"}>{status.label}</Badge> : null}
+            {indicator}
+          </>
+        ) : undefined
       }
       modes={modes}
       activeModeHref={activeModeHref}

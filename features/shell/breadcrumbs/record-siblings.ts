@@ -68,6 +68,18 @@ export const RECORD_SIBLINGS: Readonly<Record<string, SiblingsLoader>> = {
     const rows = await podcastService.fetchAllShows();
     return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.title || "Untitled podcast" }));
   },
+  research_topic: async () => {
+    // The Research topics list's own read (every lane), newest first.
+    const [{ researchTopicListService }, { DEFAULT_ENTITY_LIST_QUERY }] = await Promise.all([
+      import("@/features/research/browse/service"),
+      import("@/lib/entity-list/types"),
+    ]);
+    const page = await researchTopicListService.fetchPage(
+      { ...DEFAULT_ENTITY_LIST_QUERY, scope: { kind: "all" } },
+      { sort: "updated_at", direction: "desc", pageSize: SIBLINGS_MAX },
+    );
+    return page.rows.map((row) => ({ id: row.id, label: row.name || "Untitled topic" }));
+  },
   "visual-map-sample": async () => {
     // The Visual Map Lab list's own read (subjects, workflows, saved samples).
     const { loadLabRows } = await import("@/features/visual-map-lab/service");

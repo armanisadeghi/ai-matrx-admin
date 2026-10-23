@@ -327,4 +327,20 @@ describe("pages add their own \"…\" items in the frame (adversarial review, 20
     expect(slot.querySelector('[aria-label="More actions"]')).toBeNull();
     expect(slot.querySelector('[aria-label="Archive"]')).toBeNull();
   });
+
+  it("indicator: a live status beside the name, on the classic line and in the frame (research topic)", () => {
+    const Indicator = () => <button type="button" data-testid="intel">AI jobs</button>;
+    const Topic = () => <RecordPageHeader backHref="/research/topics" record={{ name: "Topic A" }} status={{ label: "Deep dive" }} indicator={<Indicator />} />;
+    mount(<Topic />);
+    expect(el.querySelector('[data-testid="intel"]')).not.toBeNull();
+    expect(occurrences("Deep dive")).toBe(1);
+    act(() => root!.unmount());
+    root = undefined;
+    mount(
+      <FrameHarness>
+        <Topic />
+      </FrameHarness>,
+    );
+    expect(el.querySelectorAll('[data-testid="intel"]')).toHaveLength(1);
+  });
 });

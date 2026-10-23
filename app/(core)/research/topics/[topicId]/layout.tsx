@@ -1,13 +1,10 @@
 import { notFound } from "next/navigation";
-import NavLink from "@/components/navigation/NavLink";
-import { ChevronLeft } from "lucide-react";
-import PageHeader from "@/features/shell/components/header/PageHeader";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import {
   getTopicServer,
   getTopicOverviewServer,
   getResearchIntentsServer,
 } from "@/features/research/service/server";
-import { IntentBadge } from "@/features/research/components/shared/IntentBadge";
 import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { ROLE_MANDATE_KEYS } from "@/features/research/components/agents/constants";
@@ -95,29 +92,21 @@ export default async function ResearchTopicLayout({
 
   return (
     <>
-      <PageHeader>
-        <div className="flex items-center gap-2 w-full min-w-0">
-          <NavLink
-            href="/research/topics"
-            className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
-            aria-label="Back to topics"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </NavLink>
-          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground sm:flex-none">
-            {topic.name}
-          </span>
-          <span className="hidden shrink-0 sm:contents">
-            <IntentBadge label={intentLabel} className="shrink-0" />
-          </span>
+      {/* THE page-top template: back + derived crumbs + the topic (its door lists every other topic),
+          the intent as its status badge and the topic's AI jobs as its live indicator. */}
+      <RecordPageHeader
+        backHref="/research/topics"
+        record={{ name: topic.name, token: "research_topic", id: topicId }}
+        status={intentLabel ? { label: intentLabel } : undefined}
+        indicator={
           <IntelligenceIndicator
             feature="research"
             mandateKeys={Object.values(ROLE_MANDATE_KEYS)}
             context={{ topicId }}
             label="The AI jobs that research this topic"
           />
-        </div>
-      </PageHeader>
+        }
+      />
       <div className="flex h-dvh flex-col bg-textured">
         {/* Spacer so the content starts below the glass header */}
         <div
