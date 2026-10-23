@@ -14,14 +14,12 @@ type Keyed = Pick<DataSource, "key" | "input" | "search_filters">;
 
 const norm = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, "");
 const PLACE = new Set(["location", "locations", "city", "zip", "zipcode", "postalcode", "region", "state"]);
-const KEYWORD = new Set(["keyword", "keywords", "keywordsearch", "query", "search", "searchterm", "q", "searchkeyword"]);
+const KEYWORD = new Set(["keyword", "keywords", "keywordsearch", "query", "search", "searchterm", "q", "searchkeyword", "category", "jobtitle"]);
 const COMPANY = new Set(["domain", "company", "companyname", "name"]);
 
 /** The data-source values Bright Data's Zillow search takes for the reader's status and home type. */
 const BD_STATUS: Record<string, string> = { for_sale: "House for sale", for_rent: "House for rent", sold: "Sold" };
 const BD_TYPE: Record<string, string> = { house: "Houses", townhouse: "Townhomes", condo: "Condos", apartment: "Apartments" };
-
-const KEYS_OF_WORDS = ["keyword", "company", "brand", "handle", "platform"];
 
 /**
  * The source an ask opens among the task's sources: a source whose search takes the ask's filters
@@ -49,10 +47,20 @@ export interface AskFill {
   unapplied: string[];
 }
 
+/** The chip keys whose words a filled value carries (a chip is used only when its words really went in). */
+function keysIn(reading: AskReading, filled: string): string[] {
+  const f = reading.filters;
+  const said: [string, string][] = [["keyword", f.keyword], ["company", f.company], ["brand", f.brand], ["handle", f.handle], ["platform", f.platform]];
+  const low = filled.toLowerCase();
+  return said.filter(([, v]) => v && low.includes(v.trim().toLowerCase())).map(([k]) => k);
+}
+
 function wordsFor(reading: AskReading): string {
   const f = reading.filters;
+  // A role at a company is one search ("software engineer Google"): neither half is dropped.
+  const jobWords = [f.keyword, f.company].filter((w) => w && w.trim()).join(" ");
   const byTask: Partial<Record<AskReading["task"], string[]>> = {
-    jobs: [f.company, f.keyword, reading.subject],
+    jobs: [jobWords, reading.subject],
     company_research: [f.company, reading.subject],
     company_reviews: [f.company, reading.subject],
     app_reviews: [reading.subject, f.company],
@@ -88,7 +96,7 @@ export function fillFromAsk(source: DataSource, reading: AskReading): AskFill {
       const words = n === "domain" ? (f.url || wordsFor(reading)) : wordsFor(reading);
       if (words) {
         values[field.name] = words;
-        KEYS_OF_WORDS.forEach((k) => used.add(k));
+        keysIn(reading, words).forEach((k) => used.add(k));
       }
     } else if (n === "username" && f.handle) {
       values[field.name] = f.handle.replace(/^@/, "");
@@ -99,6 +107,18 @@ export function fillFromAsk(source: DataSource, reading: AskReading): AskFill {
     } else if (n === "hometype" && f.homeType && BD_TYPE[f.homeType]) {
       values[field.name] = BD_TYPE[f.homeType];
       used.add("home_type");
+    }
+  }
+  // A search with no place field takes the place in its words ("plumbers in Austin TX" on a map search); a sentence
+  // that is only a place fills it too, but never runs on its own (nothing was said to look for).
+  let placeOnly = false;
+  if (reading.place && !used.has("place") && !fields.some((x) => PLACE.has(norm(x.name)))) {
+    const words = fields.find((x) => KEYWORD.has(norm(x.name)));
+    if (words) {
+      const said = values[words.name]?.trim();
+      values[words.name] = said ? `${said} in ${reading.place}` : reading.place;
+      placeOnly = !said;
+      used.add("place");
     }
   }
   // A listing search with no word fields still names the place in its sentence.
@@ -123,5 +143,5 @@ export function fillFromAsk(source: DataSource, reading: AskReading): AskFill {
   take("baths_min", f.bathsMin == null ? null : String(f.bathsMin), "baths_min");
 
   const unapplied = reading.chips.filter((c) => !used.has(c.key)).map((c) => c.label);
-  return { values, option, complete: buildInput(source, values, option).input != null, unapplied };
+  return { values, option, complete: !placeOnly && buildInput(source, values, option).input != null, unapplied };
 }
