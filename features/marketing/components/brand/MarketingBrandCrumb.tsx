@@ -33,6 +33,8 @@ import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Archive, Check, ChevronDown, ChevronRight, Fingerprint, Landmark, MoreHorizontal, Pencil, ScanSearch, Swords } from "lucide-react";
 import { useDeclareFrameActions, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import { useDeclareTrailLevel } from "@/features/shell/breadcrumbs/trailLevels";
+import { MARKETING_BRANDS_PATH } from "@/features/marketing/lib/keys";
 import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
 
 import {
@@ -450,6 +452,18 @@ export function MarketingBrandCrumb() {
       });
     }
   }
+
+  // THE BRAND LEVEL IS NAMED BY THE BRAND, everywhere on the page: a page below with its own header
+  // derives its trail from the address, which carries the brand's KEY ("1-omaha-movers-2" read as
+  // "1 Omaha Movers 2"). Declared at the address the page is actually on (a UUID address included).
+  const brandLevel = levels.find((level) => level.key === "brand");
+  const addressBrandSeg = parseMarketingBrandPath(pathname)?.brandSeg ?? brand.seg;
+  useDeclareTrailLevel(`${MARKETING_BRANDS_PATH}/${addressBrandSeg}`, {
+    label: brand.name,
+    token: "web_brand",
+    options: brandLevel?.options,
+    optionsLabel: brandLevel?.optionsLabel,
+  });
 
   const lastIndex = levels.length - 1;
   levels[lastIndex] = { ...levels[lastIndex], isCurrent: true };
