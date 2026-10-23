@@ -279,7 +279,12 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
     // again must never leave a watcher on the detached node — ProTextarea's
     // text kept a 128px gutter after its controls shrank to 76px (2026-10-15).
     const clusterObserver = useRef<ResizeObserver | null>(null);
-    const setClusterNode = (cluster: HTMLDivElement | null) => {
+    // STABLE callback refs (useCallback): a new function per render makes React detach and
+    // re-attach it on EVERY commit, and each re-attach measured synchronously — a field whose
+    // size moves with its own controls then set new state in every commit, forever (React
+    // #185 on typing into the data library's name finder, 2026-10-22). Mount + the
+    // ResizeObserver are the only measures.
+    const setClusterNode = useCallback((cluster: HTMLDivElement | null) => {
       if (clusterRef.current === cluster) return;
       clusterRef.current = cluster;
       clusterObserver.current?.disconnect();
@@ -299,14 +304,14 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
       clusterObserver.current.observe(cluster);
       // The aux part fades without resizing the cluster; its own size still counts.
       if (auxRef.current) clusterObserver.current.observe(auxRef.current);
-    };
+    }, []);
     // The element ref is ALWAYS our own, merged into the host's forwarded ref (twin of
     // ProTextarea's). Reading a forwarded ref's `.current` broke every internal feature
     // (apply an agent result, dictation, pre-hydration keep, width measure) whenever a host
     // forwarded a CALLBACK ref — it has no `.current`, so each one returned silently.
     const inputRef = internalRef;
     const inputObserver = useRef<ResizeObserver | null>(null);
-    const setInputRef = (node: HTMLInputElement | null) => {
+    const setInputRef = useCallback((node: HTMLInputElement | null) => {
       if (internalRef.current !== node) {
         inputObserver.current?.disconnect();
         inputObserver.current = null;
@@ -324,7 +329,7 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
       internalRef.current = node;
       if (typeof ref === "function") ref(node);
       else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
-    };
+    }, [ref]);
     // THE PRE-HYDRATION KEEP (twin of ProTextarea's): text typed, pasted or dictated into the
     // server-rendered field before React hydrates it reaches the host through its own onChange,
     // instead of being written over by the host's empty value on the next render.
