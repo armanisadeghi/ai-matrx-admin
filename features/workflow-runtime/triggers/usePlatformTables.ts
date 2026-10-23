@@ -15,6 +15,11 @@ export interface PlatformTable {
   /** schema.table */
   table: string;
   label: string;
+  /**
+   * Carries the workflow capture trigger (`workflow.watch_table`). Only a
+   * watched table can feed an event trigger; the server refuses the rest.
+   */
+  watched: boolean;
   columns: string[];
 }
 
@@ -34,6 +39,7 @@ function parseTables(raw: unknown): PlatformTable[] {
     out.push({
       table: r.table,
       label: typeof r.label === "string" && r.label ? r.label : r.table,
+      watched: r.watched === true,
       columns: Array.isArray(r.columns)
         ? r.columns.filter((c): c is string => typeof c === "string")
         : [],

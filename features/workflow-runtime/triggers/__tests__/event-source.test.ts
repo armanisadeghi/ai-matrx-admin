@@ -67,10 +67,34 @@ describe("eventSourceAdvice", () => {
     ).map((n) => n.id);
     expect(ids).toEqual([
       "table-shape",
-      "when-pair",
+      "value-missing",
       "unknown-columns",
       "unknown-inputs",
     ]);
+  });
+});
+
+describe("eventSourceAdvice hops", () => {
+  const ids = (over: object) =>
+    eventSourceAdvice({ ...EMPTY_EVENT_DRAFT, table: "a.b", ...over }, [], null).map((n) => n.id);
+
+  it("names a from-value on an insert", () => {
+    expect(ids({ whenColumn: "s", whenValue: "x", whenFromValue: "y" })).toEqual(["from-needs-update"]);
+    expect(ids({ operation: "update", whenColumn: "s", whenValue: "x", whenFromValue: "y" })).toEqual([]);
+  });
+
+  it("names a same-value hop", () => {
+    expect(ids({ operation: "update", whenColumn: "s", whenValue: "x", whenFromValue: "x" })).toEqual(["from-equals-to"]);
+  });
+
+  it("names a missing value", () => {
+    expect(ids({ whenColumn: "s" })).toEqual(["value-missing"]);
+  });
+
+  it("omits a blank when_value", () => {
+    const spec = buildEventSource({ ...EMPTY_EVENT_DRAFT, table: "a.b", whenColumn: "s" });
+    expect(spec).toMatchObject({ when_column: "s" });
+    expect("when_value" in spec).toBe(false);
   });
 });
 
@@ -92,5 +116,37 @@ describe("describeEventSource", () => {
     // workflow.emit_trigger_events: coalesce(event_source->>'operation', 'insert')
     expect(describeEventSource({ table: "a.b" })).toBe("a.b inserts");
     expect(describeEventSource({ table: "a.b", operation: "insert" })).toBe("a.b inserts");
+  });
+});
+
+describe("eventSourceAdvice watched", () => {
+  it("names an unwatched table and stays quiet when unknown or watched", () => {
+    const draft = { ...EMPTY_EVENT_DRAFT, table: "crm.contacts" };
+    expect(eventSourceAdvice(draft, [], null, false).map((n) => n.id)).toContain(
+      "table-unwatched",
+    );
+    expect(eventSourceAdvice(draft, [], null, true).map((n) => n.id)).not.toContain(
+      "table-unwatched",
+    );
+    expect(eventSourceAdvice(draft, [], null).map((n) => n.id)).not.toContain(
+      "table-unwatched",
+    );
+  });
+});
+
+describe("buildEventSource hops", () => {
+  it("never sends a from-value on an insert watch", () => {
+    const draft = {
+      ...EMPTY_EVENT_DRAFT,
+      table: "a.b",
+      operation: "insert" as const,
+      whenColumn: "status",
+      whenValue: "captured",
+      whenFromValue: "capturing",
+    };
+    expect(buildEventSource(draft)).not.toHaveProperty("when_from_value");
+    expect(buildEventSource({ ...draft, operation: "update" })).toMatchObject({
+      when_from_value: "capturing",
+    });
   });
 });

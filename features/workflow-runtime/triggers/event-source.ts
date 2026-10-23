@@ -82,8 +82,11 @@ export function buildEventSource(draft: EventDraft): TableEventSourceSpec {
     source: "table",
     table: draft.table.trim(),
     operation: draft.operation,
-    ...(column ? { when_column: column, when_value: value } : {}),
-    ...(column && from ? { when_from_value: from } : {}),
+    ...(column ? { when_column: column } : {}),
+    ...(column && value ? { when_value: value } : {}),
+    // A hop is an UPDATE fact (the server refuses it on an insert watch);
+    // a value left in the draft after switching to insert is not sent.
+    ...(column && from && draft.operation === "update" ? { when_from_value: from } : {}),
     entity_key_column: draft.entityKeyColumn.trim() || "id",
     debounce_seconds: debounceOf(draft),
     input_map: inputMap,
@@ -108,6 +111,7 @@ export function eventSourceAdvice(
   draft: EventDraft,
   workflowInputNames: readonly string[],
   knownColumns: readonly string[] | null,
+  watched: boolean | null = null,
 ): EventAdvice[] {
   const notes: EventAdvice[] = [];
   const table = draft.table.trim();
@@ -117,10 +121,18 @@ export function eventSourceAdvice(
       text: "Write the table as schema.table, lowercase.",
     });
   }
+  // A table nobody watched never produces events (the capture trigger IS the
+  // allowlist); the server refuses such a source, so it is named here first.
+  if (table && watched === false) {
+    notes.push({
+      id: "table-unwatched",
+      text: "This table is not watched; it cannot start a run.",
+    });
+  }
   if (draft.whenColumn.trim() && !draft.whenValue.trim()) {
     notes.push({
-      id: "when-pair",
-      text: "A column to watch needs the value it changes to.",
+      id: "value-missing",
+      text: "Pick the value the column lands on.",
     });
   }
   if (!draft.whenColumn.trim() && draft.whenFromValue.trim()) {
@@ -128,6 +140,13 @@ export function eventSourceAdvice(
       id: "from-needs-column",
       text: "The from-value only applies with a column to watch.",
     });
+  }
+  const from = draft.whenFromValue.trim();
+  if (from && draft.operation === "insert") {
+    notes.push({ id: "from-needs-update", text: "From only applies to updates." });
+  }
+  if (from && from === draft.whenValue.trim()) {
+    notes.push({ id: "from-equals-to", text: "From and to are the same value." });
   }
   if (knownColumns && knownColumns.length > 0) {
     const unknown = [
