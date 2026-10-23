@@ -70,6 +70,8 @@ import {
 import { DocStateChangeManagerService } from "@univerjs/docs";
 import { defaultTheme } from "@univerjs/themes";
 import { UniverDocsCorePreset } from "@univerjs/preset-docs-core";
+import { installSlashMenuRule } from "../univer-slash-menu-rule";
+import { holdCanLift } from "../room-hold";
 import docsCoreEnUS from "@univerjs/preset-docs-core/locales/en-US";
 import {
   DragManagerService,
@@ -270,6 +272,9 @@ export default function DocumentEditor({
    * Until the room is live the page refuses edits like a view-only page and says why; "Loading document…" stays.
    */
   const [roomJoining, setRoomJoining] = useState(false);
+  // After the room is live the hold lasts until the person pauses, so a word started during it is not half kept (F-D).
+  const [roomSettling, setRoomSettling] = useState(false);
+  const lastRefusedAtRef = useRef(0);
   // ONE status per document, whichever view wrote it.
   const saveStatus: WorkingCopyStatus =
     useAppSelector((state) =>
@@ -513,6 +518,8 @@ export default function DocumentEditor({
           ],
           plugins: [UniverFindReplacePlugin, UniverDocsFindReplacePlugin, UniverDocsTocPlugin, UniverDocsTocUIPlugin],
         });
+        // Google's rule for "/": the menu opens at a paragraph start or after a space, never mid-word.
+        installSlashMenuRule();
         if (cancelled) {
           host.remove();
           univer.dispose();
@@ -724,20 +731,45 @@ export default function DocumentEditor({
   // Viewing mode (and a seat without edit access) is Univer's own read-only permission on this document; a refused edit says so in our words.
   useEffect(() => {
     if (bootState !== "ready") return undefined;
-    const viewing = docMode === "viewing" || !editable || roomJoining;
-    const refusal = !editable ? seatRefusal(commentOnly) : roomJoining ? JOINING_NOTICE : VIEWING_MODE_NOTICE;
+    const holding = roomJoining || roomSettling;
+    const viewing = docMode === "viewing" || !editable || holding;
+    const refusal = !editable ? seatRefusal(commentOnly) : holding ? JOINING_NOTICE : VIEWING_MODE_NOTICE;
     void editOps.setViewOnly(viewing);
     if (!viewing) return undefined;
     let stop: (() => void) | null = null;
     let gone = false;
     void editOps
-      .onEditDenied(() => notice.info(refusal, { id: "doc-viewing-mode" }))
+      .onEditDenied(() => {
+        if (holding) lastRefusedAtRef.current = Date.now();
+        notice.info(refusal, { id: "doc-viewing-mode" });
+      })
       .then((unsubscribe) => (gone ? unsubscribe() : (stop = unsubscribe)));
     return () => {
       gone = true;
       stop?.();
     };
-  }, [bootState, docMode, editable, commentOnly, editOps, unitId, roomJoining]);
+  }, [bootState, docMode, editable, commentOnly, editOps, unitId, roomJoining, roomSettling]);
+  // The room is live: keep refusing until the burst typed during the hold has paused (never half a word), then lift.
+  useEffect(() => {
+    if (roomJoining) {
+      lastRefusedAtRef.current = 0;
+      setRoomSettling(true);
+      return undefined;
+    }
+    if (!roomSettling) return undefined;
+    const settleStartedAt = Date.now();
+    const lift = () => {
+      if (!holdCanLift({ now: Date.now(), lastRefusedAt: lastRefusedAtRef.current, settleStartedAt })) return false;
+      lastRefusedAtRef.current = 0;
+      setRoomSettling(false);
+      return true;
+    };
+    if (lift()) return undefined;
+    const timer = window.setInterval(() => {
+      if (lift()) window.clearInterval(timer);
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [roomJoining, roomSettling]);
   useEffect(() => {
     if (bootState !== "ready") return;
     const style = (apiRef.current as unknown as PageSetupApiLike | null)?.getActiveDocument?.()?.getDocumentDataModel?.()?.getSnapshot().documentStyle;

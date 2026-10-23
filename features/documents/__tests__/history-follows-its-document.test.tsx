@@ -125,6 +125,17 @@ describe("a document's history follows its document", () => {
     m.unmount();
   });
 
+  it("a stale history window never calls a different, same-titled document 'not open'", async () => {
+    const store = makeStore();
+    const m = mount(store, <Editor id="d-1" name="Untitled document" owns={false} />);
+    act(() => seen.t?.toggle());
+    await flush();
+    const text = document.body.textContent ?? "";
+    expect(text).toContain("The document you opened History from is not open");
+    expect(text).not.toContain("“Untitled document” is not open");
+    m.unmount();
+  });
+
   it("Restore names its document and refuses when that document is not the open one", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);

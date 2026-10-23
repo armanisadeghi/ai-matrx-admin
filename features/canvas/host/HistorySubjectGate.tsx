@@ -33,7 +33,6 @@ export function HistorySubjectGate({
 }) {
   const live = useIsHistorySubjectOpen(kind, subjectId);
   const name = historySubjectName(props.item.title);
-  const label = name ? `“${name}”` : `this ${noun}`;
   return (
     <div className="h-full min-h-0 overflow-y-auto bg-background p-3" data-matrx-page-scroll="" data-history-subject={subjectId}>
       <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-foreground">
@@ -44,8 +43,8 @@ export function HistorySubjectGate({
         children({ name, canRestore: () => isHistorySubjectOpen(kind, subjectId) })
       ) : (
         <div className="flex flex-col items-center gap-2 rounded-md bg-muted p-6 text-center">
-          <p className="text-sm font-medium text-foreground">{`${label} is not open`}</p>
-          <p className="text-xs text-muted-foreground">{`Open the ${noun} to see its history and restore a version.`}</p>
+          <p className="text-sm font-medium text-foreground">{`The ${noun} you opened History from is not open`}</p>
+          <p className="text-xs text-muted-foreground">{name ? `Open “${name}” to see its history and restore.` : `Open the ${noun} to see its history and restore.`}</p>
           <Button variant="outline" onClick={() => props.canvas.close(props.item.id)}>
             Close
           </Button>
