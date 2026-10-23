@@ -451,6 +451,8 @@ export default function DocumentEditor({
     let booted: KeptUniver | null = null;
     /** Join the room; edits stay refused (`roomJoining`) until it is live or could not start. */
     const joinRoom = () => {
+      lastRefusedAtRef.current = 0;
+      setRoomSettling(true);
       setRoomJoining(true);
       void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline, () => cancelled).finally(() => {
         if (!cancelled) setRoomJoining(false);
@@ -751,22 +753,13 @@ export default function DocumentEditor({
   }, [bootState, docMode, editable, commentOnly, editOps, unitId, roomJoining, roomSettling]);
   // The room is live: keep refusing until the burst typed during the hold has paused (never half a word), then lift.
   useEffect(() => {
-    if (roomJoining) {
-      lastRefusedAtRef.current = 0;
-      setRoomSettling(true);
-      return undefined;
-    }
-    if (!roomSettling) return undefined;
+    if (roomJoining || !roomSettling) return undefined;
     const settleStartedAt = Date.now();
-    const lift = () => {
-      if (!holdCanLift({ now: Date.now(), lastRefusedAt: lastRefusedAtRef.current, settleStartedAt })) return false;
+    const timer = window.setInterval(() => {
+      if (!holdCanLift({ now: Date.now(), lastRefusedAt: lastRefusedAtRef.current, settleStartedAt })) return;
+      window.clearInterval(timer);
       lastRefusedAtRef.current = 0;
       setRoomSettling(false);
-      return true;
-    };
-    if (lift()) return undefined;
-    const timer = window.setInterval(() => {
-      if (lift()) window.clearInterval(timer);
     }, 100);
     return () => window.clearInterval(timer);
   }, [roomJoining, roomSettling]);
