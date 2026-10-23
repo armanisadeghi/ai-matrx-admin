@@ -31,7 +31,7 @@ export async function readCloudDocumentBody(id: string): Promise<LoadedBody | nu
     const snap = await readCurrentDocument(id);
     return {
       title: doc.data.document_name || "Untitled document",
-      body: univerDocToMarkdown(snap.snapshot),
+      body: univerDocToMarkdown(snap.snapshot, { escapeMarkup: false }),
     };
   } catch {
     return null;

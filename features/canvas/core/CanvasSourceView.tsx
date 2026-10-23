@@ -167,7 +167,7 @@ function DocumentCanvasSourceLoad({
         return;
       }
       if (!active) return;
-      const markdown = univerDocToMarkdown(snapshot as Parameters<typeof univerDocToMarkdown>[0]);
+      const markdown = univerDocToMarkdown(snapshot as Parameters<typeof univerDocToMarkdown>[0], { escapeMarkup: false });
       setState({ phase: "ready", markdown });
     })();
     return () => {

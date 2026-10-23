@@ -146,7 +146,7 @@ export function documentGoogleAdapter(
     readLocal: () => {
       const doc = liveApi(apiRef).getActiveDocument();
       if (!doc) throw new Error("No document is open.");
-      return univerDocToMarkdown(doc.save());
+      return univerDocToMarkdown(doc.save(), { escapeMarkup: false });
     },
     applyRemote: async (content) => {
       liveApi(apiRef);
@@ -276,7 +276,7 @@ export function savedRecordGoogleAdapter(
     readLocal: async () => {
       const current = await readCurrentDocument(recordId);
       if (!current.snapshot) throw new Error("Open this document once before sending it to Google.");
-      return univerDocToMarkdown(current.snapshot as IDocumentData);
+      return univerDocToMarkdown(current.snapshot as IDocumentData, { escapeMarkup: false });
     },
     applyRemote: async (content) => {
       const snapshot = sanitizeUniverDocSnapshot(

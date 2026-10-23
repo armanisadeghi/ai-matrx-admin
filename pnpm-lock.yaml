@@ -125,7 +125,7 @@ importers:
         version: 0.18.62(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33)
       '@ai-matrx/office':
         specifier: latest
-        version: 0.8.52(69548c26f28b83966f089a1085982f76)
+        version: 0.8.54(69548c26f28b83966f089a1085982f76)
       '@ai-matrx/print':
         specifier: latest
         version: 0.12.47(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))
@@ -1505,8 +1505,8 @@ packages:
       react:
         optional: true
 
-  '@ai-matrx/office@0.8.52':
-    resolution: {integrity: sha512-m89O6fYfEPwPjVxKuDwFU7dYeoSxJZP08I3E/h7pYLEXqWbSgXGHDSGvOI6tydkHWASsuoyc0HgXoJEmKwFTng==}
+  '@ai-matrx/office@0.8.54':
+    resolution: {integrity: sha512-s2PduzkP8ueAM7FsZcwSyKvszYf1iY5gdsJJ/awjZvq/ppKDKBpimN00ZXv02+frbmfM0b7qcX/tR3wSmFaozw==}
     engines: {node: '>=20'}
     peerDependencies:
       '@supabase/supabase-js': '>=2.0.0'
@@ -14276,7 +14276,7 @@ snapshots:
       - y-protocols
       - yjs
 
-  '@ai-matrx/office@0.8.52(69548c26f28b83966f089a1085982f76)':
+  '@ai-matrx/office@0.8.54(69548c26f28b83966f089a1085982f76)':
     dependencies:
       '@ai-matrx/alchemy': 0.23.74(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33)
       '@ai-matrx/api': 0.1.70(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.1)
