@@ -11,6 +11,9 @@
 // KB) written to `pageless-levels.generated.ts` by `pnpm route-manifest:generate`; the browser never
 // loads the manifest itself. Test `__tests__/every-crumb-is-a-door.test.ts` fails when they disagree.
 //
+// A level next.config.js REDIRECTS (`/marketing/brands/smart-add` → `…/company`) is a real door:
+// the generator passes `redirectedPatternsOf(next.config.js)` (redirect-levels.ts) as `redirected`.
+//
 // Next.js matches a static folder before a dynamic one, so a pageless `[param]` level never swallows
 // a static sibling with a page: `staticNames` lists, per parent, the static names that shadow it.
 
@@ -24,14 +27,19 @@ export interface PagelessTable {
 const isDynamic = (seg: string) => seg.startsWith("[");
 const isCatchAll = (seg: string) => seg.startsWith("[...") || seg.startsWith("[[...");
 
-/** The pageless levels of a set of page patterns (every proper prefix that answers no page). */
-export function pagelessLevelsOf(patterns: readonly string[]): PagelessTable {
-  const pages = new Set(patterns);
+/**
+ * The pageless levels of a set of page patterns (every proper prefix that answers no page). An
+ * address a next.config redirect sends on (`redirected`, from redirect-levels.ts) answers: the crumb
+ * lands on a real page, so it stays a link.
+ */
+export function pagelessLevelsOf(patterns: readonly string[], redirected: readonly string[] = []): PagelessTable {
+  const dyn = (p: string) => p.replace(/\[[^\]]+\]/g, "[]");
+  const pages = new Set([...patterns, ...redirected].map(dyn));
   // A folder answers when it has a page, or an OPTIONAL catch-all child (matches zero segments).
   const optionalCatchAllParents = new Set(
     patterns.filter((p) => /\/\[\[\.\.\.[^\]]+\]\]$/.test(p)).map((p) => p.replace(/\/\[\[\.\.\.[^\]]+\]\]$/, "") || "/"),
   );
-  const answers = (prefix: string) => pages.has(prefix) || optionalCatchAllParents.has(prefix);
+  const answers = (prefix: string) => pages.has(dyn(prefix)) || optionalCatchAllParents.has(prefix);
   const childNames = new Map<string, Set<string>>();
   const levels = new Set<string>();
   for (const pattern of patterns) {
