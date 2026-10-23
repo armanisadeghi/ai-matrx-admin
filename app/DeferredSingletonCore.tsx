@@ -35,6 +35,9 @@ import SupportSessionPill from "@/features/admin/users/support-sessions/SupportS
 import { FirstSignInAgeGateMount } from "@/features/education/compliance/FirstSignInAgeGateMount";
 import { MeetMatrxIntroMount } from "@/features/onboarding/meet-matrx/MeetMatrxIntroMount";
 import { registerBlobCacheOnFirstFileFetch } from "@/features/files/cache/registerOnFirstFileFetch";
+// Side effect: hands the files UI its right-click / context / error-copy menus (files-ui-host slots).
+// Lives here, behind the deferred edge, so the menus stay out of every route's graph.
+import "@/features/files/files-ui-pieces";
 import { resolveBaseUrl } from "@/lib/python-client";
 import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import { forgetEntitlementSnapshot } from "@/features/entitlements/service";

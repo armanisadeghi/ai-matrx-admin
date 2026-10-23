@@ -2,11 +2,21 @@
 
 /**
  * The website's answers to the files UI's host ports (`@ai-matrx/media/files/engine/host/ui`),
- * handed to `configureFilesHost({ ui })` in `files-host.ts`. Each heavy piece loads on first use;
- * while it loads the wrapped element renders on its own, never a blank.
+ * handed to `configureFilesHost({ ui })` in `files-host.ts`.
+ *
+ * BUILD-GRAPH LAW: `files-host.ts` is reached from the Redux store, so THIS module is in every
+ * route's graph. It holds only cheap members (`openPreview`, `copyNotify`) and three slot
+ * components. The heavy pieces (the file right-click menu, the v3 context menu, the error copy
+ * menu) live in `files-ui-pieces.tsx`, which `app/DeferredSingletonCore.tsx` imports behind its one
+ * `next/dynamic` edge and which hands them in through `registerFilesUiPieces`. Never import
+ * `files-ui-pieces` (or any menu) from here — that one edge put the menus' async chunk group
+ * into ~990 route entries and outgrew the 60 GB build machine (v0.4.3450).
+ *
+ * Until the pieces register, a slot renders its element alone (the package's own default); a
+ * slot subscribes, so a menu rendered before registration gains its menu the moment it lands.
  */
 
-import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
+import { useSyncExternalStore, type ComponentType } from "react";
 import type {
   FilesContextMenuProps,
   FilesFileMenuProps,
@@ -15,30 +25,34 @@ import type {
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type Loose = Record<string, any>;
-
-/** A lazily loaded wrapper whose children show while it loads. */
-function lazyWrapper<P extends { children?: ReactNode }>(load: () => Promise<ComponentType<P>>): ComponentType<P> {
-  const Lazy = lazy(async () => ({ default: await load() }));
-  return function LazyWrapper(props: P) {
-    return (
-      <Suspense fallback={<>{props.children}</>}>
-        <Lazy {...props} />
-      </Suspense>
-    );
-  };
+export interface FilesUiPieces {
+  FileMenu?: ComponentType<FilesFileMenuProps>;
+  ContextMenu?: ComponentType<FilesContextMenuProps>;
+  ErrorAlchemyMenu?: FilesUiHost["ErrorAlchemyMenu"];
 }
 
-function lazyPiece<P extends object>(load: () => Promise<ComponentType<P>>): ComponentType<P> {
-  const Lazy = lazy(async () => ({ default: await load() }));
-  return function LazyPiece(props: P) {
-    return (
-      <Suspense fallback={null}>
-        <Lazy {...props} />
-      </Suspense>
-    );
-  };
+let pieces: FilesUiPieces = {};
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+const readPieces = () => pieces;
+
+function usePieces(): FilesUiPieces {
+  return useSyncExternalStore(subscribe, readPieces, readPieces);
+}
+
+function FileMenuSlot(props: FilesFileMenuProps) {
+  const Menu = usePieces().FileMenu;
+  return Menu ? <Menu {...props} /> : <>{props.children}</>;
+}
+
+function ContextMenuSlot(props: FilesContextMenuProps) {
+  const Menu = usePieces().ContextMenu;
+  return Menu ? <Menu {...props} /> : <>{props.children}</>;
 }
 
 export const filesUiHost: FilesUiHost = {
@@ -48,14 +62,18 @@ export const filesUiHost: FilesUiHost = {
       window.dispatchEvent(new CustomEvent("cloud-files:open-preview-tab", { detail: { fileId, tab } }));
     }
   },
-  FileMenu: lazyWrapper<FilesFileMenuProps>(() =>
-    import("@/features/files/components/core/FileContextMenu/FileRightClickMenu").then((m) => m.FileRightClickMenu),
-  ),
-  ContextMenu: lazyWrapper<FilesContextMenuProps>(() =>
-    import("@ai-matrx/context-menu/react").then((m) => m.NonEditableContextMenu as unknown as ComponentType<FilesContextMenuProps>),
-  ),
-  ErrorAlchemyMenu: lazyPiece<Loose>(() =>
-    import("@/components/errors/ErrorAlchemyMenu").then((m) => m.ErrorAlchemyMenu as unknown as ComponentType<Loose>),
-  ),
+  FileMenu: FileMenuSlot,
+  ContextMenu: ContextMenuSlot,
   copyNotify,
 };
+
+/**
+ * Hand in the heavy pieces (called once by `files-ui-pieces.tsx`). The error copy menu is read by
+ * the package at render time (`ui().ErrorAlchemyMenu`), so it is set on the host object and the
+ * package's "Copy error" button stands in until then.
+ */
+export function registerFilesUiPieces(next: FilesUiPieces): void {
+  pieces = { ...pieces, ...next };
+  if (next.ErrorAlchemyMenu) filesUiHost.ErrorAlchemyMenu = next.ErrorAlchemyMenu;
+  for (const listener of listeners) listener();
+}
