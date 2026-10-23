@@ -9,17 +9,6 @@ import { accountLabelOf } from "@ai-matrx/coding-sessions/react";
 
 import type { ConsoleStatus } from "../connection";
 
-/** What this browser is, in a person's words, for "Started from iPhone" on the computer. */
-export function clientLabelFor(userAgent: string): string {
-  const ua = userAgent || "";
-  if (/iPhone/.test(ua)) return "iPhone";
-  if (/iPad/.test(ua) || (/Macintosh/.test(ua) && /Mobile\//.test(ua))) return "iPad";
-  if (/Android/.test(ua)) return /Mobile/.test(ua) ? "Android phone" : "Android tablet";
-  const browser = /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "A browser";
-  const os = /Mac OS X|Macintosh/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : /Linux/.test(ua) ? "Linux" : null;
-  return os ? `${browser} on ${os}` : browser;
-}
-
 export type SessionsState =
   | { kind: "ready" }
   | { kind: "blocked"; title: string; body: string };

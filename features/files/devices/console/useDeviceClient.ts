@@ -20,7 +20,7 @@ import { getAccessTokenOrNull } from "@/lib/python-client";
 import { consoleStatus } from "./connection";
 import type { ConsoleStatus } from "./connection";
 import { relayConnectUrl, relaySubprotocols } from "./relay";
-import { clientLabelFor } from "./sessions/model";
+import { clientLabelFor } from "./clientLabel";
 
 /** Reported to the device in hello; the relay and the Mac log it. */
 const CLIENT_VERSION = "web-1";

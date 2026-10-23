@@ -21,7 +21,7 @@ import { getAccessTokenOrNull } from "@/lib/python-client";
 import { supabase } from "@/utils/supabase/client";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { fetchRelayStatus, relayConnectUrl, relaySubprotocols } from "@/features/files/devices/console/relay";
-import { clientLabelFor } from "@/features/files/devices/console/sessions/model";
+import { clientLabelFor } from "@/features/files/devices/console/clientLabel";
 
 const LOG = "[your-computers]";
 const REFRESH_MS = 30_000;

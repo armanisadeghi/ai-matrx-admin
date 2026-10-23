@@ -9,7 +9,7 @@ jest.mock("@/lib/python-client", () => ({ getAccessTokenOrNull: jest.fn() }));
 jest.mock("@ai-matrx/auth", () => ({ getClaimsUser: jest.fn() }));
 jest.mock("@/features/files/devices/console/devices-query", () => ({ fetchConsoleDevices: jest.fn() }));
 jest.mock("@/features/files/devices/console/relay", () => ({ fetchRelayStatus: jest.fn(), relayConnectUrl: jest.fn(), relaySubprotocols: jest.fn() }));
-jest.mock("@/features/files/devices/console/sessions/model", () => ({ clientLabelFor: jest.fn() }));
+jest.mock("@/features/files/devices/console/clientLabel", () => ({ clientLabelFor: jest.fn() }));
 jest.mock("@/features/ai-work/lib/matrxLocalRuntime", () => ({}));
 
 import { createServerFilingStore } from "../matrx2Computers";

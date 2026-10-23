@@ -15,7 +15,7 @@ import { supabase } from "@/utils/supabase/client";
 import { getAccessTokenOrNull } from "@/lib/python-client";
 import { fetchConsoleDevices } from "@/features/files/devices/console/devices-query";
 import { fetchRelayStatus, relayConnectUrl, relaySubprotocols } from "@/features/files/devices/console/relay";
-import { clientLabelFor } from "@/features/files/devices/console/sessions/model";
+import { clientLabelFor } from "@/features/files/devices/console/clientLabel";
 import type { DeviceRow } from "@/features/files/devices/types";
 import {
   CODING_MINOR,
