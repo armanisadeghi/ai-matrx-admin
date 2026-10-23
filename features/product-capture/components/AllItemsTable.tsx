@@ -46,7 +46,7 @@ import { toast } from "@/lib/toast";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 
 import type { CaptureItem } from "../types";
-import { closeItem, deleteItem, listAllFiles, listAllItems } from "../service";
+import { deleteItem, handOffItem, listAllFiles, listAllItems } from "../service";
 import { ItemSwipeRow } from "./ItemSwipeRow";
 import { ItemActionsDrawer } from "./ItemActionsDrawer";
 import { itemBulkActions } from "./allItemsBulkActions";
@@ -152,9 +152,9 @@ export function AllItemsTable() {
     try {
       const wasProcessed = row.status === "processed";
       // Flipping into `captured` IS the workflow handoff (the DB transition
-      // fires the event trigger) — one write covers "mark ready" and
-      // "reprocess" alike.
-      const saved = await closeItem(row.item);
+      // fires the event trigger): `closeItem` for a capturing item,
+      // `reprocessItem` for a settled one (handOffItem routes).
+      const saved = await handOffItem(row.item);
       setRows(
         (prev) =>
           prev?.map((r) =>

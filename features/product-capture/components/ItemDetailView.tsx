@@ -32,7 +32,7 @@ import { toast } from "@/lib/toast";
 
 import type { CaptureFile, CaptureItem } from "../types";
 import {
-  closeItem,
+  handOffItem,
   listItemFiles,
   loadItem,
   setItemCode,
@@ -179,7 +179,7 @@ export function ItemDetailView({ itemId }: { itemId: string }) {
       // Flipping into `captured` IS the workflow handoff (the DB transition
       // fires the event trigger) — one write covers "mark ready" and
       // "reprocess" alike.
-      adoptItem(await closeItem(current));
+      adoptItem(await handOffItem(current));
       toast.success(
         wasProcessed
           ? "Queued for reprocessing."
